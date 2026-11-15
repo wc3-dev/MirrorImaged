@@ -109,7 +109,7 @@ public sealed partial class Simulation : IDisposable
         var map = Read(path); // first, so a missing map says so whether or not the game is installed
         var blizzard = Blizzard.Lua(map.Jass);
         var script = map.Jass ? JassLua(path, map.Script!, Blizzard.Syntax()) : map.Script!;
-        return new(new GameData(StandardData.Installed(GameInstall.Require(), map.Files.Info), map), script, blizzard, options ?? new SimulationOptions());
+        return Recorded(new(new GameData(StandardData.Installed(GameInstall.Require(), map.Files.Info), map), script, blizzard, options ?? new SimulationOptions()), path, options);
     }
 
     /// <summary>
@@ -122,7 +122,15 @@ public sealed partial class Simulation : IDisposable
     {
         var map = Read(path);
         var script = map.Jass ? JassLua(path, map.Script!, null) : map.Script!;
-        return new(new GameData(data ?? new StandardData(), map), script, blizzard, options ?? new SimulationOptions());
+        return Recorded(new(new GameData(data ?? new StandardData(), map), script, blizzard, options ?? new SimulationOptions()), path, options);
+    }
+
+    // The recording starts with the map, the seed and the seats the run was given
+    static Simulation Recorded(Simulation simulation, string path, SimulationOptions? options)
+    {
+        (simulation._recording.Map, simulation._recording.Seed) = (path, options?.Seed ?? 0);
+        (simulation._recording.Users, simulation._recording.Computers) = (options?.Users?.ToArray(), options?.Computers?.ToArray());
+        return simulation;
     }
 
     static MapArchive Read(string path) =>
@@ -178,7 +186,7 @@ public sealed partial class Simulation : IDisposable
     /// <summary>The player says the message, as if typed in the game: the chat events registered for it fire.</summary>
     public void Say(int player, string message)
     {
-        if (_natives.Player(player) is { } speaker) _natives.Say(speaker, message);
+        Apply(new(_game.Step, "say", player, Text: message), true);
     }
 
     /// <summary>
