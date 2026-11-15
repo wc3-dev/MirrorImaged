@@ -2392,3 +2392,8 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
 - **D383 (The AI's heroes learn skills):** `SetHeroLevels(function)` gives, for the AI player, the function that names the ability a hero learns: for a hero with a skill
   point it is asked (`GetHeroId` the hero's type, `GetHeroLevelAI` its level), and the hero learns what it names (`SelectHeroSkill`), when the hero is made, when it
   reaches a level, and for the heroes the player has when the function is given. A point that is not spent stops the asking.
+
+- **D384 (Bash, Critical Strike, Evasion):** a unit with Critical Strike (AOcr) multiplies the damage of an attack by DataB when a draw of 1 to 100 is within DataA; one with
+  Bash (AHbh) adds DataC and stuns for the ability's duration (a hero's own for a hero) on a melee attack with the chance DataA; one with Evasion (AEev) turns an
+  attack aside when a draw is within DataA times 100. Each draw is the game's shared generator's. Close: the abilities of other names that do the same with their
+  own data are not here.
