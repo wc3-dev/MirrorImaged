@@ -167,14 +167,15 @@ public sealed partial class GameNatives
     }
 
     // Whether the ground the unit would step onto stops it: walkers and riders can't enter unwalkable cells or leave the world
-    bool Blocked(unit u, float x, float y)
+    bool Blocked(unit u, float x, float y) => Blocked(u, BlzGetUnitIntegerField(u, Convert<unitintegerfield>(MoveType)), x, y);
+
+    bool Blocked(unit u, int type, float x, float y)
     {
         if (Data.Terrain is { } terrain)
         {
             var (minX, minY, maxX, maxY) = terrain.Bounds;
             if (x < minX || x > maxX || y < minY || y > maxY) return true;
         }
-        var type = BlzGetUnitIntegerField(u, Convert<unitintegerfield>(MoveType));
         if (type is 1 or 4 && Data.Map?.Files.PathingMap is not null && IsTerrainPathable(x, y, Convert<pathingtype>(1))) return true;
         return type is not 2 && BlockedByBuilding(u, x, y);
     }
