@@ -123,14 +123,14 @@ public sealed class SimulationTests : IDisposable
     }
 
     [Theory]
-    [InlineData("pcall(ClearTextMessages)")]
-    [InlineData("xpcall(ClearTextMessages, print)")]
-    [InlineData("coroutine.wrap(ClearTextMessages)()")]
+    [InlineData("pcall(BlzFrameClick)")]
+    [InlineData("xpcall(BlzFrameClick, print)")]
+    [InlineData("coroutine.wrap(BlzFrameClick)()")]
     public void A_missing_native_called_straight_from_c_names_the_nearest_lua_line(string call)
     {
         using var simulation = Load(call);
 
-        Assert.StartsWith("war3map.lua:3: The native ClearTextMessages is Missing", simulation.Stopped!.Message);
+        Assert.StartsWith("war3map.lua:3: The native BlzFrameClick is Missing", simulation.Stopped!.Message);
         Assert.Empty(simulation.Log);
     }
 
@@ -140,7 +140,7 @@ public sealed class SimulationTests : IDisposable
         using var simulation = Load("""
             TimerStart(CreateTimer(), 1, false, function()
               local ok = pcall(function()
-                ClearTextMessages()
+                BlzFrameClick()
               end)
               print("carried on", ok)
             end)
@@ -149,7 +149,7 @@ public sealed class SimulationTests : IDisposable
 
         var error = Assert.Throws<LuaException>(() => simulation.Advance(TimeSpan.FromSeconds(3)));
 
-        Assert.StartsWith("war3map.lua:5: The native ClearTextMessages is Missing", error.Message);
+        Assert.StartsWith("war3map.lua:5: The native BlzFrameClick is Missing", error.Message);
         Assert.IsType<MissingNativeException>(error.InnerException);
         Assert.Same(error, simulation.Stopped);
         Assert.Empty(simulation.Log);
@@ -259,8 +259,8 @@ public sealed class SimulationTests : IDisposable
 
         Assert.StartsWith("blizzard.lua:1: broken", Assert.Throws<LuaException>(() => Simulation.Load(map, "error('broken')")).Message);
         Assert.StartsWith("blizzard.lua:1:", Assert.Throws<LuaException>(() => Simulation.Load(map, "function (")).Message);
-        using var stopped = Simulation.Load(map, "\nClearTextMessages()");
-        Assert.StartsWith("blizzard.lua:2: The native ClearTextMessages is Missing", stopped.Stopped!.Message);
+        using var stopped = Simulation.Load(map, "\nBlzFrameClick()");
+        Assert.StartsWith("blizzard.lua:2: The native BlzFrameClick is Missing", stopped.Stopped!.Message);
         Assert.Empty(stopped.Log);
     }
 

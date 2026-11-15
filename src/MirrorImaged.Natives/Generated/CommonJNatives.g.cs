@@ -13,9 +13,6 @@ public sealed partial class GameNatives
     public bool BlzGetManipulatedItemWasAbsorbed() => throw new MissingNativeException("BlzGetManipulatedItemWasAbsorbed");
 
     [Native(Level.Missing)]
-    public unit? BlzGetMouseFocusUnit() => throw new MissingNativeException("BlzGetMouseFocusUnit");
-
-    [Native(Level.Missing)]
     public int BlzGetMouseScreenPosX() => throw new MissingNativeException("BlzGetMouseScreenPosX");
 
     [Native(Level.Missing)]
@@ -112,28 +109,7 @@ public sealed partial class GameNatives
     public void BlzUnitForceStopOrder(unit? whichUnit, bool clearQueue) => throw new MissingNativeException("BlzUnitForceStopOrder");
 
     [Native(Level.Missing)]
-    public void ClearSelection() => throw new MissingNativeException("ClearSelection");
-
-    [Native(Level.Missing)]
     public void CommandAI(player? num, int command, int data) => throw new MissingNativeException("CommandAI");
-
-    [Native(Level.Missing)]
-    public fogmodifier? CreateFogModifierRadius(player? forWhichPlayer, fogstate? whichState, float centerx, float centerY, float radius, bool useSharedVision, bool afterUnits) => throw new MissingNativeException("CreateFogModifierRadius");
-
-    [Native(Level.Missing)]
-    public fogmodifier? CreateFogModifierRadiusLoc(player? forWhichPlayer, fogstate? whichState, location? center, float radius, bool useSharedVision, bool afterUnits) => throw new MissingNativeException("CreateFogModifierRadiusLoc");
-
-    [Native(Level.Missing)]
-    public fogmodifier? CreateFogModifierRect(player? forWhichPlayer, fogstate? whichState, rect? where, bool useSharedVision, bool afterUnits) => throw new MissingNativeException("CreateFogModifierRect");
-
-    [Native(Level.Missing)]
-    public void DestroyFogModifier(fogmodifier? whichFogModifier) => throw new MissingNativeException("DestroyFogModifier");
-
-    [Native(Level.Missing)]
-    public void FogModifierStart(fogmodifier? whichFogModifier) => throw new MissingNativeException("FogModifierStart");
-
-    [Native(Level.Missing)]
-    public void FogModifierStop(fogmodifier? whichFogModifier) => throw new MissingNativeException("FogModifierStop");
 
     [Native(Level.Missing)]
     public unit? GetAttacker() => throw new MissingNativeException("GetAttacker");
@@ -151,12 +127,6 @@ public sealed partial class GameNatives
     public unit? GetConstructingStructure() => throw new MissingNativeException("GetConstructingStructure");
 
     [Native(Level.Missing)]
-    public unit? GetDetectedUnit() => throw new MissingNativeException("GetDetectedUnit");
-
-    [Native(Level.Missing)]
-    public player? GetEventDetectingPlayer() => throw new MissingNativeException("GetEventDetectingPlayer");
-
-    [Native(Level.Missing)]
     public string? GetEventPlayerChatString() => throw new MissingNativeException("GetEventPlayerChatString");
 
     [Native(Level.Missing)]
@@ -164,9 +134,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public unit? GetEventTargetUnit() => throw new MissingNativeException("GetEventTargetUnit");
-
-    [Native(Level.Missing)]
-    public unit? GetLoadedUnit() => throw new MissingNativeException("GetLoadedUnit");
 
     [Native(Level.Missing)]
     public location? GetOrderPointLoc() => throw new MissingNativeException("GetOrderPointLoc");
@@ -244,9 +211,6 @@ public sealed partial class GameNatives
     public int GetTrainedUnitType() => throw new MissingNativeException("GetTrainedUnitType");
 
     [Native(Level.Missing)]
-    public unit? GetTransportUnit() => throw new MissingNativeException("GetTransportUnit");
-
-    [Native(Level.Missing)]
     public trackable? GetTriggeringTrackable() => throw new MissingNativeException("GetTriggeringTrackable");
 
     [Native(Level.Missing)]
@@ -263,9 +227,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public player? GetWinningPlayer() => throw new MissingNativeException("GetWinningPlayer");
-
-    [Native(Level.Missing)]
-    public void GroupEnumUnitsSelected(group? whichGroup, player? whichPlayer, boolexpr? filter) => throw new MissingNativeException("GroupEnumUnitsSelected");
 
     [Native(Level.Missing)]
     public bool GroupImmediateOrder(group? whichGroup, string? order) => throw new MissingNativeException("GroupImmediateOrder");
@@ -290,51 +251,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public bool GroupTargetOrderById(group? whichGroup, int order, widget? targetWidget) => throw new MissingNativeException("GroupTargetOrderById");
-
-    [Native(Level.Missing)]
-    public bool IsFoggedToPlayer(float x, float y, player? whichPlayer) => throw new MissingNativeException("IsFoggedToPlayer");
-
-    [Native(Level.Missing)]
-    public bool IsLocationFoggedToPlayer(location? whichLocation, player? whichPlayer) => throw new MissingNativeException("IsLocationFoggedToPlayer");
-
-    [Native(Level.Missing)]
-    public bool IsLocationMaskedToPlayer(location? whichLocation, player? whichPlayer) => throw new MissingNativeException("IsLocationMaskedToPlayer");
-
-    [Native(Level.Missing)]
-    public bool IsLocationVisibleToPlayer(location? whichLocation, player? whichPlayer) => throw new MissingNativeException("IsLocationVisibleToPlayer");
-
-    [Native(Level.Missing)]
-    public bool IsMaskedToPlayer(float x, float y, player? whichPlayer) => throw new MissingNativeException("IsMaskedToPlayer");
-
-    [Native(Level.Missing)]
-    public bool IsUnitDetected(unit? whichUnit, player? whichPlayer) => throw new MissingNativeException("IsUnitDetected");
-
-    [Native(Level.Missing)]
-    public bool IsUnitFogged(unit? whichUnit, player? whichPlayer) => throw new MissingNativeException("IsUnitFogged");
-
-    [Native(Level.Missing)]
-    public bool IsUnitInForce(unit? whichUnit, force? whichForce) => throw new MissingNativeException("IsUnitInForce");
-
-    [Native(Level.Missing)]
-    public bool IsUnitInTransport(unit? whichUnit, unit? whichTransport) => throw new MissingNativeException("IsUnitInTransport");
-
-    [Native(Level.Missing)]
-    public bool IsUnitInvisible(unit? whichUnit, player? whichPlayer) => throw new MissingNativeException("IsUnitInvisible");
-
-    [Native(Level.Missing)]
-    public bool IsUnitLoaded(unit? whichUnit) => throw new MissingNativeException("IsUnitLoaded");
-
-    [Native(Level.Missing)]
-    public bool IsUnitMasked(unit? whichUnit, player? whichPlayer) => throw new MissingNativeException("IsUnitMasked");
-
-    [Native(Level.Missing)]
-    public bool IsUnitSelected(unit? whichUnit, player? whichPlayer) => throw new MissingNativeException("IsUnitSelected");
-
-    [Native(Level.Missing)]
-    public bool IsUnitVisible(unit? whichUnit, player? whichPlayer) => throw new MissingNativeException("IsUnitVisible");
-
-    [Native(Level.Missing)]
-    public bool IsVisibleToPlayer(float x, float y, player? whichPlayer) => throw new MissingNativeException("IsVisibleToPlayer");
 
     [Native(Level.Missing)]
     public bool IssueBuildOrder(unit? whichPeon, string? unitToBuild, float x, float y) => throw new MissingNativeException("IssueBuildOrder");
@@ -409,25 +325,10 @@ public sealed partial class GameNatives
     public void RemoveGuardPosition(unit? hUnit) => throw new MissingNativeException("RemoveGuardPosition");
 
     [Native(Level.Missing)]
-    public void SelectUnit(unit? whichUnit, bool flag) => throw new MissingNativeException("SelectUnit");
-
-    [Native(Level.Missing)]
-    public void SetFogStateRadius(player? forWhichPlayer, fogstate? whichState, float centerx, float centerY, float radius, bool useSharedVision) => throw new MissingNativeException("SetFogStateRadius");
-
-    [Native(Level.Missing)]
-    public void SetFogStateRadiusLoc(player? forWhichPlayer, fogstate? whichState, location? center, float radius, bool useSharedVision) => throw new MissingNativeException("SetFogStateRadiusLoc");
-
-    [Native(Level.Missing)]
-    public void SetFogStateRect(player? forWhichPlayer, fogstate? whichState, rect? where, bool useSharedVision) => throw new MissingNativeException("SetFogStateRect");
-
-    [Native(Level.Missing)]
     public void StartCampaignAI(player? num, string? script) => throw new MissingNativeException("StartCampaignAI");
 
     [Native(Level.Missing)]
     public void StartMeleeAI(player? num, string? script) => throw new MissingNativeException("StartMeleeAI");
-
-    [Native(Level.Missing)]
-    public void SyncSelections() => throw new MissingNativeException("SyncSelections");
 
     [Native(Level.Missing)]
     public @event? TriggerRegisterCommandEvent(trigger? whichTrigger, int whichAbility, string? order) => throw new MissingNativeException("TriggerRegisterCommandEvent");
@@ -442,9 +343,6 @@ public sealed partial class GameNatives
     public @event? TriggerRegisterTrackableTrackEvent(trigger? whichTrigger, trackable? t) => throw new MissingNativeException("TriggerRegisterTrackableTrackEvent");
 
     [Native(Level.Missing)]
-    public @event? TriggerRegisterUnitInRange(trigger? whichTrigger, unit? whichUnit, float range, boolexpr? filter) => throw new MissingNativeException("TriggerRegisterUnitInRange");
-
-    [Native(Level.Missing)]
     public @event? TriggerRegisterUpgradeCommandEvent(trigger? whichTrigger, int whichUpgrade) => throw new MissingNativeException("TriggerRegisterUpgradeCommandEvent");
 
     [Native(Level.Missing)]
@@ -452,9 +350,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public void TriggerSyncStart() => throw new MissingNativeException("TriggerSyncStart");
-
-    [Native(Level.Missing)]
-    public void UnitShareVision(unit? whichUnit, player? whichPlayer, bool share) => throw new MissingNativeException("UnitShareVision");
 
     [Native(Level.Missing)]
     public bool UnitUseItemPoint(unit? whichUnit, item? whichItem, float x, float y) => throw new MissingNativeException("UnitUseItemPoint");

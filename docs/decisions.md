@@ -2175,3 +2175,10 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   the mouse and key events are wave 6's. Textures, models, fonts, colours and anchors are Recorded. Close: the game's own TOC files
   and its frame tree are not read, and layout is the size given. The missing-native tests now use `StartCampaignAI`, the last native to be
   written (wave 7).
+- **D601. Vision.** A place is visible to a player within the sight (day or night field) of a living, shown unit the player owns, shares's
+  or sees through by a shared-vision alliance or `UnitShareVision`; else a running fog modifier's state at the place, the later
+  started winning; else fogged where the player has seen (kept in 64-unit cells, marked by every read and every move of
+  a unit that has gone a cell) and masked elsewhere. `FogEnable(false)` shows fogged ground as visible, `FogMaskEnable(false)` shows
+  masked as fogged, both off everything visible (facts, 10-09 and 11-06). A stopped modifier leaves its area explored. Selection is
+  a set for each player; `SelectUnit` acts on the local player. Close: invisibility, detection, transports and the in-range event
+  come with abilities and movement (waves 3 and 4), and the game's later recompute of overlapping modifiers (the oldest wins) isn't modelled.
