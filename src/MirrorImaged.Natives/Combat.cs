@@ -39,6 +39,7 @@ public sealed partial class GameNatives
     {
         _engine = false;
         _ticks++;
+        if (_ticks % 32 == 0) AuraPulse();
         var busy = false;
         foreach (var u in _units.Values.ToArray())
             if (!u.Dead && !u.Removed) busy |= Act(u);
@@ -61,7 +62,7 @@ public sealed partial class GameNatives
 
     bool Hostile(unit u, unit t) =>
         t != u && !t.Dead && !t.Hidden && !t.Removed && !t.Locust && t.Owner != u.Owner && GetPlayerId(u.Owner) != GetPlayerNeutralPassive()
-        && GetPlayerId(t.Owner) != GetPlayerNeutralPassive() && IsPlayerEnemy(u.Owner, t.Owner) && Find(t, Invulnerable) is null;
+        && GetPlayerId(t.Owner) != GetPlayerNeutralPassive() && IsPlayerEnemy(u.Owner, t.Owner) && Find(t, Invulnerable) is null && !IsInvulnerableByBuff(t);
 
     bool Armed(unit u, unit t) => WeaponFor(u, t) >= 0;
 
@@ -146,6 +147,7 @@ public sealed partial class GameNatives
     // Walks toward the place at the unit's speed; true while it goes on, and the order ends on arrival (a patrol turns back)
     bool Walk(unit u, float x, float y, bool follow, bool patrol = false)
     {
+        if (IsRooted(u)) return true;
         var speed = GetUnitMoveSpeed(u);
         if (speed <= 0) return Finish(u);
         var (dx, dy) = (x - u.X, y - u.Y);
@@ -223,6 +225,7 @@ public sealed partial class GameNatives
         var sound = BlzGetUnitWeaponIntegerField(u, Convert<unitweaponintegerfield>(Code("ucs1")), weapon);
         var kind = u.Type.Text(Code($"ua{weapon + 1}w")) ?? "normal";
         var ranged = kind is "missile" or "mbounce" or "mline" or "msplash" or "artillery" or "aline" or "alsplash";
+        if (ranged && DamageBonusOf(u) is > 0 and var bonus) damage *= 1 + bonus;
         Strike(new Hit(u, t, damage, true, ranged, Convert<attacktype>(attackType), Convert<damagetype>(NormalDamage), Convert<weapontype>(sound)) { Real = true }, t);
         if (!t.Dead) HitBack(t, u);
     }

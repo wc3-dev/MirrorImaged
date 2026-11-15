@@ -2369,3 +2369,12 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   this machine, 78 times real time. What made it so: a worker taking its load home may walk up to its own town hall (it went round it, a search
   each time), the town halls are listed once a tick, a search for a path leans to the goal (the estimate counts twice, 3000 cells at most), and a
   unit whose way stopped short of its place waits 2 seconds before it searches again. The AI's ghouls cut the wood its wood slots ask for.
+
+- **D380 (More spells and the auras):** the spells of the melee heroes that deal with numbers: Death Coil (hurts a foe, heals a friend), Chain Lightning and
+  Healing Wave (jump to the nearest not yet reached within the area, for less each time), Frost Nova (damage to the target, less round it, and a slow),
+  War Stomp (damage and a stun round the caster), Fan of Knives, Mana Burn (mana taken, and as much damage), Carrion Swarm and Shockwave (a line from
+  the caster), Entangling Roots (the unit cannot walk and takes damage each second), Sleep, Divine Shield and Big Bad Voodoo (nothing hurts the unit,
+  and no unit takes it as an enemy), Frost Armor; and the auras Devotion (armour), Endurance (speed and attack rate), Unholy (speed and life each
+  second), Vampiric (a share of a melee attack's damage back) and Trueshot (more damage for ranged attacks), which each unit that has one gives the
+  allies within its area once a second for a little longer than a second. The numbers are the ability's Data A to E by level, as its tooltip names them.
+  Close: channels (Blizzard, Flame Strike), summons, transformations, and the passives of an attack's chance (bash, critical strike, evasion) are not here.

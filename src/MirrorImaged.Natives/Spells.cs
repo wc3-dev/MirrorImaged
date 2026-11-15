@@ -87,6 +87,7 @@ public sealed partial class GameNatives
     // What the spell does: the data-driven effects of the abilities modelled here (waves 4's first set), nothing for the rest
     void Effect(unit caster, ability a, float x, float y, widget? target)
     {
+        if (MoreEffect(caster, a, x, y, target)) return;
         var amount = TagValue(a.Type, "DataA" + a.Level);
         switch (a.Type.BaseId)
         {
