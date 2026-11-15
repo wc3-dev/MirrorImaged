@@ -96,6 +96,7 @@ public sealed partial class GameNatives
         var scan = _ticks % ScanEvery == 0;
         var order = u.Order;
         if (order == OrderHarvest) return Harvest(u);
+        if (order == OrderRepair) return Repairing(u);
         if (order == OrderReturn) return ReturnLoad(u);
         if (order != 0 && !OrderNames.ContainsKey(order) && Data.Object(ObjectKind.Unit, order) is not null)
         {
