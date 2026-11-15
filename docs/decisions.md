@@ -2318,3 +2318,6 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   snapshot again, and `Simulation.StepBack` runs the map again to an earlier step, which lands on the state the run had then (A11). The
   world is not copied: a run repeats exactly from its recording, so going back costs the run to that step. `mirror snapshot` saves one and
   `mirror compare` runs it again and lists what differs.
+
+- **D372 (Determinism across systems):** a test runs a map of dice, trigonometry, a fight, timers and many units for 20 seconds and compares
+  the state hash at 1, 5, 10, 15 and 20 seconds with the hashes made on Windows. CI runs it on Windows, Linux and macOS (A7).
