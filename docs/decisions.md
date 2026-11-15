@@ -2342,3 +2342,10 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   a replay of a game whose units were made in another order than here gives orders to units that are not there, and they are left out. Read
   from the format as documented and one replay of this machine (a probe, with no orders of players); the orders are checked on replays the
   tests make. Close.
+
+- **D376 (Upgrades and revival):** a building given the id of a unit type it upgrades to (`uupt`) pays that type's price and, after its build time,
+  becomes it: the life and mana keep their share, the abilities are the new type's and the food it makes changes; it trains nothing while it
+  upgrades, and cancelling gives the price back. A building given the id of a hero it revives (`urev`) when that hero is dead pays a share of the
+  hero's price (0.4 and 0.1 for each level above the first, ReviveBaseFactor and ReviveLevelFactor) and revives it at its door when the time
+  (0.65 of the hero's build time) is out; a hero a player already has, alive or in training, can't be trained again. Close: the revive price
+  and time are the constants' names as I know them, not measured.
