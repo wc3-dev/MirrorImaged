@@ -20,8 +20,10 @@ public sealed class MeleeCorpusTests(ITestOutputHelper output) : IDisposable
 
     static (string Path, int User, int[] Computers)? Seats(string path)
     {
-        var slots = MapArchive.Read(path).Files.Info?.Players.Where(p => p.Controller is PlayerController.User or PlayerController.Computer).Select(p => p.Id).ToList() ?? [];
-        return slots.Count >= 2 ? (path, slots[0], [.. slots.Skip(1)]) : null;
+        var players = MapArchive.Read(path).Files.Info?.Players ?? [];
+        var slots = players.Where(p => p.Controller is PlayerController.User or PlayerController.Computer).Select(p => p.Id).ToList();
+        // A melee map has two or more slots for people; a scenario of one person and its computers is not one
+        return players.Count(p => p.Controller == PlayerController.User) >= 2 ? (path, slots[0], [.. slots.Skip(1)]) : null;
     }
 
     string Extract(CascStorage storage, string name)
@@ -64,11 +66,11 @@ public sealed class MeleeCorpusTests(ITestOutputHelper output) : IDisposable
             {
                 if (Seats(path) is not { } seats) continue;
                 using var simulation = Simulation.Load(path, new SimulationOptions { Users = [seats.User], Computers = seats.Computers });
-                var before = simulation.Units().Count(u => u.Player != seats.User);
+                var before = simulation.Units().Count(u => seats.Computers.Contains(u.Player));
                 var clock = Stopwatch.StartNew();
                 try { simulation.Advance(TimeSpan.FromMinutes(30)); }
                 catch (LuaException) when (simulation.Stopped is not null) { }
-                var after = simulation.Units().Count(u => u.Player != seats.User);
+                var after = simulation.Units().Count(u => seats.Computers.Contains(u.Player));
                 output.WriteLine($"{name}: {clock.Elapsed.TotalSeconds:0.0} s, computers' units {before} to {after}");
                 if (simulation.Stopped is not null) problems.Add($"{name}: stopped: {simulation.Stopped.Message.Split('\n')[0]}");
                 foreach (var line in simulation.Log.Where(l => l.Split(' ').ElementAtOrDefault(1) == "error:").Take(1)) problems.Add($"{name}: {line}");
