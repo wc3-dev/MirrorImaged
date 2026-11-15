@@ -1652,3 +1652,11 @@ one of Player 1 placed 100 apart (so none is moved aside).
 - Taking the ability off (`UnitRemoveAbility` true, `GetUnitAbilityLevel` 0) brings the unit back into neither: the
   range and rect enumerations still missed it, and it was still unselectable, at once, 0.5 s and 3.5 s later. The same
   for a unit that had Locust added and removed in the same instant.
+
+## Orders (W3 start)
+
+- `OrderId2String` over 851968 to 852800 names 373 ids, from `smart` (851971), `stop` (851972), `setrally` (851980), `attack` (851983),
+  `move` (851986), `patrol` (851990) and `holdposition` (851993) to `witheringfire` (852711); the others, 852008 and 851974 among them, give
+  "" (3.0.1.24371, probe `orders-table`, 11-15: the table is `OrderTable.cs`). The build orders are named (`build` 851994, `humanbuild`
+  851995 ...); the unit-id orders of building, training and upgrading have no name. A probe must end with `done()`: without it the
+  runner reads no lines (four runs of this probe gave none until it did).
