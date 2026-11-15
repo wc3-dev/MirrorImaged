@@ -109,7 +109,7 @@ public sealed class SimulationTests : IDisposable
 
         var stop = simulation.Stopped!;
         Assert.StartsWith("war3map.lua:4: The native BlzGetUnitAnimationDurationByIndex is Missing", stop.Message);
-        Assert.Equal("StartMeleeAI", Assert.IsType<MissingNativeException>(stop.InnerException).Native);
+        Assert.Equal("BlzGetUnitAnimationDurationByIndex", Assert.IsType<MissingNativeException>(stop.InnerException).Native);
         Assert.Equal(["0.000 print: config", "0.000 print: main"], simulation.Log);
         Assert.Same(stop, Assert.Throws<LuaException>(() => simulation.Advance(TimeSpan.FromSeconds(1))));
     }

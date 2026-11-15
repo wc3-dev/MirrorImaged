@@ -2197,3 +2197,6 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   answer an event that never fires; the key and mouse state reads false and 0. Sync data (`BlzSendSyncData`) is real: it reaches
   the registrations for its prefix for the local player a step later, refused over 255 characters. Using an item on a place or a
   target needs its ability (wave 4) and is refused.
+- **D351. The order table** is the 373 names the game gives (probe `orders-table`), kept as `OrderNames` and, by name in any case, `OrderIds`;
+  `OrderId` and `OrderId2String` read it (Exact: the probe's expected lines are the table itself), and the Issue natives find a named order in
+  it. A name the game doesn't give is 0 and an unnamed id ""; the stunned order (851973) is the pause's own and has no name.
