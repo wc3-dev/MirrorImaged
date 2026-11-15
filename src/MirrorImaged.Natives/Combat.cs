@@ -76,9 +76,9 @@ public sealed partial class GameNatives
         var bestAt = float.MaxValue;
         foreach (var t in _units.Values)
         {
-            if (!Hostile(u, t) || !Armed(u, t)) continue;
-            var at = Distance(u, t);
-            if (at <= range && at < bestAt) (best, bestAt) = (t, at);
+            var near = Distance2(u.X - t.X, u.Y - t.Y);
+            if (near > range * range || near >= bestAt * bestAt || !Hostile(u, t) || !Armed(u, t)) continue;
+            (best, bestAt) = (t, MathF.Sqrt(near));
         }
         return best;
     }

@@ -16,11 +16,21 @@ public sealed partial class GameNatives
     const int PathNodes = 6000;
 
     // Whether a building (not one the unit is working on or standing inside) is in the way at the place
+    // The buildings, listed again once in a tick, as the search for a path asks about thousands of places
+    List<unit> _buildingList = [];
+    long _buildingListAt = -1;
+    int _buildingListOf;
+
     bool BlockedByBuilding(unit u, float x, float y)
     {
-        foreach (var b in _units.Values)
+        if (_buildingListAt != _ticks || _buildingListOf != _units.Count)
         {
-            if (b == u || b.Dead || b.Removed || !IsBuildingNow(b)) continue;
+            (_buildingListAt, _buildingListOf) = (_ticks, _units.Count);
+            _buildingList = _units.Values.Where(b => !b.Dead && !b.Removed && IsBuildingNow(b)).ToList();
+        }
+        foreach (var b in _buildingList)
+        {
+            if (b == u || b.Dead || b.Removed) continue;
             if (b == u.OrderTarget || b == u.AttackTarget || b == u.Building || b == u.HarvestTarget) continue;
             var reach = b.Type.Real(Collision) + 8;
             if (Distance2(b.X - x, b.Y - y) > reach * reach) continue;
@@ -72,7 +82,13 @@ public sealed partial class GameNatives
         var (columns, rows) = (Column(maxX) + 1, Row(maxY) + 1);
         float CenterX(int c) => minX + (c + 0.5f) * SearchCell;
         float CenterY(int r) => minY + (r + 0.5f) * SearchCell;
-        bool Free(int c, int r) => c >= 0 && r >= 0 && c < columns && r < rows && !Blocked(u, CenterX(c), CenterY(r));
+        var freeCells = new Dictionary<(int, int), bool>();
+        bool Free(int c, int r)
+        {
+            if (c < 0 || r < 0 || c >= columns || r >= rows) return false;
+            if (!freeCells.TryGetValue((c, r), out var free)) freeCells[(c, r)] = free = !Blocked(u, CenterX(c), CenterY(r));
+            return free;
+        }
         var start = (c: Math.Clamp(Column(u.X), 0, columns - 1), r: Math.Clamp(Row(u.Y), 0, rows - 1));
         var goal = (c: Math.Clamp(Column(goalX), 0, columns - 1), r: Math.Clamp(Row(goalY), 0, rows - 1));
         float H((int c, int r) cell) => MathF.Sqrt(Distance2(cell.c - goal.c, cell.r - goal.r));
