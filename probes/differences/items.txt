@@ -1,0 +1,35 @@
+# Where MirrorImaged differs from the game's lines in expected/items.txt, in order, with why (decisions D121): a
+# line starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts
+# "# ".
+
+# The extended tooltip's tags (<AIh1,DataA1>) are resolved by the game from the ability data, here they stay as written (D340, Close).
+- ext [Heals 250 hit points when used.]
++ ext [Heals <AIh1,DataA1> hit points when used.]
+
+# The game keeps an item inside the map (5000, -5000 reads 2016, -2048); the map's bounds aren't kept for items here (D341, Close).
+- far 2016.0 -2048.0
++ far 5000.0 -5000.0
+
+# What items and powerups give a hero or do when used comes with abilities (W2-7): the tome's +1 agility, the rings' and the other carried items' attribute bonuses and their life, mana and armour, the potion's heal, the ankh's reincarnation and the later drop it makes of (D342, Close).
+- tome tdex ratc,phea,phea,rag1,phea,0 count 5 agi 14 17
++ tome tdex ratc,phea,phea,rag1,phea,0 count 5 agi 13 13
+- attrs 22 14 17 17 armour 5.1
++ attrs 22 13 13 13 armour 3.9
+- from slot 3 rag1 ratc,phea,phea,0,phea,0 count 4 at -1200.0 -1424.0 visible true owned false agi 14
++ from slot 3 rag1 ratc,phea,phea,0,phea,0 count 4 at -1200.0 -1424.0 visible true owned false agi 13
+- use true life 350.0 charges 0 ratc,0,phea,0,phea,0 count 3
++ use true life 100.0 charges 0 ratc,0,phea,0,phea,0 count 3
+- tome later tdex ratc,0,phea,0,phea,0 count 3 agi 14
++ tome later tdex ratc,0,phea,0,phea,0 count 3 agi 13
+- used later 0 life 350.6748 ratc,0,phea,0,phea,0 count 3
++ used later 0 life 100.0 ratc,0,phea,0,phea,0 count 3
+- full ratc,rag1,ckng,modt,ankh,stwp count 6 life 775.0 775 mana 330 attrs 27 21 22
++ full ratc,rag1,ckng,modt,ankh,stwp count 6 life 650.0 650 mana 255 attrs 22 13 17
+- removed ankh,rag1,ckng,0,ratc,0 count 4 attrs 27 21 22 life 775.0 775
++ removed ankh,rag1,ckng,0,ratc,0 count 4 attrs 22 13 17 life 650.0 650
+- event 50 false false 0 item ankh has false charges 0 slots ratc,0,phea,0,phea,0 count 3 stack 0 0 0
++ dead hero ankh,rag1,ckng,0,ratc,0 count 4
+- event 48 false false 0 item ankh has false charges 0 slots ratc,0,phea,0,phea,0 count 3 stack 0 0 0
+- dead hero 0,rag1,ckng,0,ratc,0 count 3
+- drop point later 0,rag1,ckng,0,ratc,0 count 3
++ drop point later ankh,rag1,ckng,0,ratc,0 count 4

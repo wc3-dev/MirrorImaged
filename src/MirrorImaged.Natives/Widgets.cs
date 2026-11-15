@@ -1,7 +1,7 @@
 namespace MirrorImaged.Natives;
 
-// The natives every widget takes: units (W2-2, probe units) and destructables (W2-4, probe destructables). An item's
-// wait for W2-3 and stop the run as Missing, so these are Close until then, though Exact on what they take (D252).
+// The natives every widget takes: units (W2-2, probe units), destructables (W2-4, probe destructables) and items (W2-3,
+// probe items).
 public sealed partial class GameNatives
 {
     /// <summary>A unit's or a destructable's life; 0 for nil.</summary>
@@ -10,7 +10,8 @@ public sealed partial class GameNatives
     {
         unit u => u.Life,
         destructable d => d.Life,
-        _ => Unless(whichWidget, 0f),
+        item i => LifeOf(i),
+        _ => 0f,
     };
 
     /// <summary>
@@ -22,7 +23,7 @@ public sealed partial class GameNatives
     {
         if (whichWidget is unit u) SetLife(u, newLife);
         else if (whichWidget is destructable d) SetDestructableLife(d, newLife);
-        else Unless(whichWidget, 0);
+        else if (whichWidget is item i) SetItemLife(i, newLife);
     }
 
     [Native(Level.Close)]
@@ -30,7 +31,8 @@ public sealed partial class GameNatives
     {
         unit u => u.X,
         destructable d => d.X,
-        _ => Unless(whichWidget, 0f),
+        item i => GetItemX(i),
+        _ => 0f,
     };
 
     [Native(Level.Close)]
@@ -38,7 +40,8 @@ public sealed partial class GameNatives
     {
         unit u => u.Y,
         destructable d => d.Y,
-        _ => Unless(whichWidget, 0f),
+        item i => GetItemY(i),
+        _ => 0f,
     };
 
     /// <summary>
@@ -47,16 +50,12 @@ public sealed partial class GameNatives
     /// </summary>
     [Native(Level.Close)]
     public @event? TriggerRegisterDeathEvent(trigger? whichTrigger, widget? whichWidget) =>
-        RegisterUnit(whichTrigger, Unless(whichWidget, whichWidget), null, Convert<widgetevent>(WidgetDeath));
+        RegisterUnit(whichTrigger, whichWidget, null, Convert<widgetevent>(WidgetDeath));
 
     /// <summary>
     /// The widget of a widget death event, the unit or destructable seen as a widget (Lua's == holds with it); nil in a
     /// unit's other events and outside one.
     /// </summary>
     [Native(Level.Exact, Fact = UnitsProbe + "; " + Destructables)]
-    public widget? GetTriggerWidget() => (widget?)Current.Destructable ?? Response(WidgetDeath)?.Unit;
-
-    // An item, the one widget left, stops the run as the native being Missing until W2-3 (D252)
-    static T Unless<T>(widget? w, T value, [System.Runtime.CompilerServices.CallerMemberName] string native = "") =>
-        w is null or unit or destructable ? value : throw new MissingNativeException(native);
+    public widget? GetTriggerWidget() => (widget?)Current.Destructable ?? Current.Item ?? (widget?)Response(WidgetDeath)?.Unit;
 }
