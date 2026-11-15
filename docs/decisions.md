@@ -2313,3 +2313,8 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
 - **D371 (Buildings in a grid):** the buildings that block a walk are listed once a tick in a grid of squares of 256, and a search for a
   path reads the move type once, so a cell costs a look at the few buildings near it. A campaign map that took 1.3 s of real time per game
   second (HumanX05) takes a fifteenth of that. Not measured against the game.
+- **D370 (Snapshots and stepping back):** a snapshot is the step, the state hash, the hash of each part (time, a player, a unit) and the
+  recording to that step. `Snapshot.Differences` lists the parts that differ from a simulation at the same step, `Simulation.Restore` runs the
+  snapshot again, and `Simulation.StepBack` runs the map again to an earlier step, which lands on the state the run had then (A11). The
+  world is not copied: a run repeats exactly from its recording, so going back costs the run to that step. `mirror snapshot` saves one and
+  `mirror compare` runs it again and lists what differs.
