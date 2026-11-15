@@ -197,6 +197,7 @@ public sealed partial class GameNatives
     {
         if (SquareOf(u) is var square && (made || square != u.Square)) (u.Square, u.Entered) = (square, ++_entered);
         Crossed(u, fromX, fromY, made);
+        ExploreUnit(u, made);
     }
 
     // The square of 256 holding the unit in the game's grid, by the corner of its collision (probe units-order)

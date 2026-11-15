@@ -215,11 +215,11 @@ public sealed class FileSimulationTests : IDisposable
     public void A_Missing_native_in_a_file_stops_the_run_as_Missing()
     {
         using var simulation = Load("""
-            write("quest.pld", "\")\ncall CreateQuest()\n//")
+            write("quest.pld", "\")\ncall BlzFrameClick(null)\n//")
             Preloader("quest.pld")
             """);
 
-        Assert.Equal("CreateQuest", Assert.IsType<MissingNativeException>(simulation.Stopped!.InnerException).Native);
+        Assert.Equal("BlzFrameClick", Assert.IsType<MissingNativeException>(simulation.Stopped!.InnerException).Native);
         Assert.StartsWith("quest.pld:", simulation.Stopped.Message);
     }
 
