@@ -21,9 +21,6 @@ public sealed partial class GameNatives
     [Native(Level.Close)]
     public int UnitInventorySize(unit? whichUnit) => whichUnit is null ? 0 : Size(whichUnit);
 
-    [Native(Level.Close)]
-    public int UnitInventoryCount(unit? whichUnit) => whichUnit?.Slots.Count(i => i is not null) ?? 0;
-
     /// <summary>The item in the slot 0 to 5, nil for an empty one and for a slot out of range (probe items).</summary>
     [Native(Level.Close)]
     public item? UnitItemInSlot(unit? whichUnit, int itemSlot) =>

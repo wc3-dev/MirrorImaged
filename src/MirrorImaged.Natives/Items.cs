@@ -235,9 +235,9 @@ public sealed partial class GameNatives
     public bool IsItemPawnable(item? whichItem) => Live(whichItem) is { } i && Flag(i, ItemPawnable);
 
     [Native(Level.Close)]
-    public void SetItemPawnable(item? whichItem, bool flag)
+    public void SetItemPawnable(item? i, bool flag)
     {
-        if (Live(whichItem) is { } i) i.Fields[ItemPawnable] = flag;
+        if (Live(i) is { } item) item.Fields[ItemPawnable] = flag;
     }
 
     [Native(Level.Close)]
@@ -247,9 +247,9 @@ public sealed partial class GameNatives
     }
 
     [Native(Level.Close)]
-    public void SetItemDroppable(item? whichItem, bool flag)
+    public void SetItemDroppable(item? i, bool flag)
     {
-        if (Live(whichItem) is { } i) i.Fields[ItemDroppable] = flag;
+        if (Live(i) is { } item) item.Fields[ItemDroppable] = flag;
     }
 
     /// <summary>What the item's carrier drops when it dies instead (the drop id): kept, nothing reads it yet.</summary>

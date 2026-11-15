@@ -47,6 +47,11 @@ public sealed class ItemTests : IDisposable
             local n = GetItemTypeId(i)
             return n == 0 and "0" or string.char(n >> 24 & 255, n >> 16 & 255, n >> 8 & 255, n & 255)
         end
+        local function UnitInventoryCount(u)
+            local n = 0
+            for i = 0, UnitInventorySize(u) - 1 do if UnitItemInSlot(u, i) then n = n + 1 end end
+            return n
+        end
         local function slots(u)
             local s = {}
             for i = 0, 5 do s[#s + 1] = id(UnitItemInSlot(u, i)) end
