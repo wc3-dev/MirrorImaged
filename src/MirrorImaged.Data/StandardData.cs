@@ -7,7 +7,23 @@ using War3Net.Build.Info;
 namespace MirrorImaged.Data;
 
 /// <summary>The seven kinds of game object, each with its tables and its object data file.</summary>
-public enum ObjectKind { Unit, Item, Destructable, Doodad, Ability, Buff, Upgrade }
+public enum ObjectKind
+{
+    /// <summary>A unit or a building (<c>war3map.w3u</c>).</summary>
+    Unit,
+    /// <summary>An item (<c>war3map.w3t</c>).</summary>
+    Item,
+    /// <summary>A destructable (<c>war3map.w3b</c>).</summary>
+    Destructable,
+    /// <summary>A doodad (<c>war3map.w3d</c>).</summary>
+    Doodad,
+    /// <summary>An ability (<c>war3map.w3a</c>).</summary>
+    Ability,
+    /// <summary>A buff or effect (<c>war3map.w3h</c>).</summary>
+    Buff,
+    /// <summary>An upgrade (<c>war3map.w3q</c>).</summary>
+    Upgrade,
+}
 
 /// <summary>How a field keeps a value for each level.</summary>
 public enum PerLevel
@@ -391,5 +407,6 @@ public sealed partial class StandardData
 /// <summary>Object and field ids: four characters, read as the game reads them, big-endian.</summary>
 public static class Ids
 {
+    /// <summary>The id of the four-character code, as an integer.</summary>
     public static int Of(string id) => id.Aggregate(0, (value, letter) => (value << 8) | (byte)letter);
 }

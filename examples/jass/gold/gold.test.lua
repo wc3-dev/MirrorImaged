@@ -1,0 +1,7 @@
+test("the player is paid every 2 seconds, in JASS", function()
+  local sim = mirror.load("gold.w3x")
+  sim:advance(7)
+  sim:say(0, "-gold")
+  sim:advance(0.1)
+  assert_contains(sim:log(), "gold 30")
+end)

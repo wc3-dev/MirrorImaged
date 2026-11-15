@@ -1,5 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <InternalsVisibleTo Include="MirrorImaged.Tests" />
     <InternalsVisibleTo Include="MirrorImaged.GameTests" />
@@ -15,4 +19,7 @@
     <ProjectReference Include="..\MirrorImaged.Natives\MirrorImaged.Natives.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="viewer.html" LogicalName="MirrorImaged.viewer.html" />
+  </ItemGroup>
 </Project>

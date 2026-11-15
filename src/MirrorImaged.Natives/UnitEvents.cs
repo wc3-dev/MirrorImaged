@@ -176,9 +176,9 @@ public sealed partial class GameNatives
     // Fires a unit's event (probe units): for a death its widget registrations first, then its owner's player-unit
     // registrations, then its own unit registrations, each kind in the order registered, a filter's only when the
     // filter passes; GetTriggerPlayer is the owner, but in the widget event
-    void FireUnit(Happening happening, int unitKind, int playerKind)
+    void FireUnit(Happening happening, int unitKind, int playerKind, player? routedTo = null)
     {
-        var (u, owner) = (happening.Unit, happening.Unit.Owner);
+        var (u, owner) = (happening.Unit, routedTo ?? happening.Unit.Owner);
         var (own, players) = (_widgetEvents.GetValueOrDefault(u)?.ToArray() ?? [], _playerUnitEvents.GetValueOrDefault(owner)?.ToArray() ?? []);
         if (unitKind == UnitDeath)
             foreach (var (kind, registered) in own)

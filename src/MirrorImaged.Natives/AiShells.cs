@@ -21,73 +21,16 @@ public sealed partial class GameNatives
     public void RemoveGuardPosition(unit? hUnit) { }
 
     [Native(Level.Close)]
-    public bool AddAssault(int qty, int id) => false;
-
-    [Native(Level.Close)]
     public bool AddDefenders(int qty, int id) => false;
 
     [Native(Level.Close)]
     public void AddGuardPost(int id, float x, float y) { }
 
     [Native(Level.Close)]
-    public void AttackMoveKill(unit? target) { }
-
-    [Native(Level.Close)]
-    public void AttackMoveXY(int x, int y) { }
-
-    [Native(Level.Close)]
-    public bool CaptainAtGoal() => false;
-
-    [Native(Level.Close)]
-    public void CaptainAttack(float x, float y) { }
-
-    [Native(Level.Close)]
-    public void CaptainGoHome() { }
-
-    [Native(Level.Close)]
-    public int CaptainGroupSize() => 0;
-
-    [Native(Level.Close)]
-    public bool CaptainInCombat(bool attack_captain) => false;
-
-    [Native(Level.Close)]
-    public bool CaptainIsEmpty() => false;
-
-    [Native(Level.Close)]
-    public bool CaptainIsFull() => false;
-
-    [Native(Level.Close)]
-    public bool CaptainIsHome() => false;
-
-    [Native(Level.Close)]
-    public int CaptainReadiness() => 0;
-
-    [Native(Level.Close)]
-    public int CaptainReadinessHP() => 0;
-
-    [Native(Level.Close)]
-    public int CaptainReadinessMa() => 0;
-
-    [Native(Level.Close)]
-    public bool CaptainRetreating() => false;
-
-    [Native(Level.Close)]
-    public void CaptainVsPlayer(player? id) { }
-
-    [Native(Level.Close)]
-    public void CaptainVsUnits(player? id) { }
-
-    [Native(Level.Close)]
-    public void ClearCaptainTargets() { }
-
-    [Native(Level.Close)]
     public int CommandsWaiting() => 0;
 
     [Native(Level.Close)]
     public bool ConvertUnits(int qty, int id) => false;
-
-    [Native(Level.Close)]
-    public void CreateCaptains() { }
 
     [Native(Level.Close)]
     public bool CreepsOnMap() => false;
@@ -126,36 +69,6 @@ public sealed partial class GameNatives
     public unit? GetAllianceTarget() => null;
 
     [Native(Level.Close)]
-    public unit? GetCreepCamp(int min, int max, bool flyers_ok) => null;
-
-    [Native(Level.Close)]
-    public unit? GetEnemyBase() => null;
-
-    [Native(Level.Close)]
-    public unit? GetEnemyExpansion() => null;
-
-    [Native(Level.Close)]
-    public int GetEnemyPower() => 0;
-
-    [Native(Level.Close)]
-    public unit? GetExpansionFoe() => null;
-
-    [Native(Level.Close)]
-    public unit? GetExpansionPeon() => null;
-
-    [Native(Level.Close)]
-    public int GetExpansionX() => 0;
-
-    [Native(Level.Close)]
-    public int GetExpansionY() => 0;
-
-    [Native(Level.Close)]
-    public int GetHeroId() => 0;
-
-    [Native(Level.Close)]
-    public int GetHeroLevelAI() => 0;
-
-    [Native(Level.Close)]
     public int GetLastCommand() => 0;
 
     [Native(Level.Close)]
@@ -165,16 +78,10 @@ public sealed partial class GameNatives
     public unit? GetMegaTarget() => null;
 
     [Native(Level.Close)]
-    public int GetNextExpansion() => 0;
-
-    [Native(Level.Close)]
     public void GroupTimedLife(bool allow) { }
 
     [Native(Level.Close)]
     public int IgnoredUnits(int unitid) => 0;
-
-    [Native(Level.Close)]
-    public void InitAssault() { }
 
     [Native(Level.Close)]
     public bool IsTowered(unit? target) => false;
@@ -198,9 +105,6 @@ public sealed partial class GameNatives
     public void RemoveSiege() { }
 
     [Native(Level.Close)]
-    public void ResetCaptainLocs() { }
-
-    [Native(Level.Close)]
     public void ReturnGuardPosts() { }
 
     [Native(Level.Close)]
@@ -213,22 +117,10 @@ public sealed partial class GameNatives
     public void SetCampaignAI() { }
 
     [Native(Level.Close)]
-    public void SetCaptainChanges(bool allow) { }
-
-    [Native(Level.Close)]
-    public void SetCaptainHome(int which, float x, float y) { }
-
-    [Native(Level.Close)]
     public void SetDefendPlayer(bool state) { }
 
     [Native(Level.Close)]
-    public bool SetExpansion(unit? peon, int id) => false;
-
-    [Native(Level.Close)]
     public void SetGroupsFlee(bool state) { }
-
-    [Native(Level.Close)]
-    public void SetHeroLevels(Func<int>? func) { }
 
     [Native(Level.Close)]
     public void SetHeroesBuyItems(bool state) { }
@@ -279,9 +171,6 @@ public sealed partial class GameNatives
     public void ShiftTownSpot(float x, float y) { }
 
     [Native(Level.Close)]
-    public void StartGetEnemyBase() { }
-
-    [Native(Level.Close)]
     public void StopGathering() { }
 
     [Native(Level.Close)]
@@ -297,9 +186,6 @@ public sealed partial class GameNatives
     public void SuicideUnitEx(int ct, int uid, int pid) { }
 
     [Native(Level.Close)]
-    public void TeleportCaptain(float x, float y) { }
-
-    [Native(Level.Close)]
     public bool TownThreatened() => false;
 
     [Native(Level.Close)]
@@ -308,6 +194,4 @@ public sealed partial class GameNatives
     [Native(Level.Close)]
     public void Unsummon(unit? unitid) { }
 
-    [Native(Level.Close)]
-    public bool WaitGetEnemyBase() => false;
 }

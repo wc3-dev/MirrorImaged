@@ -39,6 +39,7 @@ public sealed partial class GameNatives
     {
         _engine = false;
         _ticks++;
+        if (_ticks % 32 == 0) AuraPulse();
         var busy = false;
         foreach (var u in _units.Values.ToArray())
             if (!u.Dead && !u.Removed) busy |= Act(u);
@@ -61,7 +62,7 @@ public sealed partial class GameNatives
 
     bool Hostile(unit u, unit t) =>
         t != u && !t.Dead && !t.Hidden && !t.Removed && !t.Locust && t.Owner != u.Owner && GetPlayerId(u.Owner) != GetPlayerNeutralPassive()
-        && GetPlayerId(t.Owner) != GetPlayerNeutralPassive() && IsPlayerEnemy(u.Owner, t.Owner) && Find(t, Invulnerable) is null;
+        && GetPlayerId(t.Owner) != GetPlayerNeutralPassive() && IsPlayerEnemy(u.Owner, t.Owner) && Find(t, Invulnerable) is null && !IsInvulnerableByBuff(t);
 
     bool Armed(unit u, unit t) => WeaponFor(u, t) >= 0;
 
@@ -95,6 +96,7 @@ public sealed partial class GameNatives
         var scan = _ticks % ScanEvery == 0;
         var order = u.Order;
         if (order == OrderHarvest) return Harvest(u);
+        if (order == OrderRepair) return Repairing(u);
         if (order == OrderReturn) return ReturnLoad(u);
         if (order != 0 && !OrderNames.ContainsKey(order) && Data.Object(ObjectKind.Unit, order) is not null)
         {
@@ -115,6 +117,8 @@ public sealed partial class GameNatives
             if (order is OrderAttack or Smart or OrderAttackOnce)
             {
                 if (target is not null && Hostile(u, target) && Armed(u, target)) { (u.AttackTarget, u.Weapon) = (target, Math.Max(WeaponFor(u, target), 0)); Engage(u, target, chase: true); return true; }
+                if (target is not null && order == Smart && GoToTransport(u, target) && u.Transport is null) return Walk(u, target.X, target.Y, follow: true);
+                if (target is not null && order == Smart && u.Transport is not null) return false;
                 if (target is not null && order == Smart) return Walk(u, target.X, target.Y, follow: true);
                 if (target is not null && order is OrderAttack or OrderAttackOnce) return Finish(u);
                 // An attack-move: fight what it comes upon, else walk on
@@ -146,6 +150,7 @@ public sealed partial class GameNatives
     // Walks toward the place at the unit's speed; true while it goes on, and the order ends on arrival (a patrol turns back)
     bool Walk(unit u, float x, float y, bool follow, bool patrol = false)
     {
+        if (IsRooted(u)) return true;
         var speed = GetUnitMoveSpeed(u);
         if (speed <= 0) return Finish(u);
         var (dx, dy) = (x - u.X, y - u.Y);
@@ -167,14 +172,15 @@ public sealed partial class GameNatives
     }
 
     // Whether the ground the unit would step onto stops it: walkers and riders can't enter unwalkable cells or leave the world
-    bool Blocked(unit u, float x, float y)
+    bool Blocked(unit u, float x, float y) => Blocked(u, BlzGetUnitIntegerField(u, Convert<unitintegerfield>(MoveType)), x, y);
+
+    bool Blocked(unit u, int type, float x, float y)
     {
         if (Data.Terrain is { } terrain)
         {
             var (minX, minY, maxX, maxY) = terrain.Bounds;
             if (x < minX || x > maxX || y < minY || y > maxY) return true;
         }
-        var type = BlzGetUnitIntegerField(u, Convert<unitintegerfield>(MoveType));
         if (type is 1 or 4 && Data.Map?.Files.PathingMap is not null && IsTerrainPathable(x, y, Convert<pathingtype>(1))) return true;
         return type is not 2 && BlockedByBuilding(u, x, y);
     }
@@ -222,7 +228,12 @@ public sealed partial class GameNatives
         var sound = BlzGetUnitWeaponIntegerField(u, Convert<unitweaponintegerfield>(Code("ucs1")), weapon);
         var kind = u.Type.Text(Code($"ua{weapon + 1}w")) ?? "normal";
         var ranged = kind is "missile" or "mbounce" or "mline" or "msplash" or "artillery" or "aline" or "alsplash";
+        if (ranged && DamageBonusOf(u) is > 0 and var bonus) damage *= 1 + bonus;
+        if (Evades(t, u)) return;
+        var stun = false;
+        PassivesOfAttack(u, t, ranged, ref damage, ref stun);
         Strike(new Hit(u, t, damage, true, ranged, Convert<attacktype>(attackType), Convert<damagetype>(NormalDamage), Convert<weapontype>(sound)) { Real = true }, t);
+        if (stun && !t.Dead) Apply(t, u, StunBuff, StunSeconds(u, t), false, b => b.Stun = true);
         if (!t.Dead) HitBack(t, u);
     }
 

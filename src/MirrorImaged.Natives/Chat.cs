@@ -50,6 +50,7 @@ public sealed partial class GameNatives
         void Add(long value) => hash.AppendData(BitConverter.GetBytes(value));
         void AddF(float value) => hash.AppendData(BitConverter.GetBytes(value));
         Add(_game.Step);
+        Add((long)_game.Counters.Random); Add(_game.Counters.NextId); Add(_game.Counters.NextKey);
         for (var n = 0; n < 28; n++)
             if (Player(n) is { } p)
             {
@@ -62,5 +63,36 @@ public sealed partial class GameNatives
             AddF(u.X); AddF(u.Y); AddF(u.Life); AddF(u.Mana);
         }
         return System.Convert.ToHexString(hash.GetHashAndReset())[..16];
+    }
+
+    /// <summary>
+    /// What the world is now in parts, each named and hashed: the time, each player and each unit. Two runs that differ differ first in a part, which
+    /// says where (the desync check, D368).
+    /// </summary>
+    internal IEnumerable<(string Name, string Hash)> HashParts()
+    {
+        string Of(Action<Action<long>, Action<float>> add)
+        {
+            using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+            add(value => hash.AppendData(BitConverter.GetBytes(value)), value => hash.AppendData(BitConverter.GetBytes(value)));
+            return System.Convert.ToHexString(hash.GetHashAndReset())[..12];
+        }
+        yield return ("time", Of((add, _) => add(_game.Step)));
+        // The random numbers drawn and the ids given out: in the game a draw in one player's game only, or a handle made there, makes the games differ
+        yield return ("random numbers", Of((add, _) => add((long)_game.Counters.Random)));
+        yield return ("handle ids", Of((add, _) => { add(_game.Counters.NextId); add(_game.Counters.NextKey); }));
+        for (var n = 0; n < 28; n++)
+            if (Player(n) is { } p)
+                yield return ($"player {n}", Of((add, _) =>
+                {
+                    foreach (var (state, value) in p.States.Select((value, state) => (state, value))) { add(state); add(value); }
+                    foreach (var (tech, level) in p.TechLevels.OrderBy(pair => pair.Key)) { add(tech); add(level); }
+                }));
+        foreach (var u in _units.Values)
+            yield return ($"unit {u.Id} ({GetUnitName(u)})", Of((add, addF) =>
+            {
+                add(u.Type.Id); add(GetPlayerId(u.Owner)); add(u.Order); add(u.Dead ? 1 : 0); add(u.Buffs.Count); add(u.Train.Count);
+                addF(u.X); addF(u.Y); addF(u.Life); addF(u.Mana);
+            }));
     }
 }

@@ -62,6 +62,7 @@ public sealed class CascStorage : IDisposable
     /// <summary>The paths the root names, as <see cref="Read"/> takes them, stored locally or not.</summary>
     internal IEnumerable<string> Names => _root.Keys;
 
+    /// <summary>Closes the storage.</summary>
     public void Dispose()
     {
         foreach (var archive in _archives.Values)

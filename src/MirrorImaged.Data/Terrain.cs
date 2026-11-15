@@ -19,6 +19,7 @@ public sealed class Terrain
     readonly float[] _corners, _ground;
     readonly int[] _types, _variations, _cliffs;
 
+    /// <summary>Reads the terrain from the map's environment file.</summary>
     public Terrain(MapEnvironment environment)
     {
         // War3Net's Width and Height count tiles; the file holds a corner more each way
@@ -59,7 +60,7 @@ public sealed class Terrain
     public float Height(float x, float y) => Blend(_corners, x, y, null);
 
     /// <summary>
-    /// As <see cref="Height"/> with <paramref name="shift"/>, given a corner's column and row, added to each corner first
+    /// As <see cref="Height(float, float)"/> with <paramref name="shift"/>, given a corner's column and row, added to each corner first
     /// (the terrain deformations' craters, which move the 128 corners and blend between them).
     /// </summary>
     public float Height(float x, float y, Func<int, int, float> shift) => Blend(_corners, x, y, shift);
@@ -71,9 +72,10 @@ public sealed class Terrain
     /// <summary>The cliff level of the corner.</summary>
     public int CliffLevel(int column, int row) => _cliffs[row * _width + column];
 
+    /// <summary>The tile at the column and row.</summary>
     public (int Type, int Variation) TileAt(int column, int row) => (_types[row * _width + column], _variations[row * _width + column]);
 
-    /// <summary>As <see cref="Height"/>, but the ground beneath any water, on which a bridge's deck stands (game-facts, "Units").</summary>
+    /// <summary>As <see cref="Height(float, float)"/>, but the ground beneath any water, on which a bridge's deck stands (game-facts, "Units").</summary>
     public float Ground(float x, float y) => Blend(_ground, x, y, null);
 
     float Blend(float[] corners, float x, float y, Func<int, int, float>? shift)
