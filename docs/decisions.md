@@ -2160,3 +2160,10 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   speed bonus's. `BlzUnitHeal` answers the amount and changes the life (a negative amount takes it), nothing for a nil source.
 - **D265. Doodads** the map places are those of the doodad kind in `war3map.doo`, in the file's order; an index outside gives 0.
   Buffs and cooldowns come with wave 4: `UnitRemoveBuffs*`, `UnitHasBuffsEx` and `UnitResetCooldown` have nothing to act on.
+- **D600. Settings and menus.** The natives of the game's options and menus keep what their getters read (selection, HUD scale, the
+  ally and creep filters, difficulty, densities, game types, tax rates, campaign buttons); the screens, saves, campaign menus,
+  the cinematic panels and the automation harness are Recorded. `ChangeLevel`, `RestartGame`, `ReloadGame` and `LoadGame` end
+  this run as `EndGame` does (the next level is another map's run). `OrderId` knows only the orders the facts name (wave 3 brings
+  the rest); `AbilityId` is the four-character code; `GetAbilityEffect*` reads the ability's art column by effect type;
+  `CreateUnitAtLocByName` finds a unit by its data name; `GetTerrainCliffLevel` reads the nearest corner. Close: defaults not
+  measured (HUD scale 1, selection on, difficulty Normal, a computer's difficulty Normal, no saves).

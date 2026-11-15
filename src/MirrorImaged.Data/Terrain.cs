@@ -17,7 +17,7 @@ public sealed class Terrain
     readonly int _width, _height;
     readonly float _left, _bottom;
     readonly float[] _corners, _ground;
-    readonly int[] _types, _variations;
+    readonly int[] _types, _variations, _cliffs;
 
     public Terrain(MapEnvironment environment)
     {
@@ -28,12 +28,14 @@ public sealed class Terrain
         _ground = new float[tiles.Count];
         _types = new int[tiles.Count];
         _variations = new int[tiles.Count];
+        _cliffs = new int[tiles.Count];
         for (var y = 0; y < _height; y++)
             for (var x = 0; x < _width; x++)
             {
                 var corner = tiles[y * _width + x];
                 _types[y * _width + x] = corner.Texture >= 0 && corner.Texture < environment.TerrainTypes.Count ? (int)environment.TerrainTypes[corner.Texture] : 0;
                 _variations[y * _width + x] = corner.Variation;
+                _cliffs[y * _width + x] = corner.CliffLevel;
                 var ground = (corner.Height + corner.CliffLevel - 2) * Tile;
                 if (corner.IsRamp)
                     for (var tileY = y - 1; tileY <= y; tileY++)
@@ -66,6 +68,9 @@ public sealed class Terrain
     public (int Columns, int Rows, float Left, float Bottom) Grid => (_width, _height, _left, _bottom);
 
     /// <summary>The tile id (a four-character code) the corner is drawn with, and its variation, as the map's list gives them.</summary>
+    /// <summary>The cliff level of the corner.</summary>
+    public int CliffLevel(int column, int row) => _cliffs[row * _width + column];
+
     public (int Type, int Variation) TileAt(int column, int row) => (_types[row * _width + column], _variations[row * _width + column]);
 
     /// <summary>As <see cref="Height"/>, but the ground beneath any water, on which a bridge's deck stands (game-facts, "Units").</summary>

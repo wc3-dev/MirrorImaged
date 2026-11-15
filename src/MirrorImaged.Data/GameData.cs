@@ -60,6 +60,10 @@ public sealed class GameData
     /// <summary>The ground of the map's <c>war3map.w3e</c>; null when it has none.</summary>
     public Terrain? Terrain { get; }
 
+    /// <summary>The id of the first object of <paramref name="kind"/> whose name is <paramref name="name"/> (any case); null when none is.</summary>
+    public int? Id(ObjectKind kind, string name) =>
+        _objects.Where(pair => pair.Key.Item1 == kind).FirstOrDefault(pair => pair.Value.Text(Ids.Of(kind == ObjectKind.Ability ? "anam" : "unam"))?.Equals(name, StringComparison.OrdinalIgnoreCase) == true).Key is { Item1: var found, Item2: var id } && found == kind && id != 0 ? id : null;
+
     /// <summary>The object of <paramref name="kind"/> with <paramref name="id"/>; null when the game has none.</summary>
     public GameObject? Object(ObjectKind kind, int id) => _objects.GetValueOrDefault((kind, id));
 
