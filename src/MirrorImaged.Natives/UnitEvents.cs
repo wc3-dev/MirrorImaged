@@ -1,7 +1,7 @@
 namespace MirrorImaged.Natives;
 
 // What happened to a unit, for the event responses: the unit, and the previous owner, order or state where one fits.
-sealed record Happening(unit Unit, player? Previous = null, int Order = 0, unitstate? State = null, int Skill = 0, int SkillLevel = 0, item? Item = null);
+sealed record Happening(unit Unit, player? Previous = null, int Order = 0, unitstate? State = null, int Skill = 0, int SkillLevel = 0, item? Item = null, Hit? Hit = null, unit? Killer = null);
 
 // A unit state event's registration: its state and comparison, and whether the comparison held at the last frame's look
 // at the unit's mana
@@ -149,11 +149,11 @@ public sealed partial class GameNatives
     public unit? GetDyingUnit() => Response(UnitDeath, PlayerUnitDeath)?.Unit;
 
     /// <summary>
-    /// Nil for a death from KillUnit or a set of its life or most life (game-facts, Orders and events; probe units), the
-    /// only deaths before damage (W2-5).
+    /// The unit whose hit killed it, also a dead one's (game-facts, Damage: a footman killed 1 s before still names itself);
+    /// nil for a death from KillUnit or a set of its life or most life (game-facts, Orders and events; probe units).
     /// </summary>
-    [Native(Level.Exact, Fact = UnitsProbe + "; game-facts.md, Orders and events: GetKillingUnit is nil for KillUnit (10-15)")]
-    public unit? GetKillingUnit() => null;
+    [Native(Level.Exact, Fact = UnitsProbe + "; game-facts.md, Orders and events: GetKillingUnit is nil for KillUnit (10-15); game-facts.md, Damage: a dead source's killing blow (10-27)")]
+    public unit? GetKillingUnit() => Response(UnitDeath, PlayerUnitDeath, WidgetDeath)?.Killer;
 
     [Native(Level.Exact, Fact = DecayProbe + "; " + UnitsProbe)]
     public unit? GetDecayingUnit() => Response(UnitDecay, PlayerUnitDecay)?.Unit;

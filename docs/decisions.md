@@ -2094,3 +2094,14 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   from the main thread (`LuaState.NestsInMain`), which gives 120 deep and closes the game from about 190, where the
   game's JASS ran 900 and closed by 1000. Close; the game's closing is kept as `GameClosedException`.
 - **D278. `GroupEnumUnitsSelected`** stays Missing: selection comes with the player's input (a later wave).
+- **D260. Damage from code.** `UnitDamageTarget` fires DAMAGING with the amount as given, cuts it by the armour (damage type
+  normal only; the attack type's `DamageBonus` row for the target's defence type, then `1 / (1 + 0.06 x armour)`, or `2 - 0.94^n` for
+  a negative armour, n its whole part to 20), fires DAMAGED with the result and takes the life after its actions, a killing
+  blow's death inside the call naming the source (`Kill` and `SetLife` carry the killer; `GetKillingUnit` reads it). The
+  same `Hit` object goes through both events, so a type changed in DAMAGING reaches the armour and one set in DAMAGED
+  does nothing. A nil source answers false and deals nothing (the game's answer is not measured: Close).
+- **D261. Hits abilities change** (Hardened Skin, Mana Shield, evasion, Defend and the rest of the facts' list) wait for wave 4;
+  here only invulnerability (reads 0 in DAMAGED) and spell immunity by `ACmi` (the damage and attack types the facts list
+  get DAMAGING and no DAMAGED, no life lost) act. `BlzGetEventIsAttack` reads false until real attacks (wave 3).
+- **D262. `UnitDamagePoint`** runs after its delay (at least one step) on each living unit whose origin is within the radius,
+  in the units' grid order, through `UnitDamageTarget`; Close.
