@@ -7,7 +7,7 @@ public partial class unit
 
 // A hero's inventory: six slots, the item events inside the calls, powerups, as the items probe measures them
 // (docs/facts.md, "Items (W2-3)"). The orders that need a unit to walk to a place (dropping at a point or to a unit),
-// the abilities an item gives and the shops are later waves'.
+// the shops are later waves'.
 public sealed partial class GameNatives
 {
     const int UnitDropItem = 85, UnitPickupItem = 86, UnitUseItem_ = 87, PlayerDropItem = 48, PlayerPickupItem = 49, PlayerUseItem = 50;
@@ -33,8 +33,7 @@ public sealed partial class GameNatives
     void Put(unit u, item i, int slot)
     {
         if (i.Holder is { } before) Take(before, i, announce: true);
-        u.Slots[slot] = i;
-        i.Holder = u;
+        Hold(u, i, slot);
         FireUnit(new(u, Item: i), UnitPickupItem, PlayerPickupItem);
     }
 
@@ -44,13 +43,26 @@ public sealed partial class GameNatives
     {
         if (announce) FireUnit(new(u, Item: i), UnitDropItem, PlayerDropItem);
         var slot = Array.IndexOf(u.Slots, i);
-        if (slot >= 0) u.Slots[slot] = null;
+        if (slot >= 0) Release(u, i, slot);
         (i.Holder, i.X, i.Y) = (null, u.X, u.Y - Dropped);
     }
 
-    // A powerup is picked up and dropped at once and gone two steps on, its effect being the abilities' (W2-7)
+    // One charge of the item gone and the use event fired; an item out of charges that perishes is dropped and gone, after the
+    // step (now: inside the call)
+    void Spend(unit u, item i, bool now)
+    {
+        if (i.Charges > 0) i.Charges--;
+        FireUnit(new(u, Item: i), UnitUseItem_, PlayerUseItem);
+        if (i.Charges != 0 || !Flag(i, ItemPerishable) || i.Type.Integer(ItemUses) <= 0) return;
+        Take(u, i, announce: true);
+        if (now) RemoveItem(i);
+        else _game.At(_game.Step + 2, () => RemoveItem(i));
+    }
+
+    // A powerup gives its permanent gifts, is picked up and dropped at once and is gone two steps on
     void Consume(unit u, item i)
     {
+        Absorb(u, i);
         FireUnit(new(u, Item: i), UnitPickupItem, PlayerPickupItem);
         FireUnit(new(u, Item: i), UnitDropItem, PlayerDropItem);
         _game.At(_game.Step + 2, () => RemoveItem(i));
@@ -138,19 +150,14 @@ public sealed partial class GameNatives
 
     /// <summary>
     /// Uses a carried item: one charge less, the use event with it still in its slot, and an item out of charges that
-    /// perishes dropped and gone after the step; the abilities an item gives are W2-7's (a potion's heal isn't done).
+    /// perishes dropped and gone after the step; a heal first (ItemBonuses), refused at full life or mana and for a dead unit.
     /// </summary>
     [Native(Level.Close)]
     public bool UnitUseItem(unit? whichUnit, item? whichItem)
     {
-        if (whichUnit is null || Live(whichItem) is not { } i || i.Holder != whichUnit) return false;
-        if (i.Charges > 0) i.Charges--;
-        FireUnit(new(whichUnit, Item: i), UnitUseItem_, PlayerUseItem);
-        if (i.Charges == 0 && Flag(i, ItemPerishable) && i.Type.Integer(ItemUses) > 0)
-        {
-            Take(whichUnit, i, announce: true);
-            _game.At(_game.Step + 2, () => RemoveItem(i));
-        }
+        if (whichUnit is null || Live(whichItem) is not { } i || i.Holder != whichUnit || whichUnit.Dead || !Heals(whichUnit, i)) return false;
+        Heal(whichUnit, i);
+        Spend(whichUnit, i, now: false);
         return true;
     }
 
