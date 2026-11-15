@@ -2406,3 +2406,8 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   sent to it by its smart order once it is in reach; the loaded unit is hidden, moves with the transport, fires the loaded event (`GetLoadedUnit`, `GetTransportUnit`;
   `IsUnitLoaded`, `IsUnitInTransport`), and comes out round the place of the unload or unload-all order; a transport that dies kills what it holds. Close: units
   count one each (the game counts by size), a unit does not walk to a transport that loads it, and there is no unloaded event (common.j has none).
+
+- **D387 (Repair):** a worker given the repair order on a hurt finished building of its owner or an ally walks to it and restores its life at the rate its build time gives
+  (a full repair takes the build time times RepairTimeRatio, 1.5), paying that share of the price times RepairCostRatio (0.35) in whole points as it builds up, until the
+  building is whole, the player cannot pay or the order changes. Close: the ratios are the constants' names as I know them (not measured), and mechanical units are not
+  repaired.
