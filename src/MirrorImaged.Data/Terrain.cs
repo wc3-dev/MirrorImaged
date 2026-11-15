@@ -17,6 +17,7 @@ public sealed class Terrain
     readonly int _width, _height;
     readonly float _left, _bottom;
     readonly float[] _corners, _ground;
+    readonly int[] _types, _variations;
 
     public Terrain(MapEnvironment environment)
     {
@@ -25,10 +26,14 @@ public sealed class Terrain
         var tiles = environment.TerrainTiles;
         _corners = new float[tiles.Count];
         _ground = new float[tiles.Count];
+        _types = new int[tiles.Count];
+        _variations = new int[tiles.Count];
         for (var y = 0; y < _height; y++)
             for (var x = 0; x < _width; x++)
             {
                 var corner = tiles[y * _width + x];
+                _types[y * _width + x] = corner.Texture >= 0 && corner.Texture < environment.TerrainTypes.Count ? (int)environment.TerrainTypes[corner.Texture] : 0;
+                _variations[y * _width + x] = corner.Variation;
                 var ground = (corner.Height + corner.CliffLevel - 2) * Tile;
                 if (corner.IsRamp)
                     for (var tileY = y - 1; tileY <= y; tileY++)
@@ -49,18 +54,30 @@ public sealed class Terrain
     /// eighth of a unit past an edge, which reads its edge tile's blend carried on (probe terrain-edge: 0.1 past an
     /// edge carried on, 0.2 and further 0).
     /// </summary>
-    public float Height(float x, float y) => Blend(_corners, x, y);
+    public float Height(float x, float y) => Blend(_corners, x, y, null);
+
+    /// <summary>
+    /// As <see cref="Height"/> with <paramref name="shift"/>, given a corner's column and row, added to each corner first
+    /// (the terrain deformations' craters, which move the 128 corners and blend between them).
+    /// </summary>
+    public float Height(float x, float y, Func<int, int, float> shift) => Blend(_corners, x, y, shift);
+
+    /// <summary>The corners across and up, and the world's west and south edges where the first one stands.</summary>
+    public (int Columns, int Rows, float Left, float Bottom) Grid => (_width, _height, _left, _bottom);
+
+    /// <summary>The tile id (a four-character code) the corner is drawn with, and its variation, as the map's list gives them.</summary>
+    public (int Type, int Variation) TileAt(int column, int row) => (_types[row * _width + column], _variations[row * _width + column]);
 
     /// <summary>As <see cref="Height"/>, but the ground beneath any water, on which a bridge's deck stands (game-facts, "Units").</summary>
-    public float Ground(float x, float y) => Blend(_ground, x, y);
+    public float Ground(float x, float y) => Blend(_ground, x, y, null);
 
-    float Blend(float[] corners, float x, float y)
+    float Blend(float[] corners, float x, float y, Func<int, int, float>? shift)
     {
         double across = (x - _left) / Tile, up = (y - _bottom) / Tile;
         if (Off(across, _width) || Off(up, _height)) return 0;
         var (column, u) = Cell(across, _width);
         var (row, v) = Cell(up, _height);
-        float At(int dx, int dy) => corners[(row + dy) * _width + column + dx];
+        float At(int dx, int dy) => corners[(row + dy) * _width + column + dx] + (shift?.Invoke(column + dx, row + dy) ?? 0);
         return (float)((1 - v) * ((1 - u) * At(0, 0) + u * At(1, 0)) + v * ((1 - u) * At(0, 1) + u * At(1, 1)));
     }
 
