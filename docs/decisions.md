@@ -2105,14 +2105,12 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   get DAMAGING and no DAMAGED, no life lost) act. `BlzGetEventIsAttack` reads false until real attacks (wave 3).
 - **D262. `UnitDamagePoint`** runs after its delay (at least one step) on each living unit whose origin is within the radius,
   in the units' grid order, through `UnitDamageTarget`; Close.
-<<<<<<< HEAD
 - **D290. Tags** (`ParseTags`, and the extended, learn and turned-on tooltips of abilities and an item's extended tooltip) fill each
   `<id,column>` as the facts of 10-29 and 11-08 read them: the id exact in case (an ability, a unit, an item or an upgrade),
   the column in any case with its trailing digits as the level, the value through `GameData.Own` so a column shared by
   ability ids (`Hbz1` on `AHhb`) reads the object's own and its map change, whole by default (cut toward zero), `,%` times 100,
   `,.` one decimal. Anything unfillable shows 0. Close: a unit reads only `HP`, `realHP`, `mindmg1/2` and `maxdmg1/2` (the facts:
   `spd`, `dmgplus1` and `cool1` read 0, with no rule found), and a standard buff's comma cut is not modelled.
-=======
 - **D320. Pathing and blight** live in one byte a 32 cell, read from the map's `war3map.wpm` (none: every cell open, and a map
   with no ground reads nothing). `IsTerrainPathable` is true when the kind's bit is set (true means not pathable), kinds 1 to 7
   in `PATHING_TYPE_*`'s order and 0 (any) any bit; a point off the grid reads blocked; `SetTerrainPathable` sets or clears one
@@ -2130,4 +2128,3 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   up, until `TerrainDeformStop` (gone from the step after the stop, so a read in the same instant still sees it; with a
   duration, faded over it). `GetLocationZ`, `BlzGetUnitZ` and a bridge's ground read them. Ripple, random and wave are
   Recorded: `GetLocationZ` ignores them.
->>>>>>> origin/release/1.0.0
