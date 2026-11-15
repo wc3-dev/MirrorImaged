@@ -2167,6 +2167,14 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   the rest); `AbilityId` is the four-character code; `GetAbilityEffect*` reads the ability's art column by effect type;
   `CreateUnitAtLocByName` finds a unit by its data name; `GetTerrainCliffLevel` reads the nearest corner. Close: defaults not
   measured (HUD scale 1, selection on, difficulty Normal, a computer's difficulty Normal, no saves).
+- **D561. Frames.** A frame is a handle with its name, type, parent and children, text, alpha, visibility (a frame inside a hidden one
+  is not visible), enable flag, value range and size; a frame without a size takes the size of the one it fills (`BlzFrameSetAllPoints`).
+  `BlzCreateFrame` finds a template the map's loaded TOC lists (its FDF's `Frame "TYPE" "Name"` lines) or one of a few game templates, else nil;
+  `BlzCreateFrameByType` always makes a frame; the origin frames are made on the first ask, one for each type and index. Destroying a
+  frame destroys its children. `BlzFrameClick` fires the frame's `FRAMEEVENT_CONTROL_CLICK` registrations with it as the trigger frame;
+  the mouse and key events are wave 6's. Textures, models, fonts, colours and anchors are Recorded. Close: the game's own TOC files
+  and its frame tree are not read, and layout is the size given. The missing-native tests now use `StartCampaignAI`, the last native to be
+  written (wave 7).
 - **D601. Vision.** A place is visible to a player within the sight (day or night field) of a living, shown unit the player owns, shares's
   or sees through by a shared-vision alliance or `UnitShareVision`; else a running fog modifier's state at the place, the later
   started winning; else fogged where the player has seen (kept in 64-unit cells, marked by every read and every move of
