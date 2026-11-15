@@ -103,4 +103,7 @@ public sealed partial class GameNatives
 
     /// <summary>The bounds of the map: west, south, east and north.</summary>
     internal (float MinX, float MinY, float MaxX, float MaxY)? WorldBounds() => Data.Terrain?.Bounds;
+
+    /// <summary>The order string of the order id, or null for one the game has no name for.</summary>
+    internal static string? NameOfOrder(int id) => OrderNames.GetValueOrDefault(id);
 }

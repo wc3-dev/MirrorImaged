@@ -13,7 +13,9 @@ public sealed class ViewerTests : IDisposable
     public void Dispose()
     {
         _maps.Dispose();
-        Directory.Delete(_folder, true);
+        // A browser's own processes may still hold their profile for a moment; the folder is the system's temporary one
+        try { Directory.Delete(_folder, true); }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
     }
 
     static Dictionary<string, string> Values(string pairs) =>

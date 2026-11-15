@@ -2333,3 +2333,12 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   levels, CI) and tests check that its links go somewhere, the index lists every page and the command line page names every command. The
   `examples` folder has the gold map in Lua, JASS and TypeScript, built into maps and run by the suite. `.github/actions/mirror-test` runs a
   map's Lua tests on a self-hosted runner. A Lua test reads its maps from its own folder.
+
+- **D375 (Replays):** `Replay.Read` reads a `.w3g` of header version 1 (Reforged): the zlib blocks (each flushed and not ended), the lobby (host,
+  players, game start record with its slots) and the time slots with the actions of each player: selection, orders (no target, a place, a
+  unit), chat and leaving; other actions are counted and skipped, a player's actions of a slot stopping at one it cannot measure. `ToRecording(map)`
+  makes a recording of the replay's input at the steps of its times (1024 to the second), which `Simulation.Follow` or `mirror replay game.w3g --map
+  map.w3x` runs. A unit is named by the id the replay gives it, taken as the id the unit has here (ids count up from 0x100000 as the game's do), so
+  a replay of a game whose units were made in another order than here gives orders to units that are not there, and they are left out. Read
+  from the format as documented and one replay of this machine (a probe, with no orders of players); the orders are checked on replays the
+  tests make. Close.
