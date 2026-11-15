@@ -75,6 +75,7 @@ public sealed partial class GameNatives
         u.Mana = Math.Min(type.Integer(ManaInitial) + (hero ? Data.Constant("IntManaBonus", 15) * type.Integer(Intelligence) : 0), u.MaxMana);
         u.Dead = corpse;
         FallAsleep(u);
+        GiveAbilities(u);
         // A corpse counts its food and gives it back (two food events), and gets its undefend, with no death event
         // (probes units-more and units-bones); taken back from the owner it was counted for, as a food event may give it away
         var (counter, counted) = (u.Owner, Count(u.Owner, u, 1));
@@ -143,6 +144,7 @@ public sealed partial class GameNatives
         _widgetEvents.Remove(u);
         _units.Remove(u.Id);
         _sleepers.Remove(u);
+        TakeAbilities(u);
     }
 
     // Dead: life 0, its pause and timed life over (probe units-more-2: a paused unit's death events read it unpaused),

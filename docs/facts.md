@@ -1495,3 +1495,23 @@ one (`_HD.w3mod:`, `.ogg`), of other lengths.
   "TRIGSTR_70")` and `SetDialogueTextKey(s, "Some text")`, which give true, what was set; on nil they read "" and the
   sets give false. `SetSoundFacialAnimationLabel`, `SetSoundFacialAnimationGroupLabel` and
   `SetSoundFacialAnimationSetFilepath` give true on a sound and false on nil.
+
+## Abilities (W2-7)
+
+Probes `probes/abilities.lua`, `abilities-lists`, `abilities-types`, `abilities-fields`, `abilities-columns`,
+`abilities-sets`, `abilities-boolean` and `abilities-upgrades`, on 3.0.1.24371, 11-08, on the
+probe map (custom_v1's data); the lines are in `probes/expected`.
+
+- `UnitAddAbility` gives true and level 1, false for an ability the unit has, an id with no ability (`zzzz`, a buff, an
+  item, a unit, an upgrade) and 0; Aatk and Amov can't be added to a building. A dead unit takes and loses one. An
+  added ability goes first in `BlzGetUnitAbilityByIndex`'s order; an index out of range gives nil.
+- `SetUnitAbilityLevel` keeps to 1 to the ability's levels (4 and 100 on a 3-level ability give 3; 0 and -1 give 1)
+  and gives the level it set; `IncUnitAbilityLevel` and `DecUnitAbilityLevel` stop at the ends. A unit lacking the
+  ability reads 0. `UnitRemoveAbility` gives true and level 0, false the second time; a removed ability's handle reads
+  id 0 and a re-added one is a new handle.
+- A hidden or disabled ability stays in the list. With `SetPlayerAbilityAvailable` false for a player, the unit's
+  ability reads level 1 still, one added after reads 1 and can be set to 2, and another player's is unaffected.
+- `SetUnitInvulnerable` is having Avul: true puts it first in the list, false removes it, and `UnitAddAbility` of Avul
+  reads as invulnerable.
+- An upgrade that raises an ability's level (Skeletal Mastery on Raise Dead) raises the level when researched and
+  lowers it when unresearched, for abilities added before or after; a unit given to a new owner gains only.

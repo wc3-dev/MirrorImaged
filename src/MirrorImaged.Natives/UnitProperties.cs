@@ -184,6 +184,7 @@ public sealed partial class GameNatives
         var (dead, usesFood) = (u.Dead, u.UsesFood);
         var (lost, gained) = dead ? default : (Count(previous, u, -1), Count(whichPlayer, u, 1));
         u.Owner = whichPlayer;
+        foreach (var a in u.Abilities) Research(a, true);
         if (changeColor) u.Color = whichPlayer.Color;
         Announce(previous, lost);
         if (u.Owner != whichPlayer || u.Dead != dead) return;
