@@ -20,9 +20,15 @@ public sealed partial class GameNatives
     const int PlayerSpellChannel = 272, PlayerSpellCast = 273, PlayerSpellEffect = 274, PlayerSpellFinish = 275, PlayerSpellEndCast = 276;
     static readonly int CastTime = Code("acas"), CastRange = Code("aran"), CastArea = Code("aare");
 
+    // The commands of the command card that are abilities with an order but no cast: they are the unit's own orders, not spells
+    static readonly HashSet<string> Commands = ["smart", "stop", "move", "attack", "patrol", "holdposition", "setrally", "getitem", "harvest", "returnresources", "repair", "load", "unload",
+        "defend", "undefend", "cancel", "build", "humanbuild", "orcbuild", "nightelfbuild", "undeadbuild", "neutralbuild", "autoharvestgold", "autoharvestlumber", "resumeharvest",
+        "attackground", "attackonce", "revive", "resumebuild", "stunned"];
+
     // The ability of the unit whose order has this id, if it has one
     ability? SpellOf(unit u, int order)
     {
+        if (OrderNames.TryGetValue(order, out var named) && Commands.Contains(named)) return null;
         if (Data.FieldAt(ObjectKind.Ability, "Order") is not { } field) return null;
         return u.Abilities.Find(a => !a.Disabled && !a.Hidden && a.Type.Text(field) is { Length: > 0 } name && OrderIds.GetValueOrDefault(name) == order);
     }

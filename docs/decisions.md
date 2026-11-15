@@ -2261,3 +2261,10 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   `ubdi` rolls of `ubsi`) when the victim's owner gives bounty (the neutral players by default), and the experience of the constants'
   `GrantNormalXP` or, for a hero, `GrantHeroXP` list by the victim's level, shared equally by the killer's owner's living heroes within
   `HeroExpRange` of the victim. Close: the field codes of the bounty, the shares and the range follow the data and the common values.
+- **D361. Running the AI scripts.** `StartMeleeAI` and `StartCampaignAI` read the script (the map's `Scripts\<name>`, else `War3.w3mod:Scripts/<name>` of the
+  install; which of the install's three copies a game loads is still open, D26) with `common.ai` in front, make both into Lua with the JASS rules and
+  run them in an environment of their own, so two players' scripts keep their globals apart, in a thread whose natives act for that player
+  (`AiFor`): `Sleep` waits on a game timer and `StartThread` starts a function in a thread of its own. A function argument that gives an
+  integer (`SetHeroLevels`) is accepted. Kill the AI commands that are command-card orders (`harvest`, `build`, `load`...) are not spell orders.
+  Seen: the human melee AI, given a town hall, a worker, a mine and 500 gold, trains workers and mines gold for two minutes with no script
+  error. Close: the buildings, the captains and attack waves, expansion and the heroes are the AI natives still to do.

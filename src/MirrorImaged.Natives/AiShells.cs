@@ -21,12 +21,6 @@ public sealed partial class GameNatives
     public void RemoveGuardPosition(unit? hUnit) { }
 
     [Native(Level.Close)]
-    public void StartCampaignAI(player? num, string? script) { }
-
-    [Native(Level.Close)]
-    public void StartMeleeAI(player? num, string? script) { }
-
-    [Native(Level.Close)]
     public bool AddAssault(int qty, int id) => false;
 
     [Native(Level.Close)]
@@ -291,13 +285,7 @@ public sealed partial class GameNatives
     public void ShiftTownSpot(float x, float y) { }
 
     [Native(Level.Close)]
-    public void Sleep(float seconds) { }
-
-    [Native(Level.Close)]
     public void StartGetEnemyBase() { }
-
-    [Native(Level.Close)]
-    public void StartThread(Action? func) { }
 
     [Native(Level.Close)]
     public void StopGathering() { }
