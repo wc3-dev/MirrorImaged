@@ -164,6 +164,7 @@ public sealed partial class GameNatives
         u.Paused = false;
         u.Unpausing = null;
         u.TimedEnd = u.TimedLeft = null;
+        if (u.Cargo.Count > 0) SinkCargo(u);
     }
 
     /// <summary>

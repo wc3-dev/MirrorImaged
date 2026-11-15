@@ -2401,3 +2401,8 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
 - **D385 (Pawning):** `UnitDropItemTarget` with a shop that has the pawn ability (Apit) and an item that can be pawned, from a unit within 900, gives the unit's player
   the share of the item's price that PawnItemRate names (half), fires the pawn event (`GetSoldItem`, `GetSellingUnit` the shop, `GetBuyingUnit` the seller) and takes
   the item away. Any other target leaves the item as it was.
+
+- **D386 (Transports):** a unit with a cargo hold (Cargo Hold, whose DataA is the room, one a unit) takes a friendly unit near it (within 700) on the load order, or a unit
+  sent to it by its smart order once it is in reach; the loaded unit is hidden, moves with the transport, fires the loaded event (`GetLoadedUnit`, `GetTransportUnit`;
+  `IsUnitLoaded`, `IsUnitInTransport`), and comes out round the place of the unload or unload-all order; a transport that dies kills what it holds. Close: units
+  count one each (the game counts by size), a unit does not walk to a transport that loads it, and there is no unloaded event (common.j has none).
