@@ -153,7 +153,7 @@ public sealed class GameRunner(string game, string documents, string maps)
             File.Delete(output);
             File.Delete(loaded);
             File.Delete(started);
-            running = GameProcess.Start(game, $"-launch -windowmode windowed -loadfile \"{map}\"", Path.GetDirectoryName(Path.GetDirectoryName(game))!, watch.Desktop);
+            running = GameProcess.Start(game, $"-launch -nowfpause -windowmode windowed -loadfile \"{map}\"", Path.GetDirectoryName(Path.GetDirectoryName(game))!, watch.Desktop);
             lines = Wait(output, loaded, started, timeout, watch, running, LoggedIn, events);
             loggedIn = LoggedIn();
             stillRunning = !running.Process.HasExited;
