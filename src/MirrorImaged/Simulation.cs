@@ -239,7 +239,7 @@ public sealed partial class Simulation : IDisposable
         try { run(); }
         catch (LuaException e) when (_lua.Halted is null)
         {
-            _game.Write("error", e.Message.Split("\nstack traceback:")[0]);
+            _game.Write("error", Environment.GetEnvironmentVariable("MIRROR_TRACEBACK") is null ? e.Message.Split("\nstack traceback:")[0] : e.Message);
         }
     }
 

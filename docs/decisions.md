@@ -2369,3 +2369,51 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   this machine, 78 times real time. What made it so: a worker taking its load home may walk up to its own town hall (it went round it, a search
   each time), the town halls are listed once a tick, a search for a path leans to the goal (the estimate counts twice, 3000 cells at most), and a
   unit whose way stopped short of its place waits 2 seconds before it searches again. The AI's ghouls cut the wood its wood slots ask for.
+
+- **D380 (More spells and the auras):** the spells of the melee heroes that deal with numbers: Death Coil (hurts a foe, heals a friend), Chain Lightning and
+  Healing Wave (jump to the nearest not yet reached within the area, for less each time), Frost Nova (damage to the target, less round it, and a slow),
+  War Stomp (damage and a stun round the caster), Fan of Knives, Mana Burn (mana taken, and as much damage), Carrion Swarm and Shockwave (a line from
+  the caster), Entangling Roots (the unit cannot walk and takes damage each second), Sleep, Divine Shield and Big Bad Voodoo (nothing hurts the unit,
+  and no unit takes it as an enemy), Frost Armor; and the auras Devotion (armour), Endurance (speed and attack rate), Unholy (speed and life each
+  second), Vampiric (a share of a melee attack's damage back) and Trueshot (more damage for ranged attacks), which each unit that has one gives the
+  allies within its area once a second for a little longer than a second. The numbers are the ability's Data A to E by level, as its tooltip names them.
+  Close: channels (Blizzard, Flame Strike), summons, transformations, and the passives of an attack's chance (bash, critical strike, evasion) are not here.
+
+- **D381 (Summons):** Water Elemental, Force of Nature, Serpent Ward, Scout and Vengeance (DataA units) and Feral Spirit (DataB) call units of the type their
+  UnitID field lists for the level, in a ring round the target place or the caster, for the caster's owner, each a summoned unit that ends with the
+  ability's duration, and fire the summon event (`GetSummonedUnit`, `GetSummoningUnit`). Close: Animate Dead (it raises corpses), Carrion Beetles and
+  the summons that need more than a type and a number are not here.
+
+- **D382 (Shops):** an order a player gives a building that lists the item (`usei`) or the unit (`useu`) with `IssueNeutralImmediateOrderById` is a purchase: the
+  player's unit nearest the shop within 900 pays the price and takes the item (or the shop makes the unit at its door, the food counted), and the sell events
+  fire for the buyer's player (`GetSoldItem`, `GetSoldUnit`, `GetSellingUnit`, `GetBuyingUnit`). Without a unit of the player near, or the price, nothing
+  happens. Close: the stock a shop keeps and its wait are not (it always has the thing), and selling an item to a shop (pawn) is not.
+
+- **D383 (The AI's heroes learn skills):** `SetHeroLevels(function)` gives, for the AI player, the function that names the ability a hero learns: for a hero with a skill
+  point it is asked (`GetHeroId` the hero's type, `GetHeroLevelAI` its level), and the hero learns what it names (`SelectHeroSkill`), when the hero is made, when it
+  reaches a level, and for the heroes the player has when the function is given. A point that is not spent stops the asking.
+
+- **D384 (Bash, Critical Strike, Evasion):** a unit with Critical Strike (AOcr) multiplies the damage of an attack by DataB when a draw of 1 to 100 is within DataA; one with
+  Bash (AHbh) adds DataC and stuns for the ability's duration (a hero's own for a hero) on a melee attack with the chance DataA; one with Evasion (AEev) turns an
+  attack aside when a draw is within DataA times 100. Each draw is the game's shared generator's. Close: the abilities of other names that do the same with their
+  own data are not here.
+
+- **D385 (Pawning):** `UnitDropItemTarget` with a shop that has the pawn ability (Apit) and an item that can be pawned, from a unit within 900, gives the unit's player
+  the share of the item's price that PawnItemRate names (half), fires the pawn event (`GetSoldItem`, `GetSellingUnit` the shop, `GetBuyingUnit` the seller) and takes
+  the item away. Any other target leaves the item as it was.
+
+- **D386 (Transports):** a unit with a cargo hold (Cargo Hold, whose DataA is the room, one a unit) takes a friendly unit near it (within 700) on the load order, or a unit
+  sent to it by its smart order once it is in reach; the loaded unit is hidden, moves with the transport, fires the loaded event (`GetLoadedUnit`, `GetTransportUnit`;
+  `IsUnitLoaded`, `IsUnitInTransport`), and comes out round the place of the unload or unload-all order; a transport that dies kills what it holds. Close: units
+  count one each (the game counts by size), a unit does not walk to a transport that loads it, and there is no unloaded event (common.j has none).
+
+- **D387 (Repair):** a worker given the repair order on a hurt finished building of its owner or an ally walks to it and restores its life at the rate its build time gives
+  (a full repair takes the build time times RepairTimeRatio, 1.5), paying that share of the price times RepairCostRatio (0.35) in whole points as it builds up, until the
+  building is whole, the player cannot pay or the order changes. Close: the ratios are the constants' names as I know them (not measured), and mechanical units are not
+  repaired.
+
+- **D388 (The corpus of shipped maps, A4 and A5):** all 466 maps of the installed game's Maps and Campaign folders load and run 10 game minutes with no Missing native; two
+  community maps of the Forsaken Kingdom scenarios fail in their own scripts and are named in the corpus test with the reason (ForgottenHollow indexes a table with nil
+  in its handle library at the start; SilverpineSprint's car physics finds no terrain family at about 13 s). The one fault in the runtime that the corpus found: JASS has a
+  unary plus (`+x`) that the transpiler wrote as it was and Lua refuses, in an AI script of a campaign; the operand is written alone now. `MIRROR_DUMP_AI` (a folder) writes
+  the Lua of each AI script, and `MIRROR_TRACEBACK` puts the Lua traceback of a script error in the log.

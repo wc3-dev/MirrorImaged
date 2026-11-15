@@ -64,6 +64,17 @@ static class Jass
     // (D131 to D136). It knows each variable's and function's type from the files, as the transpiler does.
     sealed class Rewriter : JassSyntaxRewriter
     {
+        // JASS has a unary plus and Lua does not, and the transpiler writes it as it is (+x): it is the operand itself
+        protected override bool RewriteUnaryExpression(JassUnaryExpressionSyntax unary, out JassExpressionSyntax result)
+        {
+            if (unary.OperatorToken.SyntaxKind == JassSyntaxKind.PlusToken)
+            {
+                RewriteExpression(unary.Expression, out result);
+                return true;
+            }
+            return base.RewriteUnaryExpression(unary, out result);
+        }
+
         static readonly HashSet<string> LuaKeywords = ["break", "do", "end", "for", "goto", "in", "nil", "repeat", "until", "while"];
 
         // S2R, by which JASS's real literals are read; it reads no game state
