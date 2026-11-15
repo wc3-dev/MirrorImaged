@@ -2197,3 +2197,13 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   answer an event that never fires; the key and mouse state reads false and 0. Sync data (`BlzSendSyncData`) is real: it reaches
   the registrations for its prefix for the local player a step later, refused over 255 characters. Using an item on a place or a
   target needs its ability (wave 4) and is refused.
+- **D352. Movement and fighting.** A 1/32 s step (woken by an order or a unit made, and running while a living unit could walk or fight)
+  moves each unit with a walking order toward its place or target at its speed, in a straight line: only unwalkable cells (for
+  walkers and riders) and the edge of the world stop it; an order ends on arrival and the next queued one starts, firing its event.
+  An attack order, a smart order on an enemy, an attack-move and an idle or holding unit fight: the unit walks into the weapon's
+  range (plus the target's collision size), swings when its cooldown is over (the base cooldown), and the damage lands at the damage
+  point through the damage events as a real attack (`BlzGetEventIsAttack` true), base damage and a die roll from the game's generator,
+  damage type normal and the weapon's attack and weapon types. A unit with no order, and a holding one, takes the nearest enemy
+  it may attack within its acquisition range (hold: its weapon range) every fourth step, its current order staying 0 as the facts
+  say; neutral passive players and allies are never attacked. Close: no pathfinding, collision or turning, no missile flight, no
+  damage loss or splash, and the order of units acting in a step is the game's units order, not measured.
