@@ -171,7 +171,7 @@ Needs W2-2.
 - Left by W2-10 (D310, D317): the undefend order events (a Defend's) and a gold mine's gold are done, but read the
   unit type's abilities (`uabi`, `Abilities` in `UnitOrders.cs`): switch them to the unit's own, so an added copy of
   `Adef` gives undefend (game-facts) and a removed one none. Probe `BlzIsUnitSelectable` on a unit with Locust
-  (game-facts measured only `SelectUnit` doing nothing to one).
+  (game-facts measured only `SelectUnit` doing nothing to one). Done (D288, probe `units-locust`).
 - From W5-2: `GetAbilitySound` and `GetAbilitySoundById` (an ability's sound labels; D527).
 
 ## W2-8 Tooltip tags and ability columns

@@ -1583,3 +1583,17 @@ probe map (custom_v1's data); the lines are in `probes/expected`.
   reads as invulnerable.
 - An upgrade that raises an ability's level (Skeletal Mastery on Raise Dead) raises the level when researched and
   lowers it when unresearched, for abilities added before or after; a unit given to a new owner gains only.
+
+### Locust (probe `units-locust`)
+
+3.0.1.24371, 11-15, single player, run twice with the same lines; on the probe map's data, four footmen of Player 0 and
+one of Player 1 placed 100 apart (so none is moved aside).
+
+- A unit that gets Locust (`Aloc`, `UnitAddAbility` answers true, false the second time, `GetUnitAbilityLevel` 1) leaves
+  `GroupEnumUnitsInRange` and `GroupEnumUnitsInRect` at once, with or without a filter, and `BlzIsUnitSelectable`
+  reads false for it. It stays in `GroupEnumUnitsOfPlayer` and `GroupEnumUnitsOfType`, in a group it was already in
+  (`IsUnitInGroup` true), and `IsUnitInRangeXY` and `IsUnitInRange` read it as any unit's place (a hidden unit is
+  in these too, and out of the range and rect enumerations and selection as a Locust one is).
+- Taking the ability off (`UnitRemoveAbility` true, `GetUnitAbilityLevel` 0) brings the unit back into neither: the
+  range and rect enumerations still missed it, and it was still unselectable, at once, 0.5 s and 3.5 s later. The same
+  for a unit that had Locust added and removed in the same instant.

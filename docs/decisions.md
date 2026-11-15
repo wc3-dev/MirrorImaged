@@ -1793,7 +1793,7 @@ where not.
   `SetPlayerUnitsOwner` gave nothing away and fired nothing, and what the game keeps it for isn't known: Recorded.
   `IsUnitIllusion` is false, Close until abilities and items make illusions (wave 4; game-facts: they read true), as
   `IsUnitType`'s wave-4 kinds are (D230); `BlzIsUnitSelectable` is alive, shown and not removed, and a unit with Locust
-  is for W2-7 to probe (game-facts measured only `SelectUnit` on one).
+  is for W2-7 to probe (game-facts measured only `SelectUnit` on one): done in D288.
 - **D315. Unit state events** fire inside the set or death that brings the life or mana from failing the comparison to
   passing it, kept in the unit's event list with their comparison (`UnitLimit`), so `DestroyTrigger` lets go of them as
   of any unit event. `EQUAL`, `NOT_EQUAL` and the most life and mana never fire, nor a registration that passes when
@@ -2027,6 +2027,11 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
 - **D287. `GetAbilitySoundById`** reads the ability's or buff's `Effectsound` (`Effectsoundlooped` for
   `SOUND_TYPE_EFFECT_LOOPED`), "" without. `GetAbilitySound` reads "" for every string measured (an id, a name, a
   buff's id): Close, since what it reads wasn't found (probe abilities-types).
+- **D288. Locust stays.** A unit that has had `Aloc` (the ability's id or one whose `code` is `Aloc`, given by add or by
+  its type) is left out of `GroupEnumUnitsInRange` and `GroupEnumUnitsInRect`, and `BlzIsUnitSelectable` reads false,
+  from the add on and after `UnitRemoveAbility` too, as the game gave (probe units-locust, facts "Locust"); the unit
+  keeps a flag the add sets and nothing clears. `GroupEnumUnitsOfPlayer`, `OfType` and the range tests still find it.
+  Exact. The game's selection natives are D278's, Missing.
 - **D270. Terrain the readers refuse** (`(10)DustwallowKeys.w3m`'s `war3map.w3e`, a cliff type 0 War3Net doesn't
   define): `MapArchive` reads the file itself and keeps the type as written, so the map has the ground the game loads,
   and a melee map no longer lacks terrain. A file that can't be read either is left out, as before (W2-6).
