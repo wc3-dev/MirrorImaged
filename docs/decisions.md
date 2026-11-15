@@ -2105,3 +2105,20 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   get DAMAGING and no DAMAGED, no life lost) act. `BlzGetEventIsAttack` reads false until real attacks (wave 3).
 - **D262. `UnitDamagePoint`** runs after its delay (at least one step) on each living unit whose origin is within the radius,
   in the units' grid order, through `UnitDamageTarget`; Close.
+- **D320. Pathing and blight** live in one byte a 32 cell, read from the map's `war3map.wpm` (none: every cell open, and a map
+  with no ground reads nothing). `IsTerrainPathable` is true when the kind's bit is set (true means not pathable), kinds 1 to 7
+  in `PATHING_TYPE_*`'s order and 0 (any) any bit; a point off the grid reads blocked; `SetTerrainPathable` sets or clears one
+  cell for one kind. Close: a map without a pathing file reads open where the game works its own out from the ground.
+- **D321. Blight** is kept on 64 cells (four pathing cells) whose centre lies within 0.8 of the radius (radius 300 reached 240
+  along a line, taking off with 150 cleared to 112: both match), `SetBlightPoint` is a radius of 200 (the game reached about
+  160: Close), a rect takes the cells whose centre is inside it, and the player changes nothing. Blight touches no other
+  pathing bit. A Necropolis's blight comes with buildings (wave 3 and 4); `CreateBlightedGoldmine` makes an `ugol` and a point of
+  blight under it.
+- **D322. Painted tiles** are kept by corner: `SetTerrainType` paints the corners within area - 1 of the nearest one, a circle
+  for shape 0 and a square for shape 1, a variation of -1 as 0; `GetTerrainType` and `GetTerrainVariance` read the nearest
+  corner, 0 off the map. A tile the map's list lacks is read back as set, as in the game.
+- **D323. Craters** (`TerrainDeformCrater`) move the 128 corners by -depth x cos(90 degrees x distance / radius) inside the
+  radius, from the step after they are made, linearly over their duration (Close: the game's ramp starts slower), adding
+  up, until `TerrainDeformStop` (gone from the step after the stop, so a read in the same instant still sees it; with a
+  duration, faded over it). `GetLocationZ`, `BlzGetUnitZ` and a bridge's ground read them. Ripple, random and wave are
+  Recorded: `GetLocationZ` ignores them.

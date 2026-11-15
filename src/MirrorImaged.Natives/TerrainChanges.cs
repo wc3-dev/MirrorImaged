@@ -25,7 +25,7 @@ public sealed partial class GameNatives
     const string GroundFacts = "game-facts.md, Terrain changes: probe of 11-09; Units: IsTerrainPathable (10-25, 10-26)";
     const float PathCell = 32, Blighting = 64, BlightReach = 0.8f, PointBlight = 200;
     const byte BlightBit = 32;
-    static readonly byte[] PathingBits = [2, 4, 8, 16, 32, 64, 128]; // PATHING_TYPE_* in order: walk, fly, build, peon harvest, blight, float, amphibious
+    static readonly byte[] PathingBits = [2, 4, 8, 16, 32, 64, 128]; // PATHING_TYPE_* 1 to 7: walk, fly, build, peon harvest, blight, float, amphibious (0 is any)
 
     readonly Dictionary<int, (int Type, int Variation)> _painted = [];
     readonly List<Crater> _craters = [];
@@ -60,7 +60,7 @@ public sealed partial class GameNatives
         if (t is null) return false;
         var cell = CellAt(x, y);
         if (cell < 0) return Data.Terrain is not null;
-        return Cells() is { } cells && t.Id >= 0 && t.Id < PathingBits.Length && (cells[cell] & PathingBits[t.Id]) != 0;
+        return Cells() is { } cells && (cells[cell] & Mask(t)) != 0;
     }
 
     /// <summary>One 32 by 32 cell on the world's grid takes the flag: true makes it pathable for the kind, false blocks it.</summary>
@@ -68,9 +68,14 @@ public sealed partial class GameNatives
     public void SetTerrainPathable(float x, float y, pathingtype? t, bool flag)
     {
         var cell = CellAt(x, y);
-        if (t is null || cell < 0 || Cells() is not { } cells || t.Id < 0 || t.Id >= PathingBits.Length) return;
-        cells[cell] = flag ? (byte)(cells[cell] & ~PathingBits[t.Id]) : (byte)(cells[cell] | PathingBits[t.Id]);
+        if (t is null || cell < 0 || Cells() is not { } cells) return;
+        var mask = Mask(t);
+        if (mask == 0) return;
+        cells[cell] = flag ? (byte)(cells[cell] & ~mask) : (byte)(cells[cell] | mask);
     }
+
+    // The bit of a pathing kind: PATHING_TYPE_ANY (0) any of them, one beyond the list none
+    static byte Mask(pathingtype t) => t.Id == 0 ? byte.MaxValue : t.Id <= PathingBits.Length ? PathingBits[t.Id - 1] : (byte)0;
 
     /// <summary>Whether the cell is blighted, as IsTerrainPathable reads blight pathing.</summary>
     [Native(Level.Close, Fact = GroundFacts)]
