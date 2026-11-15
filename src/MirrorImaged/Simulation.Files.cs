@@ -32,6 +32,7 @@ public sealed partial class Simulation
         var lua = Jass.ToLua([CommonJ()], jass, rules: true);
         if (!_jass && !_aiRules) { AddJassRules(); _aiRules = true; }
         var name = $"MirrorImaged_Ai{++_aiScripts}";
+        if (Environment.GetEnvironmentVariable("MIRROR_DUMP_AI") is { Length: > 0 } dump) File.WriteAllText(Path.Combine(dump, name + ".lua"), lua);
         _lua.Run($"do local _ENV = setmetatable({{}}, {{__index = _G}})\n{lua}\n_G.{name} = main\nend", name);
         return name;
     }

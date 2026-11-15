@@ -29,6 +29,7 @@ public sealed class LuaThread : IDisposable
         (Results, Waiting) = _state.Resume(_reference);
     }
 
+    /// <summary>Lets go of the thread.</summary>
     public void Dispose()
     {
         if (!Waiting) return;

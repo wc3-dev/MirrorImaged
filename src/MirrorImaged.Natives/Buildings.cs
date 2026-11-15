@@ -4,9 +4,9 @@ using MirrorImaged.World;
 namespace MirrorImaged.Natives;
 
 // What a building has in its queue: a unit to train or an upgrade to research, with what it cost and when it is done
-sealed class Training(bool research, int id, int gold, int lumber, int food, double seconds)
+sealed class Training(bool research, int id, int gold, int lumber, int food, double seconds, bool upgrade = false, bool revive = false)
 {
-    public readonly bool Research = research;
+    public readonly bool Research = research, Upgrade = upgrade, Revive = revive;
     public readonly int Id = id, Gold = gold, Lumber = lumber, Food = food;
     public readonly double Seconds = seconds;
     public long Done;   // the step it finishes at once it has started, 0 until then
@@ -35,7 +35,7 @@ public sealed partial class GameNatives
     const int QueueLength = 7;
     const float StartLifeShare = 0.1f, CancelRefund = 0.75f;
 
-    static readonly int Cost = Code("ugol"), LumberCost = Code("ulum"), BuildTime = Code("ubld"), Trains = Code("utra"), Researches = Code("ures"), FoodMadeField = Code("ufma");
+    static readonly int Cost = Code("ugol"), LumberCost = Code("ulum"), BuildTime = Code("ubld"), Trains = Code("utra"), Researches = Code("ures"), FoodMadeField = Code("ufma"), Revives = Code("urev");
 
     bool Listed(unit u, int field, int id) => (u.Type.Text(field) ?? "").Split(',', StringSplitOptions.TrimEntries).Contains(Name(id));
 
@@ -113,10 +113,20 @@ public sealed partial class GameNatives
     {
         if (building.Constructing || building.Dead || building.Train.Count >= QueueLength) return false;
         Training item;
-        if (Listed(building, Trains, order) && Data.Object(ObjectKind.Unit, order) is { } unitType)
+        if (Listed(building, Revives, order) && ReviveCandidate(building.Owner, order) is { } dead && !building.Train.Any(t => t.Revive))
+        {
+            // A dead hero the building revives: it costs a share of the hero's own price, more for each level it had
+            var type = dead.Type;
+            var share = Data.Constant("ReviveBaseFactor", 0.4f) + Data.Constant("ReviveLevelFactor", 0.1f) * (Math.Max(dead.HeroLevel, 1) - 1);
+            item = new Training(false, order, (int)(type.Integer(Cost) * share), (int)(type.Integer(LumberCost) * share), 0, Math.Max(type.Real(BuildTime) * (Data.Constant("ReviveTimeFactor", 0.65f)), 0.1), revive: true);
+            if (!CanPay(building.Owner, item.Gold, item.Lumber)) return false;
+        }
+        else if (Listed(building, Trains, order) && Data.Object(ObjectKind.Unit, order) is { } unitType)
         {
             item = new Training(false, order, unitType.Integer(Cost), unitType.Integer(LumberCost), unitType.Integer(FoodUsed), Math.Max(unitType.Real(BuildTime), 0.1));
             var p = building.Owner;
+            // A hero is one a player has once: alive, dead (then it is revived) or in training
+            if (IsHero(order) && (_units.Values.Any(h => h.Owner == p && h.Type.Id == order && !h.Removed) || _units.Values.Any(b => b.Owner == p && b.Train.Any(t => !t.Research && !t.Revive && t.Id == order)))) return false;
             if (!CanPay(p, item.Gold, item.Lumber) || p.States[FoodUsedState] + item.Food > Math.Min(p.States[FoodCap], p.States[FoodCapCeiling])) return false;
             p.States[FoodUsedState] += item.Food;
         }
@@ -128,7 +138,14 @@ public sealed partial class GameNatives
                 Math.Max(upgrade.Integer(Code("gtib")) + level * upgrade.Integer(Code("gtim")), 1));
             if (!CanPay(building.Owner, item.Gold, item.Lumber)) return false;
         }
+        else if (Listed(building, UpgradesTo, order) && Data.Object(ObjectKind.Unit, order) is { } target && building.Train.Count == 0)
+        {
+            // The building becomes the other one when its time is out; it trains nothing meanwhile
+            item = new Training(false, order, target.Integer(Cost), target.Integer(LumberCost), 0, Math.Max(target.Real(BuildTime), 0.1), upgrade: true);
+            if (!CanPay(building.Owner, item.Gold, item.Lumber)) return false;
+        }
         else return false;
+        if (building.Train.Count > 0 && building.Train[0].Upgrade) return false;
         Pay(building.Owner, item.Gold, item.Lumber);
         building.Train.Add(item);
         if (building.Train.Count == 1) StartTraining(building);
@@ -149,7 +166,12 @@ public sealed partial class GameNatives
     {
         if (building.Dead || building.Removed || building.Train.Count == 0 || building.Train[0] != item) return;
         building.Train.RemoveAt(0);
-        if (item.Research)
+        if (item.Upgrade) Transform(building, Data.Object(ObjectKind.Unit, item.Id)!);
+        else if (item.Revive)
+        {
+            if (ReviveCandidate(building.Owner, item.Id) is { } hero) ReviveHero(hero, building.X, building.Y - building.Type.Real(Collision) - 40, true);
+        }
+        else if (item.Research)
         {
             building.Owner.TechLevels[item.Id] = building.Owner.TechLevels.GetValueOrDefault(item.Id) + 1;
             FireUnit(new(building, TypeId: item.Id), UnitResearchFinish, PlayerResearchFinish);
@@ -191,7 +213,7 @@ public sealed partial class GameNatives
             answer = u.Constructing ? Cancelled(u) : CancelQueue(u);
             return true;
         }
-        if (kind == 0 && (u.Type.Integer(IsBuilding) != 0 || IsBuildingNow(u)) && (Listed(u, Trains, order) || Listed(u, Researches, order)))
+        if (kind == 0 && (u.Type.Integer(IsBuilding) != 0 || IsBuildingNow(u)) && (Listed(u, Trains, order) || Listed(u, Researches, order) || Listed(u, UpgradesTo, order) || Listed(u, Revives, order)))
         {
             answer = QueueOrder(u, order);
             return true;
@@ -212,4 +234,22 @@ public sealed partial class GameNatives
     [Native(Level.Close)] public int GetTrainedUnitType() => Response(UnitTrainStart, PlayerTrainStart, UnitTrainCancel, PlayerTrainCancel, UnitTrainFinish, PlayerTrainFinish)?.TypeId ?? 0;
     [Native(Level.Close)] public int GetResearched() => Response(UnitResearchStart, PlayerResearchStart, UnitResearchCancel, PlayerResearchCancel, UnitResearchFinish, PlayerResearchFinish)?.TypeId ?? 0;
     [Native(Level.Close)] public unit? GetResearchingUnit() => Response(UnitResearchStart, PlayerResearchStart, UnitResearchCancel, PlayerResearchCancel, UnitResearchFinish, PlayerResearchFinish)?.Unit;
+
+    // The player's dead hero of the type that a revive order names, the first made
+    unit? ReviveCandidate(player p, int type) => _units.Values.Where(h => h.Owner == p && h.Type.Id == type && h.Dead && !h.Removed).OrderBy(h => h.Id).FirstOrDefault();
+
+    // The building is the other type from now on: its life and mana keep their share, its abilities are the new type's, the food it makes changes
+    void Transform(unit building, GameObject type)
+    {
+        var (lifeShare, manaShare) = (building.MaxLife > 0 ? building.Life / building.MaxLife : 1, building.MaxMana > 0 ? building.Mana / building.MaxMana : 0);
+        building.Owner.States[FoodCap] += type.Integer(FoodMadeField) - building.Type.Integer(FoodMadeField);
+        building.Type = type;
+        building.MaxLife = type.Integer(HitPoints);
+        building.MaxMana = type.Integer(ManaMaximum);
+        building.Life = building.MaxLife * lifeShare;
+        building.Mana = Math.Min(building.MaxMana * manaShare, building.MaxMana);
+        building.Scale = type.Real(ModelScale);
+        building.Abilities.Clear();
+        GiveAbilities(building);
+    }
 }

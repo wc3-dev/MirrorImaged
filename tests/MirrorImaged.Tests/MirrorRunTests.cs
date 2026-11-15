@@ -32,7 +32,7 @@ public sealed class MirrorRunTests : IDisposable
     {
         var map = Map("print('before') TimerStart(CreateTimer(), 1, false, function() BlzGetUnitAnimationDurationByIndex() end)");
 
-        var (exit, output, error) = Mirror("run", map);
+        var (exit, output, error) = Mirror(new Dictionary<string, string?> { ["MIRROR_MISSING"] = "BlzGetUnitAnimationDurationByIndex" }, "run", map);
 
         Assert.Equal(1, exit);
         Assert.Equal("0.000 print: before\n", output);
@@ -45,7 +45,7 @@ public sealed class MirrorRunTests : IDisposable
     {
         var map = _maps.Build("function config() print('config') end\nfunction main() print('main\\nagain') BlzGetUnitAnimationDurationByIndex() end\n");
 
-        var (exit, output, error) = Mirror("run", map);
+        var (exit, output, error) = Mirror(new Dictionary<string, string?> { ["MIRROR_MISSING"] = "BlzGetUnitAnimationDurationByIndex" }, "run", map);
 
         Assert.Equal(1, exit);
         Assert.Equal("0.000 print: config\n0.000 print: main\n0.000 print: again\n", output);

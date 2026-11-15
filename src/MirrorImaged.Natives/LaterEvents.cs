@@ -21,12 +21,6 @@ public sealed partial class GameNatives
 
     // ---- Combat, buildings, training, shops and summons (wave 3)
 
-    [Native(Level.Close)] public unit? GetBuyingUnit() => null;
-    [Native(Level.Close)] public unit? GetSellingUnit() => null;
-    [Native(Level.Close)] public item? GetSoldItem() => null;
-    [Native(Level.Close)] public unit? GetSoldUnit() => null;
-    [Native(Level.Close)] public unit? GetSummonedUnit() => null;
-    [Native(Level.Close)] public unit? GetSummoningUnit() => null;
     [Native(Level.Close)] public item? BlzGetAbsorbingItem() => null;
     [Native(Level.Close)] public bool BlzGetManipulatedItemWasAbsorbed() => false;
 
@@ -45,22 +39,6 @@ public sealed partial class GameNatives
     public @event? TriggerRegisterTrackableTrackEvent(trigger? whichTrigger, trackable? t) => whichTrigger is null || t is null ? null : Register(whichTrigger);
 
     [Native(Level.Close)] public trackable? GetTriggeringTrackable() => null;
-    [Native(Level.Close)] public bool BlzGetTriggerPlayerIsKeyDown() => false;
-    [Native(Level.Close)] public oskeytype? BlzGetTriggerPlayerKey() => null;
-    [Native(Level.Close)] public int BlzGetTriggerPlayerMetaKey() => 0;
-    [Native(Level.Close)] public mousebuttontype? BlzGetTriggerPlayerMouseButton() => null;
-    [Native(Level.Close)] public location? BlzGetTriggerPlayerMousePosition() => null;
-    [Native(Level.Close)] public float BlzGetTriggerPlayerMouseX() => 0;
-    [Native(Level.Close)] public float BlzGetTriggerPlayerMouseY() => 0;
-    [Native(Level.Close)] public bool BlzIsKeyPressed(oskeytype? key) => false;
-    [Native(Level.Close)] public bool BlzIsMetaKeyPressed(int metakey) => false;
-    [Native(Level.Close)] public bool BlzIsMouseButtonPressed(mousebuttontype? mouseButtonType) => false;
-    [Native(Level.Close)] public int BlzGetMouseScreenPosX() => 0;
-    [Native(Level.Close)] public int BlzGetMouseScreenPosY() => 0;
-
-    [Native(Level.Close)]
-    public @event? BlzTriggerRegisterPlayerKeyEvent(trigger? whichTrigger, player? whichPlayer, oskeytype? key, int metaKey, bool keyDown) =>
-        whichTrigger is null || whichPlayer is null ? null : Register(whichTrigger);
 
     // ---- Sync: data sent by the local player reaches the registrations for that prefix a step later (EVENT_PLAYER_SYNC_DATA)
 

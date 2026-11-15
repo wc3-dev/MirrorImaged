@@ -182,6 +182,7 @@ public sealed partial class GameNatives
     {
         var (fromX, fromY) = (u.X, u.Y);
         (u.X, u.Y) = (x, y);
+        if (u.Cargo.Count > 0) CarryCargo(u);
         Moved(u, fromX, fromY, made: false);
     }
 

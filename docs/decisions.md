@@ -2281,3 +2281,143 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
 - **D364 (Path search is cheaper):** a search for a path lists the buildings once a tick and asks each cell once, and an idle unit that
   looks for a target skips what is out of range before it asks who is an enemy. A campaign map that took 8 s of real time per game second
   (Human01) takes a quarter of one. Not measured against the game.
+
+- **D365 (A blocked unit searches less):** a unit blocked again on its way searches for a path at most once in half a second, and one whose
+  search found no way to a place does not search for that place again for two seconds, so it ends the order. A campaign map (NightElf01)
+  that ran at a third of real time after 150 s now runs seven times faster. Not measured against the game.
+
+- **D366 (The AI wages war):** the wave the AI asks for (`InitAssault`, `AddAssault`) is made at the buildings that train it and forms the
+  attack captain, a group the natives send (`CaptainAttack`, `AttackMoveXY`, `AttackMoveKill`) as an attack-move and bring home, and answer
+  for (`CaptainIsFull`, `CaptainAtGoal`, `CaptainInCombat`, `CaptainReadiness`). `GetEnemyBase` is the nearest enemy building, a town hall first,
+  found at once (`WaitGetEnemyBase` is false: the AI loops while it is true). Expansion is a gold mine no town hall stands within reach of
+  (`GetNextExpansion` is -1 with none), with its creeps, a worker sent to build there, and the camps of creeps. Seen: the human melee AI, five
+  minutes in, sends eight footmen, four riflemen and a hero at an enemy second town hall and takes its life down. Close: the AI never attacks
+  a main base without siege, as its script has it.
+
+- **D367 (A person at a player):** a test or a recording gives a player keys, the mouse, a selection, orders and leaving (`Simulation.Key`,
+  `Mouse`, `Select`, `Order`, `Leave`, `Say`), each at the step it was given in, and each fires the events a map registered and sets what it
+  reads back (`BlzGetTriggerPlayerKey`, `IsUnitSelected`, `GetPlayerSlotState`). Only a player's own units obey its orders and selection. A
+  recording is the map, seed, seats and the inputs at their steps, and `Follow` or `mirror replay` runs it again to the same hash. Close: the
+  game's own arrow-key and key-event ids are not mapped beyond the registrations of `BlzTriggerRegisterPlayerKeyEvent`.
+- **D368 (The desync check):** `mirror desync` and `Desync.Check` run the map once for each person's slot, all seated, with that slot as the
+  local player, and compare the state after each second; a difference is reported with its step, the part of the world (time, a player,
+  a unit) and the first log line that differs. `mirror bench` times a run, and `mirror fuzz` gives every player's units random legal orders
+  each second and reports script errors.
+
+- **D369 (Tests in Lua):** `mirror test <file or folder>` runs `*.test.lua` files in a Lua state of their own, apart from the games they
+  load. A file calls `test(name, function)`; inside, `mirror.load(map, {seed = n})` gives a simulation with the calls of the C# API (`advance`,
+  `units`, `order`, `select`, `key`, `mouse`, `leave`, `say`, `log`, `hash`, `wait_until`, `recording`), and `assert_eq`, `assert_true`,
+  `assert_close` and `assert_contains` check. Each result is printed and `--junit <file>` writes JUnit XML. A shared case list (a map script and
+  steps) runs through both APIs and must end at the same state hash and log (A9). Not done: finding the Lua tests from `dotnet test`.
+
+- **D371 (Buildings in a grid):** the buildings that block a walk are listed once a tick in a grid of squares of 256, and a search for a
+  path reads the move type once, so a cell costs a look at the few buildings near it. A campaign map that took 1.3 s of real time per game
+  second (HumanX05) takes a fifteenth of that. Not measured against the game.
+- **D370 (Snapshots and stepping back):** a snapshot is the step, the state hash, the hash of each part (time, a player, a unit) and the
+  recording to that step. `Snapshot.Differences` lists the parts that differ from a simulation at the same step, `Simulation.Restore` runs the
+  snapshot again, and `Simulation.StepBack` runs the map again to an earlier step, which lands on the state the run had then (A11). The
+  world is not copied: a run repeats exactly from its recording, so going back costs the run to that step. `mirror snapshot` saves one and
+  `mirror compare` runs it again and lists what differs.
+
+- **D373 (The viewer):** `mirror view <map or recording>` runs it, samples the units every half second (id, type, player, place, life, order, name)
+  with the log and its times, and writes one page that opens in a browser with the trace inside it: the map from above with its pathing
+  grid and regions, the units as circles in the colours of their players with a life bar, a timeline to scrub with play, step and speed, the
+  log (a line seeks to its time) and a panel for the selected unit. No missiles are drawn: attacks land at their damage point here. Heights
+  are not drawn. Seen in the in-app browser on a shipped campaign map; a headless browser opens it in the tests where one starts.
+- **D372 (Determinism across systems):** a test runs a map of dice, trigonometry, a fight, timers and many units for 20 seconds and compares
+  the state hash at 1, 5, 10, 15 and 20 seconds with the hashes made on Windows. CI runs it on Windows, Linux and macOS (A7).
+
+- **D374 (Docs):** the public API of every project but the natives has XML docs, and the compiler refuses one without (`CS1591` as an error);
+  the natives are documented by common.j and common.ai and by the trust level each carries (`mirror coverage`). `docs/guide` has a page for
+  each part (getting started, Lua tests, C# tests, JASS and TypeScript, the command line, recordings and the desync check, the viewer, trust
+  levels, CI) and tests check that its links go somewhere, the index lists every page and the command line page names every command. The
+  `examples` folder has the gold map in Lua, JASS and TypeScript, built into maps and run by the suite. `.github/actions/mirror-test` runs a
+  map's Lua tests on a self-hosted runner. A Lua test reads its maps from its own folder.
+
+- **D375 (Replays):** `Replay.Read` reads a `.w3g` of header version 1 (Reforged): the zlib blocks (each flushed and not ended), the lobby (host,
+  players, game start record with its slots) and the time slots with the actions of each player: selection, orders (no target, a place, a
+  unit), chat and leaving; other actions are counted and skipped, a player's actions of a slot stopping at one it cannot measure. `ToRecording(map)`
+  makes a recording of the replay's input at the steps of its times (1024 to the second), which `Simulation.Follow` or `mirror replay game.w3g --map
+  map.w3x` runs. A unit is named by the id the replay gives it, taken as the id the unit has here (ids count up from 0x100000 as the game's do), so
+  a replay of a game whose units were made in another order than here gives orders to units that are not there, and they are left out. Read
+  from the format as documented and one replay of this machine (a probe, with no orders of players); the orders are checked on replays the
+  tests make. Close.
+
+- **D376 (Upgrades and revival):** a building given the id of a unit type it upgrades to (`uupt`) pays that type's price and, after its build time,
+  becomes it: the life and mana keep their share, the abilities are the new type's and the food it makes changes; it trains nothing while it
+  upgrades, and cancelling gives the price back. A building given the id of a hero it revives (`urev`) when that hero is dead pays a share of the
+  hero's price (0.4 and 0.1 for each level above the first, ReviveBaseFactor and ReviveLevelFactor) and revives it at its door when the time
+  (0.65 of the hero's build time) is out; a hero a player already has, alive or in training, can't be trained again. Close: the revive price
+  and time are the constants' names as I know them, not measured.
+
+- **D377 (Animation lengths, and none Missing):** `BlzGetUnitAnimationDuration` and `BlzGetUnitAnimationDurationByIndex` read the sequences of the
+  unit's model (its `umdl` file with `.mdx`) in the installed game: each is a name and the time it starts and ends in milliseconds; the first
+  whose name begins with the one asked for wins, and a model that is not in the install gives 0. The game may read the high-definition model
+  where the classic one is read here. With this no native of `common.j` and `common.ai` is Missing (A1). To keep the Missing machinery
+  tested, `SimulationOptions.TreatAsMissing` (and `MIRROR_MISSING` for the command line) runs named natives as Missing.
+
+- **D378 (The desync suite):** the state hash and its parts now hold the random generator's state and the next ids to be given (`random numbers`,
+  `handle ids`), so a draw from the shared generator or a handle made in one player's game only, which the facts name as desyncs, make the games
+  differ as they do in the game. A suite of patterns (a change to a player or unit, `GetRandomInt` and `GetRandomReal`, `CreateGroup` with `ForGroup`,
+  `Location`, `CreateTimer`, `BlzCreateFrame`, each in a local-player block) must be found by `mirror desync` with the part and the step, and what one
+  screen shows (text, camera, music, a name read) must not (A8). Not shown: the timer of 0.01 s and the upgrade dice, which the game does by chance.
+
+- **D379 (Melee from the command line, and its speed):** every command that takes a map takes `--users` and `--computers` (slots) or `--melee true` (the
+  first user slot a person, every other user or computer slot a computer), and a map named `War3.w3mod:Maps/...` is read from the installed game.
+  `MeleeCorpusTests` runs the install's melee maps for 30 game minutes that way (set `MIRROR_MELEE` to a part of a name for some) and checks no script
+  error and that the computers trained units; and a 4-player map (`(4)Adrenaline`) goes through 30 game minutes in under 60 seconds (A10): 23 s on
+  this machine, 78 times real time. What made it so: a worker taking its load home may walk up to its own town hall (it went round it, a search
+  each time), the town halls are listed once a tick, a search for a path leans to the goal (the estimate counts twice, 3000 cells at most), and a
+  unit whose way stopped short of its place waits 2 seconds before it searches again. The AI's ghouls cut the wood its wood slots ask for.
+
+- **D380 (More spells and the auras):** the spells of the melee heroes that deal with numbers: Death Coil (hurts a foe, heals a friend), Chain Lightning and
+  Healing Wave (jump to the nearest not yet reached within the area, for less each time), Frost Nova (damage to the target, less round it, and a slow),
+  War Stomp (damage and a stun round the caster), Fan of Knives, Mana Burn (mana taken, and as much damage), Carrion Swarm and Shockwave (a line from
+  the caster), Entangling Roots (the unit cannot walk and takes damage each second), Sleep, Divine Shield and Big Bad Voodoo (nothing hurts the unit,
+  and no unit takes it as an enemy), Frost Armor; and the auras Devotion (armour), Endurance (speed and attack rate), Unholy (speed and life each
+  second), Vampiric (a share of a melee attack's damage back) and Trueshot (more damage for ranged attacks), which each unit that has one gives the
+  allies within its area once a second for a little longer than a second. The numbers are the ability's Data A to E by level, as its tooltip names them.
+  Close: channels (Blizzard, Flame Strike), summons, transformations, and the passives of an attack's chance (bash, critical strike, evasion) are not here.
+
+- **D381 (Summons):** Water Elemental, Force of Nature, Serpent Ward, Scout and Vengeance (DataA units) and Feral Spirit (DataB) call units of the type their
+  UnitID field lists for the level, in a ring round the target place or the caster, for the caster's owner, each a summoned unit that ends with the
+  ability's duration, and fire the summon event (`GetSummonedUnit`, `GetSummoningUnit`). Close: Animate Dead (it raises corpses), Carrion Beetles and
+  the summons that need more than a type and a number are not here.
+
+- **D382 (Shops):** an order a player gives a building that lists the item (`usei`) or the unit (`useu`) with `IssueNeutralImmediateOrderById` is a purchase: the
+  player's unit nearest the shop within 900 pays the price and takes the item (or the shop makes the unit at its door, the food counted), and the sell events
+  fire for the buyer's player (`GetSoldItem`, `GetSoldUnit`, `GetSellingUnit`, `GetBuyingUnit`). Without a unit of the player near, or the price, nothing
+  happens. Close: the stock a shop keeps and its wait are not (it always has the thing), and selling an item to a shop (pawn) is not.
+
+- **D383 (The AI's heroes learn skills):** `SetHeroLevels(function)` gives, for the AI player, the function that names the ability a hero learns: for a hero with a skill
+  point it is asked (`GetHeroId` the hero's type, `GetHeroLevelAI` its level), and the hero learns what it names (`SelectHeroSkill`), when the hero is made, when it
+  reaches a level, and for the heroes the player has when the function is given. A point that is not spent stops the asking.
+
+- **D384 (Bash, Critical Strike, Evasion):** a unit with Critical Strike (AOcr) multiplies the damage of an attack by DataB when a draw of 1 to 100 is within DataA; one with
+  Bash (AHbh) adds DataC and stuns for the ability's duration (a hero's own for a hero) on a melee attack with the chance DataA; one with Evasion (AEev) turns an
+  attack aside when a draw is within DataA times 100. Each draw is the game's shared generator's. Close: the abilities of other names that do the same with their
+  own data are not here.
+
+- **D385 (Pawning):** `UnitDropItemTarget` with a shop that has the pawn ability (Apit) and an item that can be pawned, from a unit within 900, gives the unit's player
+  the share of the item's price that PawnItemRate names (half), fires the pawn event (`GetSoldItem`, `GetSellingUnit` the shop, `GetBuyingUnit` the seller) and takes
+  the item away. Any other target leaves the item as it was.
+
+- **D386 (Transports):** a unit with a cargo hold (Cargo Hold, whose DataA is the room, one a unit) takes a friendly unit near it (within 700) on the load order, or a unit
+  sent to it by its smart order once it is in reach; the loaded unit is hidden, moves with the transport, fires the loaded event (`GetLoadedUnit`, `GetTransportUnit`;
+  `IsUnitLoaded`, `IsUnitInTransport`), and comes out round the place of the unload or unload-all order; a transport that dies kills what it holds. Close: units
+  count one each (the game counts by size), a unit does not walk to a transport that loads it, and there is no unloaded event (common.j has none).
+
+- **D387 (Repair):** a worker given the repair order on a hurt finished building of its owner or an ally walks to it and restores its life at the rate its build time gives
+  (a full repair takes the build time times RepairTimeRatio, 1.5), paying that share of the price times RepairCostRatio (0.35) in whole points as it builds up, until the
+  building is whole, the player cannot pay or the order changes. Close: the ratios are the constants' names as I know them (not measured), and mechanical units are not
+  repaired.
+
+- **D388 (The corpus of shipped maps, A4 and A5):** all 466 maps of the installed game's Maps and Campaign folders load and run 10 game minutes with no Missing native; two
+  community maps of the Forsaken Kingdom scenarios fail in their own scripts and are named in the corpus test with the reason (ForgottenHollow indexes a table with nil
+  in its handle library at the start; SilverpineSprint's car physics finds no terrain family at about 13 s). The one fault in the runtime that the corpus found: JASS has a
+  unary plus (`+x`) that the transpiler wrote as it was and Lua refuses, in an AI script of a campaign; the operand is written alone now. `MIRROR_DUMP_AI` (a folder) writes
+  the Lua of each AI script, and `MIRROR_TRACEBACK` puts the Lua traceback of a script error in the log.
+
+- **D389 (The melee corpus, A4):** the install's classic melee maps ((2) to (12) players: 42 maps) each run 30 game minutes with a person in the first slot and computers in the rest, with
+  no script error, and the computers' units grow (a 2-player map from 6 to about 18 units, a 4-player from 18 to about 75, an 8-player from 42 to about 160): 9 to 230 s a map
+  with eight runs at once, a 4-player map alone 23 s (A10). The test counts a melee map as one with two or more user slots, and the computers' own units only.

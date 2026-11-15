@@ -149,7 +149,8 @@ public sealed partial class GameNatives
 
     /// <summary>As UnitDropItemPoint, to a widget.</summary>
     [Native(Level.Close)]
-    public bool UnitDropItemTarget(unit? whichUnit, item? whichItem, widget? target) => UnitHasItem(whichUnit, whichItem) && target is not null;
+    public bool UnitDropItemTarget(unit? whichUnit, item? whichItem, widget? target) =>
+        UnitHasItem(whichUnit, whichItem) && target is not null && (target is unit shop && Pawns(shop, whichItem!) ? Pawn(whichUnit!, whichItem!, shop) : true);
 
     /// <summary>
     /// Uses a carried item: one charge less, the use event with it still in its slot, and an item out of charges that

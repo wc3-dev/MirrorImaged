@@ -62,6 +62,8 @@ public sealed partial class GameNatives
         hit.Amount = Reduced(hit, target);
         FireUnit(new(target, Hit: hit), UnitDamaged, PlayerUnitDamaged);
         if (!target.Dead) SetLife(target, target.Life - hit.Amount, hit.Source);
+        // An attack in melee gives its unit back a share of the damage
+        if (hit.IsAttack && !hit.Ranged && hit.Source is { Dead: false } thief && LifeStealOf(thief) is > 0 and var share) SetLife(thief, Math.Min(thief.Life + hit.Amount * share, thief.MaxLife));
         return true;
     }
 
@@ -70,7 +72,7 @@ public sealed partial class GameNatives
     // 2 - 0.94^n (n its whole part, to -20)
     float Reduced(Hit hit, unit target)
     {
-        if (Find(target, Invulnerable) is not null) return 0;
+        if (Find(target, Invulnerable) is not null || IsInvulnerableByBuff(target)) return 0;
         if (hit.DamageType?.Id != NormalDamage) return hit.Amount;
         var row = Data.Constant("DamageBonus" + AttackRows[Math.Clamp(hit.AttackType?.Id ?? 0, 0, AttackRows.Length - 1)])?.Split(',');
         var defence = BlzGetUnitIntegerField(target, Convert<unitintegerfield>(DefenseType));

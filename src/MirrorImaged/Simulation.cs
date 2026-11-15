@@ -27,10 +27,16 @@ public sealed class SimulationOptions
     /// game caches. Give the same one to the next run to keep them.
     /// </summary>
     public Documents Documents { get; init; } = new();
+
+    /// <summary>
+    /// Natives to run as Missing: calling one stops the run with its name, as a native MirrorImaged does not have would. For testing how a map or a
+    /// tool copes with one. The <c>MIRROR_MISSING</c> environment variable, names separated by commas, adds to it.
+    /// </summary>
+    public IReadOnlyList<string>? TreatAsMissing { get; init; }
 }
 
 /// <summary>
-/// A map's script running on a simulated game, with no game open. <see cref="Load"/> sets <c>common.j</c>'s globals,
+/// A map's script running on a simulated game, with no game open. <see cref="Load(string, SimulationOptions?)"/> sets <c>common.j</c>'s globals,
 /// runs the installed game's <c>blizzard.j</c>, then the script, its <c>config</c> and <c>main</c>;
 /// <see cref="Advance"/> moves the clock on and runs the timers that fall due. A Lua error goes in the log and the run
 /// carries on, as the game drops it. A Missing native stops the run, and so does a call the game closes on:
@@ -45,6 +51,8 @@ public sealed partial class Simulation : IDisposable
     readonly LuaState _lua = new() { Halts = e => e is MissingNativeException or GameClosedException };
     readonly bool _jass;
     TimeSpan _time;
+    readonly HashSet<string> _treatAsMissing;
+    Func<SimulationOptions?, Simulation> _reload = _ => throw new InvalidOperationException("The simulation was not loaded from a map");
 
     // script: the map's Lua, for a JASS map made from its war3map.j with JASS's rules, which the run keeps (decisions D130)
     Simulation(GameData data, byte[] script, string blizzard, SimulationOptions options)
@@ -52,6 +60,7 @@ public sealed partial class Simulation : IDisposable
         var info = data.Map!.Files.Info;
         _jass = data.Map.Jass;
         _game = new Game(options.Seed);
+        _treatAsMissing = [.. options.TreatAsMissing ?? [], .. (Environment.GetEnvironmentVariable("MIRROR_MISSING") ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
         _natives = new GameNatives(_game) { Threads = new ScriptThreads(this), Documents = options.Documents, RunPreloadFile = RunPreloadFile, AiLoader = LoadAi, Data = data, Jass = _jass };
         try
         {
@@ -109,7 +118,7 @@ public sealed partial class Simulation : IDisposable
         var map = Read(path); // first, so a missing map says so whether or not the game is installed
         var blizzard = Blizzard.Lua(map.Jass);
         var script = map.Jass ? JassLua(path, map.Script!, Blizzard.Syntax()) : map.Script!;
-        return new(new GameData(StandardData.Installed(GameInstall.Require(), map.Files.Info), map), script, blizzard, options ?? new SimulationOptions());
+        return Recorded(new(new GameData(StandardData.Installed(GameInstall.Require(), map.Files.Info), map), script, blizzard, options ?? new SimulationOptions()), path, options, o => Load(path, o));
     }
 
     /// <summary>
@@ -122,7 +131,16 @@ public sealed partial class Simulation : IDisposable
     {
         var map = Read(path);
         var script = map.Jass ? JassLua(path, map.Script!, null) : map.Script!;
-        return new(new GameData(data ?? new StandardData(), map), script, blizzard, options ?? new SimulationOptions());
+        return Recorded(new(new GameData(data ?? new StandardData(), map), script, blizzard, options ?? new SimulationOptions()), path, options, o => Load(path, blizzard, o, data));
+    }
+
+    // The recording starts with the map, the seed and the seats the run was given
+    static Simulation Recorded(Simulation simulation, string path, SimulationOptions? options, Func<SimulationOptions?, Simulation> reload)
+    {
+        simulation._reload = reload;
+        (simulation._recording.Map, simulation._recording.Seed) = (path, options?.Seed ?? 0);
+        (simulation._recording.Users, simulation._recording.Computers) = (options?.Users?.ToArray(), options?.Computers?.ToArray());
+        return simulation;
     }
 
     static MapArchive Read(string path) =>
@@ -178,7 +196,7 @@ public sealed partial class Simulation : IDisposable
     /// <summary>The player says the message, as if typed in the game: the chat events registered for it fire.</summary>
     public void Say(int player, string message)
     {
-        if (_natives.Player(player) is { } speaker) _natives.Say(speaker, message);
+        Apply(new(_game.Step, "say", player, Text: message), true);
     }
 
     /// <summary>
@@ -211,6 +229,7 @@ public sealed partial class Simulation : IDisposable
         if (_game.Paused || _game.Ended) _time = TimeSpan.FromSeconds((double)_game.Step / Game.StepsPerSecond);
     }
 
+    /// <summary>Ends the run and frees what it holds.</summary>
     public void Dispose() => _lua.Dispose();
 
     // Runs Lua with os.clock and os.time on the game's clock; an error goes in the log, unless it stops the run.
@@ -220,7 +239,7 @@ public sealed partial class Simulation : IDisposable
         try { run(); }
         catch (LuaException e) when (_lua.Halted is null)
         {
-            _game.Write("error", e.Message.Split("\nstack traceback:")[0]);
+            _game.Write("error", Environment.GetEnvironmentVariable("MIRROR_TRACEBACK") is null ? e.Message.Split("\nstack traceback:")[0] : e.Message);
         }
     }
 

@@ -38,6 +38,7 @@ public sealed class LuaFunction : IDisposable
         return _state.Start(null, Reference);
     }
 
+    /// <summary>Lets go of the function.</summary>
     public void Dispose()
     {
         if (_disposed) return;

@@ -365,4 +365,28 @@ public sealed class JassMapTests : IDisposable
 
         Assert.Equal(["0.000 print: false\tbad argument #1 to 'StringLength' (string expected, got nil)"], simulation.Log);
     }
+
+    [Fact]
+    public void A_unary_plus_in_jass_is_the_operand_as_lua_has_none()
+    {
+        using var simulation = Run("""
+            globals
+                integer offset = 5
+            endglobals
+
+            function Show takes integer a, integer b returns nothing
+                call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, I2S(a) + " " + I2S(b))
+            endfunction
+
+            function config takes nothing returns nothing
+            endfunction
+
+            function main takes nothing returns nothing
+                call Show(+offset, -offset)
+                call Show(+7, 2 - +offset)
+            endfunction
+            """);
+
+        Assert.Equal(["0.000 player 0: 5 -5", "0.000 player 0: 7 -3"], simulation.Log);
+    }
 }
