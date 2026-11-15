@@ -2293,3 +2293,13 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   (`GetNextExpansion` is -1 with none), with its creeps, a worker sent to build there, and the camps of creeps. Seen: the human melee AI, five
   minutes in, sends eight footmen, four riflemen and a hero at an enemy second town hall and takes its life down. Close: the AI never attacks
   a main base without siege, as its script has it.
+
+- **D367 (A person at a player):** a test or a recording gives a player keys, the mouse, a selection, orders and leaving (`Simulation.Key`,
+  `Mouse`, `Select`, `Order`, `Leave`, `Say`), each at the step it was given in, and each fires the events a map registered and sets what it
+  reads back (`BlzGetTriggerPlayerKey`, `IsUnitSelected`, `GetPlayerSlotState`). Only a player's own units obey its orders and selection. A
+  recording is the map, seed, seats and the inputs at their steps, and `Follow` or `mirror replay` runs it again to the same hash. Close: the
+  game's own arrow-key and key-event ids are not mapped beyond the registrations of `BlzTriggerRegisterPlayerKeyEvent`.
+- **D368 (The desync check):** `mirror desync` and `Desync.Check` run the map once for each person's slot, all seated, with that slot as the
+  local player, and compare the state after each second; a difference is reported with its step, the part of the world (time, a player,
+  a unit) and the first log line that differs. `mirror bench` times a run, and `mirror fuzz` gives every player's units random legal orders
+  each second and reports script errors.
