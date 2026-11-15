@@ -127,9 +127,9 @@ public sealed partial class GameNatives
         if (Live(whichItem) is { } i && description is not null) i.Description = description;
     }
 
-    /// <summary>The extended tooltip as the data writes it: its tags (<c>&lt;AIh1,DataA1&gt;</c>) are not resolved here, the game gives "Heals 250 hit points when used." (probe items).</summary>
-    [Native(Level.Close)]
-    public string? BlzGetItemExtendedTooltip(item? whichItem) => Live(whichItem) is { } i ? i.Extended ?? i.Type.Text(ItemExtended) ?? "" : "";
+    /// <summary>The extended tooltip with its tags (<c>&lt;AIh1,DataA1&gt;</c>) filled: "Heals 250 hit points when used." (probe items).</summary>
+    [Native(Level.Close, Fact = TagFacts)]
+    public string? BlzGetItemExtendedTooltip(item? whichItem) => ParseTags(Live(whichItem) is { } i ? i.Extended ?? i.Type.Text(ItemExtended) ?? "" : "");
 
     [Native(Level.Close)]
     public void BlzSetItemExtendedTooltip(item? whichItem, string? extendedTooltip)
