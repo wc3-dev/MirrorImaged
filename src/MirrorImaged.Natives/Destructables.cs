@@ -397,7 +397,7 @@ public sealed partial class GameNatives
     // place (game-facts, "Units"; probe destructables).
     float Height(float x, float y)
     {
-        var height = Data.Terrain?.Height(x, y) ?? 0;
+        var height = Ground(x, y);
         foreach (var d in _decks)
         {
             var (dx, dy) = (x - d.X, y - d.Y);
