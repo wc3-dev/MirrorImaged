@@ -2182,3 +2182,8 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   masked as fogged, both off everything visible (facts, 10-09 and 11-06). A stopped modifier leaves its area explored. Selection is
   a set for each player; `SelectUnit` acts on the local player. Close: invisibility, detection, transports and the in-range event
   come with abilities and movement (waves 3 and 4), and the game's later recompute of overlapping modifiers (the oldest wins) isn't modelled.
+- **D602. Events whose sources come later.** The spell, training, building, shop, summon and attack responses read nil or 0 outside
+  their events, as every response does outside one; the registrations of the command, upgrade-command, chat, trackable and key events
+  answer an event that never fires; the key and mouse state reads false and 0. Sync data (`BlzSendSyncData`) is real: it reaches
+  the registrations for its prefix for the local player a step later, refused over 255 characters. Using an item on a place or a
+  target needs its ability (wave 4) and is refused.
