@@ -7,27 +7,6 @@ namespace MirrorImaged.Natives;
 public sealed partial class GameNatives
 {
     [Native(Level.Missing)]
-    public int AbilityId(string? abilityIdString) => throw new MissingNativeException("AbilityId");
-
-    [Native(Level.Missing)]
-    public string? AbilityId2String(int abilityId) => throw new MissingNativeException("AbilityId2String");
-
-    [Native(Level.Missing)]
-    public void AutomationSetTestType(string? testType) => throw new MissingNativeException("AutomationSetTestType");
-
-    [Native(Level.Missing)]
-    public void AutomationTestEnd() => throw new MissingNativeException("AutomationTestEnd");
-
-    [Native(Level.Missing)]
-    public void AutomationTestStart(string? testName) => throw new MissingNativeException("AutomationTestStart");
-
-    [Native(Level.Missing)]
-    public void AutomationTestingFinished() => throw new MissingNativeException("AutomationTestingFinished");
-
-    [Native(Level.Missing)]
-    public int BlzConvertColor(int a, int r, int g, int b) => throw new MissingNativeException("BlzConvertColor");
-
-    [Native(Level.Missing)]
     public framehandle? BlzCreateFrame(string? name, framehandle? owner, int priority, int createContext) => throw new MissingNativeException("BlzCreateFrame");
 
     [Native(Level.Missing)]
@@ -38,24 +17,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public void BlzDestroyFrame(framehandle? frame) => throw new MissingNativeException("BlzDestroyFrame");
-
-    [Native(Level.Missing)]
-    public void BlzDisplayChatMessage(player? whichPlayer, int recipient, string? message) => throw new MissingNativeException("BlzDisplayChatMessage");
-
-    [Native(Level.Missing)]
-    public void BlzEnableCursor(bool enable) => throw new MissingNativeException("BlzEnableCursor");
-
-    [Native(Level.Missing)]
-    public void BlzEnableSelections(bool enableSelection, bool enableSelectionCircle) => throw new MissingNativeException("BlzEnableSelections");
-
-    [Native(Level.Missing)]
-    public void BlzEnableTargetIndicator(bool enable) => throw new MissingNativeException("BlzEnableTargetIndicator");
-
-    [Native(Level.Missing)]
-    public void BlzEnableUIAutoPosition(bool enable) => throw new MissingNativeException("BlzEnableUIAutoPosition");
-
-    [Native(Level.Missing)]
-    public void BlzEndRecording() => throw new MissingNativeException("BlzEndRecording");
 
     [Native(Level.Missing)]
     public void BlzFrameAddText(framehandle? frame, string? text) => throw new MissingNativeException("BlzFrameAddText");
@@ -187,37 +148,10 @@ public sealed partial class GameNatives
     public item? BlzGetAbsorbingItem() => throw new MissingNativeException("BlzGetAbsorbingItem");
 
     [Native(Level.Missing)]
-    public string? BlzGetAnimName(animtype? whichAnim) => throw new MissingNativeException("BlzGetAnimName");
-
-    [Native(Level.Missing)]
     public framehandle? BlzGetFrameByName(string? name, int createContext) => throw new MissingNativeException("BlzGetFrameByName");
 
     [Native(Level.Missing)]
-    public float BlzGetHUDScale() => throw new MissingNativeException("BlzGetHUDScale");
-
-    [Native(Level.Missing)]
-    public int BlzGetLocalClientHeight() => throw new MissingNativeException("BlzGetLocalClientHeight");
-
-    [Native(Level.Missing)]
-    public int BlzGetLocalClientWidth() => throw new MissingNativeException("BlzGetLocalClientWidth");
-
-    [Native(Level.Missing)]
-    public string? BlzGetLocale() => throw new MissingNativeException("BlzGetLocale");
-
-    [Native(Level.Missing)]
     public bool BlzGetManipulatedItemWasAbsorbed() => throw new MissingNativeException("BlzGetManipulatedItemWasAbsorbed");
-
-    [Native(Level.Missing)]
-    public int BlzGetMinShadowCastingPointLightCount() => throw new MissingNativeException("BlzGetMinShadowCastingPointLightCount");
-
-    [Native(Level.Missing)]
-    public int BlzGetModelCinematicGameCurrentShot() => throw new MissingNativeException("BlzGetModelCinematicGameCurrentShot");
-
-    [Native(Level.Missing)]
-    public float BlzGetModelCinematicGameRemainingTime() => throw new MissingNativeException("BlzGetModelCinematicGameRemainingTime");
-
-    [Native(Level.Missing)]
-    public int BlzGetModelCinematicGameShotCount() => throw new MissingNativeException("BlzGetModelCinematicGameShotCount");
 
     [Native(Level.Missing)]
     public unit? BlzGetMouseFocusUnit() => throw new MissingNativeException("BlzGetMouseFocusUnit");
@@ -230,9 +164,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public framehandle? BlzGetOriginFrame(originframetype? frameType, int index) => throw new MissingNativeException("BlzGetOriginFrame");
-
-    [Native(Level.Missing)]
-    public int BlzGetPlayerTownHallCount(player? whichPlayer) => throw new MissingNativeException("BlzGetPlayerTownHallCount");
 
     [Native(Level.Missing)]
     public framehandle? BlzGetTriggerFrame() => throw new MissingNativeException("BlzGetTriggerFrame");
@@ -283,16 +214,10 @@ public sealed partial class GameNatives
     public int BlzGetUnitOrderCount(unit? whichUnit) => throw new MissingNativeException("BlzGetUnitOrderCount");
 
     [Native(Level.Missing)]
-    public void BlzHideCinematicPanels(bool enable) => throw new MissingNativeException("BlzHideCinematicPanels");
-
-    [Native(Level.Missing)]
     public void BlzHideOriginFrames(bool enable) => throw new MissingNativeException("BlzHideOriginFrames");
 
     [Native(Level.Missing)]
     public bool BlzIsKeyPressed(oskeytype? key) => throw new MissingNativeException("BlzIsKeyPressed");
-
-    [Native(Level.Missing)]
-    public bool BlzIsLocalClientActive() => throw new MissingNativeException("BlzIsLocalClientActive");
 
     [Native(Level.Missing)]
     public bool BlzIsMetaKeyPressed(int metakey) => throw new MissingNativeException("BlzIsMetaKeyPressed");
@@ -301,34 +226,13 @@ public sealed partial class GameNatives
     public bool BlzIsMouseButtonPressed(mousebuttontype? mouseButtonType) => throw new MissingNativeException("BlzIsMouseButtonPressed");
 
     [Native(Level.Missing)]
-    public bool BlzIsSelectionCircleEnabled() => throw new MissingNativeException("BlzIsSelectionCircleEnabled");
-
-    [Native(Level.Missing)]
-    public bool BlzIsSelectionEnabled() => throw new MissingNativeException("BlzIsSelectionEnabled");
-
-    [Native(Level.Missing)]
-    public bool BlzIsTargetIndicatorEnabled() => throw new MissingNativeException("BlzIsTargetIndicatorEnabled");
-
-    [Native(Level.Missing)]
-    public bool BlzIsTerrainPathableEx(float x, float y, pathingtype? t) => throw new MissingNativeException("BlzIsTerrainPathableEx");
-
-    [Native(Level.Missing)]
     public bool BlzLoadTOCFile(string? TOCFile) => throw new MissingNativeException("BlzLoadTOCFile");
-
-    [Native(Level.Missing)]
-    public void BlzLockHUDScale() => throw new MissingNativeException("BlzLockHUDScale");
 
     [Native(Level.Missing)]
     public float BlzPixelToFrameX(int pixelX) => throw new MissingNativeException("BlzPixelToFrameX");
 
     [Native(Level.Missing)]
     public float BlzPixelToFrameY(int pixelY) => throw new MissingNativeException("BlzPixelToFrameY");
-
-    [Native(Level.Missing)]
-    public void BlzPlayModelCinematicGameAtPosition(string? modelName, float posX, float posY, float posZ, float RotZ) => throw new MissingNativeException("BlzPlayModelCinematicGameAtPosition");
-
-    [Native(Level.Missing)]
-    public bool BlzPreloadModelCinematicGame(string? modelName) => throw new MissingNativeException("BlzPreloadModelCinematicGame");
 
     [Native(Level.Missing)]
     public bool BlzQueueBuildOrderById(unit? whichPeon, int unitId, float x, float y) => throw new MissingNativeException("BlzQueueBuildOrderById");
@@ -361,21 +265,6 @@ public sealed partial class GameNatives
     public bool BlzSendSyncData(string? prefix, string? data) => throw new MissingNativeException("BlzSendSyncData");
 
     [Native(Level.Missing)]
-    public void BlzSetCinematicEnabledDE(bool enable) => throw new MissingNativeException("BlzSetCinematicEnabledDE");
-
-    [Native(Level.Missing)]
-    public void BlzSetHUDScale(int percentage) => throw new MissingNativeException("BlzSetHUDScale");
-
-    [Native(Level.Missing)]
-    public void BlzSetMinShadowCastingPointLightCount(int count) => throw new MissingNativeException("BlzSetMinShadowCastingPointLightCount");
-
-    [Native(Level.Missing)]
-    public void BlzSetMousePos(int x, int y) => throw new MissingNativeException("BlzSetMousePos");
-
-    [Native(Level.Missing)]
-    public void BlzStartRecording(int fps) => throw new MissingNativeException("BlzStartRecording");
-
-    [Native(Level.Missing)]
     public void BlzTextAreaFrameSetAutoScroll(framehandle? frame, bool value) => throw new MissingNativeException("BlzTextAreaFrameSetAutoScroll");
 
     [Native(Level.Missing)]
@@ -397,25 +286,10 @@ public sealed partial class GameNatives
     public void BlzUnitForceStopOrder(unit? whichUnit, bool clearQueue) => throw new MissingNativeException("BlzUnitForceStopOrder");
 
     [Native(Level.Missing)]
-    public void BlzUnlockHUDScale() => throw new MissingNativeException("BlzUnlockHUDScale");
-
-    [Native(Level.Missing)]
-    public void CachePlayerHeroData(player? whichPlayer) => throw new MissingNativeException("CachePlayerHeroData");
-
-    [Native(Level.Missing)]
-    public void ChangeLevel(string? newLevel, bool doScoreScreen) => throw new MissingNativeException("ChangeLevel");
-
-    [Native(Level.Missing)]
-    public void Cheat(string? cheatStr) => throw new MissingNativeException("Cheat");
-
-    [Native(Level.Missing)]
     public void ClearSelection() => throw new MissingNativeException("ClearSelection");
 
     [Native(Level.Missing)]
     public void CommandAI(player? num, int command, int data) => throw new MissingNativeException("CommandAI");
-
-    [Native(Level.Missing)]
-    public bool CopySaveGame(string? sourceSaveName, string? destSaveName) => throw new MissingNativeException("CopySaveGame");
 
     [Native(Level.Missing)]
     public fogmodifier? CreateFogModifierRadius(player? forWhichPlayer, fogstate? whichState, float centerx, float centerY, float radius, bool useSharedVision, bool afterUnits) => throw new MissingNativeException("CreateFogModifierRadius");
@@ -427,70 +301,13 @@ public sealed partial class GameNatives
     public fogmodifier? CreateFogModifierRect(player? forWhichPlayer, fogstate? whichState, rect? where, bool useSharedVision, bool afterUnits) => throw new MissingNativeException("CreateFogModifierRect");
 
     [Native(Level.Missing)]
-    public unit? CreateUnitAtLocByName(player? id, string? unitname, location? whichLocation, float face) => throw new MissingNativeException("CreateUnitAtLocByName");
-
-    [Native(Level.Missing)]
-    public void CripplePlayer(player? whichPlayer, force? toWhichPlayers, bool flag) => throw new MissingNativeException("CripplePlayer");
-
-    [Native(Level.Missing)]
     public void DestroyFogModifier(fogmodifier? whichFogModifier) => throw new MissingNativeException("DestroyFogModifier");
-
-    [Native(Level.Missing)]
-    public void DisableRestartMission(bool flag) => throw new MissingNativeException("DisableRestartMission");
-
-    [Native(Level.Missing)]
-    public void DisplayLoadDialog() => throw new MissingNativeException("DisplayLoadDialog");
-
-    [Native(Level.Missing)]
-    public void DoNotSaveReplay() => throw new MissingNativeException("DoNotSaveReplay");
-
-    [Native(Level.Missing)]
-    public void EnableDragSelect(bool state, bool ui) => throw new MissingNativeException("EnableDragSelect");
-
-    [Native(Level.Missing)]
-    public void EnableMinimapFilterButtons(bool enableAlly, bool enableCreep) => throw new MissingNativeException("EnableMinimapFilterButtons");
-
-    [Native(Level.Missing)]
-    public void EnableOcclusion(bool flag) => throw new MissingNativeException("EnableOcclusion");
-
-    [Native(Level.Missing)]
-    public void EnablePreSelect(bool state, bool ui) => throw new MissingNativeException("EnablePreSelect");
-
-    [Native(Level.Missing)]
-    public void EnableSelect(bool state, bool ui) => throw new MissingNativeException("EnableSelect");
-
-    [Native(Level.Missing)]
-    public void EnableUserControl(bool b) => throw new MissingNativeException("EnableUserControl");
-
-    [Native(Level.Missing)]
-    public void EnableUserUI(bool b) => throw new MissingNativeException("EnableUserUI");
 
     [Native(Level.Missing)]
     public void FogModifierStart(fogmodifier? whichFogModifier) => throw new MissingNativeException("FogModifierStart");
 
     [Native(Level.Missing)]
     public void FogModifierStop(fogmodifier? whichFogModifier) => throw new MissingNativeException("FogModifierStop");
-
-    [Native(Level.Missing)]
-    public void ForceCampaignSelectScreen() => throw new MissingNativeException("ForceCampaignSelectScreen");
-
-    [Native(Level.Missing)]
-    public void ForceUICancel() => throw new MissingNativeException("ForceUICancel");
-
-    [Native(Level.Missing)]
-    public void ForceUIKey(string? key) => throw new MissingNativeException("ForceUIKey");
-
-    [Native(Level.Missing)]
-    public aidifficulty? GetAIDifficulty(player? num) => throw new MissingNativeException("GetAIDifficulty");
-
-    [Native(Level.Missing)]
-    public string? GetAbilityEffect(string? abilityString, effecttype? t, int index) => throw new MissingNativeException("GetAbilityEffect");
-
-    [Native(Level.Missing)]
-    public string? GetAbilityEffectById(int abilityId, effecttype? t, int index) => throw new MissingNativeException("GetAbilityEffectById");
-
-    [Native(Level.Missing)]
-    public int GetAllyColorFilterState() => throw new MissingNativeException("GetAllyColorFilterState");
 
     [Native(Level.Missing)]
     public unit? GetAttacker() => throw new MissingNativeException("GetAttacker");
@@ -506,18 +323,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public unit? GetConstructingStructure() => throw new MissingNativeException("GetConstructingStructure");
-
-    [Native(Level.Missing)]
-    public mapdensity? GetCreatureDensity() => throw new MissingNativeException("GetCreatureDensity");
-
-    [Native(Level.Missing)]
-    public bool GetCreepCampFilterState() => throw new MissingNativeException("GetCreepCampFilterState");
-
-    [Native(Level.Missing)]
-    public bool GetCustomCampaignButtonVisible(int whichButton) => throw new MissingNativeException("GetCustomCampaignButtonVisible");
-
-    [Native(Level.Missing)]
-    public gamedifficulty? GetDefaultDifficulty() => throw new MissingNativeException("GetDefaultDifficulty");
 
     [Native(Level.Missing)]
     public unit? GetDetectedUnit() => throw new MissingNativeException("GetDetectedUnit");
@@ -559,22 +364,10 @@ public sealed partial class GameNatives
     public unit? GetOrderTargetUnit() => throw new MissingNativeException("GetOrderTargetUnit");
 
     [Native(Level.Missing)]
-    public int GetPlayerScore(player? whichPlayer, playerscore? whichPlayerScore) => throw new MissingNativeException("GetPlayerScore");
-
-    [Native(Level.Missing)]
-    public int GetPlayerTaxRate(player? sourcePlayer, player? otherPlayer, playerstate? whichResource) => throw new MissingNativeException("GetPlayerTaxRate");
-
-    [Native(Level.Missing)]
     public int GetResearched() => throw new MissingNativeException("GetResearched");
 
     [Native(Level.Missing)]
     public unit? GetResearchingUnit() => throw new MissingNativeException("GetResearchingUnit");
-
-    [Native(Level.Missing)]
-    public mapdensity? GetResourceDensity() => throw new MissingNativeException("GetResourceDensity");
-
-    [Native(Level.Missing)]
-    public string? GetSaveBasicFilename() => throw new MissingNativeException("GetSaveBasicFilename");
 
     [Native(Level.Missing)]
     public unit? GetSellingUnit() => throw new MissingNativeException("GetSellingUnit");
@@ -617,21 +410,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public unit? GetSummoningUnit() => throw new MissingNativeException("GetSummoningUnit");
-
-    [Native(Level.Missing)]
-    public int GetTerrainCliffLevel(float x, float y) => throw new MissingNativeException("GetTerrainCliffLevel");
-
-    [Native(Level.Missing)]
-    public player? GetTournamentFinishNowPlayer() => throw new MissingNativeException("GetTournamentFinishNowPlayer");
-
-    [Native(Level.Missing)]
-    public int GetTournamentFinishNowRule() => throw new MissingNativeException("GetTournamentFinishNowRule");
-
-    [Native(Level.Missing)]
-    public float GetTournamentFinishSoonTimeRemaining() => throw new MissingNativeException("GetTournamentFinishSoonTimeRemaining");
-
-    [Native(Level.Missing)]
-    public int GetTournamentScore(player? whichPlayer) => throw new MissingNativeException("GetTournamentScore");
 
     [Native(Level.Missing)]
     public unit? GetTrainedUnit() => throw new MissingNativeException("GetTrainedUnit");
@@ -689,9 +467,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public bool IsFoggedToPlayer(float x, float y, player? whichPlayer) => throw new MissingNativeException("IsFoggedToPlayer");
-
-    [Native(Level.Missing)]
-    public bool IsGameTypeSupported(gametype? whichGameType) => throw new MissingNativeException("IsGameTypeSupported");
 
     [Native(Level.Missing)]
     public bool IsLocationFoggedToPlayer(location? whichLocation, player? whichPlayer) => throw new MissingNativeException("IsLocationFoggedToPlayer");
@@ -796,22 +571,10 @@ public sealed partial class GameNatives
     public bool IssueTargetOrderById(unit? whichUnit, int order, widget? targetWidget) => throw new MissingNativeException("IssueTargetOrderById");
 
     [Native(Level.Missing)]
-    public void LoadGame(string? saveFileName, bool doScoreScreen) => throw new MissingNativeException("LoadGame");
-
-    [Native(Level.Missing)]
-    public int OrderId(string? orderIdString) => throw new MissingNativeException("OrderId");
-
-    [Native(Level.Missing)]
-    public string? OrderId2String(int orderId) => throw new MissingNativeException("OrderId2String");
-
-    [Native(Level.Missing)]
     public void PauseCompAI(player? p, bool pause) => throw new MissingNativeException("PauseCompAI");
 
     [Native(Level.Missing)]
     public void RecycleGuardPosition(unit? hUnit) => throw new MissingNativeException("RecycleGuardPosition");
-
-    [Native(Level.Missing)]
-    public void ReloadGame() => throw new MissingNativeException("ReloadGame");
 
     [Native(Level.Missing)]
     public void RemoveAllGuardPositions(player? num) => throw new MissingNativeException("RemoveAllGuardPositions");
@@ -820,52 +583,7 @@ public sealed partial class GameNatives
     public void RemoveGuardPosition(unit? hUnit) => throw new MissingNativeException("RemoveGuardPosition");
 
     [Native(Level.Missing)]
-    public bool RemoveSaveDirectory(string? sourceDirName) => throw new MissingNativeException("RemoveSaveDirectory");
-
-    [Native(Level.Missing)]
-    public bool RenameSaveDirectory(string? sourceDirName, string? destDirName) => throw new MissingNativeException("RenameSaveDirectory");
-
-    [Native(Level.Missing)]
-    public void RestartGame(bool doScoreScreen) => throw new MissingNativeException("RestartGame");
-
-    [Native(Level.Missing)]
-    public void SaveGame(string? saveFileName) => throw new MissingNativeException("SaveGame");
-
-    [Native(Level.Missing)]
-    public void SaveGameCheckpoint(string? saveFileName, bool showWindow) => throw new MissingNativeException("SaveGameCheckpoint");
-
-    [Native(Level.Missing)]
-    public bool SaveGameExists(string? saveName) => throw new MissingNativeException("SaveGameExists");
-
-    [Native(Level.Missing)]
     public void SelectUnit(unit? whichUnit, bool flag) => throw new MissingNativeException("SelectUnit");
-
-    [Native(Level.Missing)]
-    public void SetAllyColorFilterState(int state) => throw new MissingNativeException("SetAllyColorFilterState");
-
-    [Native(Level.Missing)]
-    public void SetCampaignAvailable(int campaignNumber, bool available) => throw new MissingNativeException("SetCampaignAvailable");
-
-    [Native(Level.Missing)]
-    public void SetCampaignMenuRace(race? r) => throw new MissingNativeException("SetCampaignMenuRace");
-
-    [Native(Level.Missing)]
-    public void SetCampaignMenuRaceEx(int campaignIndex) => throw new MissingNativeException("SetCampaignMenuRaceEx");
-
-    [Native(Level.Missing)]
-    public void SetCreatureDensity(mapdensity? whichdensity) => throw new MissingNativeException("SetCreatureDensity");
-
-    [Native(Level.Missing)]
-    public void SetCreepCampFilterState(bool state) => throw new MissingNativeException("SetCreepCampFilterState");
-
-    [Native(Level.Missing)]
-    public void SetCustomCampaignButtonVisible(int whichButton, bool visible) => throw new MissingNativeException("SetCustomCampaignButtonVisible");
-
-    [Native(Level.Missing)]
-    public void SetDefaultDifficulty(gamedifficulty? g) => throw new MissingNativeException("SetDefaultDifficulty");
-
-    [Native(Level.Missing)]
-    public void SetEdCinematicAvailable(int campaignNumber, bool available) => throw new MissingNativeException("SetEdCinematicAvailable");
 
     [Native(Level.Missing)]
     public void SetFogStateRadius(player? forWhichPlayer, fogstate? whichState, float centerx, float centerY, float radius, bool useSharedVision) => throw new MissingNativeException("SetFogStateRadius");
@@ -875,42 +593,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public void SetFogStateRect(player? forWhichPlayer, fogstate? whichState, rect? where, bool useSharedVision) => throw new MissingNativeException("SetFogStateRect");
-
-    [Native(Level.Missing)]
-    public void SetGameTypeSupported(gametype? whichGameType, bool value) => throw new MissingNativeException("SetGameTypeSupported");
-
-    [Native(Level.Missing)]
-    public void SetMaxCheckpointSaves(int maxCheckpointSaves) => throw new MissingNativeException("SetMaxCheckpointSaves");
-
-    [Native(Level.Missing)]
-    public void SetMissionAvailable(int campaignNumber, int missionNumber, bool available) => throw new MissingNativeException("SetMissionAvailable");
-
-    [Native(Level.Missing)]
-    public void SetOpCinematicAvailable(int campaignNumber, bool available) => throw new MissingNativeException("SetOpCinematicAvailable");
-
-    [Native(Level.Missing)]
-    public void SetPlayerOnScoreScreen(player? whichPlayer, bool flag) => throw new MissingNativeException("SetPlayerOnScoreScreen");
-
-    [Native(Level.Missing)]
-    public void SetPlayerTaxRate(player? sourcePlayer, player? otherPlayer, playerstate? whichResource, int rate) => throw new MissingNativeException("SetPlayerTaxRate");
-
-    [Native(Level.Missing)]
-    public void SetReservedLocalHeroButtons(int reserved) => throw new MissingNativeException("SetReservedLocalHeroButtons");
-
-    [Native(Level.Missing)]
-    public void SetResourceDensity(mapdensity? whichdensity) => throw new MissingNativeException("SetResourceDensity");
-
-    [Native(Level.Missing)]
-    public void SetTutorialCleared(bool cleared) => throw new MissingNativeException("SetTutorialCleared");
-
-    [Native(Level.Missing)]
-    public void SetUnitPathing(unit? whichUnit, bool flag) => throw new MissingNativeException("SetUnitPathing");
-
-    [Native(Level.Missing)]
-    public void ShowInterface(bool flag, float fadeDuration) => throw new MissingNativeException("ShowInterface");
-
-    [Native(Level.Missing)]
-    public string? SkinManagerGetLocalPath(string? key) => throw new MissingNativeException("SkinManagerGetLocalPath");
 
     [Native(Level.Missing)]
     public void StartCampaignAI(player? num, string? script) => throw new MissingNativeException("StartCampaignAI");
@@ -946,12 +628,6 @@ public sealed partial class GameNatives
     public void TriggerSyncStart() => throw new MissingNativeException("TriggerSyncStart");
 
     [Native(Level.Missing)]
-    public void UnitSetConstructionProgress(unit? whichUnit, int constructionPercentage) => throw new MissingNativeException("UnitSetConstructionProgress");
-
-    [Native(Level.Missing)]
-    public void UnitSetUpgradeProgress(unit? whichUnit, int upgradePercentage) => throw new MissingNativeException("UnitSetUpgradeProgress");
-
-    [Native(Level.Missing)]
     public void UnitShareVision(unit? whichUnit, player? whichPlayer, bool share) => throw new MissingNativeException("UnitShareVision");
 
     [Native(Level.Missing)]
@@ -959,12 +635,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public bool UnitUseItemTarget(unit? whichUnit, item? whichItem, widget? target) => throw new MissingNativeException("UnitUseItemTarget");
-
-    [Native(Level.Missing)]
-    public bool VersionCompatible(version? whichVersion) => throw new MissingNativeException("VersionCompatible");
-
-    [Native(Level.Missing)]
-    public bool VersionSupported(version? whichVersion) => throw new MissingNativeException("VersionSupported");
 
     [Native(Level.Missing)]
     public void WaygateActivate(unit? waygate, bool activate) => throw new MissingNativeException("WaygateActivate");
