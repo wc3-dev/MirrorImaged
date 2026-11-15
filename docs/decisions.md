@@ -2318,3 +2318,9 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   snapshot again, and `Simulation.StepBack` runs the map again to an earlier step, which lands on the state the run had then (A11). The
   world is not copied: a run repeats exactly from its recording, so going back costs the run to that step. `mirror snapshot` saves one and
   `mirror compare` runs it again and lists what differs.
+
+- **D373 (The viewer):** `mirror view <map or recording>` runs it, samples the units every half second (id, type, player, place, life, order, name)
+  with the log and its times, and writes one page that opens in a browser with the trace inside it: the map from above with its pathing
+  grid and regions, the units as circles in the colours of their players with a life bar, a timeline to scrub with play, step and speed, the
+  log (a line seeks to its time) and a panel for the selected unit. No missiles are drawn: attacks land at their damage point here. Heights
+  are not drawn. Seen in the in-app browser on a shipped campaign map; a headless browser opens it in the tests where one starts.

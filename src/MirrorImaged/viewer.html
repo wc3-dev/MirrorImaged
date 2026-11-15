@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MirrorImaged viewer</title>
+<style>
+  :root {
+    --bg: #f6f6f4; --panel: #ffffff; --ink: #1d1f23; --muted: #6b7078; --line: #d9dbdf; --accent: #2a62d9;
+    --ground: #e8e8e2; --blocked: #c9c9c0; --region: #2a62d9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14161a; --panel: #1c1f25; --ink: #e8e9ec; --muted: #8e939c; --line: #2c3038; --accent: #6b9bff;
+      --ground: #1f2227; --blocked: #30343b; --region: #6b9bff;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14161a; --panel: #1c1f25; --ink: #e8e9ec; --muted: #8e939c; --line: #2c3038; --accent: #6b9bff;
+    --ground: #1f2227; --blocked: #30343b; --region: #6b9bff;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.4 system-ui, sans-serif; display: grid; grid-template-rows: auto 1fr auto; height: 100vh; }
+  header { display: flex; gap: 12px; align-items: baseline; padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--panel); }
+  header h1 { font-size: 15px; margin: 0; font-weight: 600; }
+  header .map { color: var(--muted); }
+  header .stopped { color: #c0392b; margin-left: auto; }
+  main { display: grid; grid-template-columns: 1fr 320px; min-height: 0; }
+  @media (max-width: 760px) { main { grid-template-columns: 1fr; grid-template-rows: 55vh 1fr; } }
+  #stage { position: relative; min-height: 0; background: var(--ground); }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  aside { border-left: 1px solid var(--line); background: var(--panel); display: grid; grid-template-rows: auto 1fr; min-height: 0; }
+  #unit { padding: 12px 16px; border-bottom: 1px solid var(--line); min-height: 132px; }
+  #unit h2 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 600; }
+  #unit dl { margin: 0; display: grid; grid-template-columns: 80px 1fr; row-gap: 2px; }
+  #unit dt { color: var(--muted); }
+  #unit dd { margin: 0; font-variant-numeric: tabular-nums; }
+  #log { overflow: auto; padding: 8px 0; font: 12px/1.5 ui-monospace, Consolas, monospace; }
+  #log div { padding: 1px 16px; cursor: pointer; white-space: pre-wrap; word-break: break-word; }
+  #log div:hover { background: var(--bg); }
+  #log .now { color: var(--accent); }
+  footer { display: flex; gap: 10px; align-items: center; padding: 10px 16px; border-top: 1px solid var(--line); background: var(--panel); }
+  footer input[type=range] { flex: 1; accent-color: var(--accent); }
+  button, select { font: inherit; padding: 4px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  #time { min-width: 110px; text-align: right; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<header>
+  <h1>MirrorImaged</h1>
+  <span class="map" id="map"></span>
+  <span id="counts" class="map"></span>
+  <span class="stopped" id="stopped"></span>
+</header>
+<main>
+  <div id="stage"><canvas id="canvas"></canvas></div>
+  <aside>
+    <div id="unit"><h2>Unit</h2><p style="color: var(--muted); margin: 0">Click a unit to inspect it.</p></div>
+    <div id="log" aria-label="Log"></div>
+  </aside>
+</main>
+<footer>
+  <button id="play" aria-label="Play">Play</button>
+  <button id="back" aria-label="Back one frame">&lt;</button>
+  <button id="forward" aria-label="Forward one frame">&gt;</button>
+  <input id="scrub" type="range" min="0" value="0" step="1" aria-label="Timeline">
+  <select id="speed" aria-label="Speed"><option value="1">1x</option><option value="2">2x</option><option value="4">4x</option><option value="8">8x</option><option value="16">16x</option></select>
+  <span id="time">0.0 s</span>
+</footer>
+<script id="trace" type="application/json">/*TRACE*/null</script>
+<script>
+(function () {
+  "use strict";
+  var trace = JSON.parse(document.getElementById("trace").textContent);
+  if (!trace) { document.body.textContent = "No trace."; return; }
+  var frames = trace.frames, palette = ["#e03131", "#1c7ed6", "#2f9e44", "#f08c00", "#9c36b5", "#0c8599", "#e8590c", "#5c7cfa", "#e64980", "#74b816", "#868e96", "#a52a2a", "#444444", "#ffd43b", "#38d9a9", "#ff8787"];
+  var canvas = document.getElementById("canvas"), ctx = canvas.getContext("2d");
+  var scrub = document.getElementById("scrub"), timeLabel = document.getElementById("time");
+  var logBox = document.getElementById("log"), unitBox = document.getElementById("unit");
+  var index = 0, fraction = 0, playing = false, last = 0, selected = null, view = null, ground = null;
+
+  document.getElementById("map").textContent = trace.map || "";
+  document.getElementById("stopped").textContent = trace.stopped ? "Stopped: " + trace.stopped : "";
+  scrub.max = Math.max(frames.length - 1, 0);
+  document.getElementById("counts").textContent = frames.length + " frames, " + trace.log.length + " log lines";
+
+  function bounds() {
+    if (trace.bounds) return trace.bounds;
+    var x0 = 0, y0 = 0, x1 = 1, y1 = 1, first = true;
+    frames.forEach(function (f) { f.units.forEach(function (u) {
+      if (first) { x0 = x1 = u[3]; y0 = y1 = u[4]; first = false; }
+      x0 = Math.min(x0, u[3]); x1 = Math.max(x1, u[3]); y0 = Math.min(y0, u[4]); y1 = Math.max(y1, u[4]);
+    }); });
+    return [x0 - 200, y0 - 200, x1 + 200, y1 + 200];
+  }
+  var world = bounds();
+
+  function fit() {
+    var dpr = window.devicePixelRatio || 1, w = canvas.clientWidth, h = canvas.clientHeight;
+    canvas.width = Math.max(1, Math.round(w * dpr)); canvas.height = Math.max(1, Math.round(h * dpr));
+    var scale = Math.min(w / (world[2] - world[0]), h / (world[3] - world[1]));
+    view = { dpr: dpr, w: w, h: h, scale: scale, ox: (w - scale * (world[2] - world[0])) / 2, oy: (h - scale * (world[3] - world[1])) / 2 };
+    ground = null;
+    draw();
+  }
+  function sx(x) { return view.ox + (x - world[0]) * view.scale; }
+  function sy(y) { return view.h - (view.oy + (y - world[1]) * view.scale); }
+
+  function drawGround() {
+    if (ground) return ground;
+    var c = document.createElement("canvas"); c.width = canvas.width; c.height = canvas.height;
+    var g = c.getContext("2d"); g.scale(view.dpr, view.dpr);
+    var styles = getComputedStyle(document.documentElement);
+    g.fillStyle = styles.getPropertyValue("--ground"); g.fillRect(0, 0, view.w, view.h);
+    if (trace.grid) {
+      var bytes = Uint8Array.from(atob(trace.grid), function (ch) { return ch.charCodeAt(0); });
+      g.fillStyle = styles.getPropertyValue("--blocked");
+      var cell = 32 * view.scale;
+      for (var r = 0; r < trace.gridHeight; r++) for (var q = 0; q < trace.gridWidth; q++) {
+        if (bytes[r * trace.gridWidth + q] & 2) g.fillRect(sx(trace.gridLeft + q * 32), sy(trace.gridBottom + (r + 1) * 32), cell + 0.5, cell + 0.5);
+      }
+    }
+    g.strokeStyle = styles.getPropertyValue("--region"); g.fillStyle = styles.getPropertyValue("--region"); g.lineWidth = 1; g.globalAlpha = 0.5;
+    trace.regions.forEach(function (rg) {
+      g.strokeRect(sx(rg[1]), sy(rg[4]), (rg[3] - rg[1]) * view.scale, (rg[4] - rg[2]) * view.scale);
+    });
+    g.globalAlpha = 1;
+    g.strokeStyle = styles.getPropertyValue("--line"); g.strokeRect(sx(world[0]), sy(world[3]), (world[2] - world[0]) * view.scale, (world[3] - world[1]) * view.scale);
+    ground = c;
+    return c;
+  }
+
+  function positions() {
+    var a = frames[index], b = frames[Math.min(index + 1, frames.length - 1)], next = {};
+    b.units.forEach(function (u) { next[u[0]] = u; });
+    return a.units.map(function (u) {
+      var n = next[u[0]];
+      return { u: u, x: n ? u[3] + (n[3] - u[3]) * fraction : u[3], y: n ? u[4] + (n[4] - u[4]) * fraction : u[4] };
+    });
+  }
+
+  function draw() {
+    if (!view || !frames.length) return;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(drawGround(), 0, 0);
+    ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+    positions().forEach(function (p) {
+      var u = p.u, r = Math.max(3, 14 * view.scale), x = sx(p.x), y = sy(p.y);
+      ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832);
+      ctx.fillStyle = palette[u[2] % palette.length]; ctx.fill();
+      if (selected === u[0]) { ctx.lineWidth = 2; ctx.strokeStyle = "#000"; ctx.stroke(); ctx.beginPath(); ctx.arc(x, y, r + 3, 0, 6.2832); ctx.strokeStyle = "#fff"; ctx.stroke(); }
+      if (u[6] > 0 && u[5] < u[6]) {
+        ctx.fillStyle = "rgba(0,0,0,.45)"; ctx.fillRect(x - r, y - r - 5, r * 2, 3);
+        ctx.fillStyle = "#37b24d"; ctx.fillRect(x - r, y - r - 5, r * 2 * Math.max(0, u[5]) / u[6], 3);
+      }
+    });
+    showTime(); showUnit(); showLog();
+  }
+
+  function showTime() { timeLabel.textContent = (frames[index].time + fraction * ((frames[Math.min(index + 1, frames.length - 1)].time) - frames[index].time)).toFixed(1) + " s"; scrub.value = index; }
+
+  function showUnit() {
+    if (selected === null) return;
+    var found = frames[index].units.filter(function (u) { return u[0] === selected; })[0];
+    if (!found) { unitBox.innerHTML = "<h2>Unit</h2><p style='margin:0;color:var(--muted)'>Unit " + selected + " is not there at this time.</p>"; return; }
+    var rows = [["Name", trace.names[found[8]]], ["Id", found[0]], ["Type", found[1]], ["Player", found[2]], ["Place", found[3] + ", " + found[4]], ["Life", found[5] + " / " + found[6]], ["Order", found[7]]];
+    unitBox.innerHTML = "<h2>Unit</h2><dl>" + rows.map(function (r) { return "<dt>" + r[0] + "</dt><dd>" + String(r[1]).replace(/[<&]/g, "") + "</dd>"; }).join("") + "</dl>";
+  }
+
+  var shown = -1;
+  function showLog() {
+    var now = frames[index].time, count = 0;
+    while (count < trace.log.length && trace.log[count].time <= now) count++;
+    if (shown === count) return;
+    shown = count;
+    logBox.textContent = "";
+    var start = Math.max(0, count - 300);
+    for (var i = start; i < trace.log.length && i < count + 3; i++) {
+      var d = document.createElement("div"); d.textContent = trace.log[i].time.toFixed(2) + "  " + trace.log[i].text;
+      if (i >= count) d.style.opacity = ".4";
+      d.dataset.time = trace.log[i].time; logBox.appendChild(d);
+    }
+    logBox.scrollTop = logBox.scrollHeight;
+  }
+
+  function seek(time) {
+    var lo = 0;
+    for (var i = 0; i < frames.length; i++) if (frames[i].time <= time) lo = i;
+    index = lo; fraction = 0; draw();
+  }
+
+  logBox.addEventListener("click", function (e) { if (e.target.dataset && e.target.dataset.time) seek(parseFloat(e.target.dataset.time)); });
+  scrub.addEventListener("input", function () { index = parseInt(scrub.value, 10); fraction = 0; draw(); });
+  document.getElementById("back").addEventListener("click", function () { index = Math.max(0, index - 1); fraction = 0; draw(); });
+  document.getElementById("forward").addEventListener("click", function () { index = Math.min(frames.length - 1, index + 1); fraction = 0; draw(); });
+  document.getElementById("play").addEventListener("click", function () {
+    playing = !playing; this.textContent = playing ? "Pause" : "Play"; last = 0;
+    if (playing) requestAnimationFrame(tick);
+  });
+  function tick(now) {
+    if (!playing) return;
+    var speed = parseFloat(document.getElementById("speed").value);
+    if (last) {
+      var step = frames.length > 1 ? frames[1].time - frames[0].time : 1;
+      fraction += (now - last) / 1000 * speed / step;
+      while (fraction >= 1 && index < frames.length - 1) { fraction -= 1; index++; }
+      if (index >= frames.length - 1) { index = frames.length - 1; fraction = 0; playing = false; document.getElementById("play").textContent = "Play"; }
+      draw();
+    }
+    last = now;
+    if (playing) requestAnimationFrame(tick);
+  }
+  canvas.addEventListener("click", function (e) {
+    var rect = canvas.getBoundingClientRect(), x = e.clientX - rect.left, y = e.clientY - rect.top, best = null, bestD = 1e9;
+    positions().forEach(function (p) {
+      var d = Math.hypot(sx(p.x) - x, sy(p.y) - y);
+      if (d < Math.max(10, 14 * view.scale + 4) && d < bestD) { best = p.u[0]; bestD = d; }
+    });
+    selected = best;
+    if (best === null) unitBox.innerHTML = "<h2>Unit</h2><p style='margin:0;color:var(--muted)'>Click a unit to inspect it.</p>";
+    draw();
+  });
+  window.addEventListener("resize", fit);
+  window.mirrorViewer = { seek: seek, select: function (id) { selected = id; draw(); }, frames: frames, get index() { return index; } };
+  fit();
+})();
+</script>
+</body>
+</html>
