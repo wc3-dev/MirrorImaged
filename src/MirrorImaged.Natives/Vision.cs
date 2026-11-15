@@ -44,18 +44,23 @@ public sealed partial class GameNatives
         if (!made && Distance2(u.X - u.ExploredX, u.Y - u.ExploredY) < FogCell * FogCell) return;
         (u.ExploredX, u.ExploredY) = (u.X, u.Y);
         for (var n = 0; n < 28; n++)
-            if (Player(n) is { } p && SeenThrough(u, p)) Explore(p);
+            if (Player(n) is { } p && SeenThrough(u, p)) Explore(p, u);
     }
 
     // What the player's units see now becomes explored (called by every read)
     void Explore(player p)
     {
+        foreach (var u in _units.Values) Explore(p, u);
+    }
+
+    // What the one unit sees, if it is seen through for the player, becomes explored
+    void Explore(player p, unit u)
+    {
+        if (!SeenThrough(u, p) || SightOf(u) is not (var sight and > 0)) return;
         var seen = Explored(p);
-        foreach (var u in _units.Values)
-            if (SeenThrough(u, p) && SightOf(u) is var sight and > 0)
-                for (var cy = (int)MathF.Floor((u.Y - sight) / FogCell); cy <= (int)MathF.Floor((u.Y + sight) / FogCell); cy++)
-                    for (var cx = (int)MathF.Floor((u.X - sight) / FogCell); cx <= (int)MathF.Floor((u.X + sight) / FogCell); cx++)
-                        if (Distance2((cx + 0.5f) * FogCell - u.X, (cy + 0.5f) * FogCell - u.Y) <= sight * sight) seen.Add((cx, cy));
+        for (var cy = (int)MathF.Floor((u.Y - sight) / FogCell); cy <= (int)MathF.Floor((u.Y + sight) / FogCell); cy++)
+            for (var cx = (int)MathF.Floor((u.X - sight) / FogCell); cx <= (int)MathF.Floor((u.X + sight) / FogCell); cx++)
+                if (Distance2((cx + 0.5f) * FogCell - u.X, (cy + 0.5f) * FogCell - u.Y) <= sight * sight) seen.Add((cx, cy));
     }
 
     static bool Covers(fogmodifier m, float x, float y) =>

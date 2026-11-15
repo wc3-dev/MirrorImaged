@@ -2274,3 +2274,6 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   it is trained. `HarvestGold` and `HarvestWood` ask for worker slots in order within a round (`ClearHarvestAI` empties them), and workers are
   assigned by id to the slots, so some go to trees. Seen: in five minutes the human melee AI builds an altar, barracks, farms and a blacksmith
   and trains footmen and a hero. Close: not measured against the game.
+
+- **D363 (Exploring is per unit):** a unit that moves a fog cell explores only what it sees, not what every unit of the player sees.
+  A campaign map of 300 units took 1 s of real time per game second; it now takes a tenth of that. Not measured against the game.
