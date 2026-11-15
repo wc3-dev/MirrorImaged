@@ -7,148 +7,7 @@ namespace MirrorImaged.Natives;
 public sealed partial class GameNatives
 {
     [Native(Level.Missing)]
-    public framehandle? BlzCreateFrame(string? name, framehandle? owner, int priority, int createContext) => throw new MissingNativeException("BlzCreateFrame");
-
-    [Native(Level.Missing)]
-    public framehandle? BlzCreateFrameByType(string? typeName, string? name, framehandle? owner, string? inherits, int createContext) => throw new MissingNativeException("BlzCreateFrameByType");
-
-    [Native(Level.Missing)]
-    public framehandle? BlzCreateSimpleFrame(string? name, framehandle? owner, int createContext) => throw new MissingNativeException("BlzCreateSimpleFrame");
-
-    [Native(Level.Missing)]
-    public void BlzDestroyFrame(framehandle? frame) => throw new MissingNativeException("BlzDestroyFrame");
-
-    [Native(Level.Missing)]
-    public void BlzFrameAddText(framehandle? frame, string? text) => throw new MissingNativeException("BlzFrameAddText");
-
-    [Native(Level.Missing)]
-    public void BlzFrameCageMouse(framehandle? frame, bool enable) => throw new MissingNativeException("BlzFrameCageMouse");
-
-    [Native(Level.Missing)]
-    public void BlzFrameClearAllPoints(framehandle? frame) => throw new MissingNativeException("BlzFrameClearAllPoints");
-
-    [Native(Level.Missing)]
-    public void BlzFrameClick(framehandle? frame) => throw new MissingNativeException("BlzFrameClick");
-
-    [Native(Level.Missing)]
-    public int BlzFrameGetAlpha(framehandle? frame) => throw new MissingNativeException("BlzFrameGetAlpha");
-
-    [Native(Level.Missing)]
-    public framehandle? BlzFrameGetChild(framehandle? frame, int index) => throw new MissingNativeException("BlzFrameGetChild");
-
-    [Native(Level.Missing)]
-    public int BlzFrameGetChildrenCount(framehandle? frame) => throw new MissingNativeException("BlzFrameGetChildrenCount");
-
-    [Native(Level.Missing)]
-    public bool BlzFrameGetEnable(framehandle? frame) => throw new MissingNativeException("BlzFrameGetEnable");
-
-    [Native(Level.Missing)]
-    public float BlzFrameGetHeight(framehandle? frame) => throw new MissingNativeException("BlzFrameGetHeight");
-
-    [Native(Level.Missing)]
-    public string? BlzFrameGetName(framehandle? frame) => throw new MissingNativeException("BlzFrameGetName");
-
-    [Native(Level.Missing)]
-    public framehandle? BlzFrameGetParent(framehandle? frame) => throw new MissingNativeException("BlzFrameGetParent");
-
-    [Native(Level.Missing)]
-    public string? BlzFrameGetText(framehandle? frame) => throw new MissingNativeException("BlzFrameGetText");
-
-    [Native(Level.Missing)]
-    public int BlzFrameGetTextSizeLimit(framehandle? frame) => throw new MissingNativeException("BlzFrameGetTextSizeLimit");
-
-    [Native(Level.Missing)]
-    public float BlzFrameGetValue(framehandle? frame) => throw new MissingNativeException("BlzFrameGetValue");
-
-    [Native(Level.Missing)]
-    public float BlzFrameGetWidth(framehandle? frame) => throw new MissingNativeException("BlzFrameGetWidth");
-
-    [Native(Level.Missing)]
-    public bool BlzFrameIsVisible(framehandle? frame) => throw new MissingNativeException("BlzFrameIsVisible");
-
-    [Native(Level.Missing)]
-    public void BlzFrameSetAbsPoint(framehandle? frame, framepointtype? point, float x, float y) => throw new MissingNativeException("BlzFrameSetAbsPoint");
-
-    [Native(Level.Missing)]
-    public void BlzFrameSetAllPoints(framehandle? frame, framehandle? relative) => throw new MissingNativeException("BlzFrameSetAllPoints");
-
-    [Native(Level.Missing)]
-    public void BlzFrameSetAlpha(framehandle? frame, int alpha) => throw new MissingNativeException("BlzFrameSetAlpha");
-
-    [Native(Level.Missing)]
-    public void BlzFrameSetEnable(framehandle? frame, bool enabled) => throw new MissingNativeException("BlzFrameSetEnable");
-
-    [Native(Level.Missing)]
-    public void BlzFrameSetFocus(framehandle? frame, bool flag) => throw new MissingNativeException("BlzFrameSetFocus");
-
-    [Native(Level.Missing)]
-    public void BlzFrameSetFont(framehandle? frame, string? fileName, float height, int flags) => throw new MissingNativeException("BlzFrameSetFont");
-
-    [Native(Level.Missing)]
-    public void BlzFrameSetLevel(framehandle? frame, int level) => throw new MissingNativeException("BlzFrameSetLevel");
-
-    [Native(Level.Missing)]
-    public void BlzFrameSetMinMaxValue(framehandle? frame, float minValue, float maxValue) => throw new MissingNativeException("BlzFrameSetMinMaxValue");
-
-    [Native(Level.Missing)]
-    public void BlzFrameSetModel(framehandle? frame, string? modelFile, int cameraIndex) => throw new MissingNativeException("BlzFrameSetModel");
-
-    [Native(Level.Missing)]
-    public void BlzFrameSetParent(framehandle? frame, framehandle? parent) => throw new MissingNativeException("BlzFrameSetParent");
-
-    [Native(Level.Missing)]
-    public void BlzFrameSetPoint(framehandle? frame, framepointtype? point, framehandle? relative, framepointtype? relativePoint, float x, float y) => throw new MissingNativeException("BlzFrameSetPoint");
-
-    [Native(Level.Missing)]
-    public void BlzFrameSetScale(framehandle? frame, float scale) => throw new MissingNativeException("BlzFrameSetScale");
-
-    [Native(Level.Missing)]
-    public void BlzFrameSetSize(framehandle? frame, float width, float height) => throw new MissingNativeException("BlzFrameSetSize");
-
-    [Native(Level.Missing)]
-    public void BlzFrameSetSpriteAnimate(framehandle? frame, int primaryProp, int flags) => throw new MissingNativeException("BlzFrameSetSpriteAnimate");
-
-    [Native(Level.Missing)]
-    public void BlzFrameSetStepSize(framehandle? frame, float stepSize) => throw new MissingNativeException("BlzFrameSetStepSize");
-
-    [Native(Level.Missing)]
-    public void BlzFrameSetText(framehandle? frame, string? text) => throw new MissingNativeException("BlzFrameSetText");
-
-    [Native(Level.Missing)]
-    public void BlzFrameSetTextAlignment(framehandle? frame, textaligntype? vert, textaligntype? horz) => throw new MissingNativeException("BlzFrameSetTextAlignment");
-
-    [Native(Level.Missing)]
-    public void BlzFrameSetTextColor(framehandle? frame, int color) => throw new MissingNativeException("BlzFrameSetTextColor");
-
-    [Native(Level.Missing)]
-    public void BlzFrameSetTextSizeLimit(framehandle? frame, int size) => throw new MissingNativeException("BlzFrameSetTextSizeLimit");
-
-    [Native(Level.Missing)]
-    public void BlzFrameSetTexture(framehandle? frame, string? texFile, int flag, bool blend) => throw new MissingNativeException("BlzFrameSetTexture");
-
-    [Native(Level.Missing)]
-    public void BlzFrameSetTooltip(framehandle? frame, framehandle? tooltip) => throw new MissingNativeException("BlzFrameSetTooltip");
-
-    [Native(Level.Missing)]
-    public void BlzFrameSetValue(framehandle? frame, float value) => throw new MissingNativeException("BlzFrameSetValue");
-
-    [Native(Level.Missing)]
-    public void BlzFrameSetVertexColor(framehandle? frame, int color) => throw new MissingNativeException("BlzFrameSetVertexColor");
-
-    [Native(Level.Missing)]
-    public void BlzFrameSetVisible(framehandle? frame, bool visible) => throw new MissingNativeException("BlzFrameSetVisible");
-
-    [Native(Level.Missing)]
-    public int BlzFrameToPixelX(float frameX) => throw new MissingNativeException("BlzFrameToPixelX");
-
-    [Native(Level.Missing)]
-    public int BlzFrameToPixelY(float frameY) => throw new MissingNativeException("BlzFrameToPixelY");
-
-    [Native(Level.Missing)]
     public item? BlzGetAbsorbingItem() => throw new MissingNativeException("BlzGetAbsorbingItem");
-
-    [Native(Level.Missing)]
-    public framehandle? BlzGetFrameByName(string? name, int createContext) => throw new MissingNativeException("BlzGetFrameByName");
 
     [Native(Level.Missing)]
     public bool BlzGetManipulatedItemWasAbsorbed() => throw new MissingNativeException("BlzGetManipulatedItemWasAbsorbed");
@@ -161,21 +20,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public int BlzGetMouseScreenPosY() => throw new MissingNativeException("BlzGetMouseScreenPosY");
-
-    [Native(Level.Missing)]
-    public framehandle? BlzGetOriginFrame(originframetype? frameType, int index) => throw new MissingNativeException("BlzGetOriginFrame");
-
-    [Native(Level.Missing)]
-    public framehandle? BlzGetTriggerFrame() => throw new MissingNativeException("BlzGetTriggerFrame");
-
-    [Native(Level.Missing)]
-    public frameeventtype? BlzGetTriggerFrameEvent() => throw new MissingNativeException("BlzGetTriggerFrameEvent");
-
-    [Native(Level.Missing)]
-    public string? BlzGetTriggerFrameText() => throw new MissingNativeException("BlzGetTriggerFrameText");
-
-    [Native(Level.Missing)]
-    public float BlzGetTriggerFrameValue() => throw new MissingNativeException("BlzGetTriggerFrameValue");
 
     [Native(Level.Missing)]
     public bool BlzGetTriggerPlayerIsKeyDown() => throw new MissingNativeException("BlzGetTriggerPlayerIsKeyDown");
@@ -214,9 +58,6 @@ public sealed partial class GameNatives
     public int BlzGetUnitOrderCount(unit? whichUnit) => throw new MissingNativeException("BlzGetUnitOrderCount");
 
     [Native(Level.Missing)]
-    public void BlzHideOriginFrames(bool enable) => throw new MissingNativeException("BlzHideOriginFrames");
-
-    [Native(Level.Missing)]
     public bool BlzIsKeyPressed(oskeytype? key) => throw new MissingNativeException("BlzIsKeyPressed");
 
     [Native(Level.Missing)]
@@ -224,15 +65,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public bool BlzIsMouseButtonPressed(mousebuttontype? mouseButtonType) => throw new MissingNativeException("BlzIsMouseButtonPressed");
-
-    [Native(Level.Missing)]
-    public bool BlzLoadTOCFile(string? TOCFile) => throw new MissingNativeException("BlzLoadTOCFile");
-
-    [Native(Level.Missing)]
-    public float BlzPixelToFrameX(int pixelX) => throw new MissingNativeException("BlzPixelToFrameX");
-
-    [Native(Level.Missing)]
-    public float BlzPixelToFrameY(int pixelY) => throw new MissingNativeException("BlzPixelToFrameY");
 
     [Native(Level.Missing)]
     public bool BlzQueueBuildOrderById(unit? whichPeon, int unitId, float x, float y) => throw new MissingNativeException("BlzQueueBuildOrderById");
@@ -263,12 +95,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public bool BlzSendSyncData(string? prefix, string? data) => throw new MissingNativeException("BlzSendSyncData");
-
-    [Native(Level.Missing)]
-    public void BlzTextAreaFrameSetAutoScroll(framehandle? frame, bool value) => throw new MissingNativeException("BlzTextAreaFrameSetAutoScroll");
-
-    [Native(Level.Missing)]
-    public @event? BlzTriggerRegisterFrameEvent(trigger? whichTrigger, framehandle? frame, frameeventtype? eventId) => throw new MissingNativeException("BlzTriggerRegisterFrameEvent");
 
     [Native(Level.Missing)]
     public @event? BlzTriggerRegisterPlayerKeyEvent(trigger? whichTrigger, player? whichPlayer, oskeytype? key, int metaKey, bool keyDown) => throw new MissingNativeException("BlzTriggerRegisterPlayerKeyEvent");
