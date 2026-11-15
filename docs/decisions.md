@@ -2383,3 +2383,8 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   UnitID field lists for the level, in a ring round the target place or the caster, for the caster's owner, each a summoned unit that ends with the
   ability's duration, and fire the summon event (`GetSummonedUnit`, `GetSummoningUnit`). Close: Animate Dead (it raises corpses), Carrion Beetles and
   the summons that need more than a type and a number are not here.
+
+- **D382 (Shops):** an order a player gives a building that lists the item (`usei`) or the unit (`useu`) with `IssueNeutralImmediateOrderById` is a purchase: the
+  player's unit nearest the shop within 900 pays the price and takes the item (or the shop makes the unit at its door, the food counted), and the sell events
+  fire for the buyer's player (`GetSoldItem`, `GetSoldUnit`, `GetSellingUnit`, `GetBuyingUnit`). Without a unit of the player near, or the price, nothing
+  happens. Close: the stock a shop keeps and its wait are not (it always has the thing), and selling an item to a shop (pawn) is not.
