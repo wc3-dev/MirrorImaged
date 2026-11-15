@@ -2361,3 +2361,11 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   differ as they do in the game. A suite of patterns (a change to a player or unit, `GetRandomInt` and `GetRandomReal`, `CreateGroup` with `ForGroup`,
   `Location`, `CreateTimer`, `BlzCreateFrame`, each in a local-player block) must be found by `mirror desync` with the part and the step, and what one
   screen shows (text, camera, music, a name read) must not (A8). Not shown: the timer of 0.01 s and the upgrade dice, which the game does by chance.
+
+- **D379 (Melee from the command line, and its speed):** every command that takes a map takes `--users` and `--computers` (slots) or `--melee true` (the
+  first user slot a person, every other user or computer slot a computer), and a map named `War3.w3mod:Maps/...` is read from the installed game.
+  `MeleeCorpusTests` runs the install's melee maps for 30 game minutes that way (set `MIRROR_MELEE` to a part of a name for some) and checks no script
+  error and that the computers trained units; and a 4-player map (`(4)Adrenaline`) goes through 30 game minutes in under 60 seconds (A10): 23 s on
+  this machine, 78 times real time. What made it so: a worker taking its load home may walk up to its own town hall (it went round it, a search
+  each time), the town halls are listed once a tick, a search for a path leans to the goal (the estimate counts twice, 3000 cells at most), and a
+  unit whose way stopped short of its place waits 2 seconds before it searches again. The AI's ghouls cut the wood its wood slots ask for.

@@ -15,7 +15,10 @@ public partial class unit
 public sealed partial class GameNatives
 {
     const float SearchCell = 32;
-    const int PathNodes = 6000;
+    const int PathNodes = 3000;
+    // The search leans toward the goal, finding a way sooner at the cost of a way a little longer than the shortest
+    const float HeuristicWeight = 2f;
+    bool _lastReached;
 
     // Whether a building (not one the unit is working on or standing inside) is in the way at the place. The buildings are listed again once in a
     // tick, in a grid of squares of 256, as the search for a path asks about thousands of places
@@ -45,6 +48,8 @@ public sealed partial class GameNatives
         {
             if (b == u || b.Dead || b.Removed) continue;
             if (b == u.OrderTarget || b == u.AttackTarget || b == u.Building || b == u.HarvestTarget) continue;
+            // A worker bringing its load walks up to its own town hall
+            if (u.Order == OrderReturn && b.Owner == u.Owner && IsTownHall(b)) continue;
             if (Distance2(bx - x, by - y) > reach * reach) continue;
             // A unit already inside may walk out
             if (Distance2(bx - u.X, by - u.Y) <= reach * reach) continue;
@@ -81,6 +86,8 @@ public sealed partial class GameNatives
         if (Seconds < u.ReplanAt) return true;
         u.ReplanAt = Seconds + 0.5;
         var way = FindPath(u, x, y);
+        // A way that stops short of the place leaves the unit to try again later than one that gets there
+        if (!_lastReached) u.ReplanAt = Seconds + 2;
         if (way is null || way.Count == 0)
         {
             (u.NoWayTo, u.NoWayUntil) = ((x, y), Seconds + 2);
@@ -134,9 +141,10 @@ public sealed partial class GameNatives
                     if (cost.TryGetValue(next, out var known) && known <= through) continue;
                     cost[next] = through;
                     from[next] = here;
-                    open.Enqueue(next, through + H(next));
+                    open.Enqueue(next, through + H(next) * HeuristicWeight);
                 }
         }
+        _lastReached = best == goal;
         if (best == start) return null;
         var cells = new List<(int, int)> { best };
         while (from.TryGetValue(cells[^1], out var before) && before != start) cells.Add(before);

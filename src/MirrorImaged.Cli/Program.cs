@@ -41,6 +41,9 @@ if (args is [var command and ("run" or "replay" or "desync" or "bench" or "fuzz"
     if (Flags(rest) is not { } flags) return Usage();
     double Number(string name, double fallback) => flags.TryGetValue(name, out var v) && double.TryParse(v, NumberStyles.Float, CultureInfo.InvariantCulture, out var n) ? n : fallback;
     var (seconds, seed) = (Number("--seconds", command == "bench" ? 600 : 60), (int)Number("--seed", 0));
+    Seats.Users = flags.TryGetValue("--users", out var users) ? [.. users.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)] : null;
+    Seats.Computers = flags.TryGetValue("--computers", out var computers) ? [.. computers.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)] : null;
+    Seats.Melee = flags.GetValueOrDefault("--melee") == "true";
     try
     {
         switch (command)
@@ -76,7 +79,8 @@ static Dictionary<string, string>? Flags(string[] options)
             "--seconds" => double.TryParse(options[i + 1], NumberStyles.Float, CultureInfo.InvariantCulture, out var seconds) && seconds >= 0,
             "--hash" => double.TryParse(options[i + 1], NumberStyles.Float, CultureInfo.InvariantCulture, out _),
             "--seed" or "--orders" => int.TryParse(options[i + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out _),
-            "--record" or "--input" or "--map" or "--junit" or "--out" => true,
+            "--record" or "--input" or "--map" or "--junit" or "--out" or "--users" or "--computers" => true,
+            "--melee" => options[i + 1] is "true" or "false",
             "--at" or "--every" => double.TryParse(options[i + 1], NumberStyles.Float, CultureInfo.InvariantCulture, out var at) && at >= 0,
             _ => false,
         };
@@ -96,7 +100,7 @@ static int Finish(Simulation simulation)
 
 static int Run(string map, Dictionary<string, string> flags, double seconds, int seed)
 {
-    using var simulation = Simulation.Load(map, new SimulationOptions { Seed = seed });
+    using var simulation = Seats.Open(map, seed);
     try
     {
         if (flags.TryGetValue("--input", out var inputFile))
@@ -180,7 +184,7 @@ static int DesyncCheck(string map, double seconds, int seed)
 
 static int Bench(string map, double seconds, int seed)
 {
-    using var simulation = Simulation.Load(map, new SimulationOptions { Seed = seed });
+    using var simulation = Seats.Open(map, seed);
     var clock = Stopwatch.StartNew();
     try { simulation.Advance(TimeSpan.FromSeconds(seconds)); }
     catch (LuaException) when (simulation.Stopped is not null) { }
@@ -195,7 +199,7 @@ static int Fuzz(string map, double seconds, int seed, int orders)
 {
     var random = new Random(seed);
     string[] commands = ["move", "attack", "smart", "stop", "holdposition"];
-    using var simulation = Simulation.Load(map, new SimulationOptions { Seed = seed });
+    using var simulation = Seats.Open(map, seed);
     var players = Enumerable.Range(0, 24).ToList();
     try
     {
@@ -257,7 +261,7 @@ static int Save(string file, double at, int seed, string output)
     }
     else
     {
-        simulation = Simulation.Load(file, new SimulationOptions { Seed = seed });
+        simulation = Seats.Open(file, seed);
         try { simulation.Advance(TimeSpan.FromSeconds(at)); }
         catch (LuaException) when (simulation.Stopped is not null) { }
     }
@@ -295,7 +299,7 @@ static int View(string file, double seconds, int seed, double every, string? out
         foreach (var input in recording.Inputs.OrderBy(i => i.Step)) if (input.Step > simulation.Step) { simulation.AdvanceSteps(input.Step - simulation.Step); simulation.Give(input); }
         seconds = Math.Max(seconds, (double)recording.Steps / StepsPerSecond - (double)simulation.Step / StepsPerSecond);
     }
-    else simulation = Simulation.Load(file, new SimulationOptions { Seed = seed });
+    else simulation = Seats.Open(file, seed);
     using (simulation)
     {
         var trace = Viewer.Record(simulation, TimeSpan.FromSeconds(seconds), TimeSpan.FromSeconds(Math.Max(every, 0.05)));
@@ -312,6 +316,8 @@ static int Usage()
         usage:
           mirror coverage                                  How many natives are at each trust level, and which are Missing
           mirror check <map>                               Lists the natives a map's script calls with their trust levels
+          Any command that takes a map also takes --users <slots> and --computers <slots> (comma separated), or --melee true to seat the first user
+          slot with a person and the others with computers, and a map named War3.w3mod:Maps/... is read from the installed game.
           mirror run <map> [--seconds <n>] [--seed <n>] [--hash <n>] [--record <file>] [--input <file>]
                                                            Runs a Lua or JASS map for n simulated seconds (60) with a
                                                            seed (0), then prints its log; with --hash, the state hash
@@ -339,4 +345,34 @@ static int Usage()
 
         """);
     return 2;
+}
+
+// Who plays: the slots given by --users and --computers, or with --melee true the map's first user slot a person and every other slot of a user or
+// a computer a computer; and a map named War3.w3mod:... is taken from the installed game
+static class Seats
+{
+    public static int[]? Users, Computers;
+    public static bool Melee;
+
+    public static string Resolve(string file)
+    {
+        if (!file.StartsWith("War3.w3mod:", StringComparison.OrdinalIgnoreCase)) return file;
+        using var storage = MirrorImaged.Data.CascStorage.Open(MirrorImaged.Data.GameInstall.Require());
+        var bytes = storage.Read(file) ?? throw new FileNotFoundException($"{file} is not in the installed game");
+        var path = Path.Combine(Path.GetTempPath(), "mirror-" + Path.GetFileName(file.Replace('/', Path.DirectorySeparatorChar)));
+        File.WriteAllBytes(path, bytes);
+        return path;
+    }
+
+    public static Simulation Open(string file, int seed)
+    {
+        var path = Resolve(file);
+        var (users, computers) = (Users, Computers);
+        if (Melee && users is null && computers is null)
+        {
+            var players = MirrorImaged.Data.MapArchive.Read(path).Files.Info?.Players.Where(p => p.Controller is War3Net.Build.Info.PlayerController.User or War3Net.Build.Info.PlayerController.Computer).Select(p => p.Id).ToList() ?? [];
+            if (players.Count > 0) (users, computers) = ([players[0]], [.. players.Skip(1)]);
+        }
+        return Simulation.Load(path, new SimulationOptions { Seed = seed, Users = users, Computers = computers });
+    }
 }
