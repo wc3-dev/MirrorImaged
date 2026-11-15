@@ -27,6 +27,11 @@ public sealed partial class GameNatives
     bool Give(unit? whichUnit, int order, float x, float y, widget? target, int kind)
     {
         if (whichUnit is null || order == 0 || !Takes(whichUnit, order)) return false;
+        if (Economy(whichUnit, order, kind, out var taken))
+        {
+            if (taken) FireUnit(new(whichUnit, Order: order, PointX: x, PointY: y, Target: target), UnitIssuedOrder, PlayerUnitIssuedOrder);
+            return taken;
+        }
         (whichUnit.Order, whichUnit.OrderX, whichUnit.OrderY, whichUnit.OrderTarget, whichUnit.AttackTarget) = (order == Stop ? 0 : order, x, y, target, null);
         if (order == 851993) (whichUnit.PatrolX, whichUnit.PatrolY) = (whichUnit.X, whichUnit.Y);
         if (order == 851990) (whichUnit.PatrolX, whichUnit.PatrolY) = (whichUnit.X, whichUnit.Y);

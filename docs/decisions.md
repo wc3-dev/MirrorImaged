@@ -2210,3 +2210,15 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
 - **D351. The order table** is the 373 names the game gives (probe `orders-table`), kept as `OrderNames` and, by name in any case, `OrderIds`;
   `OrderId` and `OrderId2String` read it (Exact: the probe's expected lines are the table itself), and the Issue natives find a named order in
   it. A name the game doesn't give is 0 and an unnamed id ""; the stunned order (851973) is the pause's own and has no name.
+- **D353. Buildings, training, research and harvesting.** A worker given a build order walks to within 100 of the site, pays the building's gold and
+  lumber (the order ends with nothing made when the player can't), and makes the building at 10% life with its construct start event; the
+  building finishes after its build time (life full, the food it makes counted then, the finish event) and the worker, busy until then, goes
+  idle. Cancelling it (order 851976) refunds 75% and fires the cancel event. A finished building given a unit or an upgrade it lists (`utra`,
+  `ures`) as an immediate order queues it (seven at most), takes the cost at once and holds the unit's food; the first starts at once with
+  its start event and ends with the finish event and the unit made below the building (sent to the rally point if one is set); cancel
+  takes the newest back with all of its cost. An upgrade's level, cost and time follow its base and per-level fields. `GetTrainedUnit`,
+  `GetTrainedUnitType`, `GetResearched`, `GetResearchingUnit` and the construct responses read these events. A worker ordered to
+  harvest a mine or a tree walks to it, works a second, takes 10 gold or 10 lumber (a tree loses 10 life) and carries it to the nearest
+  finished town hall of its owner, then goes back until the mine or tree is spent. Close: refunds, rally behaviour, loads and trip times
+  are the common ones, not measured; the building's life while it grows isn't modelled; no upkeep, transports, repairs, upgrades of a building
+  into another, or merchants yet.
