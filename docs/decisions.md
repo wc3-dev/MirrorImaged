@@ -2128,3 +2128,11 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   up, until `TerrainDeformStop` (gone from the step after the stop, so a read in the same instant still sees it; with a
   duration, faded over it). `GetLocationZ`, `BlzGetUnitZ` and a bridge's ground read them. Ripple, random and wave are
   Recorded: `GetLocationZ` ignores them.
+- **D540. Effects** are handles with their place, kept as the facts of 11-03 read it: an effect made at a point stands on the
+  ground there (a crater's raised z included), `BlzSetSpecialEffectX`/`Y` keep its z, `BlzSetSpecialEffectHeight` reads as the z
+  until a place is set, and one made on a widget reads x, y and z 0 and scale 1 wherever the widget goes. Colour, turn,
+  animation and time are Recorded (nothing reads them back); `DestroyEffect` and `BlzRemoveEffect` leave the place readable.
+- **D541. Lightning** is made for any non-empty code (the game draws the ones it knows: Close) and reads the colour back as
+  `SetLightningColor` set it, also after a move; a destroyed bolt answers false to destroy, move and colour. Floating text,
+  weather, images, ubersplats, minimap icons, the cinematic filter and scenes, unit animations, indicators and command
+  button effects are Recorded handles that nothing reads back; `IsCineFilterDisplayed` and the hero glow flag read what was set.
