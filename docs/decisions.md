@@ -2397,3 +2397,7 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   Bash (AHbh) adds DataC and stuns for the ability's duration (a hero's own for a hero) on a melee attack with the chance DataA; one with Evasion (AEev) turns an
   attack aside when a draw is within DataA times 100. Each draw is the game's shared generator's. Close: the abilities of other names that do the same with their
   own data are not here.
+
+- **D385 (Pawning):** `UnitDropItemTarget` with a shop that has the pawn ability (Apit) and an item that can be pawned, from a unit within 900, gives the unit's player
+  the share of the item's price that PawnItemRate names (half), fires the pawn event (`GetSoldItem`, `GetSellingUnit` the shop, `GetBuyingUnit` the seller) and takes
+  the item away. Any other target leaves the item as it was.
