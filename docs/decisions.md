@@ -1497,7 +1497,7 @@ cliff type 0 and a random unit mode 641, each in a reader D300 and D301 don't to
   well as Lua: 465 stop at `GetCameraMargin` (wave 5), the first line of `main`, and
   `ForsakenKingdom/Scenario/(1)ForgottenHollow.w3x` (Lua) at `Location` before it; none logs a script error, and the
   run takes 70 to 90 s. So every shipped map runs its script and `config`, and where they stop after `main`'s first line
-  shows only once `GetCameraMargin` exists.
+  shows only once `GetCameraMargin` exists. (Where they stop now: D507.)
 
 ### Units (W2-2)
 
@@ -1570,7 +1570,8 @@ is in W2-3, W2-5, W2-6 and W2-7 (`docs/tasks/wave-2.md`) and `docs/tasks/later.m
   registration, which needs abilities (W2-7, W2-10; recorded in `probes/differences/units.txt`), so `SetUnitOwner` is
   Close; so are `KillUnit` and `RemoveUnit` (`undefend` before a death, twice on a removal) and `PauseUnit` (the
   stunned order and `undefend` on a pause, the earlier move given back on unpausing; game-facts, "Orders and events"),
-  whose order events are W2-10's. The colour becomes the new owner's when asked, kept
+  whose order events are W2-10's (replaced by D310: done, and a dead unit given away gets no `undefend`; the one seen
+  was its death's, so `SetUnitOwner`, `KillUnit` and `RemoveUnit` are Exact). The colour becomes the new owner's when asked, kept
   with `SetUnitColor`'s, `SetUnitScale`'s x and `SetUnitVertexColor`'s parts (kept from 0 to 255), all Recorded: no
   native reads them back (the scale and tint fields keep the type's and 255, probe units).
 - **D227. The hero attributes and the field quirks** (probe units, units-attribute, units-primary): reading a hero
@@ -1597,7 +1598,8 @@ is in W2-3, W2-5, W2-6 and W2-7 (`docs/tasks/wave-2.md`) and `docs/tasks/later.m
   measured); a unit whose death type doesn't decay fires none and is gone at its death time (the gryphon rider); a hero
   stays (W2-3 revives it); an exploded unit is gone after the step. `UnitSuspendDecay` keeps the body, but its decay
   event still comes, as measured; a body whose time came while suspended goes in the step its decay is let go (not
-  measured); a corpse from `CreateCorpse` never decays (none in 45 s). `RemoveUnit` leaves the unit
+  measured); a corpse from `CreateCorpse` never decays (none in 45 s) (replaced by D311: the bones' 90 s is measured, a
+  corpse goes 90 s after it is made, and `UnitSuspendDecay` keeps nothing). `RemoveUnit` leaves the unit
   as it was for the rest of its step, alive or dead, and gone after it: every getter then reads 0 or nil, as Lua's
   handle reads as null (D41); a unit removed and then killed in its step stays as a body, as the probe saw. Gone is
   when the step's queue reaches it (`Game.At` in the step), so a 0 s timer started after the removal reads it gone, as
@@ -1640,3 +1642,279 @@ is in W2-3, W2-5, W2-6 and W2-7 (`docs/tasks/wave-2.md`) and `docs/tasks/later.m
   state and filter events, unit counts, `CreateUnitByName` and `UnitId`, and the rest of the unit natives (W2-10);
   orders, the pathing and moving units off each other (wave 3); animation, time scale and the other natives that only
   show (wave 5).
+
+### Cameras, and the rest of what main needs first (W5-1)
+
+The measurements are six probes, `probes/cameras.lua`, `cameras-2.lua`, `cameras-3.lua`, `cameras-4.lua`,
+`units-camera.lua` and `units-camera-2.lua`, in `docs/facts.md`, "Cameras", with their lines in `probes/expected`. The
+natives are in `Cameras.cs` and `Presentation.cs`.
+
+- **D500. One camera, the local player's,** as the task says (multiplayer: wave 6). Its fields are kept as set, angles
+  in degrees, and read at once, the angles in radians; its target and eye read as the step before left them, as the
+  game reads them as it last drew (the eye kept its place in the instant a rotation was set, and in a 0 s timer, and
+  moved by 0.05 s). A change over a time goes in a straight line from where the value reads, an angle the shorter way
+  round, however many turns it has made (an exact half turn goes clockwise: not measured); `Motion` keeps what the
+  step before saw when a value is set again in the same step, as a probe sets a field several times in one instant.
+  The levels: Exact where a probe reads the native back to the digit (the margins, the bounds, the setups' fields,
+  places and labels, the flags, the depth of field natives), Close where the reads hang on the game's frames or a
+  model (the fields, target and eye, the pans, the applies, following a unit, the rotate mode, the noise, the cinematic
+  camera, the blockers), and Recorded for what only the view shows (the quick position, the smoothing factor). The
+  probes that make a footman are named `units-camera`, so `ProbeComparison.ReadsData`'s prefix rule (D232) runs them
+  with the install's data, without which `CreateUnit` gives nil.
+- **D501. The fields' limits** are the measured ones (distance 0.5 to 10000, far z from 100, field of view 5 to 120
+  degrees after coming round, z offset ±4096, near z 16 to 9500, depth of field from 0, z absolute as set), and an
+  angle comes round to a turn with the game's whole turns: 2π above 0 and -0 at 0 and below (`Turn`), which also
+  gives the start's roll and local angles as -0. Near z's 9500 is a constant: the same at a distance of 3000 and a far
+  z of 2000. A setup keeps its fields as given, the lengths below 0 as 0 and the angles not turned; the camera holds
+  them when the setup is applied. `CameraSetFocalDistance` and `CameraSetDepthOfFieldScale` set the two depth of
+  field fields at once (measured), held as those fields are (inferred).
+- **D502. The target.** The bounds start at 0, not the map's `war3map.w3i` bounds, as measured; every shipped map sets
+  them in `main`. Their box holds the target, at every rotation and distance measured, and for a diamond. One case
+  reads otherwise in every run (all three of the cameras probe): after pans with a z made while the bounds were 0, then
+  bounds of 200 each way and a position at (1000, 1000) at rotation 120, the game held the target 200 along the view
+  past the corner, (100, 373.2051); cameras-2 and cameras-3 didn't repeat it without the earlier pans. A rule, then,
+  but not found; here the box holds it (`probes/differences/cameras.txt`, `later.md`). A position lands in the next
+  step: mid-game the game's lands within 0.05 s, but as the game starts 0.2 to 0.25 s later, which isn't modelled
+  (`probes/differences/cameras-2.txt`). `PanCameraTo` and a setup's pan that isn't timed go at 3000 a second (the
+  game's 2970 to 3060 measured at 1100 and 2000 away). A pan with a z moves the target's height to it in place of the
+  z offset, until the target moves again, and from the next step after `StopCamera` or `ResetToGameCamera`; following
+  a unit keeps it (all measured). A move that leaves the target where it is changes nothing, as `PanCameraToWithZ`
+  inside bounds of 0 left the height. `CameraSetupApplyWithZ` and `CameraSetupApplyForceDurationWithZ` over 0 s leave
+  the height (measured), and the latter over a time takes it (measured). The height is the ground's, with the bridges'
+  decks (`Height`, as `GetLocationZ` reads it; inferred: measured only on flat ground), and the z offset. A camera
+  blocker keeps the target out of its rect: a timed pan stopped where its path entered it, and a position set inside it
+  landed past it along the move (from (0, 0) to (400, 0) in a blocker from 200 to 600, at 600); here each move is cut
+  so, in the order the blockers were added, with the rect as it is then (the rest the model's). Turned off, the target
+  goes in (measured).
+- **D503. The eye is worked out in floats,** as the game does: the distance times the cosine of the angle of attack
+  times that of the rotation, each a float of the double's, gives 5 of the 6 eyes the probes read to the last digit,
+  where doubles gave none. The sixth is at an angle of attack of 300 degrees, whose cosine the game reads 0.5000004
+  (`probes/differences/cameras.txt`). The cosines are the doubles' rounded to floats, so a platform's last bit of a
+  double doesn't show but at a tie (inferred). The eye ignores roll, the local angles and the noise.
+- **D504. Following and turning.** `SetCameraTargetController` and `SetCameraOrientController` make the target follow
+  the unit at the offsets from the next step, also once it is removed, from where it was, until a position, a pan, a
+  setup's pan or `ResetToGameCamera` (measured, but for the setup's pan); the game follows a move a frame later
+  (`probes/differences/units-camera.txt`), and neither the orient controller nor `inheritOrientation` changed the
+  rotation field. A controller given nil ends a follow (the model's). `SetCameraRotateMode` takes the target round the
+  point by the sweep over the time, the view turning with it while the rotation field reads as it was, without the z
+  offset. The mode holds the target (units-camera-2): a position set, during the sweep or after it, and `StopCamera`
+  only stop the sweep where it is, and a unit controller is dropped, the sweep going on; a timed pan ends the mode (the
+  target moved, at the z offset again), and so does `ResetToGameCamera` (cameras-4). Inferred: `PanCameraTo` and the
+  pans with a z end it as the timed pan does; a setup's pan ends it (the target moved, but the setup's z offset of 0
+  can't tell the mode's height from the end of the mode); a new rotate mode in one starts from where the target is;
+  and a controller given in the mode is dropped rather than kept for its end (the target hadn't followed 1 s after the
+  sweep).
+- **D505. The view's own natives.** The noise natives are Close, a model without the shake: at a magnitude of 50 the
+  game's target read 0.1 to 0.3 off in one run and up to 2.8 in the other two, its eye 0.3 to 0.6 and up to
+  5.6 (cameras-4), random as the game's, which a seeded copy couldn't match. `SetCinematicCamera` is Close too: while its
+  camera plays, the game's target and eye read the model's camera (CameraZoomOut: the target 110 to 120 up, the eye
+  200 to 250 from it, moving), here the game camera's, as the models' cameras aren't read
+  (`probes/differences/units-camera-2.txt`, `later.md`); the fields read as they were, and `ResetToGameCamera` ends it
+  in both. The smoothing factor stays Recorded: at 1 a pan read the same as without it. So does the quick position,
+  which changed nothing read (cameras-4). `BlzCameraSetupSetCameraType` is Recorded: the game's getter reads a number
+  of its own each run, whatever was set, and here `BlzCameraSetupGetCameraType` reads 0 (Close). The three location
+  natives (`GetCameraTargetPositionLoc`, `GetCameraEyePositionLoc`, `CameraSetupGetDestPositionLoc`) are W2-6's, with
+  the locations it takes over from W2-4 (`docs/tasks/wave-2.md`).
+- **D506. What main sets for the view** (`Presentation.cs`): `SetDayNightModels`, the terrain fog natives
+  (`SetTerrainFog`, `SetTerrainFogEx`, `SetTerrainFogExV`, `ResetTerrainFog`, `SetUnitFog`, the `BlzSetTerrainFog*`
+  ones, `EnableWorldFogBoundary`), the water natives (`SetWaterBaseColor`, `SetWaterDeforms`, `SetHDWaterParams`,
+  `SetHDWaterParamsEx`, the `BlzSetHDWater*` ones), `SetSkyModel`, `BlzShowSkyBox` and `BlzShowTerrain` are Recorded:
+  no native reads them back. Each family is done whole, as the maps reach one of each. The fog flags are kept for
+  `IsFogEnabled` and `IsFogMaskEnabled` (Exact: true at the start, then what was set); `FogEnable` and
+  `FogMaskEnable` are Close, as what they do to what a player sees is wave 6's. The sound and music natives on the
+  way (`NewSoundEnvironment`, the ambient sounds, `SetMapMusic`, `InitSounds`' `CreateSound` and `SetSound*`, and the
+  dialogue keys of a sound) are W5-2's, which runs beside this task, and `SetResourceAmount`, whose gold mine's start
+  amount comes from the data, is the units' (W2-10 or wave 3's harvesting).
+- **D507. Where the shipped maps stop after W5-1** (`ShippedMapTests`, with W2-2, W2-4 and W2-9 merged first): 411 at
+  `NewSoundEnvironment` (W5-2), the line after `SetDayNightModels` and the terrain fog and water lines, ForgottenHollow
+  among them now that W2-4's `Location` is in; and 55 at `AddWeatherEffect` (W5-3), the map-wide weather their `main`
+  makes before its sounds (Classic's Night Elf X05 and X06, Reforged's prologue and others). None logs a script error.
+  With every sound, music and dialogue native stubbed out in a file never committed (so not reproducible from the
+  repository until W5-2's pull request merges, when the test is to be run again for real), the maps went on to 206 at
+  `SetResourceAmount` (gold mines; units, W2-10 or wave 3), 138 at `AddWeatherEffect` (W5-3), 46 at
+  `BlzCreateItemWithSkin` (W2-3), 30 at `SetPlayerAbilityAvailable` (W2-7), 26 at `SetAllItemTypeSlots`
+  (`InitBlizzard`'s `InitNeutralBuildings`, W2-3), 10 at `SetHeroLevel` (W2-3), 5 at `GetRectCenterX` (W2-6), 2 at
+  `IssueImmediateOrder` (wave 3), 2 at `UnitAddItemToSlotById` (W2-3) and 1 at `CreateBlightedGoldmine` (Reforged's
+  Undead07, W2-11), none at a native of this task's area. So no map reaches the World Editor's camera setups
+  (`CreateCameras`) yet; the probes and `CameraNativesTests` test those. This replaces D302's `GetCameraMargin`. After
+  W5-1: 245 Exact, 363 Close, 63 Recorded, 1,164 Missing (from W2-4's 221, 329, 25 and 1,260).
+### The rest of the units (W2-10)
+
+The probes `units-more`, `units-more-2`, `units-types`, `units-bones` and `units-gold` (`docs/facts.md`, "Units", "The
+rest of the units") measured what the facts left open; the choices below follow them where they measured and say so
+where not.
+
+- **D310. The order events the unit natives give without orders** (wave 3's): undefend (852056) once for each Defend
+  the unit has (an ability made from `Adef`, a map's copy too), on its owner's and its own order events: at a death,
+  after it reads dead with life 0 and gives its food back and before the death events; as a removed unit goes after its
+  step, twice if it lived (it then reads dead, life 0, unpaused) and once if dead; as an exploded unit or a body goes;
+  inside `CreateCorpse`; after a pause's stunned order. `PauseUnit(true)` on a living unpaused unit fires the stunned
+  order (851973) as a point order (`EVENT_*_ISSUED_POINT_ORDER`, which `GetOrderedUnit` and `GetIssuedOrderId` now read);
+  `PauseUnit(false)` gives back, 0.01 s later (`Frame`, measured twice), undefend for each Defend, or a stop if the unit
+  changed hands while paused; paused again before that, the given-back order fires at once and no stunned order. A
+  paused unit given away gets no stop or undefend; a death unpauses. A dead unit given away gets nothing: the undefend
+  W2-2 read as its give-away's was its death's (the probe killed it after the player's registration), so D226's
+  sentence on it is replaced and `docs/facts.md` corrected. Which abilities a unit has is its type's `uabi` (shortcut,
+  `Abilities` in `UnitOrders.cs`) until W2-7 gives units their own. `KillUnit`, `RemoveUnit`, `SetUnitOwner`, `CreateCorpse`
+  and `GetOrderedUnit`/`GetIssuedOrderId` are Exact; `PauseUnit` stays Close: the game also gives back the order the
+  unit had (game-facts: the move 0.016 s later), which needs orders.
+- **D311. Bodies** (probe units-bones): a body goes `DecayTime` plus `BoneDecayTime` (2 + 88) after its decay, as D228
+  inferred (footman 93.04, rifleman 91.7), and a `CreateCorpse` corpse that long after it is made, with no decay event
+  (a hero's corpse stays, inferred from a dead hero); D228's "a corpse never decays" was the 45 s probe's horizon.
+  `UnitSuspendDecay` right after the death changed nothing, also let go after the body's time, so it does nothing here,
+  replacing D228's suspension (Close: suspending in the decay or the bones isn't measured). A body goes, and a timed
+  life ends, a step after its time, as the game ran a timer due at the same time first (a corpse whose time was 90.00
+  still read in a 90.00 timer; a 1.40 timer ran before the 1.40 deaths).
+- **D312. Timed life** (probes units-more, units-more-2): `UnitApplyTimedLife` on a living unit adds summoned to its
+  classification (as `UnitAddType`, also with a duration of 0 or less, which never kills) and kills it the duration
+  later, the sooner end holding when applied again; a dead unit gets nothing; any buff id. `UnitPauseTimedLife` stops
+  and resumes its clock, `BlzUnitCancelTimedLife` kills at once; both Exact. `UnitApplyTimedLife` is Close: with the
+  Water Elemental's buff `BHwe` the game gave the body no decay event and took it at its decay time, which isn't
+  modelled (`probes/differences/units-more.txt`). Summon events and `GetSummonedUnit` come with the abilities that
+  summon (wave 4).
+- **D313. Sleep is settled when it changes, and when read after the day turned** (probes units-more, units-more-2): a
+  unit keeps whether it can sleep (its type's `usle`, `UnitAddSleep`) and whether it sleeps; made, it sleeps when it is
+  neutral hostile's, can sleep and it is night, dead too; `UnitWakeUp` wakes it until more than 2 s later; `UnitAddSleep`
+  wakes it or puts it to sleep at once. Read in another half of the day than it was settled in, it is settled again:
+  at night it sleeps if it could fall asleep; by day the living unpaused ones wake. Before a change to what that reads
+  (a death or removal, a pause or unpause, an owner change, the owner's `PLAYER_STATE_NO_CREEP_SLEEP`) it is settled
+  first, so dawn and dusk find the unit as it was then. So nothing runs for creeps between reads, and
+  `IsUnitType(UNIT_TYPE_SLEEPING)` reads the same. `PLAYER_STATE_NO_CREEP_SLEEP` wakes no one (measured)
+  and keeps them from falling asleep (inferred from its name and `EnableCreepSleepBJ`). `UnitIsSleeping` is Close: the
+  game sleeps and wakes them 0.2 to 0.25 s after dusk and dawn, here at the hour; also, a read after a whole day reads
+  as one after none, and an owner change at night doesn't put a creep to sleep (neither measured). `UnitCanSleepPerm` is
+  false and `UnitAddSleepPerm` does nothing, as measured.
+- **D314. Rescue and what waits for later waves:** `SetUnitRescuable` and `SetUnitRescueRange` keep their values on the
+  unit and `GetRescuer` is nil, all Close: the game rescued a unit 0.5 s after a rescuer stood 100 away, firing the
+  rescue events on its owner's and its own registrations without giving it away, and that needs the units in range
+  (W2-6, with `GroupEnumUnitsInRange`'s collision rule; `docs/tasks/wave-2.md`). `SetUnitCreepGuard` does nothing until
+  the creep camps' AI (wave 7) keeps and reads it, Close. `UnitSetUsesAltIcon` and `BlzShowUnitTeamGlow` only show
+  (Recorded).
+  `SetPlayerUnitsOwner` gave nothing away and fired nothing, and what the game keeps it for isn't known: Recorded.
+  `IsUnitIllusion` is false, Close until abilities and items make illusions (wave 4; game-facts: they read true), as
+  `IsUnitType`'s wave-4 kinds are (D230); `BlzIsUnitSelectable` is alive, shown and not removed, and a unit with Locust
+  is for W2-7 to probe (game-facts measured only `SelectUnit` on one).
+- **D315. Unit state events** fire inside the set or death that brings the life or mana from failing the comparison to
+  passing it, kept in the unit's event list with their comparison (`UnitLimit`), so `DestroyTrigger` lets go of them as
+  of any unit event. `EQUAL`, `NOT_EQUAL` and the most life and mana never fire, nor a registration that passes when
+  made. Mana is looked at again a frame later: a registration whose comparison passes and didn't at the last look
+  fires once more (the game's at 0.0049 s, here the next step), which fits every mana case measured. Close: the frame's
+  time, and regeneration, which can bring a value across a limit, comes with combat (wave 3). `GetEventUnitState` is
+  the event's state, and outside one the state with id 0, Exact. `TriggerRegisterFilterUnitEvent` registers as
+  `TriggerRegisterUnitEvent` with its filter run first, as a trigger's condition is (in the firing, so `GetTriggerUnit`
+  reads the unit; `GetFilterUnit` stays W2-6's), and not for a destroyed or disabled trigger; a death registered so
+  never fires, as measured; Exact.
+- **D316. Counts, food and names.** Each player keeps its living units' count by type, from creation to death or, for a
+  removed unit, until it is gone; an owner change moves it. The counts read it (structures by the type's `ubdg`, the
+  upgrades by `uupt`, followed to the end), and `GetPlayerTechCount` of a unit type reads it too, so it is Exact. A
+  living unit's food used and made go to its owner's `PLAYER_STATE_RESOURCE_FOOD_USED` and `FOOD_CAP` at the same
+  moments (a corpse adds and takes back), firing the state events inside the call, and `SetUnitUseFood` moves only the
+  food used. The counts and food are kept before any of those events fires, and a death's before its life state
+  event, so a handler that gives the unit away finds them whole (from the code review). Not measured, the model's (from
+  the re-review): an old owner's food event that kills the unit or gives it away ends `SetUnitOwner` there, with no
+  owner change event, and one that stops its food use leaves the new owner's food used unannounced; a corpse's
+  count and food are taken back from the owner they were counted for, also when its food event gives it away. `UnitId` reads `unitui.slk`'s `name`, which the text files' `Name` would
+  replace in the data's rows: `StandardData` keeps it as the unit field `name` (a test gives it so too), and
+  `GameData.Objects` lists a kind's objects in the order of its first table (unitdata.slk for units; each object keeps
+  its row), then the map's new ones by id, so a name two types share is the first's (paladin is `Hpal`; archmage
+  `Hamg`, inferred). Not measured: a map's own unit type reads
+  its base's name (the game may name it otherwise), and `UnitId2String` gives null in a JASS map, as `LoadStr` does.
+  `IsUnitIdType` reads a type as `IsUnitType` reads a unit, never ground or dead; `UnitAddType` and `UnitRemoveType`
+  change the classification field of the unit for its nine kinds and refuse the rest, as measured.
+- **D317. A gold mine's gold** (probe units-gold, asked of W2-10 by the coordinator, as 173 melee maps call
+  `SetResourceAmount`): `GetResourceAmount` is what was set, else the Max Gold (`Gld1`, level 1) of the unit's ability
+  made from `Agld`, else 0; `SetResourceAmount` keeps any amount, 0 and below with no death, on a unit with an ability
+  made from `Agld`, `Abgm` or `Aegm` (a haunted and an entangled mine keep one though they start at 0), and nothing on
+  any other; `AddResourceAmount` adds in 32 bits that wrap. All Exact; the type's abilities stand for the unit's until
+  W2-7 (D310). Harvesting is wave 3's.
+- **D318. The probes** keep players 0 to 15 passive to each other where units of several players stand near each other,
+  as footmen given to Player 1 fought and died in `units-more-2`'s first runs; they print times to hundredths, as the
+  game's frames don't fall on the clock's steps (D45). `units-bones` ends 1 s after the footman's bones go, at about 94
+  s, within the runner's 2 minutes from the launch.
+- **D319. After W2-10,** with W2-4 merged first: 253 Exact, 333 Close, 28 Recorded, 1,221 Missing. Left: rescue
+  itself (W2-6), the units' own abilities for undefend and gold, and a probe of Locust (W2-7), the order a pause gives
+  back and regeneration across a state event's limit (wave 3), summons and illusions (wave 4), the creep camps and
+  their sleep 0.2 to 0.25 s after dusk and dawn (wave 7).
+### Sounds and music (W5-2)
+
+The measurements are two probes, `probes/sounds.lua` and `sounds-2.lua`, in `docs/facts.md`, "Sounds", with their lines
+in `probes/expected`, and the workspace's facts' "Presentation" and "Files" sound bullets.
+
+- **D520. A sound file's length is the install's classic file's, read at run time.** `GetSoundFileDuration`, and a
+  sound's length, look in the map's own files, then in the install's storage: the classic file under the language's
+  folder (`_Locales/enUS.w3mod:`), then the base, then the Definitive Edition's (its language's, then its own), then the
+  HD one's; in each, the path as given, then with `.wav`, `.flac`, `.ogg` and `.mp3` in place of its extension or of
+  none, `/` and `\` alike, in any case. Measured: `HeroPaladinWhat1` asked for five ways read the classic ogg's 1288,
+  not the DE flac's 1788, though the game shows DE graphics (D203); a file stored only for DE and HD read the DE one's.
+  The map's own file first, and a name with a letter outside ASCII not found there, are the workspace's facts'. DE
+  before HD is inferred from one file. A length is read from the file's headers, never its sound, in whole milliseconds
+  cut toward zero: a WAV's data over its bytes a second, a FLAC's STREAMINFO samples, an Ogg Vorbis's last granule
+  position over its rate, an MP3's Layer III frames counted (`SoundFiles`). Nothing is committed (A15): the install's
+  storage stays open in the process for the files a run reads (`StandardData.Storage`), one a folder, its tables about
+  58 MB, a new build of the install closing the old one's; a run reads a path once. Exact on every ogg measured (no wav
+  or flac is the classic file of a measured path; their headers are as simple); an mp3 is Close: its frames and one
+  more, which the game reads for 27 of the 61 measured; of the rest it reads 21 shorter, by 2 to 32 frames against this
+  count (1 to 31 fewer than the file holds; up to 836 ms, Orc1 and Undead2), and 1 a frame longer (LichKingTheme). The
+  frames alone matched 12, a length from the first frames' average size no more than 12; the game's rule wasn't found.
+- **D521. A sound is its file and its play state.** It takes the next handle id (probe: a timer made before and one
+  after are 1 and 1 off). Its length is its file's from when it is made: `CreateSound`'s file, also
+  `CreateSoundFilenameWithLabel`'s (not the label's), the label's for `CreateSoundFromLabel` and `CreateMIDISound`; a
+  label the tables don't have still makes a sound, of length 0. `SetSoundDuration` and `SetSoundParamsFromLabel` change
+  neither its length (3000 and -5 still read 1288) nor how long it plays (sounds-2). Nothing is played: the natives
+  setting what a sound sounds like (volume, channel, distances, cone, position, velocity, its unit, stacking, the
+  environment, the label's parameters) keep nothing, as no native reads them back, and are Recorded; what wave 8's
+  record of Recorded calls keeps is its own. The facial animation sets give true for a sound and false for nil, and the
+  dialogue keys read back as set, "" before and for nil: Exact. The natives whose effects the getters read (making a
+  sound, `StartSound`, `StopSound`, `KillSoundWhenDone`, the play position, the pitch) are Close, the play model's
+  (D522). World Editor's `InitSounds` calls only these.
+- **D522. A sound reads playing from StartSound for its length over its pitch** (`GetSoundIsPlaying`, Close): a looping
+  one until stopped, one of length 0 never; a second `StartSound` while it plays leaves its end (read so in every run,
+  where the workspace's facts heard it cut the sound off, 09-29, by ear), one after it starts it again;
+  `SetSoundPlayPosition` while it plays ends it that much sooner, and before `StartSound` does nothing; `StopSound`
+  stops it at once and destroys nothing, but with a fade it reads playing to the end of its start's instant if stopped
+  in it, else on to its end (fitted to two cases: stopped with a fade in `StartSound`'s instant it read playing then and
+  not 0.6 s later, in every run of `sounds`; 0.5 s in, it read playing to within 0.05 s of a sound left alone, in all
+  seven runs of `sounds-2`); `KillSoundWhenDone` stops a sound playing at once and keeps it (its length reads 4.5 s
+  later), and destroys one not playing. Each is measured as the probes saw it. Not matched: the game's start waits a
+  varying while (0.8 to 1.4 s in `sounds`, 3.6 to 4.0 s in `sounds-2`, from when the sounds stopped), so its sounds read
+  playing that much longer; and a 3D sound at the origin with no distances set never read playing, where here it plays
+  as a 2D one, as who hears isn't simulated. A pitch of 0 or below plays at its own speed (not measured).
+  `GetSoundIsLoading` is false, Exact: every read was.
+- **D523. A label is its first file.** `CreateSoundFromLabel` and `CreateMIDISound` take the label's `FileNames` from
+  the install's sound tables in `UI\SoundInfo` (the ability, ambience, anim, cinematic, dialog, UI, unit ack and unit
+  combat sounds, `AmbientMusic` and `Music`, the first naming a label kept), read with the standard data, and its first
+  file. Close: the game takes one of a label's files at random (`HeroPaladinWhat` 1184 or 1288, the same six draws in
+  all five runs, so its own generator, seeded the same, not the map's), and a unit's acknowledgement labels name their
+  files without a folder, which the game finds and MirrorImaged doesn't: they read 0. A map's own sound tables aren't
+  read.
+- **D524. TriggerWaitForSound** waits as `TriggerSleepAction` (D71) for the time the sound has left less the offset, and
+  0.15 s more: a sound not playing, or a negative offset, 0.15 s, so 0.2 s; nil 0, so 0.1 s. Fitted to the 75 waits
+  read, 61 match: 49 of `sounds-2`'s 56 in seven runs (the first three times 1.4 s, here 1.5; offset 0.5 three times 0.9
+  s, here 1.0; nil once 0.2 s, here 0.1) and 12 of `sounds`' 19 in seven (the first twice 1.4 s; a sound never started
+  0.3 s in three runs, here 0.2; offset 1.0 once 0.6 s and once 0.4 s, here 0.5). The wait follows the sound's length,
+  not when it stops reading playing (D522): a 1.288 s sound waited 1.5 s in both probes (1.4 s in two runs of `sounds`
+  and three of `sounds-2`), and one with `SetSoundDuration(s, 3000)` too. A looping sound's wait never ends (not
+  measured). Close.
+- **D525. Music and the volume groups change nothing a native reads back,** so their natives keep nothing and are
+  Recorded, `PlayMusic` and `PlayMusicEx` too: where the game starts in a list isn't steady (workspace facts,
+  "Presentation"), but no native reads it, so there is no model to be Close (the code review's call, where the task
+  named music lists Close). The sound probes mute every volume group and stop the music first, so a probe makes no sound
+  on Sven's PC; muted sounds still read playing.
+- **D526. The sound probes are compared with the install's data** and sound files, as the data probes are (D213):
+  `ProbeComparison.ReadsData` takes `sounds` and `sounds-2`, so their comparison in MirrorImaged is `Needs=Game`. Only
+  their lines that varied from run to run read `{t}` or `{w}`: in `sounds` the waits and, at 2.0 s, the sounds played
+  from 1000 ms and at pitch 2; in `sounds-2` three waits (the first, offset 0.5's and nil's) and when each sound stopped
+  reading playing, as lines that move (`~`), with a line of its own checking that the sound stopped with a fade stopped
+  with the one left alone. The reads the same in every run stay as the game gave them, so where the play model differs
+  (a sound read playing longer, D522) the difference is recorded.
+- **D527. The shipped maps get through their sounds.** With the natives `main` calls before `InitSounds` stood in for in
+  a local run only (11-08, not committed; W5-1 brings them), `ShippedMapTests` took 432 of the 466 maps through their
+  `NewSoundEnvironment`, `SetAmbientDaySound` and `SetAmbientNightSound` (blizzard.j: `CreateMIDISound`, `StartSound`),
+  `SetMapMusic` and `InitSounds`, to stops after it: `BlzCreateUnitWithSkin` 261, `CreateCameraSetup` 166,
+  `BlzCreateItemWithSkin` 3, `BlzCreateDestructableWithSkinPitchRoll` 2; the other 34 stop before their sounds
+  (`SetTerrainFogExV` 32, `IsFogEnabled` 1, `Location` 1). None stopped at a sound or music native or logged a script
+  error. As committed, the maps still stop at `GetCameraMargin` (D302). blizzard.j's sound functions run on the natives
+  (`InstalledSoundTests`: `InitBlizzardGlobals`' quest sounds made as it makes them, as the rest of it needs
+  `IsFogEnabled`; `InitDNCSounds`; the ambient, volume group and music BJ functions; `PlaySound`). `GetAbilitySound` and
+  `GetAbilitySoundById`, which read an ability's sound labels, stay Missing for W2-7 (`wave-2.md`). After W5-2, with
+  W2-2 and W2-4 merged first: 229 Exact, 343 Close, 56 Recorded, 1,207 Missing.

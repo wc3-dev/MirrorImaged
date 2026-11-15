@@ -52,16 +52,16 @@ public sealed class AbilityTests : IDisposable
         data.Add(ObjectKind.Buff, "fefl", Text("Effectsoundlooped", type: "soundLabel"));
         data.Add(ObjectKind.Unit, "utip", Text("Tip")).Add(ObjectKind.Unit, "uico", Text("Art", type: "icon"));
 
-        const string HolyTips = "Holy Light - [|cffffcc00Level 1|r]|Holy Light - [|cffffcc00Level 2|r]|Holy Light - [|cffffcc00Level 3|r]";
-        const string BlizzardTips = "Blizzard - [|cffffcc00Level 1|r]|Blizzard - [|cffffcc00Level 2|r]|Blizzard - [|cffffcc00Level 3|r]";
+        const string HolyTips = "Holy Light - [|cffffcc00Level 1|r]~Holy Light - [|cffffcc00Level 2|r]~Holy Light - [|cffffcc00Level 3|r]";
+        const string BlizzardTips = "Blizzard - [|cffffcc00Level 1|r]~Blizzard - [|cffffcc00Level 2|r]~Blizzard - [|cffffcc00Level 3|r]";
         data.Add(ObjectKind.Ability, "AHhb", Values($"""
-                code=AHhb;alev=3;arlv=1;aher=1;achd=1;anam=Holy Light;{Levels("atp1", HolyTips.Split('|'))};{Levels("aub1", "heal <AHhb,DataA1>", "heal <AHhb,DataA2>", "heal <AHhb,DataA3>")};
+                code=AHhb;alev=3;arlv=1;aher=1;achd=1;anam=Holy Light;{Levels("atp1", HolyTips.Split('~'))};{Levels("aub1", "heal <AHhb,DataA1>", "heal <AHhb,DataA2>", "heal <AHhb,DataA3>")};
                 aret=Learn Holy Light - [|cffffcc00Level %d|r];arut=learn <AHhb,DataA1>;aart=ReplaceableTextures\CommandButtons\BTNHolyBolt.blp;
                 arar=ReplaceableTextures\CommandButtons\BTNHolyBolt.blp;abpx=0;abpy=2;arpx=0;arpy=0;acdn:1=5;acdn:2=5;acdn:3=5;amcs:1=65;amcs:2=65;amcs:3=65;
                 aran:1=800;aran:2=800;aran:3=800;Hhb1:1=200;Hhb1:2=400;Hhb1:3=600
                 """))
             .Add(ObjectKind.Ability, "AHbz", Values($"""
-                code=AHbz;alev=3;arlv=1;aher=1;achd=1;anam=Blizzard;{Levels("atp1", BlizzardTips.Split('|'))};aret=Learn Blizzard - [|cffffcc00Level %d|r];
+                code=AHbz;alev=3;arlv=1;aher=1;achd=1;anam=Blizzard;{Levels("atp1", BlizzardTips.Split('~'))};aret=Learn Blizzard - [|cffffcc00Level %d|r];
                 abpx=0;abpy=2;acdn:1=6;acdn:2=6;acdn:3=6;amcs:1=75;amcs:2=75;amcs:3=75;Hbz1:1=6;Hbz1:2=8;Hbz1:3=10;Hbz2:1=30;Hbz2:2=40;Hbz2:3=50
                 """))
             .Add(ObjectKind.Ability, "AHtb", Values("code=AHtb;alev=3;aher=1;achd=1;amsp=1000;Htb1:1=100;Htb1:2=225;Htb1:3=350;aart=ReplaceableTextures\\CommandButtons\\BTNStormBolt.blp"))

@@ -13,9 +13,6 @@ public sealed partial class GameNatives
     public string? AbilityId2String(int abilityId) => throw new MissingNativeException("AbilityId2String");
 
     [Native(Level.Missing)]
-    public void AddCameraBlocker(rect? where) => throw new MissingNativeException("AddCameraBlocker");
-
-    [Native(Level.Missing)]
     public void AddHeroXP(unit? whichHero, int xpToAdd, bool showEyeCandy) => throw new MissingNativeException("AddHeroXP");
 
     [Native(Level.Missing)]
@@ -32,9 +29,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public lightning? AddLightningEx(string? codeName, bool checkVisibility, float x1, float y1, float z1, float x2, float y2, float z2) => throw new MissingNativeException("AddLightningEx");
-
-    [Native(Level.Missing)]
-    public void AddResourceAmount(unit? whichUnit, int amount) => throw new MissingNativeException("AddResourceAmount");
 
     [Native(Level.Missing)]
     public effect? AddSpecialEffect(string? modelName, float x, float y) => throw new MissingNativeException("AddSpecialEffect");
@@ -76,13 +70,7 @@ public sealed partial class GameNatives
     public weathereffect? AddWeatherEffect(rect? where, int effectID) => throw new MissingNativeException("AddWeatherEffect");
 
     [Native(Level.Missing)]
-    public void AdjustCameraField(camerafield? whichField, float offset, float duration) => throw new MissingNativeException("AdjustCameraField");
-
-    [Native(Level.Missing)]
     public void AllowHeroGlowOnUnit(unit? whichUnit) => throw new MissingNativeException("AllowHeroGlowOnUnit");
-
-    [Native(Level.Missing)]
-    public void AttachSoundToUnit(sound? soundHandle, unit? whichUnit) => throw new MissingNativeException("AttachSoundToUnit");
 
     [Native(Level.Missing)]
     public void AutomationSetTestType(string? testType) => throw new MissingNativeException("AutomationSetTestType");
@@ -95,27 +83,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public void AutomationTestingFinished() => throw new MissingNativeException("AutomationTestingFinished");
-
-    [Native(Level.Missing)]
-    public int BlzCameraGetCameraType() => throw new MissingNativeException("BlzCameraGetCameraType");
-
-    [Native(Level.Missing)]
-    public void BlzCameraSetCameraType(int cameraType) => throw new MissingNativeException("BlzCameraSetCameraType");
-
-    [Native(Level.Missing)]
-    public void BlzCameraSetupApplyForceDurationSmooth(camerasetup? whichSetup, bool doPan, float forcedDuration, float easeInDuration, float easeOutDuration, float smoothFactor) => throw new MissingNativeException("BlzCameraSetupApplyForceDurationSmooth");
-
-    [Native(Level.Missing)]
-    public int BlzCameraSetupGetCameraType(camerasetup? whichSetup) => throw new MissingNativeException("BlzCameraSetupGetCameraType");
-
-    [Native(Level.Missing)]
-    public string? BlzCameraSetupGetLabel(camerasetup? whichSetup) => throw new MissingNativeException("BlzCameraSetupGetLabel");
-
-    [Native(Level.Missing)]
-    public void BlzCameraSetupSetCameraType(camerasetup? whichSetup, int cameraType) => throw new MissingNativeException("BlzCameraSetupSetCameraType");
-
-    [Native(Level.Missing)]
-    public void BlzCameraSetupSetLabel(camerasetup? whichSetup, string? label) => throw new MissingNativeException("BlzCameraSetupSetLabel");
 
     [Native(Level.Missing)]
     public bool BlzChangeMinimapTerrainTex(string? texFile) => throw new MissingNativeException("BlzChangeMinimapTerrainTex");
@@ -287,9 +254,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public string? BlzGetAnimName(animtype? whichAnim) => throw new MissingNativeException("BlzGetAnimName");
-
-    [Native(Level.Missing)]
-    public bool BlzGetCameraAllowsHotkeyTargetLock() => throw new MissingNativeException("BlzGetCameraAllowsHotkeyTargetLock");
 
     [Native(Level.Missing)]
     public int BlzGetDoodadId(int index) => throw new MissingNativeException("BlzGetDoodadId");
@@ -583,9 +547,6 @@ public sealed partial class GameNatives
     public bool BlzIsTerrainPathableEx(float x, float y, pathingtype? t) => throw new MissingNativeException("BlzIsTerrainPathableEx");
 
     [Native(Level.Missing)]
-    public bool BlzIsUnitSelectable(unit? whichUnit) => throw new MissingNativeException("BlzIsUnitSelectable");
-
-    [Native(Level.Missing)]
     public bool BlzItemAddAbility(item? whichItem, int abilCode) => throw new MissingNativeException("BlzItemAddAbility");
 
     [Native(Level.Missing)]
@@ -596,9 +557,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public void BlzLockHUDScale() => throw new MissingNativeException("BlzLockHUDScale");
-
-    [Native(Level.Missing)]
-    public void BlzPauseThematicMusicOnFocusLost(bool pause) => throw new MissingNativeException("BlzPauseThematicMusicOnFocusLost");
 
     [Native(Level.Missing)]
     public float BlzPixelToFrameX(int pixelX) => throw new MissingNativeException("BlzPixelToFrameX");
@@ -664,9 +622,6 @@ public sealed partial class GameNatives
     public bool BlzSendSyncData(string? prefix, string? data) => throw new MissingNativeException("BlzSendSyncData");
 
     [Native(Level.Missing)]
-    public void BlzSetCameraAllowsHotkeyTargetLock(bool allows) => throw new MissingNativeException("BlzSetCameraAllowsHotkeyTargetLock");
-
-    [Native(Level.Missing)]
     public void BlzSetCinematicEnabledDE(bool enable) => throw new MissingNativeException("BlzSetCinematicEnabledDE");
 
     [Native(Level.Missing)]
@@ -680,36 +635,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public bool BlzSetEventWeaponType(weapontype? weaponType) => throw new MissingNativeException("BlzSetEventWeaponType");
-
-    [Native(Level.Missing)]
-    public void BlzSetHDWaterColor(int red, int green, int blue) => throw new MissingNativeException("BlzSetHDWaterColor");
-
-    [Native(Level.Missing)]
-    public void BlzSetHDWaterColorOverride(bool @override) => throw new MissingNativeException("BlzSetHDWaterColorOverride");
-
-    [Native(Level.Missing)]
-    public void BlzSetHDWaterEdgeSoftness(int edgeSoftness) => throw new MissingNativeException("BlzSetHDWaterEdgeSoftness");
-
-    [Native(Level.Missing)]
-    public void BlzSetHDWaterEmissivity(int emissivity) => throw new MissingNativeException("BlzSetHDWaterEmissivity");
-
-    [Native(Level.Missing)]
-    public void BlzSetHDWaterEnvMapStrength(int envMapStrengthy) => throw new MissingNativeException("BlzSetHDWaterEnvMapStrength");
-
-    [Native(Level.Missing)]
-    public void BlzSetHDWaterMaxOpacity(int maxOpacity) => throw new MissingNativeException("BlzSetHDWaterMaxOpacity");
-
-    [Native(Level.Missing)]
-    public void BlzSetHDWaterMinOpacity(int minOpacity) => throw new MissingNativeException("BlzSetHDWaterMinOpacity");
-
-    [Native(Level.Missing)]
-    public void BlzSetHDWaterReflectivity(int reflectivity) => throw new MissingNativeException("BlzSetHDWaterReflectivity");
-
-    [Native(Level.Missing)]
-    public void BlzSetHDWaterVertexDisplacement(int vertexDisplacement) => throw new MissingNativeException("BlzSetHDWaterVertexDisplacement");
-
-    [Native(Level.Missing)]
-    public void BlzSetHDWaterWaveStrength(int waveStrength) => throw new MissingNativeException("BlzSetHDWaterWaveStrength");
 
     [Native(Level.Missing)]
     public void BlzSetHUDScale(int percentage) => throw new MissingNativeException("BlzSetHUDScale");
@@ -820,42 +745,6 @@ public sealed partial class GameNatives
     public void BlzSetSpecialEffectZ(effect? whichEffect, float z) => throw new MissingNativeException("BlzSetSpecialEffectZ");
 
     [Native(Level.Missing)]
-    public void BlzSetTerrainFogColor(float red, float green, float blue) => throw new MissingNativeException("BlzSetTerrainFogColor");
-
-    [Native(Level.Missing)]
-    public void BlzSetTerrainFogDensity(float density) => throw new MissingNativeException("BlzSetTerrainFogDensity");
-
-    [Native(Level.Missing)]
-    public void BlzSetTerrainFogDrawOverSky(bool drawOverSky) => throw new MissingNativeException("BlzSetTerrainFogDrawOverSky");
-
-    [Native(Level.Missing)]
-    public void BlzSetTerrainFogHeightEnd(float heightEnd) => throw new MissingNativeException("BlzSetTerrainFogHeightEnd");
-
-    [Native(Level.Missing)]
-    public void BlzSetTerrainFogHeightStart(float heightStart) => throw new MissingNativeException("BlzSetTerrainFogHeightStart");
-
-    [Native(Level.Missing)]
-    public void BlzSetTerrainFogLinearEnd(float linearEnd) => throw new MissingNativeException("BlzSetTerrainFogLinearEnd");
-
-    [Native(Level.Missing)]
-    public void BlzSetTerrainFogLinearStart(float linearStart) => throw new MissingNativeException("BlzSetTerrainFogLinearStart");
-
-    [Native(Level.Missing)]
-    public void BlzSetTerrainFogMaxLinearDensity(float maxLinearDensity) => throw new MissingNativeException("BlzSetTerrainFogMaxLinearDensity");
-
-    [Native(Level.Missing)]
-    public void BlzSetTerrainFogStyle(fogstyle? style) => throw new MissingNativeException("BlzSetTerrainFogStyle");
-
-    [Native(Level.Missing)]
-    public void BlzSetTerrainFogZEnd(float ZEnd) => throw new MissingNativeException("BlzSetTerrainFogZEnd");
-
-    [Native(Level.Missing)]
-    public void BlzSetTerrainFogZStart(float zStart) => throw new MissingNativeException("BlzSetTerrainFogZStart");
-
-    [Native(Level.Missing)]
-    public void BlzSetThematicMusicAbsoluteVolume(int volume) => throw new MissingNativeException("BlzSetThematicMusicAbsoluteVolume");
-
-    [Native(Level.Missing)]
     public void BlzSetUnitArmor(unit? whichUnit, float armorAmount) => throw new MissingNativeException("BlzSetUnitArmor");
 
     [Native(Level.Missing)]
@@ -883,15 +772,6 @@ public sealed partial class GameNatives
     public bool BlzSetUnitWeaponStringField(unit? whichUnit, unitweaponstringfield? whichField, int index, string? value) => throw new MissingNativeException("BlzSetUnitWeaponStringField");
 
     [Native(Level.Missing)]
-    public void BlzShowSkyBox(bool show) => throw new MissingNativeException("BlzShowSkyBox");
-
-    [Native(Level.Missing)]
-    public void BlzShowTerrain(bool show) => throw new MissingNativeException("BlzShowTerrain");
-
-    [Native(Level.Missing)]
-    public void BlzShowUnitTeamGlow(unit? whichUnit, bool show) => throw new MissingNativeException("BlzShowUnitTeamGlow");
-
-    [Native(Level.Missing)]
     public void BlzSpecialEffectAddSubAnimation(effect? whichEffect, subanimtype? whichSubAnim) => throw new MissingNativeException("BlzSpecialEffectAddSubAnimation");
 
     [Native(Level.Missing)]
@@ -917,9 +797,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public bool BlzUnitCanEquipItemOfEquipmentType(unit? whichUnit, equipmentType? equipmentId) => throw new MissingNativeException("BlzUnitCanEquipItemOfEquipmentType");
-
-    [Native(Level.Missing)]
-    public void BlzUnitCancelTimedLife(unit? whichUnit) => throw new MissingNativeException("BlzUnitCancelTimedLife");
 
     [Native(Level.Missing)]
     public void BlzUnitClearOrders(unit? whichUnit, bool onlyQueued) => throw new MissingNativeException("BlzUnitClearOrders");
@@ -976,55 +853,7 @@ public sealed partial class GameNatives
     public void CachePlayerHeroData(player? whichPlayer) => throw new MissingNativeException("CachePlayerHeroData");
 
     [Native(Level.Missing)]
-    public void CameraSetDepthOfFieldScale(float scale) => throw new MissingNativeException("CameraSetDepthOfFieldScale");
-
-    [Native(Level.Missing)]
-    public void CameraSetFocalDistance(float distance) => throw new MissingNativeException("CameraSetFocalDistance");
-
-    [Native(Level.Missing)]
-    public void CameraSetSmoothingFactor(float factor) => throw new MissingNativeException("CameraSetSmoothingFactor");
-
-    [Native(Level.Missing)]
-    public void CameraSetSourceNoise(float mag, float velocity) => throw new MissingNativeException("CameraSetSourceNoise");
-
-    [Native(Level.Missing)]
-    public void CameraSetSourceNoiseEx(float mag, float velocity, bool vertOnly) => throw new MissingNativeException("CameraSetSourceNoiseEx");
-
-    [Native(Level.Missing)]
-    public void CameraSetTargetNoise(float mag, float velocity) => throw new MissingNativeException("CameraSetTargetNoise");
-
-    [Native(Level.Missing)]
-    public void CameraSetTargetNoiseEx(float mag, float velocity, bool vertOnly) => throw new MissingNativeException("CameraSetTargetNoiseEx");
-
-    [Native(Level.Missing)]
-    public void CameraSetupApply(camerasetup? whichSetup, bool doPan, bool panTimed) => throw new MissingNativeException("CameraSetupApply");
-
-    [Native(Level.Missing)]
-    public void CameraSetupApplyForceDuration(camerasetup? whichSetup, bool doPan, float forceDuration) => throw new MissingNativeException("CameraSetupApplyForceDuration");
-
-    [Native(Level.Missing)]
-    public void CameraSetupApplyForceDurationWithZ(camerasetup? whichSetup, float zDestOffset, float forceDuration) => throw new MissingNativeException("CameraSetupApplyForceDurationWithZ");
-
-    [Native(Level.Missing)]
-    public void CameraSetupApplyWithZ(camerasetup? whichSetup, float zDestOffset) => throw new MissingNativeException("CameraSetupApplyWithZ");
-
-    [Native(Level.Missing)]
     public location? CameraSetupGetDestPositionLoc(camerasetup? whichSetup) => throw new MissingNativeException("CameraSetupGetDestPositionLoc");
-
-    [Native(Level.Missing)]
-    public float CameraSetupGetDestPositionX(camerasetup? whichSetup) => throw new MissingNativeException("CameraSetupGetDestPositionX");
-
-    [Native(Level.Missing)]
-    public float CameraSetupGetDestPositionY(camerasetup? whichSetup) => throw new MissingNativeException("CameraSetupGetDestPositionY");
-
-    [Native(Level.Missing)]
-    public float CameraSetupGetField(camerasetup? whichSetup, camerafield? whichField) => throw new MissingNativeException("CameraSetupGetField");
-
-    [Native(Level.Missing)]
-    public void CameraSetupSetDestPosition(camerasetup? whichSetup, float x, float y, float duration) => throw new MissingNativeException("CameraSetupSetDestPosition");
-
-    [Native(Level.Missing)]
-    public void CameraSetupSetField(camerasetup? whichSetup, camerafield? whichField, float value, float duration) => throw new MissingNativeException("CameraSetupSetField");
 
     [Native(Level.Missing)]
     public void ChangeLevel(string? newLevel, bool doScoreScreen) => throw new MissingNativeException("ChangeLevel");
@@ -1051,9 +880,6 @@ public sealed partial class GameNatives
     public int ChooseRandomNPBuilding() => throw new MissingNativeException("ChooseRandomNPBuilding");
 
     [Native(Level.Missing)]
-    public void ClearMapMusic() => throw new MissingNativeException("ClearMapMusic");
-
-    [Native(Level.Missing)]
     public void ClearSelection() => throw new MissingNativeException("ClearSelection");
 
     [Native(Level.Missing)]
@@ -1067,9 +893,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public unit? CreateBlightedGoldmine(player? id, float x, float y, float face) => throw new MissingNativeException("CreateBlightedGoldmine");
-
-    [Native(Level.Missing)]
-    public camerasetup? CreateCameraSetup() => throw new MissingNativeException("CreateCameraSetup");
 
     [Native(Level.Missing)]
     public commandbuttoneffect? CreateCommandButtonEffect(int abilityId, string? order) => throw new MissingNativeException("CreateCommandButtonEffect");
@@ -1102,9 +925,6 @@ public sealed partial class GameNatives
     public commandbuttoneffect? CreateLearnCommandButtonEffect(int abilityId) => throw new MissingNativeException("CreateLearnCommandButtonEffect");
 
     [Native(Level.Missing)]
-    public sound? CreateMIDISound(string? soundLabel, int fadeInRate, int fadeOutRate) => throw new MissingNativeException("CreateMIDISound");
-
-    [Native(Level.Missing)]
     public minimapicon? CreateMinimapIcon(float x, float y, int red, int green, int blue, string? pingPath, fogstate? fogVisibility) => throw new MissingNativeException("CreateMinimapIcon");
 
     [Native(Level.Missing)]
@@ -1123,15 +943,6 @@ public sealed partial class GameNatives
     public region? CreateRegion() => throw new MissingNativeException("CreateRegion");
 
     [Native(Level.Missing)]
-    public sound? CreateSound(string? fileName, bool looping, bool is3D, bool stopwhenoutofrange, int fadeInRate, int fadeOutRate, string? eaxSetting) => throw new MissingNativeException("CreateSound");
-
-    [Native(Level.Missing)]
-    public sound? CreateSoundFilenameWithLabel(string? fileName, bool looping, bool is3D, bool stopwhenoutofrange, int fadeInRate, int fadeOutRate, string? SLKEntryName) => throw new MissingNativeException("CreateSoundFilenameWithLabel");
-
-    [Native(Level.Missing)]
-    public sound? CreateSoundFromLabel(string? soundLabel, bool looping, bool is3D, bool stopwhenoutofrange, int fadeInRate, int fadeOutRate) => throw new MissingNativeException("CreateSoundFromLabel");
-
-    [Native(Level.Missing)]
     public texttag? CreateTextTag() => throw new MissingNativeException("CreateTextTag");
 
     [Native(Level.Missing)]
@@ -1148,9 +959,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public unit? CreateUnitAtLocByName(player? id, string? unitname, location? whichLocation, float face) => throw new MissingNativeException("CreateUnitAtLocByName");
-
-    [Native(Level.Missing)]
-    public unit? CreateUnitByName(player? whichPlayer, string? unitname, float x, float y, float face) => throw new MissingNativeException("CreateUnitByName");
 
     [Native(Level.Missing)]
     public unitpool? CreateUnitPool() => throw new MissingNativeException("CreateUnitPool");
@@ -1255,9 +1063,6 @@ public sealed partial class GameNatives
     public void DoNotSaveReplay() => throw new MissingNativeException("DoNotSaveReplay");
 
     [Native(Level.Missing)]
-    public void EnableCameraBlocker(rect? r, bool flag) => throw new MissingNativeException("EnableCameraBlocker");
-
-    [Native(Level.Missing)]
     public void EnableDragSelect(bool state, bool ui) => throw new MissingNativeException("EnableDragSelect");
 
     [Native(Level.Missing)]
@@ -1282,13 +1087,7 @@ public sealed partial class GameNatives
     public void EnableWeatherEffect(weathereffect? whichEffect, bool enable) => throw new MissingNativeException("EnableWeatherEffect");
 
     [Native(Level.Missing)]
-    public void EnableWorldFogBoundary(bool b) => throw new MissingNativeException("EnableWorldFogBoundary");
-
-    [Native(Level.Missing)]
     public void EndCinematicScene() => throw new MissingNativeException("EndCinematicScene");
-
-    [Native(Level.Missing)]
-    public void EndThematicMusic() => throw new MissingNativeException("EndThematicMusic");
 
     [Native(Level.Missing)]
     public void EnumItemsInRect(rect? r, boolexpr? filter, Action? actionFunc) => throw new MissingNativeException("EnumItemsInRect");
@@ -1304,12 +1103,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public void FlushStoredUnit(gamecache? cache, string? missionKey, string? key) => throw new MissingNativeException("FlushStoredUnit");
-
-    [Native(Level.Missing)]
-    public void FogEnable(bool enable) => throw new MissingNativeException("FogEnable");
-
-    [Native(Level.Missing)]
-    public void FogMaskEnable(bool enable) => throw new MissingNativeException("FogMaskEnable");
 
     [Native(Level.Missing)]
     public void FogModifierStart(fogmodifier? whichFogModifier) => throw new MissingNativeException("FogModifierStart");
@@ -1354,49 +1147,10 @@ public sealed partial class GameNatives
     public unit? GetBuyingUnit() => throw new MissingNativeException("GetBuyingUnit");
 
     [Native(Level.Missing)]
-    public float GetCameraBoundMaxX() => throw new MissingNativeException("GetCameraBoundMaxX");
-
-    [Native(Level.Missing)]
-    public float GetCameraBoundMaxY() => throw new MissingNativeException("GetCameraBoundMaxY");
-
-    [Native(Level.Missing)]
-    public float GetCameraBoundMinX() => throw new MissingNativeException("GetCameraBoundMinX");
-
-    [Native(Level.Missing)]
-    public float GetCameraBoundMinY() => throw new MissingNativeException("GetCameraBoundMinY");
-
-    [Native(Level.Missing)]
     public location? GetCameraEyePositionLoc() => throw new MissingNativeException("GetCameraEyePositionLoc");
 
     [Native(Level.Missing)]
-    public float GetCameraEyePositionX() => throw new MissingNativeException("GetCameraEyePositionX");
-
-    [Native(Level.Missing)]
-    public float GetCameraEyePositionY() => throw new MissingNativeException("GetCameraEyePositionY");
-
-    [Native(Level.Missing)]
-    public float GetCameraEyePositionZ() => throw new MissingNativeException("GetCameraEyePositionZ");
-
-    [Native(Level.Missing)]
-    public float GetCameraField(camerafield? whichField) => throw new MissingNativeException("GetCameraField");
-
-    [Native(Level.Missing)]
-    public bool GetCameraFieldControlledByInput(camerafield? whichField) => throw new MissingNativeException("GetCameraFieldControlledByInput");
-
-    [Native(Level.Missing)]
-    public float GetCameraMargin(int whichMargin) => throw new MissingNativeException("GetCameraMargin");
-
-    [Native(Level.Missing)]
     public location? GetCameraTargetPositionLoc() => throw new MissingNativeException("GetCameraTargetPositionLoc");
-
-    [Native(Level.Missing)]
-    public float GetCameraTargetPositionX() => throw new MissingNativeException("GetCameraTargetPositionX");
-
-    [Native(Level.Missing)]
-    public float GetCameraTargetPositionY() => throw new MissingNativeException("GetCameraTargetPositionY");
-
-    [Native(Level.Missing)]
-    public float GetCameraTargetPositionZ() => throw new MissingNativeException("GetCameraTargetPositionZ");
 
     [Native(Level.Missing)]
     public unit? GetCancelledStructure() => throw new MissingNativeException("GetCancelledStructure");
@@ -1429,12 +1183,6 @@ public sealed partial class GameNatives
     public unit? GetDetectedUnit() => throw new MissingNativeException("GetDetectedUnit");
 
     [Native(Level.Missing)]
-    public string? GetDialogueSpeakerNameKey(sound? soundHandle) => throw new MissingNativeException("GetDialogueSpeakerNameKey");
-
-    [Native(Level.Missing)]
-    public string? GetDialogueTextKey(sound? soundHandle) => throw new MissingNativeException("GetDialogueTextKey");
-
-    [Native(Level.Missing)]
     public unit? GetEnteringUnit() => throw new MissingNativeException("GetEnteringUnit");
 
     [Native(Level.Missing)]
@@ -1465,19 +1213,10 @@ public sealed partial class GameNatives
     public unit? GetEventTargetUnit() => throw new MissingNativeException("GetEventTargetUnit");
 
     [Native(Level.Missing)]
-    public unitstate? GetEventUnitState() => throw new MissingNativeException("GetEventUnitState");
-
-    [Native(Level.Missing)]
     public item? GetFilterItem() => throw new MissingNativeException("GetFilterItem");
 
     [Native(Level.Missing)]
     public unit? GetFilterUnit() => throw new MissingNativeException("GetFilterUnit");
-
-    [Native(Level.Missing)]
-    public int GetFoodMade(int unitId) => throw new MissingNativeException("GetFoodMade");
-
-    [Native(Level.Missing)]
-    public int GetFoodUsed(int unitId) => throw new MissingNativeException("GetFoodUsed");
 
     [Native(Level.Missing)]
     public int GetHeroAgi(unit? whichHero, bool includeBonuses) => throw new MissingNativeException("GetHeroAgi");
@@ -1594,16 +1333,7 @@ public sealed partial class GameNatives
     public int GetPlayerScore(player? whichPlayer, playerscore? whichPlayerScore) => throw new MissingNativeException("GetPlayerScore");
 
     [Native(Level.Missing)]
-    public int GetPlayerStructureCount(player? whichPlayer, bool includeIncomplete) => throw new MissingNativeException("GetPlayerStructureCount");
-
-    [Native(Level.Missing)]
     public int GetPlayerTaxRate(player? sourcePlayer, player? otherPlayer, playerstate? whichResource) => throw new MissingNativeException("GetPlayerTaxRate");
-
-    [Native(Level.Missing)]
-    public int GetPlayerTypedUnitCount(player? whichPlayer, string? unitName, bool includeIncomplete, bool includeUpgrades) => throw new MissingNativeException("GetPlayerTypedUnitCount");
-
-    [Native(Level.Missing)]
-    public int GetPlayerUnitCount(player? whichPlayer, bool includeIncomplete) => throw new MissingNativeException("GetPlayerUnitCount");
 
     [Native(Level.Missing)]
     public float GetRectCenterX(rect? whichRect) => throw new MissingNativeException("GetRectCenterX");
@@ -1624,16 +1354,10 @@ public sealed partial class GameNatives
     public float GetRectMinY(rect? whichRect) => throw new MissingNativeException("GetRectMinY");
 
     [Native(Level.Missing)]
-    public unit? GetRescuer() => throw new MissingNativeException("GetRescuer");
-
-    [Native(Level.Missing)]
     public int GetResearched() => throw new MissingNativeException("GetResearched");
 
     [Native(Level.Missing)]
     public unit? GetResearchingUnit() => throw new MissingNativeException("GetResearchingUnit");
-
-    [Native(Level.Missing)]
-    public int GetResourceAmount(unit? whichUnit) => throw new MissingNativeException("GetResourceAmount");
 
     [Native(Level.Missing)]
     public mapdensity? GetResourceDensity() => throw new MissingNativeException("GetResourceDensity");
@@ -1655,18 +1379,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public unit? GetSoldUnit() => throw new MissingNativeException("GetSoldUnit");
-
-    [Native(Level.Missing)]
-    public int GetSoundDuration(sound? soundHandle) => throw new MissingNativeException("GetSoundDuration");
-
-    [Native(Level.Missing)]
-    public int GetSoundFileDuration(string? musicFileName) => throw new MissingNativeException("GetSoundFileDuration");
-
-    [Native(Level.Missing)]
-    public bool GetSoundIsLoading(sound? soundHandle) => throw new MissingNativeException("GetSoundIsLoading");
-
-    [Native(Level.Missing)]
-    public bool GetSoundIsPlaying(sound? soundHandle) => throw new MissingNativeException("GetSoundIsPlaying");
 
     [Native(Level.Missing)]
     public ability? GetSpellAbility() => throw new MissingNativeException("GetSpellAbility");
@@ -1837,12 +1549,6 @@ public sealed partial class GameNatives
     public bool IsCineFilterDisplayed() => throw new MissingNativeException("IsCineFilterDisplayed");
 
     [Native(Level.Missing)]
-    public bool IsFogEnabled() => throw new MissingNativeException("IsFogEnabled");
-
-    [Native(Level.Missing)]
-    public bool IsFogMaskEnabled() => throw new MissingNativeException("IsFogMaskEnabled");
-
-    [Native(Level.Missing)]
     public bool IsFoggedToPlayer(float x, float y, player? whichPlayer) => throw new MissingNativeException("IsFoggedToPlayer");
 
     [Native(Level.Missing)]
@@ -1939,19 +1645,10 @@ public sealed partial class GameNatives
     public bool IsTimerDialogDisplayed(timerdialog? whichDialog) => throw new MissingNativeException("IsTimerDialogDisplayed");
 
     [Native(Level.Missing)]
-    public bool IsUnit(unit? whichUnit, unit? whichSpecifiedUnit) => throw new MissingNativeException("IsUnit");
-
-    [Native(Level.Missing)]
     public bool IsUnitDetected(unit? whichUnit, player? whichPlayer) => throw new MissingNativeException("IsUnitDetected");
 
     [Native(Level.Missing)]
     public bool IsUnitFogged(unit? whichUnit, player? whichPlayer) => throw new MissingNativeException("IsUnitFogged");
-
-    [Native(Level.Missing)]
-    public bool IsUnitIdType(int unitId, unittype? whichUnitType) => throw new MissingNativeException("IsUnitIdType");
-
-    [Native(Level.Missing)]
-    public bool IsUnitIllusion(unit? whichUnit) => throw new MissingNativeException("IsUnitIllusion");
 
     [Native(Level.Missing)]
     public bool IsUnitInForce(unit? whichUnit, force? whichForce) => throw new MissingNativeException("IsUnitInForce");
@@ -2057,9 +1754,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public void ItemPoolRemoveItemType(itempool? whichItemPool, int itemId) => throw new MissingNativeException("ItemPoolRemoveItemType");
-
-    [Native(Level.Missing)]
-    public void KillSoundWhenDone(sound? soundHandle) => throw new MissingNativeException("KillSoundWhenDone");
 
     [Native(Level.Missing)]
     public void LeaderboardAddItem(leaderboard? lb, string? label, int value, player? p) => throw new MissingNativeException("LeaderboardAddItem");
@@ -2212,25 +1906,10 @@ public sealed partial class GameNatives
     public void MultiboardSuppressDisplay(bool flag) => throw new MissingNativeException("MultiboardSuppressDisplay");
 
     [Native(Level.Missing)]
-    public void NewSoundEnvironment(string? environmentName) => throw new MissingNativeException("NewSoundEnvironment");
-
-    [Native(Level.Missing)]
     public int OrderId(string? orderIdString) => throw new MissingNativeException("OrderId");
 
     [Native(Level.Missing)]
     public string? OrderId2String(int orderId) => throw new MissingNativeException("OrderId2String");
-
-    [Native(Level.Missing)]
-    public void PanCameraTo(float x, float y) => throw new MissingNativeException("PanCameraTo");
-
-    [Native(Level.Missing)]
-    public void PanCameraToTimed(float x, float y, float duration) => throw new MissingNativeException("PanCameraToTimed");
-
-    [Native(Level.Missing)]
-    public void PanCameraToTimedWithZ(float x, float y, float zOffsetDest, float duration) => throw new MissingNativeException("PanCameraToTimedWithZ");
-
-    [Native(Level.Missing)]
-    public void PanCameraToWithZ(float x, float y, float zOffsetDest) => throw new MissingNativeException("PanCameraToWithZ");
 
     [Native(Level.Missing)]
     public string? ParseTags(string? taggedString) => throw new MissingNativeException("ParseTags");
@@ -2255,18 +1934,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public void PlayModelCinematic(string? modelName) => throw new MissingNativeException("PlayModelCinematic");
-
-    [Native(Level.Missing)]
-    public void PlayMusic(string? musicName) => throw new MissingNativeException("PlayMusic");
-
-    [Native(Level.Missing)]
-    public void PlayMusicEx(string? musicName, int frommsecs, int fadeinmsecs) => throw new MissingNativeException("PlayMusicEx");
-
-    [Native(Level.Missing)]
-    public void PlayThematicMusic(string? musicFileName) => throw new MissingNativeException("PlayThematicMusic");
-
-    [Native(Level.Missing)]
-    public void PlayThematicMusicEx(string? musicFileName, int frommsecs) => throw new MissingNativeException("PlayThematicMusicEx");
 
     [Native(Level.Missing)]
     public leaderboard? PlayerGetLeaderboard(player? toPlayer) => throw new MissingNativeException("PlayerGetLeaderboard");
@@ -2335,9 +2002,6 @@ public sealed partial class GameNatives
     public void RegionClearRect(region? whichRegion, rect? r) => throw new MissingNativeException("RegionClearRect");
 
     [Native(Level.Missing)]
-    public void RegisterStackedSound(sound? soundHandle, bool byPosition, float rectwidth, float rectheight) => throw new MissingNativeException("RegisterStackedSound");
-
-    [Native(Level.Missing)]
     public void ReloadGame() => throw new MissingNativeException("ReloadGame");
 
     [Native(Level.Missing)]
@@ -2374,12 +2038,6 @@ public sealed partial class GameNatives
     public bool RenameSaveDirectory(string? sourceDirName, string? destDirName) => throw new MissingNativeException("RenameSaveDirectory");
 
     [Native(Level.Missing)]
-    public void ResetTerrainFog() => throw new MissingNativeException("ResetTerrainFog");
-
-    [Native(Level.Missing)]
-    public void ResetToGameCamera(float duration) => throw new MissingNativeException("ResetToGameCamera");
-
-    [Native(Level.Missing)]
     public void ResetUbersplat(ubersplat? whichSplat) => throw new MissingNativeException("ResetUbersplat");
 
     [Native(Level.Missing)]
@@ -2390,9 +2048,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public unit? RestoreUnit(gamecache? cache, string? missionKey, string? key, player? forWhichPlayer, float x, float y, float facing) => throw new MissingNativeException("RestoreUnit");
-
-    [Native(Level.Missing)]
-    public void ResumeMusic() => throw new MissingNativeException("ResumeMusic");
 
     [Native(Level.Missing)]
     public bool ReviveHero(unit? whichHero, float x, float y, bool doEyecandy) => throw new MissingNativeException("ReviveHero");
@@ -2440,30 +2095,6 @@ public sealed partial class GameNatives
     public void SetBlightRect(player? whichPlayer, rect? r, bool addBlight) => throw new MissingNativeException("SetBlightRect");
 
     [Native(Level.Missing)]
-    public void SetCameraBounds(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4) => throw new MissingNativeException("SetCameraBounds");
-
-    [Native(Level.Missing)]
-    public void SetCameraField(camerafield? whichField, float value, float duration) => throw new MissingNativeException("SetCameraField");
-
-    [Native(Level.Missing)]
-    public void SetCameraFieldControlledByInput(camerafield? whichField, bool controlled) => throw new MissingNativeException("SetCameraFieldControlledByInput");
-
-    [Native(Level.Missing)]
-    public void SetCameraOrientController(unit? whichUnit, float xoffset, float yoffset) => throw new MissingNativeException("SetCameraOrientController");
-
-    [Native(Level.Missing)]
-    public void SetCameraPosition(float x, float y) => throw new MissingNativeException("SetCameraPosition");
-
-    [Native(Level.Missing)]
-    public void SetCameraQuickPosition(float x, float y) => throw new MissingNativeException("SetCameraQuickPosition");
-
-    [Native(Level.Missing)]
-    public void SetCameraRotateMode(float x, float y, float radiansToSweep, float duration) => throw new MissingNativeException("SetCameraRotateMode");
-
-    [Native(Level.Missing)]
-    public void SetCameraTargetController(unit? whichUnit, float xoffset, float yoffset, bool inheritOrientation) => throw new MissingNativeException("SetCameraTargetController");
-
-    [Native(Level.Missing)]
     public void SetCampaignAvailable(int campaignNumber, bool available) => throw new MissingNativeException("SetCampaignAvailable");
 
     [Native(Level.Missing)]
@@ -2500,9 +2131,6 @@ public sealed partial class GameNatives
     public void SetCinematicAudio(bool cinematicAudio) => throw new MissingNativeException("SetCinematicAudio");
 
     [Native(Level.Missing)]
-    public void SetCinematicCamera(string? cameraModelFile) => throw new MissingNativeException("SetCinematicCamera");
-
-    [Native(Level.Missing)]
     public void SetCinematicScene(int portraitUnitId, playercolor? color, string? speakerTitle, string? text, float sceneDuration, float voiceoverDuration) => throw new MissingNativeException("SetCinematicScene");
 
     [Native(Level.Missing)]
@@ -2515,16 +2143,7 @@ public sealed partial class GameNatives
     public void SetCustomCampaignButtonVisible(int whichButton, bool visible) => throw new MissingNativeException("SetCustomCampaignButtonVisible");
 
     [Native(Level.Missing)]
-    public void SetDayNightModels(string? terrainDNCFile, string? unitDNCFile) => throw new MissingNativeException("SetDayNightModels");
-
-    [Native(Level.Missing)]
     public void SetDefaultDifficulty(gamedifficulty? g) => throw new MissingNativeException("SetDefaultDifficulty");
-
-    [Native(Level.Missing)]
-    public bool SetDialogueSpeakerNameKey(sound? soundHandle, string? speakerName) => throw new MissingNativeException("SetDialogueSpeakerNameKey");
-
-    [Native(Level.Missing)]
-    public bool SetDialogueTextKey(sound? soundHandle, string? dialogueText) => throw new MissingNativeException("SetDialogueTextKey");
 
     [Native(Level.Missing)]
     public void SetEdCinematicAvailable(int campaignNumber, bool available) => throw new MissingNativeException("SetEdCinematicAvailable");
@@ -2540,12 +2159,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public void SetGameTypeSupported(gametype? whichGameType, bool value) => throw new MissingNativeException("SetGameTypeSupported");
-
-    [Native(Level.Missing)]
-    public void SetHDWaterParams(int red, int green, int blue, bool useColor, int vertexDisplacement, int minOpacity, int maxOpacity, int reflectivity, int emissivity, int edgeSoftness, int waveStrength) => throw new MissingNativeException("SetHDWaterParams");
-
-    [Native(Level.Missing)]
-    public void SetHDWaterParamsEx(int red, int green, int blue, bool @override, int vertexDisplacement, int minOpacity, int maxOpacity, int reflectivity, int emissivity, int edgeSoftness, int waveStrength, int envMapStrength) => throw new MissingNativeException("SetHDWaterParamsEx");
 
     [Native(Level.Missing)]
     public void SetHeroAgi(unit? whichHero, int newAgi, bool permanent) => throw new MissingNativeException("SetHeroAgi");
@@ -2629,9 +2242,6 @@ public sealed partial class GameNatives
     public bool SetLightningColor(lightning? whichBolt, float r, float g, float b, float a) => throw new MissingNativeException("SetLightningColor");
 
     [Native(Level.Missing)]
-    public void SetMapMusic(string? musicName, bool random, int index) => throw new MissingNativeException("SetMapMusic");
-
-    [Native(Level.Missing)]
     public void SetMaxCheckpointSaves(int maxCheckpointSaves) => throw new MissingNativeException("SetMaxCheckpointSaves");
 
     [Native(Level.Missing)]
@@ -2644,12 +2254,6 @@ public sealed partial class GameNatives
     public void SetMissionAvailable(int campaignNumber, int missionNumber, bool available) => throw new MissingNativeException("SetMissionAvailable");
 
     [Native(Level.Missing)]
-    public void SetMusicPlayPosition(int millisecs) => throw new MissingNativeException("SetMusicPlayPosition");
-
-    [Native(Level.Missing)]
-    public void SetMusicVolume(int volume) => throw new MissingNativeException("SetMusicVolume");
-
-    [Native(Level.Missing)]
     public void SetOpCinematicAvailable(int campaignNumber, bool available) => throw new MissingNativeException("SetOpCinematicAvailable");
 
     [Native(Level.Missing)]
@@ -2657,9 +2261,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public void SetPlayerTaxRate(player? sourcePlayer, player? otherPlayer, playerstate? whichResource, int rate) => throw new MissingNativeException("SetPlayerTaxRate");
-
-    [Native(Level.Missing)]
-    public void SetPlayerUnitsOwner(player? whichPlayer, int newOwner) => throw new MissingNativeException("SetPlayerUnitsOwner");
 
     [Native(Level.Missing)]
     public void SetPortraitLight(string? portraitDNCFile) => throw new MissingNativeException("SetPortraitLight");
@@ -2674,67 +2275,7 @@ public sealed partial class GameNatives
     public void SetReservedLocalHeroButtons(int reserved) => throw new MissingNativeException("SetReservedLocalHeroButtons");
 
     [Native(Level.Missing)]
-    public void SetResourceAmount(unit? whichUnit, int amount) => throw new MissingNativeException("SetResourceAmount");
-
-    [Native(Level.Missing)]
     public void SetResourceDensity(mapdensity? whichdensity) => throw new MissingNativeException("SetResourceDensity");
-
-    [Native(Level.Missing)]
-    public void SetSkyModel(string? skyModelFile) => throw new MissingNativeException("SetSkyModel");
-
-    [Native(Level.Missing)]
-    public void SetSoundChannel(sound? soundHandle, int channel) => throw new MissingNativeException("SetSoundChannel");
-
-    [Native(Level.Missing)]
-    public void SetSoundConeAngles(sound? soundHandle, float inside, float outside, int outsideVolume) => throw new MissingNativeException("SetSoundConeAngles");
-
-    [Native(Level.Missing)]
-    public void SetSoundConeOrientation(sound? soundHandle, float x, float y, float z) => throw new MissingNativeException("SetSoundConeOrientation");
-
-    [Native(Level.Missing)]
-    public void SetSoundDistanceCutoff(sound? soundHandle, float cutoff) => throw new MissingNativeException("SetSoundDistanceCutoff");
-
-    [Native(Level.Missing)]
-    public void SetSoundDistances(sound? soundHandle, float minDist, float maxDist) => throw new MissingNativeException("SetSoundDistances");
-
-    [Native(Level.Missing)]
-    public void SetSoundDuration(sound? soundHandle, int duration) => throw new MissingNativeException("SetSoundDuration");
-
-    [Native(Level.Missing)]
-    public bool SetSoundFacialAnimationGroupLabel(sound? soundHandle, string? groupLabel) => throw new MissingNativeException("SetSoundFacialAnimationGroupLabel");
-
-    [Native(Level.Missing)]
-    public bool SetSoundFacialAnimationLabel(sound? soundHandle, string? animationLabel) => throw new MissingNativeException("SetSoundFacialAnimationLabel");
-
-    [Native(Level.Missing)]
-    public bool SetSoundFacialAnimationSetFilepath(sound? soundHandle, string? animationSetFilepath) => throw new MissingNativeException("SetSoundFacialAnimationSetFilepath");
-
-    [Native(Level.Missing)]
-    public void SetSoundParamsFromLabel(sound? soundHandle, string? soundLabel) => throw new MissingNativeException("SetSoundParamsFromLabel");
-
-    [Native(Level.Missing)]
-    public void SetSoundPitch(sound? soundHandle, float pitch) => throw new MissingNativeException("SetSoundPitch");
-
-    [Native(Level.Missing)]
-    public void SetSoundPlayPosition(sound? soundHandle, int millisecs) => throw new MissingNativeException("SetSoundPlayPosition");
-
-    [Native(Level.Missing)]
-    public void SetSoundPosition(sound? soundHandle, float x, float y, float z) => throw new MissingNativeException("SetSoundPosition");
-
-    [Native(Level.Missing)]
-    public void SetSoundVelocity(sound? soundHandle, float x, float y, float z) => throw new MissingNativeException("SetSoundVelocity");
-
-    [Native(Level.Missing)]
-    public void SetSoundVolume(sound? soundHandle, int volume) => throw new MissingNativeException("SetSoundVolume");
-
-    [Native(Level.Missing)]
-    public void SetTerrainFog(float a, float b, float c, float d, float e) => throw new MissingNativeException("SetTerrainFog");
-
-    [Native(Level.Missing)]
-    public void SetTerrainFogEx(int style, float zstart, float zend, float density, float red, float green, float blue) => throw new MissingNativeException("SetTerrainFogEx");
-
-    [Native(Level.Missing)]
-    public void SetTerrainFogExV(int style, float zstart, float zend, float density, float heightStart, float heightEnd, float linearStart, float linearEnd, float red, float green, float blue) => throw new MissingNativeException("SetTerrainFogExV");
 
     [Native(Level.Missing)]
     public void SetTerrainPathable(float x, float y, pathingtype? t, bool flag) => throw new MissingNativeException("SetTerrainPathable");
@@ -2776,12 +2317,6 @@ public sealed partial class GameNatives
     public void SetTextTagVisibility(texttag? t, bool flag) => throw new MissingNativeException("SetTextTagVisibility");
 
     [Native(Level.Missing)]
-    public void SetThematicMusicPlayPosition(int millisecs) => throw new MissingNativeException("SetThematicMusicPlayPosition");
-
-    [Native(Level.Missing)]
-    public void SetThematicMusicVolume(int volume) => throw new MissingNativeException("SetThematicMusicVolume");
-
-    [Native(Level.Missing)]
     public void SetTutorialCleared(bool cleared) => throw new MissingNativeException("SetTutorialCleared");
 
     [Native(Level.Missing)]
@@ -2803,12 +2338,6 @@ public sealed partial class GameNatives
     public void SetUnitBlendTime(unit? whichUnit, float blendTime) => throw new MissingNativeException("SetUnitBlendTime");
 
     [Native(Level.Missing)]
-    public void SetUnitCreepGuard(unit? whichUnit, bool creepGuard) => throw new MissingNativeException("SetUnitCreepGuard");
-
-    [Native(Level.Missing)]
-    public void SetUnitFog(float a, float b, float c, float d, float e) => throw new MissingNativeException("SetUnitFog");
-
-    [Native(Level.Missing)]
     public void SetUnitLookAt(unit? whichUnit, string? whichBone, unit? lookAtTarget, float offsetX, float offsetY, float offsetZ) => throw new MissingNativeException("SetUnitLookAt");
 
     [Native(Level.Missing)]
@@ -2821,25 +2350,10 @@ public sealed partial class GameNatives
     public void SetUnitPositionLoc(unit? whichUnit, location? whichLocation) => throw new MissingNativeException("SetUnitPositionLoc");
 
     [Native(Level.Missing)]
-    public void SetUnitRescuable(unit? whichUnit, player? byWhichPlayer, bool flag) => throw new MissingNativeException("SetUnitRescuable");
-
-    [Native(Level.Missing)]
-    public void SetUnitRescueRange(unit? whichUnit, float range) => throw new MissingNativeException("SetUnitRescueRange");
-
-    [Native(Level.Missing)]
     public void SetUnitTimeScale(unit? whichUnit, float timeScale) => throw new MissingNativeException("SetUnitTimeScale");
 
     [Native(Level.Missing)]
     public void SetUnitTypeSlots(unit? whichUnit, int slots) => throw new MissingNativeException("SetUnitTypeSlots");
-
-    [Native(Level.Missing)]
-    public void SetUnitUseFood(unit? whichUnit, bool useFood) => throw new MissingNativeException("SetUnitUseFood");
-
-    [Native(Level.Missing)]
-    public void SetWaterBaseColor(int red, int green, int blue, int alpha) => throw new MissingNativeException("SetWaterBaseColor");
-
-    [Native(Level.Missing)]
-    public void SetWaterDeforms(bool val) => throw new MissingNativeException("SetWaterDeforms");
 
     [Native(Level.Missing)]
     public void ShowImage(image? whichImage, bool flag) => throw new MissingNativeException("ShowImage");
@@ -2858,21 +2372,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public void StartMeleeAI(player? num, string? script) => throw new MissingNativeException("StartMeleeAI");
-
-    [Native(Level.Missing)]
-    public void StartSound(sound? soundHandle) => throw new MissingNativeException("StartSound");
-
-    [Native(Level.Missing)]
-    public void StartSoundEx(sound? soundHandle, bool fadeIn) => throw new MissingNativeException("StartSoundEx");
-
-    [Native(Level.Missing)]
-    public void StopCamera() => throw new MissingNativeException("StopCamera");
-
-    [Native(Level.Missing)]
-    public void StopMusic(bool fadeOut) => throw new MissingNativeException("StopMusic");
-
-    [Native(Level.Missing)]
-    public void StopSound(sound? soundHandle, bool killWhenDone, bool fadeOut) => throw new MissingNativeException("StopSound");
 
     [Native(Level.Missing)]
     public bool StoreUnit(gamecache? cache, string? missionKey, string? key, unit? whichUnit) => throw new MissingNativeException("StoreUnit");
@@ -2935,9 +2434,6 @@ public sealed partial class GameNatives
     public @event? TriggerRegisterEnterRegion(trigger? whichTrigger, region? whichRegion, boolexpr? filter) => throw new MissingNativeException("TriggerRegisterEnterRegion");
 
     [Native(Level.Missing)]
-    public @event? TriggerRegisterFilterUnitEvent(trigger? whichTrigger, unit? whichUnit, unitevent? whichEvent, boolexpr? filter) => throw new MissingNativeException("TriggerRegisterFilterUnitEvent");
-
-    [Native(Level.Missing)]
     public @event? TriggerRegisterLeaveRegion(trigger? whichTrigger, region? whichRegion, boolexpr? filter) => throw new MissingNativeException("TriggerRegisterLeaveRegion");
 
     [Native(Level.Missing)]
@@ -2953,9 +2449,6 @@ public sealed partial class GameNatives
     public @event? TriggerRegisterUnitInRange(trigger? whichTrigger, unit? whichUnit, float range, boolexpr? filter) => throw new MissingNativeException("TriggerRegisterUnitInRange");
 
     [Native(Level.Missing)]
-    public @event? TriggerRegisterUnitStateEvent(trigger? whichTrigger, unit? whichUnit, unitstate? whichState, limitop? opcode, float limitval) => throw new MissingNativeException("TriggerRegisterUnitStateEvent");
-
-    [Native(Level.Missing)]
     public @event? TriggerRegisterUpgradeCommandEvent(trigger? whichTrigger, int whichUpgrade) => throw new MissingNativeException("TriggerRegisterUpgradeCommandEvent");
 
     [Native(Level.Missing)]
@@ -2963,9 +2456,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public void TriggerSyncStart() => throw new MissingNativeException("TriggerSyncStart");
-
-    [Native(Level.Missing)]
-    public void TriggerWaitForSound(sound? s, float offset) => throw new MissingNativeException("TriggerWaitForSound");
 
     [Native(Level.Missing)]
     public void UnitAddIndicator(unit? whichUnit, int red, int green, int blue, int alpha) => throw new MissingNativeException("UnitAddIndicator");
@@ -2980,25 +2470,7 @@ public sealed partial class GameNatives
     public bool UnitAddItemToSlotById(unit? whichUnit, int itemId, int itemSlot) => throw new MissingNativeException("UnitAddItemToSlotById");
 
     [Native(Level.Missing)]
-    public void UnitAddSleep(unit? whichUnit, bool add) => throw new MissingNativeException("UnitAddSleep");
-
-    [Native(Level.Missing)]
-    public void UnitAddSleepPerm(unit? whichUnit, bool add) => throw new MissingNativeException("UnitAddSleepPerm");
-
-    [Native(Level.Missing)]
-    public bool UnitAddType(unit? whichUnit, unittype? whichUnitType) => throw new MissingNativeException("UnitAddType");
-
-    [Native(Level.Missing)]
-    public void UnitApplyTimedLife(unit? whichUnit, int buffId, float duration) => throw new MissingNativeException("UnitApplyTimedLife");
-
-    [Native(Level.Missing)]
     public bool UnitCanEquipItemOfEquipmentType(unit? whichUnit, equipmentType? equipmentId) => throw new MissingNativeException("UnitCanEquipItemOfEquipmentType");
-
-    [Native(Level.Missing)]
-    public bool UnitCanSleep(unit? whichUnit) => throw new MissingNativeException("UnitCanSleep");
-
-    [Native(Level.Missing)]
-    public bool UnitCanSleepPerm(unit? whichUnit) => throw new MissingNativeException("UnitCanSleepPerm");
 
     [Native(Level.Missing)]
     public int UnitCountBuffsEx(unit? whichUnit, bool removePositive, bool removeNegative, bool magic, bool physical, bool timedLife, bool aura, bool autoDispel) => throw new MissingNativeException("UnitCountBuffsEx");
@@ -3046,22 +2518,7 @@ public sealed partial class GameNatives
     public bool UnitHasLoadoutSlotEmpty(unit? whichUnit, loadoutslot? itemSlot) => throw new MissingNativeException("UnitHasLoadoutSlotEmpty");
 
     [Native(Level.Missing)]
-    public int UnitId(string? unitIdString) => throw new MissingNativeException("UnitId");
-
-    [Native(Level.Missing)]
-    public string? UnitId2String(int unitId) => throw new MissingNativeException("UnitId2String");
-
-    [Native(Level.Missing)]
-    public bool UnitIgnoreAlarm(unit? whichUnit, bool flag) => throw new MissingNativeException("UnitIgnoreAlarm");
-
-    [Native(Level.Missing)]
-    public bool UnitIgnoreAlarmToggled(unit? whichUnit) => throw new MissingNativeException("UnitIgnoreAlarmToggled");
-
-    [Native(Level.Missing)]
     public int UnitInventorySize(unit? whichUnit) => throw new MissingNativeException("UnitInventorySize");
-
-    [Native(Level.Missing)]
-    public bool UnitIsSleeping(unit? whichUnit) => throw new MissingNativeException("UnitIsSleeping");
 
     [Native(Level.Missing)]
     public item? UnitItemInBagSlot(unit? whichUnit, int itemSlot) => throw new MissingNativeException("UnitItemInBagSlot");
@@ -3074,9 +2531,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public bool UnitModifySkillPoints(unit? whichHero, int skillPointDelta) => throw new MissingNativeException("UnitModifySkillPoints");
-
-    [Native(Level.Missing)]
-    public void UnitPauseTimedLife(unit? whichUnit, bool flag) => throw new MissingNativeException("UnitPauseTimedLife");
 
     [Native(Level.Missing)]
     public void UnitPoolAddUnitType(unitpool? whichPool, int unitId, float weight) => throw new MissingNativeException("UnitPoolAddUnitType");
@@ -3097,9 +2551,6 @@ public sealed partial class GameNatives
     public item? UnitRemoveItemFromSlot(unit? whichUnit, int itemSlot) => throw new MissingNativeException("UnitRemoveItemFromSlot");
 
     [Native(Level.Missing)]
-    public bool UnitRemoveType(unit? whichUnit, unittype? whichUnitType) => throw new MissingNativeException("UnitRemoveType");
-
-    [Native(Level.Missing)]
     public void UnitResetCooldown(unit? whichUnit) => throw new MissingNativeException("UnitResetCooldown");
 
     [Native(Level.Missing)]
@@ -3107,9 +2558,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public void UnitSetUpgradeProgress(unit? whichUnit, int upgradePercentage) => throw new MissingNativeException("UnitSetUpgradeProgress");
-
-    [Native(Level.Missing)]
-    public void UnitSetUsesAltIcon(unit? whichUnit, bool flag) => throw new MissingNativeException("UnitSetUsesAltIcon");
 
     [Native(Level.Missing)]
     public void UnitShareVision(unit? whichUnit, player? whichPlayer, bool share) => throw new MissingNativeException("UnitShareVision");
@@ -3133,22 +2581,10 @@ public sealed partial class GameNatives
     public bool UnitUseItemTarget(unit? whichUnit, item? whichItem, widget? target) => throw new MissingNativeException("UnitUseItemTarget");
 
     [Native(Level.Missing)]
-    public void UnitWakeUp(unit? whichUnit) => throw new MissingNativeException("UnitWakeUp");
-
-    [Native(Level.Missing)]
-    public void UnregisterStackedSound(sound? soundHandle, bool byPosition, float rectwidth, float rectheight) => throw new MissingNativeException("UnregisterStackedSound");
-
-    [Native(Level.Missing)]
     public bool VersionCompatible(version? whichVersion) => throw new MissingNativeException("VersionCompatible");
 
     [Native(Level.Missing)]
     public bool VersionSupported(version? whichVersion) => throw new MissingNativeException("VersionSupported");
-
-    [Native(Level.Missing)]
-    public void VolumeGroupReset() => throw new MissingNativeException("VolumeGroupReset");
-
-    [Native(Level.Missing)]
-    public void VolumeGroupSetVolume(volumegroup? vgroup, float scale) => throw new MissingNativeException("VolumeGroupSetVolume");
 
     [Native(Level.Missing)]
     public void WaygateActivate(unit? waygate, bool activate) => throw new MissingNativeException("WaygateActivate");
