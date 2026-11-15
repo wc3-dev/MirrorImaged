@@ -32,10 +32,10 @@ public sealed partial class GameNatives
     {
         var (strength, intelligence) = (Whole(u.Str), Whole(u.Int));
         change();
-        Move(u, (Whole(u.Str) - strength) * Data.Constant("StrHitPointBonus", 25), (Whole(u.Int) - intelligence) * Data.Constant("IntManaBonus", 15));
+        Shift(u, (Whole(u.Str) - strength) * Data.Constant("StrHitPointBonus", 25), (Whole(u.Int) - intelligence) * Data.Constant("IntManaBonus", 15));
     }
 
-    void Move(unit u, float life, float mana)
+    void Shift(unit u, float life, float mana)
     {
         if (life != 0)
         {
@@ -286,7 +286,7 @@ public sealed partial class GameNatives
         if (!IsHeroUnit(whichHero) || !whichHero!.Dead) return false;
         FireUnit(new(whichHero), HeroReviveStart, PlayerHeroReviveStart);
         whichHero.Dead = false;
-        (whichHero.X, whichHero.Y) = (x, y);
+        Move(whichHero, x, y);
         whichHero.Life = whichHero.MaxLife;
         whichHero.Mana = Math.Min(whichHero.Type.Integer(InitialMana), whichHero.MaxMana);
         Counting(whichHero, 1);

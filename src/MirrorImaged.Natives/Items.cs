@@ -392,12 +392,6 @@ public sealed partial class GameNatives
         }
     }
 
-    static bool Inside(rect r, float x, float y)
-    {
-        float west = MathF.Floor(x / 32) * 32, south = MathF.Floor(y / 32) * 32;
-        return west > r.MinX && west + 32 <= r.MaxX && south > r.MinY && south + 32 <= r.MaxY;
-    }
-
     [Native(Level.Close)]
     public item? GetEnumItem() => _enumItem;
 

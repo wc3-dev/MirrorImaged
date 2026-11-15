@@ -2006,3 +2006,27 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   The map's bounds aren't kept for items. Close.
 - **D342. Item abilities come with W2-7:** the tome's +1 agility, the carried items' attribute bonuses and the
   resulting life, mana and armour, the potion's heal and the ankh. `probes/differences/items.txt` records each line.
+- **D270. Terrain the readers refuse** (`(10)DustwallowKeys.w3m`'s `war3map.w3e`, a cliff type 0 War3Net doesn't
+  define): `MapArchive` reads the file itself and keeps the type as written, so the map has the ground the game loads,
+  and a melee map no longer lacks terrain. A file that can't be read either is left out, as before (W2-6).
+- **D271. A group keeps its units in the order made.** The game's order is the order made while its memory is fresh and
+  otherwise its memory's, which isn't modelled; every enumeration, `FirstOfGroup` and `ForGroup` go in the order made,
+  with a removed unit dropped on the next read. Close (W2-6).
+- **D272. The enumerations' filters.** `GetFilterUnit` reads the unit being filtered inside the filter and is nil
+  outside; a filter runs in a thread of its own (D277) and a player-unit event's filter never runs (D223).
+- **D273. Every unit is held in the world as a flier is.** A unit made or moved goes from the world's west and south
+  edges to 32 short of its east and north ones; the game also moves a ground unit off the map's edge, off other units
+  and buildings and onto a building's grid by its pathing, which is wave 3. The comparison files name these as Close.
+- **D274. Rects, regions and locations** keep their corners in order as probe units-bounds measured, hold them in the
+  world as units are, and a removed rect, location or nil reads 0. A region is the rect cells it was given, with the
+  game's 32-cell rule; `GetLocationZ` reads the terrain and keeps `GameNatives.Height`'s bridge decks as W2-4 left them.
+- **D275. Enter and leave events** fire for every way a unit's place changes: made, `SetUnitX`/`SetUnitY`,
+  `SetUnitPosition`, `SetUnitPositionLoc`, removal and death with decay. They fire inside the call that moved it.
+- **D276. The camera's location natives** (`GetCameraTargetPositionLoc`, `GetCameraEyePositionLoc`,
+  `CameraSetupGetDestPositionLoc`) make a new location from their X and Y natives' values each call, nil for a nil setup.
+  Close, as the X and Y natives are.
+- **D277. Nesting.** A callback started inside a native runs in a thread nested in the calling one. A Lua map goes
+  98 to 99 deep where the game went 99 (the deepest callback here ends at its call; Close); a JASS map's threads nest
+  from the main thread (`LuaState.NestsInMain`), which gives 120 deep and closes the game from about 190, where the
+  game's JASS ran 900 and closed by 1000. Close; the game's closing is kept as `GameClosedException`.
+- **D278. `GroupEnumUnitsSelected`** stays Missing: selection comes with the player's input (a later wave).
