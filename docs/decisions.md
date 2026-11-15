@@ -2257,3 +2257,7 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   to the place, or to the cell nearest it that can be reached, follows its waypoints and finds it again if one is blocked. Fliers ignore
   buildings and cells. Close: buildings block as circles of their collision size, trees and other units not at all, and the game's own
   search is not copied; a place that can't be reached ends the order at the nearest cell, as a stuck unit would stop.
+- **D360. Kill rewards.** A kill by a unit whose owner is an enemy of the victim's gives the killer's owner the bounty of the victim's type (`ubba` plus
+  `ubdi` rolls of `ubsi`) when the victim's owner gives bounty (the neutral players by default), and the experience of the constants'
+  `GrantNormalXP` or, for a hero, `GrantHeroXP` list by the victim's level, shared equally by the killer's owner's living heroes within
+  `HeroExpRange` of the victim. Close: the field codes of the bounty, the shares and the range follow the data and the common values.

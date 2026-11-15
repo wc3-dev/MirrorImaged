@@ -191,7 +191,11 @@ public sealed partial class GameNatives
         Counting(u, -1);
         StateChanged(u, LifeState, life, 0);
         Undefend(u, Defends(u));
-        if (!Reincarnate(u)) FireUnit(new(u, Killer: killer), UnitDeath, PlayerUnitDeath);
+        if (!Reincarnate(u))
+        {
+            FireUnit(new(u, Killer: killer), UnitDeath, PlayerUnitDeath);
+            if (killer is not null) Reward(killer, u);
+        }
         if (u.Exploded)
         {
             u.Removed = true;
