@@ -21,7 +21,9 @@ public sealed class ShopTests : IDisposable
 
     static StandardData Standard() => new StandardData()
         .Add(ObjectKind.Unit, "hfoo", Values("unam=Footman;uhpm=420;umpm=0;umpi=0;umvs=270;umvt=foot;ugol=135;ufoo=2;uaen=0;ucol=31"))
-        .Add(ObjectKind.Unit, "nmrk", Values("unam=Marketplace;uhpm=1500;umpm=0;umpi=0;ubdg=1;umvs=0;usei=phea;ucol=80"))
+        .Add(ObjectKind.Unit, "nmrk", Values("unam=Marketplace;uhpm=1500;umpm=0;umpi=0;ubdg=1;umvs=0;usei=phea;uabi=Apit;ucol=80"))
+        .Add(ObjectKind.Unit, "Hpal", Values("unam=Paladin;upro=Granis;uhpm=100;umpm=0;umpi=100;ustr=22;uagi=13;uint=17;ustp=2.7;uagp=1.5;uinp=1.8;umvs=320;uaen=0;ucol=31;udef=2"))
+        .Add(ObjectKind.Ability, "Apit", Values("anam=Pawn Item;alev=1"))
         .Add(ObjectKind.Unit, "ntav", Values("unam=Tavern;uhpm=1500;umpm=0;umpi=0;ubdg=1;umvs=0;useu=hfoo;ucol=80"))
         .Add(ObjectKind.Item, "phea", Item("unam=Potion of Healing;igol=100;ilum=0;iabi=AIh1"));
 
@@ -59,5 +61,23 @@ public sealed class ShopTests : IDisposable
             """, 2);
 
         Assert.Equal(["no one near\tfalse\t300", "item\tPotion of Healing\tMarketplace\tFootman", "bought\ttrue\t200\tfalse", "unit\tFootman\tTavern\tFootman", "recruited\ttrue\t65", "poor\tfalse\t65"], lines);
+    }
+
+    [Fact]
+    public void A_hero_pawns_an_item_to_a_shop_for_half_its_price_and_the_pawn_event_fires()
+    {
+        var lines = Run("""
+            local shop = CreateUnit(Player(PLAYER_NEUTRAL_PASSIVE), FourCC("nmrk"), 0, 0, 0)
+            local hero = CreateUnit(Player(0), FourCC("Hpal"), 100, 0, 0)
+            local t = CreateTrigger()
+            TriggerRegisterPlayerUnitEvent(t, Player(0), EVENT_PLAYER_UNIT_PAWN_ITEM, nil)
+            TriggerAddAction(t, function() print("pawned", GetItemName(GetSoldItem()), GetUnitName(GetSellingUnit()), GetUnitName(GetBuyingUnit())) end)
+            print("bought", IssueNeutralImmediateOrderById(Player(0), shop, FourCC("phea")), GetPlayerState(Player(0), PLAYER_STATE_RESOURCE_GOLD))
+            local item = UnitItemInSlot(hero, 0)
+            print("has", item ~= nil)
+            print("pawn", UnitDropItemTarget(hero, item, shop), GetPlayerState(Player(0), PLAYER_STATE_RESOURCE_GOLD), UnitItemInSlot(hero, 0) == nil)
+            """, 2);
+
+        Assert.Equal(["bought	true	200", "has	true", "pawned	Potion of Healing	Marketplace	Paladin", "pawn	true	250	true"], lines);
     }
 }

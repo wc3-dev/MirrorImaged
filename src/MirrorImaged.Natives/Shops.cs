@@ -7,19 +7,19 @@ namespace MirrorImaged.Natives;
 // is the stock's wait, and a hero is only bought as the units of a tavern are, for the price (docs/decisions.md, D382).
 public sealed partial class GameNatives
 {
-    const int UnitSell = 286, UnitSellItem = 288, PlayerUnitSell = 269, PlayerUnitSellItem = 271;
+    const int UnitSell = 286, UnitSellItem = 288, PlayerUnitSell = 269, PlayerUnitSellItem = 271, UnitPawnItem = 294, PlayerUnitPawnItem = 277;
     const float ShopReach = 900;
     static readonly int ItemsSold = Code("usei"), UnitsSold = Code("useu"), ItemGold = Code("igol"), ItemLumber = Code("ilum");
 
     /// <summary>The item or unit that was bought, in a sell event.</summary>
-    [Native(Level.Close)] public item? GetSoldItem() => Response(UnitSellItem, PlayerUnitSellItem)?.Item;
+    [Native(Level.Close)] public item? GetSoldItem() => Response(UnitSellItem, PlayerUnitSellItem, UnitPawnItem, PlayerUnitPawnItem)?.Item;
     [Native(Level.Close)] public unit? GetSoldUnit() => Response(UnitSell, PlayerUnitSell)?.Other;
 
     /// <summary>The shop in a sell event.</summary>
-    [Native(Level.Close)] public unit? GetSellingUnit() => Response(UnitSell, UnitSellItem, PlayerUnitSell, PlayerUnitSellItem)?.Unit;
+    [Native(Level.Close)] public unit? GetSellingUnit() => Response(UnitSell, UnitSellItem, PlayerUnitSell, PlayerUnitSellItem, UnitPawnItem, PlayerUnitPawnItem)?.Unit;
 
     /// <summary>The unit that bought, in a sell event.</summary>
-    [Native(Level.Close)] public unit? GetBuyingUnit() => Response(UnitSell, UnitSellItem, PlayerUnitSell, PlayerUnitSellItem)?.Target as unit;
+    [Native(Level.Close)] public unit? GetBuyingUnit() => Response(UnitSell, UnitSellItem, PlayerUnitSell, PlayerUnitSellItem, UnitPawnItem, PlayerUnitPawnItem)?.Target as unit;
 
     bool Sells(unit shop, int id) => Listed(shop, ItemsSold, id) || Listed(shop, UnitsSold, id);
 
@@ -48,5 +48,24 @@ public sealed partial class GameNatives
             return true;
         }
         return false;
+    }
+
+    static readonly int PawnAbility = Code("Apit");
+
+    // A shop with the pawn ability that takes the item: one that is not "pawnable" is not taken
+    bool Pawns(unit shop, item i) => IsBuildingNow(shop) && Find(shop, PawnAbility) is not null && i.Type.Integer(ItemPawnable) != 0;
+
+    // The unit near the shop sells the item to it for a share of its price (the constants' PawnItemRate, half), and the pawn events fire for its player
+    bool Pawn(unit seller, item i, unit shop)
+    {
+        if (Distance2(seller.X - shop.X, seller.Y - shop.Y) > ShopReach * ShopReach) return false;
+        var rate = Data.Constant("PawnItemRate", 0.5f);
+        var (gold, lumber) = ((int)(i.Type.Integer(ItemGold) * rate), (int)(i.Type.Integer(ItemLumber) * rate));
+        SetPlayerState(seller.Owner, Convert<playerstate>(Gold), seller.Owner.States[Gold] + gold);
+        SetPlayerState(seller.Owner, Convert<playerstate>(Lumber), seller.Owner.States[Lumber] + lumber);
+        FireUnit(new(shop, Item: i, Target: seller), UnitPawnItem, PlayerUnitPawnItem, seller.Owner);
+        UnitRemoveItem(seller, i);
+        RemoveItem(i);
+        return true;
     }
 }
