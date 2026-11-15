@@ -87,6 +87,7 @@ public sealed partial class GameNatives
     bool Act(unit u)
     {
         if (u.Constructing) return false;
+        if (u.Casting is not null && u.Order != 0 && !u.Paused) return Cast(u);
         var armed = u.Type.Integer(WeaponsOn) != 0;
         var mobile = GetUnitMoveSpeed(u) > 0;
         if (u.Paused || u.Hidden || Asleep(u)) return armed || mobile;
