@@ -8,13 +8,13 @@ public sealed partial class GameNatives
     // A unit's life is kept up to the most life, as the most life less the damage that leaves, in floats (0.41 reads
     // 0.4100037 on a footman of 420, 0.4099731 on a Paladin of 650); below 0.405 the unit dies, the death event inside
     // the call reading life 0 (facts, Units; probe units). A dead unit stays dead, its life kept from 0 to its most.
-    void SetLife(unit u, float life)
+    void SetLife(unit u, float life, unit? killer = null)
     {
         var (max, old) = (u.MaxLife, u.Life);
         var now = max - (max - Math.Min(life, max));
         if (!u.Dead && now < Dying)
         {
-            Kill(u);
+            Kill(u, killer);
             return;
         }
         u.Life = u.Dead ? Math.Max(now, 0) : now;

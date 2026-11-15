@@ -277,21 +277,6 @@ public sealed partial class GameNatives
     public item? BlzGetEquippedItem() => throw new MissingNativeException("BlzGetEquippedItem");
 
     [Native(Level.Missing)]
-    public attacktype? BlzGetEventAttackType() => throw new MissingNativeException("BlzGetEventAttackType");
-
-    [Native(Level.Missing)]
-    public unit? BlzGetEventDamageTarget() => throw new MissingNativeException("BlzGetEventDamageTarget");
-
-    [Native(Level.Missing)]
-    public damagetype? BlzGetEventDamageType() => throw new MissingNativeException("BlzGetEventDamageType");
-
-    [Native(Level.Missing)]
-    public bool BlzGetEventIsAttack() => throw new MissingNativeException("BlzGetEventIsAttack");
-
-    [Native(Level.Missing)]
-    public weapontype? BlzGetEventWeaponType() => throw new MissingNativeException("BlzGetEventWeaponType");
-
-    [Native(Level.Missing)]
     public framehandle? BlzGetFrameByName(string? name, int createContext) => throw new MissingNativeException("BlzGetFrameByName");
 
     [Native(Level.Missing)]
@@ -410,9 +395,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public float BlzGetUnitAnimationDurationByIndex(unit? whichUnit, int index) => throw new MissingNativeException("BlzGetUnitAnimationDurationByIndex");
-
-    [Native(Level.Missing)]
-    public float BlzGetUnitArmor(unit? whichUnit) => throw new MissingNativeException("BlzGetUnitArmor");
 
     [Native(Level.Missing)]
     public float BlzGetUnitAttackCooldown(unit? whichUnit, int weaponIndex) => throw new MissingNativeException("BlzGetUnitAttackCooldown");
@@ -547,18 +529,6 @@ public sealed partial class GameNatives
     public void BlzSetCinematicEnabledDE(bool enable) => throw new MissingNativeException("BlzSetCinematicEnabledDE");
 
     [Native(Level.Missing)]
-    public bool BlzSetEventAttackType(attacktype? attackType) => throw new MissingNativeException("BlzSetEventAttackType");
-
-    [Native(Level.Missing)]
-    public void BlzSetEventDamage(float damage) => throw new MissingNativeException("BlzSetEventDamage");
-
-    [Native(Level.Missing)]
-    public bool BlzSetEventDamageType(damagetype? damageType) => throw new MissingNativeException("BlzSetEventDamageType");
-
-    [Native(Level.Missing)]
-    public bool BlzSetEventWeaponType(weapontype? weaponType) => throw new MissingNativeException("BlzSetEventWeaponType");
-
-    [Native(Level.Missing)]
     public void BlzSetHUDScale(int percentage) => throw new MissingNativeException("BlzSetHUDScale");
 
     [Native(Level.Missing)]
@@ -632,9 +602,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public void BlzSetSpecialEffectZ(effect? whichEffect, float z) => throw new MissingNativeException("BlzSetSpecialEffectZ");
-
-    [Native(Level.Missing)]
-    public void BlzSetUnitArmor(unit? whichUnit, float armorAmount) => throw new MissingNativeException("BlzSetUnitArmor");
 
     [Native(Level.Missing)]
     public void BlzSetUnitAttackCooldown(unit? whichUnit, float cooldown, int weaponIndex) => throw new MissingNativeException("BlzSetUnitAttackCooldown");
@@ -1004,12 +971,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public item? GetEquippedItem() => throw new MissingNativeException("GetEquippedItem");
-
-    [Native(Level.Missing)]
-    public float GetEventDamage() => throw new MissingNativeException("GetEventDamage");
-
-    [Native(Level.Missing)]
-    public unit? GetEventDamageSource() => throw new MissingNativeException("GetEventDamageSource");
 
     [Native(Level.Missing)]
     public player? GetEventDetectingPlayer() => throw new MissingNativeException("GetEventDetectingPlayer");
@@ -1868,12 +1829,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public int UnitCountBuffsEx(unit? whichUnit, bool removePositive, bool removeNegative, bool magic, bool physical, bool timedLife, bool aura, bool autoDispel) => throw new MissingNativeException("UnitCountBuffsEx");
-
-    [Native(Level.Missing)]
-    public bool UnitDamagePoint(unit? whichUnit, float delay, float radius, float x, float y, float amount, bool attack, bool ranged, attacktype? attackType, damagetype? damageType, weapontype? weaponType) => throw new MissingNativeException("UnitDamagePoint");
-
-    [Native(Level.Missing)]
-    public bool UnitDamageTarget(unit? whichUnit, widget? target, float amount, bool attack, bool ranged, attacktype? attackType, damagetype? damageType, weapontype? weaponType) => throw new MissingNativeException("UnitDamageTarget");
 
     [Native(Level.Missing)]
     public bool UnitEquipItem(unit? whichUnit, item? whichItem) => throw new MissingNativeException("UnitEquipItem");
