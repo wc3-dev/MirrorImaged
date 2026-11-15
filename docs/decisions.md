@@ -2417,3 +2417,7 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   in its handle library at the start; SilverpineSprint's car physics finds no terrain family at about 13 s). The one fault in the runtime that the corpus found: JASS has a
   unary plus (`+x`) that the transpiler wrote as it was and Lua refuses, in an AI script of a campaign; the operand is written alone now. `MIRROR_DUMP_AI` (a folder) writes
   the Lua of each AI script, and `MIRROR_TRACEBACK` puts the Lua traceback of a script error in the log.
+
+- **D389 (The melee corpus, A4):** the install's classic melee maps ((2) to (12) players: 42 maps) each run 30 game minutes with a person in the first slot and computers in the rest, with
+  no script error, and the computers' units grow (a 2-player map from 6 to about 18 units, a 4-player from 18 to about 75, an 8-player from 42 to about 160): 9 to 230 s a map
+  with eight runs at once, a 4-player map alone 23 s (A10). The test counts a melee map as one with two or more user slots, and the computers' own units only.
