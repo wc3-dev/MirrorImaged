@@ -2378,3 +2378,8 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   second), Vampiric (a share of a melee attack's damage back) and Trueshot (more damage for ranged attacks), which each unit that has one gives the
   allies within its area once a second for a little longer than a second. The numbers are the ability's Data A to E by level, as its tooltip names them.
   Close: channels (Blizzard, Flame Strike), summons, transformations, and the passives of an attack's chance (bash, critical strike, evasion) are not here.
+
+- **D381 (Summons):** Water Elemental, Force of Nature, Serpent Ward, Scout and Vengeance (DataA units) and Feral Spirit (DataB) call units of the type their
+  UnitID field lists for the level, in a ring round the target place or the caster, for the caster's owner, each a summoned unit that ends with the
+  ability's duration, and fire the summon event (`GetSummonedUnit`, `GetSummoningUnit`). Close: Animate Dead (it raises corpses), Carrion Beetles and
+  the summons that need more than a type and a number are not here.

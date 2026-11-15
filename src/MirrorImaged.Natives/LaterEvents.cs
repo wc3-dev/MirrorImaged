@@ -25,8 +25,6 @@ public sealed partial class GameNatives
     [Native(Level.Close)] public unit? GetSellingUnit() => null;
     [Native(Level.Close)] public item? GetSoldItem() => null;
     [Native(Level.Close)] public unit? GetSoldUnit() => null;
-    [Native(Level.Close)] public unit? GetSummonedUnit() => null;
-    [Native(Level.Close)] public unit? GetSummoningUnit() => null;
     [Native(Level.Close)] public item? BlzGetAbsorbingItem() => null;
     [Native(Level.Close)] public bool BlzGetManipulatedItemWasAbsorbed() => false;
 
