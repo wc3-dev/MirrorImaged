@@ -45,6 +45,7 @@ public sealed partial class Simulation : IDisposable
     readonly LuaState _lua = new() { Halts = e => e is MissingNativeException or GameClosedException };
     readonly bool _jass;
     TimeSpan _time;
+    Func<SimulationOptions?, Simulation> _reload = _ => throw new InvalidOperationException("The simulation was not loaded from a map");
 
     // script: the map's Lua, for a JASS map made from its war3map.j with JASS's rules, which the run keeps (decisions D130)
     Simulation(GameData data, byte[] script, string blizzard, SimulationOptions options)
@@ -109,7 +110,7 @@ public sealed partial class Simulation : IDisposable
         var map = Read(path); // first, so a missing map says so whether or not the game is installed
         var blizzard = Blizzard.Lua(map.Jass);
         var script = map.Jass ? JassLua(path, map.Script!, Blizzard.Syntax()) : map.Script!;
-        return Recorded(new(new GameData(StandardData.Installed(GameInstall.Require(), map.Files.Info), map), script, blizzard, options ?? new SimulationOptions()), path, options);
+        return Recorded(new(new GameData(StandardData.Installed(GameInstall.Require(), map.Files.Info), map), script, blizzard, options ?? new SimulationOptions()), path, options, o => Load(path, o));
     }
 
     /// <summary>
@@ -122,12 +123,13 @@ public sealed partial class Simulation : IDisposable
     {
         var map = Read(path);
         var script = map.Jass ? JassLua(path, map.Script!, null) : map.Script!;
-        return Recorded(new(new GameData(data ?? new StandardData(), map), script, blizzard, options ?? new SimulationOptions()), path, options);
+        return Recorded(new(new GameData(data ?? new StandardData(), map), script, blizzard, options ?? new SimulationOptions()), path, options, o => Load(path, blizzard, o, data));
     }
 
     // The recording starts with the map, the seed and the seats the run was given
-    static Simulation Recorded(Simulation simulation, string path, SimulationOptions? options)
+    static Simulation Recorded(Simulation simulation, string path, SimulationOptions? options, Func<SimulationOptions?, Simulation> reload)
     {
+        simulation._reload = reload;
         (simulation._recording.Map, simulation._recording.Seed) = (path, options?.Seed ?? 0);
         (simulation._recording.Users, simulation._recording.Computers) = (options?.Users?.ToArray(), options?.Computers?.ToArray());
         return simulation;
