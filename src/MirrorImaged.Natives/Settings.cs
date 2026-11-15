@@ -22,15 +22,13 @@ public sealed partial class GameNatives
     [Native(Level.Close)]
     public string? AbilityId2String(int abilityId) => Name(abilityId);
 
-    // The orders the facts name by id (probes; game-facts, Orders and events), the rest of the 851968 to 852800 range comes with wave 3
-    static readonly Dictionary<string, int> OrderIds = Words("smart 851971 stop 851972 stunned 851973 cancel 851976 setrally 851980 getitem 851981 attack 851983 attackground 851984 attackonce 851985 move 851986 patrol 851990 holdposition 851993 undefend 852056 defend 852055");
+    /// <summary>The id of a named order (any case), 0 for a name the game doesn't give an order (probe orders-table: 373 names).</summary>
+    [Native(Level.Exact, Fact = "docs/facts.md, Orders: probe orders-table (11-15); game-facts.md, Orders and events: OrderId2String (10-15, 11-03)")]
+    public int OrderId(string? orderIdString) => orderIdString is null ? 0 : OrderIds.GetValueOrDefault(orderIdString);
 
-    /// <summary>The id of a named order, 0 for one that isn't known here (Close: only the orders the facts measured are).</summary>
-    [Native(Level.Close, Fact = "game-facts.md, Orders and events: OrderId2String (10-15, 11-03)")]
-    public int OrderId(string? orderIdString) => orderIdString is null ? 0 : OrderIds.GetValueOrDefault(orderIdString.ToLowerInvariant());
-
-    [Native(Level.Close, Fact = "game-facts.md, Orders and events: OrderId2String (10-15, 11-03)")]
-    public string? OrderId2String(int orderId) => OrderIds.FirstOrDefault(pair => pair.Value == orderId).Key;
+    /// <summary>The name of an order id; "" for an id with none (852008, 851974), also an id of a unit.</summary>
+    [Native(Level.Exact, Fact = "docs/facts.md, Orders: probe orders-table (11-15); game-facts.md, Orders and events: OrderId2String (10-15, 11-03)")]
+    public string? OrderId2String(int orderId) => OrderNames.GetValueOrDefault(orderId, "");
 
     // The animation names of ANIM_TYPE_*
     static readonly string[] AnimNames = ["birth", "death", "decay", "dissipate", "stand", "walk", "attack", "morph", "sleep", "spell", "portrait"];

@@ -29,7 +29,7 @@ public sealed class SettingsTests : IDisposable
             print(BlzGetAnimName(ANIM_TYPE_STAND), BlzGetAnimName(ANIM_TYPE_ATTACK), BlzGetAnimName(ConvertAnimType(99)))
             """);
 
-        Assert.Equal(["-16711165\t16711935\ttrue\t0\tAHhb", "851986\t851986\t0\tattack\tnil", "stand\tattack\t"], lines);
+        Assert.Equal(["-16711165\t16711935\ttrue\t0\tAHhb", "851986\t851986\t0\tattack\t", "stand\tattack\t"], lines);
     }
 
     [Fact]

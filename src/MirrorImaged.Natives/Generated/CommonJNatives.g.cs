@@ -11,25 +11,4 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public float BlzGetUnitAnimationDurationByIndex(unit? whichUnit, int index) => throw new MissingNativeException("BlzGetUnitAnimationDurationByIndex");
-
-    [Native(Level.Missing)]
-    public void CommandAI(player? num, int command, int data) => throw new MissingNativeException("CommandAI");
-
-    [Native(Level.Missing)]
-    public void PauseCompAI(player? p, bool pause) => throw new MissingNativeException("PauseCompAI");
-
-    [Native(Level.Missing)]
-    public void RecycleGuardPosition(unit? hUnit) => throw new MissingNativeException("RecycleGuardPosition");
-
-    [Native(Level.Missing)]
-    public void RemoveAllGuardPositions(player? num) => throw new MissingNativeException("RemoveAllGuardPositions");
-
-    [Native(Level.Missing)]
-    public void RemoveGuardPosition(unit? hUnit) => throw new MissingNativeException("RemoveGuardPosition");
-
-    [Native(Level.Missing)]
-    public void StartCampaignAI(player? num, string? script) => throw new MissingNativeException("StartCampaignAI");
-
-    [Native(Level.Missing)]
-    public void StartMeleeAI(player? num, string? script) => throw new MissingNativeException("StartMeleeAI");
 }
