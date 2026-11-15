@@ -29,6 +29,7 @@ public sealed partial class GameNatives
         if (whichUnit is null || order == 0 || !Takes(whichUnit, order)) return false;
         whichUnit.Casting = null;
         if (Spell(whichUnit, order, out var castable) && !castable) return false;
+        if (CargoOrder(whichUnit, order, x, y, target, out var carried)) return carried;
         if (Economy(whichUnit, order, kind, out var taken))
         {
             if (taken) FireUnit(new(whichUnit, Order: order, PointX: x, PointY: y, Target: target), UnitIssuedOrder, PlayerUnitIssuedOrder);

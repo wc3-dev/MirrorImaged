@@ -116,6 +116,8 @@ public sealed partial class GameNatives
             if (order is OrderAttack or Smart or OrderAttackOnce)
             {
                 if (target is not null && Hostile(u, target) && Armed(u, target)) { (u.AttackTarget, u.Weapon) = (target, Math.Max(WeaponFor(u, target), 0)); Engage(u, target, chase: true); return true; }
+                if (target is not null && order == Smart && GoToTransport(u, target) && u.Transport is null) return Walk(u, target.X, target.Y, follow: true);
+                if (target is not null && order == Smart && u.Transport is not null) return false;
                 if (target is not null && order == Smart) return Walk(u, target.X, target.Y, follow: true);
                 if (target is not null && order is OrderAttack or OrderAttackOnce) return Finish(u);
                 // An attack-move: fight what it comes upon, else walk on

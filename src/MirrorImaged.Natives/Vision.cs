@@ -233,10 +233,6 @@ public sealed partial class GameNatives
     public void SyncSelections() { }
 
     [Native(Level.Close)] public unit? BlzGetMouseFocusUnit() => null;
-    [Native(Level.Close)] public bool IsUnitInTransport(unit? whichUnit, unit? whichTransport) => false;
-    [Native(Level.Close)] public bool IsUnitLoaded(unit? whichUnit) => false;
-    [Native(Level.Close)] public unit? GetLoadedUnit() => null;
-    [Native(Level.Close)] public unit? GetTransportUnit() => null;
 
     /// <summary>Registers; fires when units walk into range, which comes with movement (wave 3).</summary>
     [Native(Level.Close)]
