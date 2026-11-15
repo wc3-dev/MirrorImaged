@@ -81,9 +81,6 @@ public sealed partial class GameNatives
     public void ClearCaptainTargets() { }
 
     [Native(Level.Close)]
-    public void ClearHarvestAI() { }
-
-    [Native(Level.Close)]
     public int CommandsWaiting() => 0;
 
     [Native(Level.Close)]
@@ -184,9 +181,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Close)]
     public void LoadZepWave(int x, int y) { }
-
-    [Native(Level.Close)]
-    public int MeleeDifficulty() => 0;
 
     [Native(Level.Close)]
     public bool MergeUnits(int qty, int a, int b, int make) => false;

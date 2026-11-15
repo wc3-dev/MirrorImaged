@@ -2268,3 +2268,9 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   integer (`SetHeroLevels`) is accepted. Kill the AI commands that are command-card orders (`harvest`, `build`, `load`...) are not spell orders.
   Seen: the human melee AI, given a town hall, a worker, a mine and 500 gold, trains workers and mines gold for two minutes with no script
   error. Close: the buildings, the captains and attack waves, expansion and the heroes are the AI natives still to do.
+
+- **D362 (The AI builds and gathers):** `SetProduce(qty, id, town)` makes qty more: a building is built by a worker at a site found in rings round
+  the hall (buildable and walkable ground when the map has a pathing map, clear of buildings, ordered sites and mines), a unit is queued where
+  it is trained. `HarvestGold` and `HarvestWood` ask for worker slots in order within a round (`ClearHarvestAI` empties them), and workers are
+  assigned by id to the slots, so some go to trees. Seen: in five minutes the human melee AI builds an altar, barracks, farms and a blacksmith
+  and trains footmen and a hero. Close: not measured against the game.
