@@ -35,7 +35,8 @@ public sealed class UnitMoreTests : IDisposable
             .Add(ObjectKind.Ability, "Adef", Values("anam=Defend"))
             .Add(ObjectKind.Ability, "Aihn", Values("anam=Inventory"))
             .Add(ObjectKind.Ability, "Agld", Values("anam=Gold Mine;alev=1;Gld1:1=12500"))
-            .Add(ObjectKind.Ability, "Abgm", Values("anam=Haunted Gold Mine"));
+            .Add(ObjectKind.Ability, "Abgm", Values("anam=Haunted Gold Mine"))
+            .Add(ObjectKind.Ability, "Aloc", Values("anam=Locust;alev=1"));
         foreach (var (key, value) in Values("StrHitPointBonus=25;IntManaBonus=15;DecayTime=2;BoneDecayTime=88;StructureDecayTime=30;Dawn=6;Dusk=18"))
             data.Constants[key] = value;
         return data;
@@ -534,6 +535,32 @@ public sealed class UnitMoreTests : IDisposable
             "corpse\tfalse",
             "75\t852056\t93.04\ttrue",
             "footman\tfalse",
+        ], Printed(simulation));
+    }
+
+    // probe units-locust: a unit that has had Locust is out of the range and rect enumerations and can't be selected, from
+    // the add on and after the ability is taken off again; the player's and the type's enumerations, the range tests and
+    // the group it was already in keep it
+    [Fact]
+    public void A_unit_with_Locust_leaves_the_enumerations_and_selection_for_good()
+    {
+        using var simulation = Run("""
+            local p, l, b = make("hfoo"), make("hfoo"), make("hfoo")
+            local function count(fill, ...) local g, n = CreateGroup(), 0 fill(g, ...) ForGroup(g, function() n = n + 1 end) return n end
+            local function counts() return count(GroupEnumUnitsInRange, 0, 0, 300, nil) .. "/" .. count(GroupEnumUnitsInRect, Rect(-300, -300, 300, 300), nil)
+              .. "/" .. count(GroupEnumUnitsOfPlayer, Player(0), nil) .. "/" .. count(GroupEnumUnitsOfType, "footman", nil) end
+            local function selectable() return tf(BlzIsUnitSelectable(p)) .. tf(BlzIsUnitSelectable(l)) .. tf(BlzIsUnitSelectable(b)) end
+            print(counts(), selectable())
+            local held = CreateGroup() GroupEnumUnitsOfPlayer(held, Player(0), nil)
+            print(tf(UnitAddAbility(l, FourCC("Aloc"))) .. tf(UnitAddAbility(l, FourCC("Aloc"))), GetUnitAbilityLevel(l, FourCC("Aloc")), counts(), selectable())
+            UnitAddAbility(b, FourCC("Aloc"))
+            print(tf(UnitRemoveAbility(b, FourCC("Aloc"))), GetUnitAbilityLevel(b, FourCC("Aloc")), counts(), selectable(), tf(IsUnitInGroup(b, held)))
+            """);
+
+        Assert.Equal([
+            "3/3/3/3	ttt",
+            "tf	1	2/2/3/3	tft",
+            "t	0	1/1/3/3	tff	t",
         ], Printed(simulation));
     }
 }

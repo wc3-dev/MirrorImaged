@@ -197,9 +197,9 @@ public sealed partial class GameNatives
 
     static float Distance2(float dx, float dy) => dx * dx + dy * dy;
 
-    // By place: neither hidden nor removed, in the grid's order
+    // By place: neither hidden, Locust nor removed, in the grid's order
     IEnumerable<unit> ByPlace(Func<unit, bool> inside) =>
-        _units.Values.Where(u => !u.Hidden && !u.Removed && inside(u)).OrderBy(u => u.Square.Y).ThenBy(u => u.Square.X).ThenByDescending(u => u.Entered);
+        _units.Values.Where(u => !u.Hidden && !u.Locust && !u.Removed && inside(u)).OrderBy(u => u.Square.Y).ThenBy(u => u.Square.X).ThenByDescending(u => u.Entered);
 
     IEnumerable<unit> Newest(Func<unit, bool> take) => _units.Values.Reverse().Where(take);
 

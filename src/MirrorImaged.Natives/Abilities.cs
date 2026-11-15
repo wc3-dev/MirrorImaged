@@ -17,6 +17,7 @@ public partial class unit
 {
     /// <summary>The unit's abilities in the order BlzGetUnitAbilityByIndex gives them: one added goes first.</summary>
     internal readonly List<ability> Abilities = [];
+    internal bool Locust; // had Locust once: the game lets it go from enumerations and selection only with the unit (probe units-locust)
 }
 
 public partial class player
@@ -30,7 +31,7 @@ public partial class player
 public sealed partial class GameNatives
 {
     const string AbilitiesProbe = "facts.md, Abilities: probe abilities (11-08)";
-    static readonly int Invulnerable = Code("Avul"), AbilityList = Code("uabi"), UpgradesUsed = Code("upgr"), AbilityCode = Code("code");
+    static readonly int Invulnerable = Code("Avul"), AbilityList = Code("uabi"), Locust = Code("Aloc"), UpgradesUsed = Code("upgr"), AbilityCode = Code("code");
 
     // The abilities an upgrade raises may change level when the owner's research does (probe abilities-upgrades)
     readonly List<ability> _raised = [];
@@ -44,6 +45,7 @@ public sealed partial class GameNatives
     {
         var a = new ability { Type = type, Unit = u, Levels = type.Levels };
         u.Abilities.Insert(at, a);
+        if (type.Id == Locust || type.Text(AbilityCode) == "Aloc") u.Locust = true;
         if (Raises(u.Type).Any(raise => raise.Ability == type.Id))
         {
             _raised.Add(a);
