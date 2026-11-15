@@ -181,7 +181,7 @@ public sealed partial class GameNatives
     // decay at its death time, neither with a decay event; any other unit decays then (the decay event) and is gone
     // DecayTime plus BoneDecayTime after that. A unit removed and then killed in one step stays (probe units). The killer
     // comes with damage (W2-5): no death this wave makes has one.
-    void Kill(unit u)
+    void Kill(unit u, unit? killer = null)
     {
         if (u.Dead) return;
         var life = u.Life;
@@ -190,7 +190,7 @@ public sealed partial class GameNatives
         Counting(u, -1);
         StateChanged(u, LifeState, life, 0);
         Undefend(u, Defends(u));
-        FireUnit(new(u), UnitDeath, PlayerUnitDeath);
+        FireUnit(new(u, Killer: killer), UnitDeath, PlayerUnitDeath);
         if (u.Exploded)
         {
             u.Removed = true;
