@@ -1063,9 +1063,6 @@ public sealed partial class GameNatives
     public void CachePlayerHeroData(player? whichPlayer) => throw new MissingNativeException("CachePlayerHeroData");
 
     [Native(Level.Missing)]
-    public location? CameraSetupGetDestPositionLoc(camerasetup? whichSetup) => throw new MissingNativeException("CameraSetupGetDestPositionLoc");
-
-    [Native(Level.Missing)]
     public void ChangeLevel(string? newLevel, bool doScoreScreen) => throw new MissingNativeException("ChangeLevel");
 
     [Native(Level.Missing)]
@@ -1346,12 +1343,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public unit? GetBuyingUnit() => throw new MissingNativeException("GetBuyingUnit");
-
-    [Native(Level.Missing)]
-    public location? GetCameraEyePositionLoc() => throw new MissingNativeException("GetCameraEyePositionLoc");
-
-    [Native(Level.Missing)]
-    public location? GetCameraTargetPositionLoc() => throw new MissingNativeException("GetCameraTargetPositionLoc");
 
     [Native(Level.Missing)]
     public unit? GetCancelledStructure() => throw new MissingNativeException("GetCancelledStructure");

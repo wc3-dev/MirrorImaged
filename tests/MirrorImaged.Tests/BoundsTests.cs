@@ -144,4 +144,22 @@ public sealed class BoundsTests : IDisposable
             print(place(u))
             """));
     }
+
+    // W5-1's camera natives answer as a new location each call, the X and Y natives' values (D505)
+    [Fact]
+    public void The_camera_and_setup_positions_come_as_new_locations()
+    {
+        var log = Run("""
+            local cs = CreateCameraSetup()
+            CameraSetupSetDestPosition(cs, 11, 22, 0)
+            local d = CameraSetupGetDestPositionLoc(cs)
+            local t = GetCameraTargetPositionLoc()
+            local e = GetCameraEyePositionLoc()
+            print(f(GetLocationX(d)) .. " " .. f(GetLocationY(d)))
+            print(tostring(t ~= GetCameraTargetPositionLoc()) .. " " .. tostring(GetLocationX(t) == GetCameraTargetPositionX() and GetLocationY(t) == GetCameraTargetPositionY()))
+            print(tostring(GetLocationX(e) == GetCameraEyePositionX() and GetLocationY(e) == GetCameraEyePositionY()))
+            print(tostring(CameraSetupGetDestPositionLoc(nil) == nil))
+            """);
+        Assert.Equal(["11.000 22.000", "true true", "true", "true"], log);
+    }
 }
