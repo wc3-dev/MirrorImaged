@@ -17,6 +17,25 @@ public sealed partial class Simulation
     LuaFunction? _preloadFile;
     (string Lua, string Path) _preloadNext;
 
+    // The AI script, with common.ai in front of it, as Lua in an environment of its own whose global function main is made a global of the
+    // game's under a name for this script; null for a script the map and the install lack
+    int _aiScripts;
+    bool _aiRules;
+
+    string? LoadAi(string script)
+    {
+        var file = script.Replace('\\', '/');
+        var bytes = _natives.Data.Map?.File(script) ?? _natives.Data.Map?.File("Scripts" + '\\' + script) ?? _natives.Data.InstallFile("War3.w3mod:Scripts/" + file);
+        var common = _natives.Data.InstallFile("War3.w3mod:Scripts/common.ai");
+        if (bytes is null || common is null) return null;
+        var jass = System.Text.Encoding.UTF8.GetString(common) + "\n" + System.Text.Encoding.UTF8.GetString(bytes);
+        var lua = Jass.ToLua([CommonJ()], jass, rules: true);
+        if (!_jass && !_aiRules) { AddJassRules(); _aiRules = true; }
+        var name = $"MirrorImaged_Ai{++_aiScripts}";
+        _lua.Run($"do local _ENV = setmetatable({{}}, {{__index = _G}})\n{lua}\n_G.{name} = main\nend", name);
+        return name;
+    }
+
     // common.j's declarations, made once: a game's globals have the same names and types as any other's
     static JassCompilationUnitSyntax CommonJ() => _commonJ ??= JassSyntaxFactory.ParseCompilationUnit(Declarations(new GameNatives(new Game(0))));
 

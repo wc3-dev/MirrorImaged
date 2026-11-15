@@ -52,7 +52,7 @@ public sealed partial class Simulation : IDisposable
         var info = data.Map!.Files.Info;
         _jass = data.Map.Jass;
         _game = new Game(options.Seed);
-        _natives = new GameNatives(_game) { Threads = new ScriptThreads(this), Documents = options.Documents, RunPreloadFile = RunPreloadFile, Data = data, Jass = _jass };
+        _natives = new GameNatives(_game) { Threads = new ScriptThreads(this), Documents = options.Documents, RunPreloadFile = RunPreloadFile, AiLoader = LoadAi, Data = data, Jass = _jass };
         try
         {
             var (users, computers, others) = Lineup(info, options);
@@ -255,6 +255,13 @@ public sealed partial class Simulation : IDisposable
         {
             using var thread = simulation.Started(function.Start);
             return thread is { Waiting: false, Results: [true or int and not 0 or float and not 0f, ..] };
+        }
+
+        // The integer a function gives, 0 for anything else (the AI's hero levels)
+        public int EvaluateInt()
+        {
+            using var thread = simulation.Started(function.Start);
+            return thread is { Waiting: false, Results: [int n, ..] } ? n : thread is { Waiting: false, Results: [float f, ..] } ? (int)f : 0;
         }
 
         public IScriptThread? Start() => Waiting.Of(simulation, simulation.Started(function.Start));

@@ -57,6 +57,9 @@ public sealed class GameData
     /// <summary>The map's files; null when the run has no map's data.</summary>
     public MapArchive? Map { get; }
 
+    /// <summary>A file of the installed game by its storage path (<c>War3.w3mod:Scripts/common.ai</c>); null where the data didn't come from an install or the file isn't there.</summary>
+    public byte[]? InstallFile(string path) => Standard.Storage?.Invoke(path);
+
     /// <summary>The ground of the map's <c>war3map.w3e</c>; null when it has none.</summary>
     public Terrain? Terrain { get; }
 
