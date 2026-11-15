@@ -187,25 +187,25 @@ public sealed partial class GameNatives
         else u.Int = value;
     });
 
-    int AttributeOf(unit? u, int which)
+    int AttributeOf(unit? u, int which, bool bonus = false)
     {
         if (u is null || !IsHero(u.Type.Id)) return 0;
-        return Whole(which == 0 ? u.Str : which == 1 ? u.Agi : u.Int);
+        return bonus ? WithBonus(u, which) : Whole(which == 0 ? u.Str : which == 1 ? u.Agi : u.Int);
     }
 
-    /// <summary>The whole part of the hero's strength, its gains per level included; 0 for a unit that isn't a hero (probe heroes-nonhero-str). Bonuses come with abilities and items.</summary>
+    /// <summary>The whole part of the hero's strength, its gains per level included, or with the bonus of what it carries; 0 for a unit that isn't a hero (probe heroes-nonhero-str).</summary>
     [Native(Level.Close)]
-    public int GetHeroStr(unit? whichHero, bool includeBonuses) => AttributeOf(whichHero, 0);
+    public int GetHeroStr(unit? whichHero, bool includeBonuses) => AttributeOf(whichHero, 0, includeBonuses);
 
     [Native(Level.Close)]
-    public int GetHeroAgi(unit? whichHero, bool includeBonuses) => AttributeOf(whichHero, 1);
+    public int GetHeroAgi(unit? whichHero, bool includeBonuses) => AttributeOf(whichHero, 1, includeBonuses);
 
     [Native(Level.Close)]
-    public int GetHeroInt(unit? whichHero, bool includeBonuses) => AttributeOf(whichHero, 2);
+    public int GetHeroInt(unit? whichHero, bool includeBonuses) => AttributeOf(whichHero, 2, includeBonuses);
 
     /// <summary>
     /// Sets the strength, at once (0 and -5 too); the most life moves by the constants' bonus for the difference and the
-    /// life with it. Close: the permanent flag changes nothing (no bonuses exist yet to tell them apart).
+    /// life with it. The permanent flag changes nothing (probe items-carried: a set with a bonus carried sets the base, whichever it is); the bonus of what the hero carries stays on top.
     /// </summary>
     [Native(Level.Close)]
     public void SetHeroStr(unit? whichHero, int newStr, bool permanent)
@@ -239,7 +239,7 @@ public sealed partial class GameNatives
     /// <summary>
     /// Learns the next level of a hero ability the hero's type has, if it has a skill point and its level is the
     /// ability's required level, then 2 more for each level after the first (or its level skip, which the data reads 0 for Holy Light); the skill event fires before
-    /// the point is spent (probe heroes: the points read the same inside it). Nothing else happens: an ability is W2-7's.
+    /// the point is spent (probe heroes: the points read the same inside it). The hero gets the ability at that level (probe heroes-store: AHhb read 1, and the unit had one ability more).
     /// </summary>
     [Native(Level.Close)]
     public void SelectHeroSkill(unit? whichHero, int abilcode)
@@ -250,6 +250,7 @@ public sealed partial class GameNatives
         var next = whichHero.Skills.GetValueOrDefault(abilcode) + 1;
         if (next > ability.Levels || whichHero.HeroLevel < ability.Integer(RequiredLevel) + (next - 1) * (ability.Integer(SkillLevelSkip) is var skip and > 0 ? skip : 2)) return;
         whichHero.Skills[abilcode] = next;
+        (Find(whichHero, abilcode) ?? Give(whichHero, ability, 0)).Level = next;
         FireUnit(new(whichHero, Skill: abilcode, SkillLevel: next), HeroSkillEvent, PlayerHeroSkill);
         whichHero.SkillPoints = Math.Max(0, whichHero.SkillPoints - 1);
     }

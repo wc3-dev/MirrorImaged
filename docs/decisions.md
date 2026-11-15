@@ -1944,8 +1944,7 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   ability in the type's `uhab` list when the hero has a point and its level is the ability's `arlv` plus 2 for each
   level after the first (`alsk`, the data's level skip, reads 0 for Holy Light though the game needs hero level 3 for
   its second, so 2 is used where it is 0). The skill event fires before the point is spent (the points read the same
-  inside it). The learned level is kept on the hero, but the ability itself is W2-7's: `GetUnitAbilityLevel` doesn't
-  read it yet, and the probes leave it out. `UnitModifySkillPoints` keeps from 0 up; `BlzResetUnitTalents` does
+  inside it). The learned level is kept on the hero, and the ability is on it too (D348). `UnitModifySkillPoints` keeps from 0 up; `BlzResetUnitTalents` does
   nothing (no talents in the Paladin).
 - **D245. Revival.** `ReviveHero` on a dead hero fires the start event with the hero dead where it died, then sets it
   alive at the place with its most life and its type's `umpi` mana (100, not the full 495), counts its food again, and
@@ -1992,7 +1991,7 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   other unit (probe items). Close: a unit with the inventory ability has the size its data gives (Backpack, game-facts).
 - **D335. The hero-revivable event never fires** (D245): `GetRevivableUnit` reads nil.
 - **D336. The proper-name numbering is a count** (D247).
-- **D337. The game cache's unit natives are not done.** `StoreUnit`, `RestoreUnit`, `HaveStoredUnit`, `FlushStoredUnit`
+- **D337. (Replaced by D347: the unit natives are done.)** The game cache's unit natives were left Missing: `StoreUnit`, `RestoreUnit`, `HaveStoredUnit`, `FlushStoredUnit`
   and `SyncStoredUnit` stay Missing: restoring needs the whole unit's state (the attributes, levels, items and abilities
   of D240 to D249) written to the cache and rebuilt, and the attack speed that survived the Paladin's store came from
   an ability of wave 3. Left in `docs/tasks/later.md`.
@@ -2004,8 +2003,47 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   data (`ParseTags`, W2-8). Close.
 - **D341. An item set far off stays where it is set;** the game keeps it inside the map (5000, -5000 read 2016, -2048).
   The map's bounds aren't kept for items. Close.
-- **D342. Item abilities come with W2-7:** the tome's +1 agility, the carried items' attribute bonuses and the
+- **D342. (Replaced by D343 to D346 and D348.)** Item abilities were left to W2-7: the tome's +1 agility, the carried items' attribute bonuses and the
   resulting life, mana and armour, the potion's heal and the ankh. `probes/differences/items.txt` records each line.
+- **D343. A carried item puts its abilities on its carrier and its bonuses count while it is in a slot** (probe
+  items-carried, `ItemBonuses.cs`). Each of the item's `iabi` abilities is given to the unit first in its list (one ability
+  more for each; `GetUnitAbilityLevel` reads 1) and goes when the item leaves the slot, after the drop event. The
+  bonuses are read from the ability's own data fields where it keeps them (`Istr`, `Iagi`, `Iint`, `Idef`, `Ilif`, `Iman`,
+  a field another ability keeps in that column reads 0), so `AIs3` is +3 strength and `AIx5` +5 of each: `GetHeroStr`,
+  `Agi` and `Int` with `true`, and the `_WITH_BONUS` fields, add them; the base, `_PERMANENT` and the plain field don't.
+  Armour counts the agility with the bonus and `Idef` (`rde1` +2). The pickup event reads the bonus already in, the
+  drop event still has it. Close: with two items of one kind the game's ability count wasn't probed.
+- **D344. A change of what the hero carries keeps the life and mana's share of the most** (probe items-carried: 300 of
+  650 with +3 strength reads 335 of 725, with +150 life 369 of 800, mana 50 of 255 with +250 reads 99 of 505, and
+  taking the item out gives 300 of 650 again; rounded to the nearest). A hero at full life stays full. A level's gain
+  and a set of the attribute add to the life as before, and a tome of strength keeps the share too (400 of 650
+  reads 415 of 675); a manual of health adds its 50 to both (450 of 700), a tome of experience gives its experience (100,
+  none while the hero's is suspended). A set of an attribute under a bonus sets the base, whether permanent or not.
+- **D345. Using a potion heals before the use event and is refused when it can't** (probe items-carried). `phea` gives
+  `Ihpg` 250 life, `pman` `Impg` mana, inside the call and capped at the most; a use at full life (or mana) or by a dead
+  hero answers false and keeps the charge, with no event. Close: the refusal was measured for the two potions and a
+  dead hero's `phea`.
+- **D346. A hero dying with an ankh uses it, and comes back** (probe items-ankh, `ItemBonuses.Reincarnate`). The last
+  slot's item with a charge and the reincarnation ability is used as the hero dies: the use event with the hero dead,
+  the drop event and the item gone inside the call when it was the last charge, and no death event. 7 s later (`Ircd`) the
+  hero lives where it died with 500 life (`irc2`) and the mana it had, with no revive event. An ankh with no charge isn't
+  used: the hero dies with its death event. Close: a hero that regenerates (wave 3) keeps its 500, so the game's later
+  lines differ, and the game's revivable event for an ordinary dead hero never fires here (D335).
+- **D347. The game cache's unit natives** (probe heroes-store, `UnitCache.cs`; replaces D337). `StoreUnit` keeps the unit
+  in the cache under the mission and key and answers false, whatever the unit (the game does, a dead hero, a building and
+  a unit removed in the same step too; one already gone isn't kept); `HaveStoredUnit` reads true then, `FlushStoredUnit`
+  and `FlushStoredMission` take it out (other types of the same key stay: the types are apart), and `SyncStoredUnit`
+  does nothing. `RestoreUnit` makes a new unit of the stored type for the player at the place, alive with its most life
+  and mana; a hero comes back with its level, experience, skill points, learned skills (with the ability), base
+  attributes and items in their slots with their charges (the pickup events fire for each, and one hero level event for a
+  level above 1); nothing else is kept: not the life, name, user data, flags, scale, abilities added or the proper name
+  (a new one is drawn). Nil where nothing is stored and for no player. Close: a restored facing reads 89.99999 for 90, a
+  restored footman reads scale 1.0, and the game moves a building made on others (`probes/differences/heroes-store.txt`).
+- **D348. A learned skill is an ability on the hero** (probe heroes-store: after `SelectHeroSkill` of `AHhb`, `GetUnitAbilityLevel`
+  reads 1 and the hero has one ability more); changes D244's "the ability itself is W2-7's".
+- **D349. Not done:** equipment and the extended inventory, items with other abilities (`AItc` damage, `AIva` life steal,
+  `AIsx` attack speed and the rest give their ability to the carrier and nothing more), regeneration (the potion probe's
+  `350.6748`), and the `AIrc` ankh's first-found choice between two (the last slot is used, as the probe read).
 - **D280. A unit's abilities are its own list** (`unit.Abilities`, `Abilities.cs`), made when the unit is, in the order
   `BlzGetUnitAbilityByIndex` gives them (probe abilities-lists, 60 kinds of unit): what the game gives it for what it
   is (Aatk, Amov, a building's Aalr and the race's Afi*, the build, upgrade and train commands), around the type's

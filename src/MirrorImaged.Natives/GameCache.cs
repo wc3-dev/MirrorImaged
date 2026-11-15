@@ -9,8 +9,8 @@ public partial class gamecache
 // Game caches, as the files probe measured them (decisions D103, D104): one cache a name, which every InitGameCache of
 // it gives a new handle to; each type's values apart, missions and keys in any case; a game starts with the caches
 // saved in its documents, SaveGameCache writes them all, and ReloadGameCachesFromDisk puts the saved ones back in
-// place. A handle whose cache was flushed, or dropped by a reload, reads and stores nothing. The unit natives wait
-// for the units (wave 2).
+// place. A handle whose cache was flushed, or dropped by a reload, reads and stores nothing. The unit natives are in
+// UnitCache.cs.
 public sealed partial class GameNatives
 {
     const string CacheFact = "docs/facts.md, Files and game cache (the files probe, 11-08)";

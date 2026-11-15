@@ -937,9 +937,6 @@ public sealed partial class GameNatives
     public void FlashQuestDialogButton() => throw new MissingNativeException("FlashQuestDialogButton");
 
     [Native(Level.Missing)]
-    public void FlushStoredUnit(gamecache? cache, string? missionKey, string? key) => throw new MissingNativeException("FlushStoredUnit");
-
-    [Native(Level.Missing)]
     public void FogModifierStart(fogmodifier? whichFogModifier) => throw new MissingNativeException("FogModifierStart");
 
     [Native(Level.Missing)]
@@ -1208,9 +1205,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public bool GroupTargetOrderById(group? whichGroup, int order, widget? targetWidget) => throw new MissingNativeException("GroupTargetOrderById");
-
-    [Native(Level.Missing)]
-    public bool HaveStoredUnit(gamecache? cache, string? missionKey, string? key) => throw new MissingNativeException("HaveStoredUnit");
 
     [Native(Level.Missing)]
     public bool HeroGlowIsAllowedOnUnit(unit? whichUnit) => throw new MissingNativeException("HeroGlowIsAllowedOnUnit");
@@ -1603,9 +1597,6 @@ public sealed partial class GameNatives
     public void RestartGame(bool doScoreScreen) => throw new MissingNativeException("RestartGame");
 
     [Native(Level.Missing)]
-    public unit? RestoreUnit(gamecache? cache, string? missionKey, string? key, player? forWhichPlayer, float x, float y, float facing) => throw new MissingNativeException("RestoreUnit");
-
-    [Native(Level.Missing)]
     public void SaveGame(string? saveFileName) => throw new MissingNativeException("SaveGame");
 
     [Native(Level.Missing)]
@@ -1852,13 +1843,7 @@ public sealed partial class GameNatives
     public void StartMeleeAI(player? num, string? script) => throw new MissingNativeException("StartMeleeAI");
 
     [Native(Level.Missing)]
-    public bool StoreUnit(gamecache? cache, string? missionKey, string? key, unit? whichUnit) => throw new MissingNativeException("StoreUnit");
-
-    [Native(Level.Missing)]
     public void SyncSelections() => throw new MissingNativeException("SyncSelections");
-
-    [Native(Level.Missing)]
-    public void SyncStoredUnit(gamecache? cache, string? missionKey, string? key) => throw new MissingNativeException("SyncStoredUnit");
 
     [Native(Level.Missing)]
     public terraindeformation? TerrainDeformCrater(float x, float y, float radius, float depth, int duration, bool permanent) => throw new MissingNativeException("TerrainDeformCrater");
