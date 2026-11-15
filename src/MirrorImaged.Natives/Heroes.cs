@@ -15,7 +15,8 @@ public sealed partial class GameNatives
     static readonly int HeroAbilities = Code("uhab"), InitialMana = Code("umpi"), AgilityBase = Code("uagi"),
         RequiredLevel = Code("arlv"), LevelSkip = Code("alsk");
 
-    static int Whole(double attribute) => (int)Math.Floor(attribute);
+    // the gains are floats added and taken back, so 17 + 9 x 1.8 - 9 x 1.8 may be a hair under 17
+    static int Whole(double attribute) => (int)Math.Floor(attribute + 1e-4);
 
     // A new hero: level 1, no experience, one skill point, its type's attributes and a proper name
     void Begin(unit u)
