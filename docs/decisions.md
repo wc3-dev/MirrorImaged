@@ -2167,6 +2167,16 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   the rest); `AbilityId` is the four-character code; `GetAbilityEffect*` reads the ability's art column by effect type;
   `CreateUnitAtLocByName` finds a unit by its data name; `GetTerrainCliffLevel` reads the nearest corner. Close: defaults not
   measured (HUD scale 1, selection on, difficulty Normal, a computer's difficulty Normal, no saves).
+- **D350. Orders from code.** `Issue*Order` (immediate, point, target, build, neutral, instant, by name or id, by location) answer false for an
+  order the unit cannot take (an unknown name, a removed unit, a dead one for anything but attack) and otherwise make it the
+  unit's current order at once ('stop' makes it 0) and fire its order event inside the call, the unit's player-unit registrations
+  first as for any unit event, with `GetIssuedOrderId`, `GetOrderPointX/Y` (a target's place for a target order) and
+  `GetOrderTarget*` in the event; a nested order fires nested. A build order carries the building's type id and needs it in the
+  unit's build list. `BlzQueue*` on an idle unit gives the order at once, on a busy one queues it; `BlzGetUnitOrderCount` counts the
+  current order and the queue, `BlzUnitClearOrders` and `BlzUnitForceStopOrder` clear them. Group orders answer true when every
+  unit took the order. A `setrally` order keeps the rally point and target; waygates keep their destination and flag. What an order
+  does (walking, fighting, casting, building) comes with waves 3 and 4: an order stays current until another replaces it. Close:
+  `OrderId` knows only the orders the facts name until the order table is probed.
 - **D561. Frames.** A frame is a handle with its name, type, parent and children, text, alpha, visibility (a frame inside a hidden one
   is not visible), enable flag, value range and size; a frame without a size takes the size of the one it fills (`BlzFrameSetAllPoints`).
   `BlzCreateFrame` finds a template the map's loaded TOC lists (its FDF's `Frame "TYPE" "Name"` lines) or one of a few game templates, else nil;
