@@ -1564,6 +1564,61 @@ expected file (`heroes` several times before ability reads were taken out).
   a hero's death used the ankh (use, then drop), after which the hero held 3 items.
 - **Rects.** `EnumItemsInRect` found the four items made in a rect of 400 by 400 in reverse order of making, a hidden one
   too, a filtered one not; a removed one not.
+
+## Items carried (W2-3)
+
+The probes `items-carried` and `items-ankh`, 3.0.1.24371, single player, 11-15, run by the game runner from the PowerShell
+tool. Their lines are in `probes/expected`. A Paladin (strength 22, agility 13, intelligence 17, life 650, mana 255,
+armour 3.9).
+
+- **Abilities on the carrier.** Every item's ability (`iabi`) is on the carrier while the item is in a slot: the ability
+  count read one more, the item's ability first at index 0, `GetUnitAbilityLevel` 1; once taken out the count and level
+  are back. That holds for `ratc` (`AItc`), `modt` (`AIva`) and `gcel` (`AIsx`) too, which change no attribute.
+- **Attribute bonuses.** `rst1` +3 strength (25 with bonus, 22 without, life 725), `rag1` +3 agility (armour 4.8),
+  `rin1` +3 intelligence (mana 300), `bgst` +6 strength (800), `belv` +6 agility (5.7), `ciri` +6 intelligence (345),
+  `ckng` +5 each (775, 330, 5.4), `cnob` +2 each (700, 285, 4.5), `rnsp` +1 each, `rde1` armour 5.9 (+2), `prvt`
+  life 800 (+150), `pmna` mana 505 (+250), `rlif` nothing. The plain, `_PERMANENT` and base reads stay 22; `_WITH_BONUS`
+  reads 25. Three strength items (3, 3, 6) read 34, life 950. A dead hero keeps them.
+- **Life and mana keep their share.** 300 of 650 with `rst1` read 335 of 725, 50 mana with `pmna` read 99 of 505, with
+  `prvt` 369 of 800; the items out read 300 of 650 and 50 of 255 again; 700 of 800 with `prvt` out read 569 of 650.
+- **Events.** The pickup event reads the bonus already in (life 775, the item in its slot); the drop event still reads it
+  (the item in its slot), and it is gone after.
+- **Powerups.** `tstr` +1 strength for good (400 of 650 read 415 of 675), `tdex` +1 agility (armour 4.2), `tint` +1
+  intelligence (mana 270), `manh` +50 life (450 of 700), `texp` +100 experience (xp 100, level 1); none in a slot. A
+  suspended hero's experience didn't change. A tome picked up with boots: base 14, with 20.
+- **Setting.** `SetHeroAgi(h, 20, false)` and `SetHeroStr(h, 30, true)` under +6 and +3 read 20/26 and 30/33, life 925
+  (full), whatever the flag; `UNIT_IF_AGILITY` set 10 read 10/16, `UNIT_IF_AGILITY_WITH_BONUS` set answered false and
+  changed nothing. A level 5 hero with `belv` read 19/25.
+- **Uses.** `phea` at 100 life read 350 inside the use event, with the item in its slot and 0 charges, gone after; at
+  full life `UnitUseItem` answered false, the charge kept; `pghe` from 400 read 650 (capped); `pman` from 50 mana read
+  200; a use at full mana answered false; a dead hero's answered false with the charge kept. Half a second after the
+  potion the life read 350.6748 (regeneration).
+- **The ankh.** A hero killed with a charged `ankh`: the use event fires with the hero dead (life 0) and the item in its
+  slot with one charge less, then the drop event when none are left, the item gone inside the call and not on the
+  ground, and no death event; with two, the last slot's was used. Alive 7 s later where it died with 500 life and
+  mana unchanged (255), regenerating from there; no revive event for it. An ankh with 0 charges isn't used: the death
+  event fires and the hero stays dead, and a revivable event for it came about 4 s after. An ankh of 2 charges used
+  once left 1 and the hero came back; killed again it used the last, dropped and was gone, and was back 7 s later.
+
+## Stored units (W2-3)
+
+The probe `heroes-store`, 3.0.1.24371, single player, 11-15; no cache is ever saved.
+
+- **Store.** `StoreUnit` answered false for a footman, a hero, a dead hero, a building and a unit removed in the same
+  step, and `HaveStoredUnit` read true afterwards; one removed a step before answered false and kept nothing. The unit
+  stays as it was. A nil unit, a nil cache and a flushed cache's handle answered false. Mission and key are found in any case; the integer
+  and the unit of one key are apart; `FlushStoredUnit` takes the unit only; `FlushStoredMission` took it; `SyncStoredUnit`
+  changed nothing.
+- **Restore.** `RestoreUnit` for another player gave a new unit of that player at the place and facing (90 read
+  89.99999), alive with its most life and mana (420 of 420; a hero 925 of 925 and 360 of 360 after 400 and 100); a
+  second restore made a second unit; nil for nothing stored and for a nil player. A hero of level 5 kept level, experience
+  1400, skill points 4, `AHhb` level 1, strength 30/33 and agility 19, and its items in their slots with their charges
+  (`phea` x3), and 3 pickup events and 1 hero level event fired inside the call. Not kept: the user data, the custom
+  name, the proper name (a new one), the flags (invulnerable, hidden), the colour, the abilities added with
+  `UnitAddAbility`, the move speed; a restored footman read scale 1.0 (a made one 0.8). A dead hero came back alive at
+  level 1 with its item; a barracks came back at 1500 life.
+- **Gloves.** A Paladin with `gcel` restored with `gcel` in slot 0 and its ability `AIsx` on it.
+
 ## Abilities (W2-7)
 
 Probes `probes/abilities.lua`, `abilities-lists`, `abilities-types`, `abilities-fields`, `abilities-columns`,
