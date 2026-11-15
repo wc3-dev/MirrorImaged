@@ -132,13 +132,7 @@ public sealed partial class GameNatives
     public void FillGuardPosts() { }
 
     [Native(Level.Close)]
-    public int GetAiPlayer() => 0;
-
-    [Native(Level.Close)]
     public unit? GetAllianceTarget() => null;
-
-    [Native(Level.Close)]
-    public unit? GetBuilding(player? p) => null;
 
     [Native(Level.Close)]
     public unit? GetCreepCamp(int min, int max, bool flyers_ok) => null;
@@ -165,9 +159,6 @@ public sealed partial class GameNatives
     public int GetExpansionY() => 0;
 
     [Native(Level.Close)]
-    public int GetGoldOwned() => 0;
-
-    [Native(Level.Close)]
     public int GetHeroId() => 0;
 
     [Native(Level.Close)]
@@ -183,49 +174,10 @@ public sealed partial class GameNatives
     public unit? GetMegaTarget() => null;
 
     [Native(Level.Close)]
-    public int GetMinesOwned() => 0;
-
-    [Native(Level.Close)]
     public int GetNextExpansion() => 0;
 
     [Native(Level.Close)]
-    public int GetPlayerUnitTypeCount(player? p, int unitid) => 0;
-
-    [Native(Level.Close)]
-    public int GetTownUnitCount(int id, int tn, bool dn) => 0;
-
-    [Native(Level.Close)]
-    public int GetUnitBuildTime(int unitid) => 0;
-
-    [Native(Level.Close)]
-    public int GetUnitCount(int unitid) => 0;
-
-    [Native(Level.Close)]
-    public int GetUnitCountDone(int unitid) => 0;
-
-    [Native(Level.Close)]
-    public int GetUnitGoldCost(int unitid) => 0;
-
-    [Native(Level.Close)]
-    public int GetUnitWoodCost(int unitid) => 0;
-
-    [Native(Level.Close)]
-    public int GetUpgradeGoldCost(int id) => 0;
-
-    [Native(Level.Close)]
-    public int GetUpgradeLevel(int id) => 0;
-
-    [Native(Level.Close)]
-    public int GetUpgradeWoodCost(int id) => 0;
-
-    [Native(Level.Close)]
     public void GroupTimedLife(bool allow) { }
-
-    [Native(Level.Close)]
-    public void HarvestGold(int town, int peons) { }
-
-    [Native(Level.Close)]
-    public void HarvestWood(int town, int peons) { }
 
     [Native(Level.Close)]
     public int IgnoredUnits(int unitid) => 0;
@@ -312,9 +264,6 @@ public sealed partial class GameNatives
     public void SetPeonsRepair(bool state) { }
 
     [Native(Level.Close)]
-    public bool SetProduce(int qty, int id, int town) => false;
-
-    [Native(Level.Close)]
     public void SetRandomPaths(bool state) { }
 
     [Native(Level.Close)]
@@ -334,9 +283,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Close)]
     public void SetUnitsFlee(bool state) { }
-
-    [Native(Level.Close)]
-    public bool SetUpgrade(int id) => false;
 
     [Native(Level.Close)]
     public void SetWatchMegaTargets(bool state) { }
@@ -372,16 +318,7 @@ public sealed partial class GameNatives
     public void TeleportCaptain(float x, float y) { }
 
     [Native(Level.Close)]
-    public bool TownHasHall(int townid) => false;
-
-    [Native(Level.Close)]
-    public bool TownHasMine(int townid) => false;
-
-    [Native(Level.Close)]
     public bool TownThreatened() => false;
-
-    [Native(Level.Close)]
-    public int TownWithMine() => 0;
 
     [Native(Level.Close)]
     public bool UnitInvis(unit? id) => false;

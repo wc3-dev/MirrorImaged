@@ -2241,3 +2241,8 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   `GetUnitAbilityLevel` of its id reads 1 while it is on. Storm Bolt stuns after its hit, Slow (`Aslo`: `DataA` the speed lost, `DataB` the attack
   rate lost) and Bloodlust (`Ablo`: `DataA` attack rate, `DataB` speed gained) give theirs. Close: no other stats, no buff objects of
   their own (`BlzGetUnitAbility` of a buff, tooltips) and no auras yet.
+- **D357. The AI's economy natives** (counts, costs, `SetProduce`, `SetUpgrade`, `HarvestGold`, towns and mines) act for `AiFor`, the player an AI script runs
+  for (the local player where none does), on the buildings, queues and workers of wave 3: a count includes units in training, a town is a finished
+  town hall (the first made is town 0), a mine belongs to the town it stands within 1,000 of, `SetProduce` queues what is missing at buildings
+  that list the unit, and `HarvestGold` sends idle workers to the mine nearest the hall. Wood, the captains and assaults, the expansion natives
+  and running the scripts themselves (a Lua state of their own for each AI player, with `Sleep` as the wait) are still to do (wave 7).
