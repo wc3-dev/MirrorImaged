@@ -1,3 +1,4 @@
+using MirrorImaged.Data;
 using MirrorImaged.World;
 
 namespace MirrorImaged.Natives;
@@ -85,12 +86,22 @@ public sealed partial class GameNatives
     // One step of a unit; true while it could still do something next step
     bool Act(unit u)
     {
+        if (u.Constructing) return false;
         var armed = u.Type.Integer(WeaponsOn) != 0;
         var mobile = GetUnitMoveSpeed(u) > 0;
         if (u.Paused || u.Hidden || Asleep(u)) return armed || mobile;
         if (u.AttackTarget is { } stale && (stale.Dead || stale.Removed || stale.Hidden)) u.AttackTarget = null;
         var scan = _ticks % ScanEvery == 0;
         var order = u.Order;
+        if (order == OrderHarvest) return Harvest(u);
+        if (order == OrderReturn) return ReturnLoad(u);
+        if (order != 0 && !OrderNames.ContainsKey(order) && Data.Object(ObjectKind.Unit, order) is not null)
+        {
+            // A build order: walk to the site, then make the building and stay with it until it is done
+            if (u.Building is { Constructing: true }) return true;
+            if (Distance2(u.OrderX - u.X, u.OrderY - u.Y) > 100 * 100) return Walk(u, u.OrderX, u.OrderY, follow: true);
+            return Place(u, order, u.OrderX, u.OrderY) || Finish(u);
+        }
         if (order == 0 || order == OrderHold)
         {
             if (u.AttackTarget is null && armed && scan && Nearest(u, order == OrderHold ? HoldRange(u) : GetUnitAcquireRange(u)) is { } found) (u.AttackTarget, u.Weapon) = (found, Math.Max(WeaponFor(u, found), 0));
