@@ -36,7 +36,7 @@ if (args is ["check", var mapPath])
 }
 
 // The commands that take a map or a recording, then --name value pairs
-if (args is [var command and ("run" or "replay" or "desync" or "bench" or "fuzz" or "test" or "snapshot" or "compare"), var file, .. var rest])
+if (args is [var command and ("run" or "replay" or "desync" or "bench" or "fuzz" or "test" or "snapshot" or "compare" or "view"), var file, .. var rest])
 {
     if (Flags(rest) is not { } flags) return Usage();
     double Number(string name, double fallback) => flags.TryGetValue(name, out var v) && double.TryParse(v, NumberStyles.Float, CultureInfo.InvariantCulture, out var n) ? n : fallback;
@@ -51,6 +51,7 @@ if (args is [var command and ("run" or "replay" or "desync" or "bench" or "fuzz"
             case "bench": return Bench(file, seconds, seed);
             case "test": return Tests(file, flags.GetValueOrDefault("--junit"));
             case "snapshot": return Save(file, Number("--at", seconds), seed, flags.GetValueOrDefault("--out") ?? "snapshot.json");
+            case "view": return View(file, seconds, seed, Number("--every", 0.5), flags.GetValueOrDefault("--out"));
             case "compare": return Compare(file, flags.GetValueOrDefault("--map"));
             default: return Fuzz(file, seconds, seed, (int)Number("--orders", 1));
         }
@@ -76,7 +77,7 @@ static Dictionary<string, string>? Flags(string[] options)
             "--hash" => double.TryParse(options[i + 1], NumberStyles.Float, CultureInfo.InvariantCulture, out _),
             "--seed" or "--orders" => int.TryParse(options[i + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out _),
             "--record" or "--input" or "--map" or "--junit" or "--out" => true,
-            "--at" => double.TryParse(options[i + 1], NumberStyles.Float, CultureInfo.InvariantCulture, out var at) && at >= 0,
+            "--at" or "--every" => double.TryParse(options[i + 1], NumberStyles.Float, CultureInfo.InvariantCulture, out var at) && at >= 0,
             _ => false,
         };
         if (!valid) return null;
@@ -282,6 +283,27 @@ static int Compare(string file, string? map)
     return 1;
 }
 
+static int View(string file, double seconds, int seed, double every, string? output)
+{
+    Simulation simulation;
+    if (file.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+    {
+        var recording = Recording.FromJson(File.ReadAllText(file));
+        simulation = Simulation.Load(recording.Map, new SimulationOptions { Seed = recording.Seed, Users = recording.Users, Computers = recording.Computers });
+        foreach (var input in recording.Inputs.OrderBy(i => i.Step)) if (input.Step > simulation.Step) { simulation.AdvanceSteps(input.Step - simulation.Step); simulation.Give(input); }
+        seconds = Math.Max(seconds, (double)recording.Steps / StepsPerSecond - (double)simulation.Step / StepsPerSecond);
+    }
+    else simulation = Simulation.Load(file, new SimulationOptions { Seed = seed });
+    using (simulation)
+    {
+        var trace = Viewer.Record(simulation, TimeSpan.FromSeconds(seconds), TimeSpan.FromSeconds(Math.Max(every, 0.05)));
+        output ??= Path.ChangeExtension(Path.GetFileName(file), ".view.html");
+        File.WriteAllText(output, Viewer.Page(trace));
+        Console.Write($"{trace.Frames.Count} frames of {seconds:0.###} s and {trace.Log.Count} log lines saved to {Path.GetFullPath(output)}\n");
+        return trace.Stopped is null ? 0 : 1;
+    }
+}
+
 static int Usage()
 {
     Console.Error.Write("""
@@ -302,6 +324,9 @@ static int Usage()
           mirror snapshot <map or recording> [--at <n>] [--seed <n>] [--out <file>]
                                                            Saves the world after n simulated seconds with what it takes to run
                                                            to it again
+          mirror view <map or recording> [--seconds <n>] [--every <n>] [--out <file>]
+                                                           Runs it and saves a page that opens in a browser: the map from
+                                                           above, the units, a timeline to scrub and the log
           mirror compare <snapshot> [--map <map>]         Runs the snapshot's run again to its step and lists what differs
           mirror test <file or folder> [--junit <file>]    Runs the Lua tests (*.test.lua) with the Lua test API, prints each result and
                                                            writes JUnit XML to the file
