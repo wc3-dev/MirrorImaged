@@ -2173,7 +2173,7 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   `BlzCreateFrameByType` always makes a frame; the origin frames are made on the first ask, one for each type and index. Destroying a
   frame destroys its children. `BlzFrameClick` fires the frame's `FRAMEEVENT_CONTROL_CLICK` registrations with it as the trigger frame;
   the mouse and key events are wave 6's. Textures, models, fonts, colours and anchors are Recorded. Close: the game's own TOC files
-  and its frame tree are not read, and layout is the size given. The missing-native tests now use `StartCampaignAI`, the last native to be
+  and its frame tree are not read, and layout is the size given. The missing-native tests now use `BlzGetUnitAnimationDurationByIndex`, the last native to be
   written (wave 7).
 - **D601. Vision.** A place is visible to a player within the sight (day or night field) of a living, shown unit the player owns, shares's
   or sees through by a shared-vision alliance or `UnitShareVision`; else a running fog modifier's state at the place, the later
