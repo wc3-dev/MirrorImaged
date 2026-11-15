@@ -8,15 +8,6 @@ public sealed partial class GameNatives
 {
     // ---- Spells and the orders that come with them (wave 4)
 
-    [Native(Level.Close)] public ability? GetSpellAbility() => null;
-    [Native(Level.Close)] public int GetSpellAbilityId() => 0;
-    [Native(Level.Close)] public unit? GetSpellAbilityUnit() => null;
-    [Native(Level.Close)] public unit? GetSpellTargetUnit() => null;
-    [Native(Level.Close)] public float GetSpellTargetX() => 0;
-    [Native(Level.Close)] public float GetSpellTargetY() => 0;
-    [Native(Level.Close)] public location? GetSpellTargetLoc() => null;
-    [Native(Level.Close)] public item? GetSpellTargetItem() => null;
-    [Native(Level.Close)] public destructable? GetSpellTargetDestructable() => null;
 
     /// <summary>Using an item on a place or target needs its ability's cast (wave 4): refused.</summary>
     [Native(Level.Close)] public bool UnitUseItemPoint(unit? whichUnit, item? whichItem, float x, float y) => false;

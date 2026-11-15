@@ -2227,3 +2227,10 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   (facts, 11-14); a unit with no order and nothing to fight that is hit takes its attacker as its target, however far (facts, 11-14).
   The unit-level construct start event common.j lacks (`EVENT_UNIT_CONSTRUCT_START`) is kept under an id nothing registers: 63 is
   `EVENT_UNIT_RESCUED`. Close: the target-in-range event and the call for help of allies are not fired.
+- **D355. The cast flow.** An order whose name is the `Order` of an ability the unit has (and not hidden or disabled) is a spell order: refused
+  (false, no order) when the unit lacks the mana or the ability is cooling down, else the unit's current order. It walks into the
+  ability's range (plus the target's collision), fires the channel and cast events, waits the cast time, spends the mana, starts the cooldown, fires
+  the effect event and does the effect, then fires finish and end cast and is idle. `GetSpellAbilityId`, `GetSpellAbility`,
+  `GetSpellAbilityUnit` and the target responses read these events. Effects are the data-driven ones of Holy Light (heals `DataA`), Storm Bolt
+  (a hit of 0 of unknown type, then `DataA` of damage type sonic: facts) and Thunder Clap (`DataA` to enemy ground units in the area); every
+  other ability fires its events and does nothing yet (Close, wave 4 goes on with each base ability and its buffs).
