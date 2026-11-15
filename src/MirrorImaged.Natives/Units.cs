@@ -185,6 +185,7 @@ public sealed partial class GameNatives
     {
         if (u.Dead) return;
         var life = u.Life;
+        u.Buffs.Clear();
         Die(u);
         u.Removed = false;
         Counting(u, -1);

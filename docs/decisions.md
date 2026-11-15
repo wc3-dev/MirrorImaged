@@ -2234,3 +2234,10 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   `GetSpellAbilityUnit` and the target responses read these events. Effects are the data-driven ones of Holy Light (heals `DataA`), Storm Bolt
   (a hit of 0 of unknown type, then `DataA` of damage type sonic: facts) and Thunder Clap (`DataA` to enemy ground units in the area); every
   other ability fires its events and does nothing yet (Close, wave 4 goes on with each base ability and its buffs).
+- **D356. Buffs.** A buff is a type id, its giver, a sign (positive or negative), an end and what it changes: the unit's move speed (a factor, held
+  to `MaxUnitSpeed` when it raises), its attack rate (the cooldown divided by 1 plus the bonuses), its armour, or the unit doing nothing (a
+  stun). Giving one a unit has refreshes it; it ends at its time (a hero's own duration for a hero), with the unit's death or when dispelled
+  (`UnitRemoveBuffs*` take the ones the sign and magic flags pick; `UnitCountBuffsEx` and `UnitHasBuffsEx` count them), and
+  `GetUnitAbilityLevel` of its id reads 1 while it is on. Storm Bolt stuns after its hit, Slow (`Aslo`: `DataA` the speed lost, `DataB` the attack
+  rate lost) and Bloodlust (`Ablo`: `DataA` attack rate, `DataB` speed gained) give theirs. Close: no other stats, no buff objects of
+  their own (`BlzGetUnitAbility` of a buff, tooltips) and no auras yet.

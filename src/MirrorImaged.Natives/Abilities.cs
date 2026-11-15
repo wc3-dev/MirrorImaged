@@ -175,7 +175,8 @@ public sealed partial class GameNatives
     /// </summary>
     [Native(Level.Exact, Fact = AbilitiesProbe)]
     public int GetUnitAbilityLevel(unit? whichUnit, int abilcode) =>
-        (Find(whichUnit, abilcode) ?? whichUnit?.Abilities.Find(a => a.Type.Text(AbilityCode) is { Length: 4 } code && Code(code) == abilcode))?.Level ?? 0;
+        (Find(whichUnit, abilcode) ?? whichUnit?.Abilities.Find(a => a.Type.Text(AbilityCode) is { Length: 4 } code && Code(code) == abilcode))?.Level
+        ?? (whichUnit?.Buffs.Any(b => b.Id == abilcode) == true ? 1 : 0);
 
     /// <summary>The level set, kept from 1 to the ability's level count; 0, adding nothing, when the unit lacks it (probe abilities).</summary>
     [Native(Level.Exact, Fact = AbilitiesProbe + "; facts.md, Abilities: probe abilities-sets")]
