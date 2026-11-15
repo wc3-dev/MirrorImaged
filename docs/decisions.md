@@ -2136,3 +2136,13 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   `SetLightningColor` set it, also after a move; a destroyed bolt answers false to destroy, move and colour. Floating text,
   weather, images, ubersplats, minimap icons, the cinematic filter and scenes, unit animations, indicators and command
   button effects are Recorded handles that nothing reads back; `IsCineFilterDisplayed` and the hero glow flag read what was set.
+- **D263. Weapon fields** take the weapon index (0 or 1, any other the first) as the digit of the data code: `ua1b` for weapon
+  0, `ua2b` for weapon 1, `umh1` to `umh2`; a set is kept per unit and weapon. The attack type reads JASS's numbers (spells 0,
+  normal 1, pierce 2, siege 3, magic 4, chaos 5, hero 6: a footman's normal reads 1), the targets allowed the flags of their words
+  (the footman's 314, `air,enemies` 65540), the weapon sound `WEAPON_TYPE_*`'s number, and attacks enabled the bit of the weapon in
+  `uaen`. Close: an index past 1 is read as 0, which is not measured.
+- **D264. Base damage, dice and cooldown** are the weapon's `ua1b`, `ua1d`, `ua1s` and `ua1c`; a hero's base damage adds its primary
+  attribute (22 strength reads 23 with +1), and setting it takes that off first. The cooldown is the base one, not the attack
+  speed bonus's. `BlzUnitHeal` answers the amount and changes the life (a negative amount takes it), nothing for a nil source.
+- **D265. Doodads** the map places are those of the doodad kind in `war3map.doo`, in the file's order; an index outside gives 0.
+  Buffs and cooldowns come with wave 4: `UnitRemoveBuffs*`, `UnitHasBuffsEx` and `UnitResetCooldown` have nothing to act on.
