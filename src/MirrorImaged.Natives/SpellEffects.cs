@@ -93,6 +93,13 @@ public sealed partial class GameNatives
             case var id when id == Code("AUsl") && target is unit slept && !slept.Dead:
                 Apply(slept, caster, SleepBuff, Lasts(a, slept), false, b => b.Stun = true);
                 return true;
+            case var id when id == Code("AHwe") || id == Code("AEfn") || id == Code("AOsw") || id == Code("AEst") || id == Code("AEsv"):
+                // A unit or two called near the caster or the target place: Water Elemental, Force of Nature, Serpent Ward, Scout, Vengeance
+                Summon(caster, a, target is unit tu ? tu.X : x != 0 || y != 0 ? x : caster.X, target is unit tv ? tv.Y : x != 0 || y != 0 ? y : caster.Y, Math.Max((int)Datum(a, 'A'), 1));
+                return true;
+            case var id when id == Code("AOsf"):
+                Summon(caster, a, caster.X, caster.Y, Math.Max((int)Datum(a, 'B'), 1));
+                return true;
             case var id when id == Code("AHds"):
                 Apply(caster, caster, InvulnerableBuff, Lasts(a, caster), true, b => b.Invulnerable = true);
                 return true;

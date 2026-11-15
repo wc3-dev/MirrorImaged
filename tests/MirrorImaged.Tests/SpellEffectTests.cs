@@ -31,6 +31,8 @@ public sealed class SpellEffectTests : IDisposable
         ("AUau", "", "A=0.1;B=5;area=900"),
         ("AUav", "", "A=0.5;area=900"),
         ("AEar", "", "A=0.5;area=900"),
+        ("AHwe", "waterelemental", "A=2;dur=20;unit=hfoo"),
+        ("AOsf", "spiritwolf", "B=3;dur=20;unit=hfoo"),
     ];
 
     static StandardData Standard()
@@ -40,7 +42,7 @@ public sealed class SpellEffectTests : IDisposable
         {
             ("alev", new("levels", PerLevel.None, -1, "int")), ("code", new("code", PerLevel.None, -1)), ("aord", new("Order", PerLevel.None, -1, "string")),
             ("acas", Column("Cast", "unreal")), ("aran", Column("Rng", "unreal")), ("aare", Column("Area", "unreal")), ("acdn", Column("Cool", "unreal")), ("amcs", Column("Cost", "int")),
-            ("adur", Column("Dur", "unreal")), ("ahdu", Column("HeroDur", "unreal")),
+            ("adur", Column("Dur", "unreal")), ("ahdu", Column("HeroDur", "unreal")), ("uuid", Column("UnitID", "string", "AHwe", "AOsf")),
         })
             data.Add(ObjectKind.Ability, id, field);
         foreach (var letter in "ABCDE")
@@ -50,6 +52,7 @@ public sealed class SpellEffectTests : IDisposable
             var n = Values(numbers + ";x=0");
             var own = $"code={id};alev=1;aord={order};acas:1=0.1;aran:1=900;aare:1={n.GetValueOrDefault("area", "0")};acdn:1=1;amcs:1=10;adur:1={n.GetValueOrDefault("dur", "0")};ahdu:1={n.GetValueOrDefault("dur", "0")}";
             foreach (var letter in "ABCDE") if (n.TryGetValue(letter.ToString(), out var value)) own += $";Z{letter}01:1={value}";
+            if (n.TryGetValue("unit", out var summoned)) own += $";uuid:1={summoned}";
             data.Add(ObjectKind.Ability, id, Values(own));
         }
         return data.Add(ObjectKind.Unit, "hatk", Values("unam=Attacker;uhpm=1000;umpm=500;umpi=500;umvs=270;umvt=foot;uacq=500;uaen=1;ua1w=normal;ua1t=normal;ua1g=ground;ua1b=10;ua1d=1;ua1s=1;ua1c=1;ua1r=90;udp1=0.5;ucol=31;udef=0")).Add(ObjectKind.Unit, "hfoo", Values("unam=Footman;uhpm=1000;umpm=500;umpi=500;umvs=270;umvt=foot;uacq=500;uaen=0;ua1w=normal;ua1t=normal;ua1g=ground;ua1b=10;ua1d=1;ua1s=1;ua1c=1;ua1r=90;udp1=0.5;ucol=31;udef=0"));
@@ -160,5 +163,24 @@ public sealed class SpellEffectTests : IDisposable
         Assert.Equal(4, lines.Count);
         Assert.Contains("far\t270.0\tfoe\t270.0", lines[1]);
         Assert.Equal("after death\t270.0", lines[^1]);
+    }
+
+    [Fact]
+    public void A_summoning_spell_calls_units_that_end_with_their_time_and_fire_the_summon_event()
+    {
+        var lines = Run("""
+            local caster = make(Player(0))
+            UnitAddAbility(caster, FourCC("AHwe")); UnitAddAbility(caster, FourCC("AOsf"))
+            local t = CreateTrigger()
+            TriggerRegisterPlayerUnitEvent(t, Player(0), EVENT_PLAYER_UNIT_SUMMON, nil)
+            TriggerAddAction(t, function() print("summon", GetUnitName(GetSummonedUnit()), GetSummoningUnit() == caster, IsUnitType(GetSummonedUnit(), UNIT_TYPE_SUMMONED)) end)
+            IssueImmediateOrder(caster, "waterelemental")
+            TimerStart(CreateTimer(), 2, false, function() IssueImmediateOrder(caster, "spiritwolf") end)
+            local function count() local g = CreateGroup() GroupEnumUnitsOfPlayer(g, Player(0), nil) local n = BlzGroupGetSize(g) DestroyGroup(g) return n end
+            TimerStart(CreateTimer(), 4, false, function() print("count", count()) end)
+            TimerStart(CreateTimer(), 30, false, function() print("later", count()) end)
+            """, 31);
+
+        Assert.Equal(["summon	Footman	true	true", "summon	Footman	true	true", "summon	Footman	true	true", "summon	Footman	true	true", "summon	Footman	true	true", "count	6", "later	1"], lines);
     }
 }
