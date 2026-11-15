@@ -191,6 +191,7 @@ public sealed partial class GameNatives
         (u.X, u.Y) = (Held(u.X, true), Held(u.Y, false));
         _units.Add(u.Id, u);
         Moved(u, u.X, u.Y, made: true);
+        Wake();
     }
 
     void Moved(unit u, float fromX, float fromY, bool made)

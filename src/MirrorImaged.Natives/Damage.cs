@@ -10,6 +10,7 @@ sealed class Hit(unit source, widget target, float amount, bool isAttack, bool r
     public readonly widget Target = target;
     public float Amount = amount;
     public bool IsAttack = isAttack, Ranged = ranged;
+    public bool Real; // an attack of a unit fighting, not a hit from code (the game reads isAttack false for code even with the flag)
     public attacktype? AttackType = attackType;
     public damagetype? DamageType = damageType;
     public weapontype? WeaponType = weaponType;
@@ -120,7 +121,7 @@ public sealed partial class GameNatives
 
     /// <summary>False for a hit from code even with the attack flag, true for a real attack (facts: Damage, 09-30 to 10-31).</summary>
     [Native(Level.Close, Fact = DamageFacts)]
-    public bool BlzGetEventIsAttack() => false;
+    public bool BlzGetEventIsAttack() => Striking?.Real ?? false;
 
     /// <summary>Changes the amount the armour, or the life, works from; false outside a damage event.</summary>
     [Native(Level.Exact, Fact = DamageFacts)]

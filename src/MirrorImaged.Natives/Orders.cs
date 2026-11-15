@@ -27,7 +27,10 @@ public sealed partial class GameNatives
     bool Give(unit? whichUnit, int order, float x, float y, widget? target, int kind)
     {
         if (whichUnit is null || order == 0 || !Takes(whichUnit, order)) return false;
-        whichUnit.Order = order == Stop ? 0 : order;
+        (whichUnit.Order, whichUnit.OrderX, whichUnit.OrderY, whichUnit.OrderTarget, whichUnit.AttackTarget) = (order == Stop ? 0 : order, x, y, target, null);
+        if (order == 851993) (whichUnit.PatrolX, whichUnit.PatrolY) = (whichUnit.X, whichUnit.Y);
+        if (order == 851990) (whichUnit.PatrolX, whichUnit.PatrolY) = (whichUnit.X, whichUnit.Y);
+        Wake();
         if (order == SetRally) (whichUnit.RallyX, whichUnit.RallyY, whichUnit.RallyTarget) = (x, y, target);
         var (unitKind, playerKind) = kind switch { 0 => (UnitIssuedOrder, PlayerUnitIssuedOrder), 1 => (UnitIssuedPointOrder, PlayerUnitIssuedPointOrder), _ => (UnitIssuedTargetOrder, PlayerUnitIssuedTargetOrder) };
         FireUnit(new(whichUnit, Order: order, PointX: x, PointY: y, Target: target), unitKind, playerKind);
