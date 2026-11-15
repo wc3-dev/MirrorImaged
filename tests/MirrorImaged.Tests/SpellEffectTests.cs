@@ -31,6 +31,9 @@ public sealed class SpellEffectTests : IDisposable
         ("AUau", "", "A=0.1;B=5;area=900"),
         ("AUav", "", "A=0.5;area=900"),
         ("AEar", "", "A=0.5;area=900"),
+        ("AHbh", "", "A=100;C=25;dur=2"),
+        ("AOcr", "", "A=100;B=3"),
+        ("AEev", "", "A=1"),
         ("AHwe", "waterelemental", "A=2;dur=20;unit=hfoo"),
         ("AOsf", "spiritwolf", "B=3;dur=20;unit=hfoo"),
     ];
@@ -182,5 +185,23 @@ public sealed class SpellEffectTests : IDisposable
             """, 31);
 
         Assert.Equal(["summon	Footman	true	true", "summon	Footman	true	true", "summon	Footman	true	true", "summon	Footman	true	true", "summon	Footman	true	true", "count	6", "later	1"], lines);
+    }
+
+    [Fact]
+    public void Critical_strike_multiplies_the_damage_bash_adds_to_it_and_stuns_and_evasion_misses()
+    {
+        var lines = Run("""
+            local crit, bash, plain = CreateUnit(Player(0), FourCC("hatk"), 0, 0, 0), CreateUnit(Player(0), FourCC("hatk"), 0, 400, 0), CreateUnit(Player(0), FourCC("hatk"), 0, 800, 0)
+            local v1, v2, v3 = make(Player(1), 60, 0), make(Player(1), 60, 400), make(Player(1), 60, 800)
+            UnitAddAbility(crit, FourCC("AOcr")); UnitAddAbility(bash, FourCC("AHbh"))
+            local dodger, hitter = make(Player(1), 5000, 0), CreateUnit(Player(0), FourCC("hatk"), 5060, 0, 0)
+            UnitAddAbility(dodger, FourCC("AEev"))
+            IssueTargetOrder(crit, "attack", v1); IssueTargetOrder(bash, "attack", v2); IssueTargetOrder(plain, "attack", v3); IssueTargetOrder(hitter, "attack", dodger)
+            TimerStart(CreateTimer(), 1.5, false, function()
+                print("crit", f1(1000 - GetWidgetLife(v1)), "bash", f1(1000 - GetWidgetLife(v2)), "plain", f1(1000 - GetWidgetLife(v3)), "evaded", GetWidgetLife(dodger))
+            end)
+            """, 2);
+
+        Assert.Equal(["crit	33.0	bash	36.0	plain	11.0	evaded	1000.0"], lines);
     }
 }

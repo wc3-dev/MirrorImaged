@@ -226,7 +226,11 @@ public sealed partial class GameNatives
         var kind = u.Type.Text(Code($"ua{weapon + 1}w")) ?? "normal";
         var ranged = kind is "missile" or "mbounce" or "mline" or "msplash" or "artillery" or "aline" or "alsplash";
         if (ranged && DamageBonusOf(u) is > 0 and var bonus) damage *= 1 + bonus;
+        if (Evades(t, u)) return;
+        var stun = false;
+        PassivesOfAttack(u, t, ranged, ref damage, ref stun);
         Strike(new Hit(u, t, damage, true, ranged, Convert<attacktype>(attackType), Convert<damagetype>(NormalDamage), Convert<weapontype>(sound)) { Real = true }, t);
+        if (stun && !t.Dead) Apply(t, u, StunBuff, StunSeconds(u, t), false, b => b.Stun = true);
         if (!t.Dead) HitBack(t, u);
     }
 
