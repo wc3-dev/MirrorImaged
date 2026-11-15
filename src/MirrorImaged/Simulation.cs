@@ -52,7 +52,7 @@ public sealed partial class Simulation : IDisposable
         var info = data.Map!.Files.Info;
         _jass = data.Map.Jass;
         _game = new Game(options.Seed);
-        _natives = new GameNatives(_game) { Threads = new ScriptThreads(this), Documents = options.Documents, RunPreloadFile = RunPreloadFile, Data = data, Jass = _jass };
+        _natives = new GameNatives(_game) { Threads = new ScriptThreads(this), Documents = options.Documents, RunPreloadFile = RunPreloadFile, AiLoader = LoadAi, Data = data, Jass = _jass };
         try
         {
             var (users, computers, others) = Lineup(info, options);
@@ -66,7 +66,7 @@ public sealed partial class Simulation : IDisposable
             AddPreloader();
             if (_jass) AddJassRules();
             _lua.Run(blizzard, "blizzard.lua");
-            if (_jass) _lua.OperationLimit = OperationLimit;
+            if (_jass) (_lua.OperationLimit, _lua.NestsInMain) = (OperationLimit, true);
             Protect(() => _lua.Run(script, "war3map.lua"));
             Protect(() => _lua.Call("config"));
             var flags = info?.MapFlags ?? 0;
@@ -172,6 +172,15 @@ public sealed partial class Simulation : IDisposable
     /// <summary>The natives the run's script calls.</summary>
     internal GameNatives Natives => _natives;
 
+    /// <summary>A hash of the world now (time, players, units): equal for two runs of a map with one seed and the same input at every step.</summary>
+    public string StateHash() => _natives.Hash();
+
+    /// <summary>The player says the message, as if typed in the game: the chat events registered for it fire.</summary>
+    public void Say(int player, string message)
+    {
+        if (_natives.Player(player) is { } speaker) _natives.Say(speaker, message);
+    }
+
     /// <summary>
     /// What the run showed, an entry each: the time in seconds, where it came from (<c>print</c>, <c>player 0</c> for
     /// text shown to a player, <c>error</c> for a Lua error) and the text, every line of it so marked.
@@ -223,7 +232,8 @@ public sealed partial class Simulation : IDisposable
         {
             try { thread = start(); }
             // A thread nested past Lua's limit of C calls doesn't start: a Lua map's game drops it, but a JASS map's
-            // closed (probes destructables-remove and destructables-remove-jass; the JASS machine's depth not measured)
+            // closes (probes destructables-remove and destructables-remove-jass), here from about 190 threads deep, as
+            // they nest from the main thread, where the game's JASS machine ran 900 and closed by 1000 (decisions D277)
             catch (LuaException e) when (_jass && e.Message.Contains("C stack overflow"))
             {
                 throw new GameClosedException("The game closes: JASS threads nested too deep, each started inside the one before");
@@ -245,6 +255,13 @@ public sealed partial class Simulation : IDisposable
         {
             using var thread = simulation.Started(function.Start);
             return thread is { Waiting: false, Results: [true or int and not 0 or float and not 0f, ..] };
+        }
+
+        // The integer a function gives, 0 for anything else (the AI's hero levels)
+        public int EvaluateInt()
+        {
+            using var thread = simulation.Started(function.Start);
+            return thread is { Waiting: false, Results: [int n, ..] } ? n : thread is { Waiting: false, Results: [float f, ..] } ? (int)f : 0;
         }
 
         public IScriptThread? Start() => Waiting.Of(simulation, simulation.Started(function.Start));

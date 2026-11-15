@@ -1,0 +1,115 @@
+singles
+base str 22/22 agi 13/13 int 17/17 life 650.0/650 mana 255.0/255 armour 3.9 abilities 4
+rst1 in rst1,0,0,0,0,0 str 22/25 agi 13/13 int 17/17 life 725.0/725 mana 255.0/255 armour 3.9 abilities 5 first 1095332659
+rst1 fields 22 22 25 13 13 13 17 17 17
+rst1 has AIs3 1
+rst1 out str 22/22 agi 13/13 int 17/17 life 650.0/650 mana 255.0/255 armour 3.9 abilities 4
+rag1 in rag1,0,0,0,0,0 str 22/22 agi 13/16 int 17/17 life 650.0/650 mana 255.0/255 armour 4.8 abilities 5 first 1095328051
+rag1 fields 22 22 22 13 13 16 17 17 17
+rag1 has AIa3 1
+rag1 out str 22/22 agi 13/13 int 17/17 life 650.0/650 mana 255.0/255 armour 3.9 abilities 4
+rin1 in rin1,0,0,0,0,0 str 22/22 agi 13/13 int 17/20 life 650.0/650 mana 300.0/300 armour 3.9 abilities 5 first 1095330099
+rin1 fields 22 22 22 13 13 13 17 17 20
+rin1 has AIi3 1
+rin1 out str 22/22 agi 13/13 int 17/17 life 650.0/650 mana 255.0/255 armour 3.9 abilities 4
+bgst in bgst,0,0,0,0,0 str 22/28 agi 13/13 int 17/17 life 800.0/800 mana 255.0/255 armour 3.9 abilities 5 first 1095332662
+bgst fields 22 22 28 13 13 13 17 17 17
+bgst has AIs6 1
+bgst out str 22/22 agi 13/13 int 17/17 life 650.0/650 mana 255.0/255 armour 3.9 abilities 4
+belv in belv,0,0,0,0,0 str 22/22 agi 13/19 int 17/17 life 650.0/650 mana 255.0/255 armour 5.7 abilities 5 first 1095328054
+belv fields 22 22 22 13 13 19 17 17 17
+belv has AIa6 1
+belv out str 22/22 agi 13/13 int 17/17 life 650.0/650 mana 255.0/255 armour 3.9 abilities 4
+ciri in ciri,0,0,0,0,0 str 22/22 agi 13/13 int 17/23 life 650.0/650 mana 345.0/345 armour 3.9 abilities 5 first 1095330102
+ciri fields 22 22 22 13 13 13 17 17 23
+ciri has AIi6 1
+ciri out str 22/22 agi 13/13 int 17/17 life 650.0/650 mana 255.0/255 armour 3.9 abilities 4
+ckng in ckng,0,0,0,0,0 str 22/27 agi 13/18 int 17/22 life 775.0/775 mana 330.0/330 armour 5.4 abilities 5 first 1095333941
+ckng fields 22 22 27 13 13 18 17 17 22
+ckng has AIx5 1
+ckng out str 22/22 agi 13/13 int 17/17 life 650.0/650 mana 255.0/255 armour 3.9 abilities 4
+cnob in cnob,0,0,0,0,0 str 22/24 agi 13/15 int 17/19 life 700.0/700 mana 285.0/285 armour 4.5 abilities 5 first 1095333938
+cnob fields 22 22 24 13 13 15 17 17 19
+cnob has AIx2 1
+cnob out str 22/22 agi 13/13 int 17/17 life 650.0/650 mana 255.0/255 armour 3.9 abilities 4
+rnsp in rnsp,0,0,0,0,0 str 22/23 agi 13/14 int 17/18 life 675.0/675 mana 270.0/270 armour 4.2 abilities 5 first 1095333937
+rnsp fields 22 22 23 13 13 14 17 17 18
+rnsp has AIx1 1
+rnsp out str 22/22 agi 13/13 int 17/17 life 650.0/650 mana 255.0/255 armour 3.9 abilities 4
+rde1 in rde1,0,0,0,0,0 str 22/22 agi 13/13 int 17/17 life 650.0/650 mana 255.0/255 armour 5.9 abilities 5 first 1095328818
+rde1 fields 22 22 22 13 13 13 17 17 17
+rde1 has AId2 1
+rde1 out str 22/22 agi 13/13 int 17/17 life 650.0/650 mana 255.0/255 armour 3.9 abilities 4
+prvt in prvt,0,0,0,0,0 str 22/22 agi 13/13 int 17/17 life 800.0/800 mana 255.0/255 armour 3.9 abilities 5 first 1095330918
+prvt fields 22 22 22 13 13 13 17 17 17
+prvt has AIlf 1
+prvt out str 22/22 agi 13/13 int 17/17 life 650.0/650 mana 255.0/255 armour 3.9 abilities 4
+pmna in pmna,0,0,0,0,0 str 22/22 agi 13/13 int 17/17 life 650.0/650 mana 505.0/505 armour 3.9 abilities 5 first 1095328365
+pmna fields 22 22 22 13 13 13 17 17 17
+pmna has AIbm 1
+pmna out str 22/22 agi 13/13 int 17/17 life 650.0/650 mana 255.0/255 armour 3.9 abilities 4
+rlif in rlif,0,0,0,0,0 str 22/22 agi 13/13 int 17/17 life 650.0/650 mana 255.0/255 armour 3.9 abilities 5 first 1098016108
+rlif fields 22 22 22 13 13 13 17 17 17
+rlif has Arel 1
+rlif out str 22/22 agi 13/13 int 17/17 life 650.0/650 mana 255.0/255 armour 3.9 abilities 4
+ratc in ratc,0,0,0,0,0 str 22/22 agi 13/13 int 17/17 life 650.0/650 mana 255.0/255 armour 3.9 abilities 5 first 1095332963
+ratc fields 22 22 22 13 13 13 17 17 17
+ratc has AItc 1
+ratc out str 22/22 agi 13/13 int 17/17 life 650.0/650 mana 255.0/255 armour 3.9 abilities 4
+modt in modt,0,0,0,0,0 str 22/22 agi 13/13 int 17/17 life 650.0/650 mana 255.0/255 armour 3.9 abilities 5 first 1095333473
+modt fields 22 22 22 13 13 13 17 17 17
+modt has AIva 1
+modt out str 22/22 agi 13/13 int 17/17 life 650.0/650 mana 255.0/255 armour 3.9 abilities 4
+gcel in gcel,0,0,0,0,0 str 22/22 agi 13/13 int 17/17 life 650.0/650 mana 255.0/255 armour 3.9 abilities 5 first 1095332728
+gcel fields 22 22 22 13 13 13 17 17 17
+gcel has AIsx 1
+gcel out str 22/22 agi 13/13 int 17/17 life 650.0/650 mana 255.0/255 armour 3.9 abilities 4
+wounded
+rst1 wounded in str 22/25 agi 13/13 int 17/17 life 335.0/725 mana 50.0/255 armour 3.9
+rst1 wounded out str 22/22 agi 13/13 int 17/17 life 300.0/650 mana 50.0/255 armour 3.9
+prvt wounded in str 22/22 agi 13/13 int 17/17 life 369.0/800 mana 50.0/255 armour 3.9
+prvt wounded out str 22/22 agi 13/13 int 17/17 life 300.0/650 mana 50.0/255 armour 3.9
+pmna wounded in str 22/22 agi 13/13 int 17/17 life 300.0/650 mana 99.0/505 armour 3.9
+pmna wounded out str 22/22 agi 13/13 int 17/17 life 300.0/650 mana 50.0/255 armour 3.9
+rin1 wounded in str 22/22 agi 13/13 int 17/20 life 300.0/650 mana 59.0/300 armour 3.9
+rin1 wounded out str 22/22 agi 13/13 int 17/17 life 300.0/650 mana 50.0/255 armour 3.9
+prvt out at 700 life 569.0/650 mana 255.0/255 armour 3.9
+stack
+three strength items rst1,rst1,bgst,0,0,0 str 22/34 agi 13/13 int 17/17 life 950.0/950 mana 255.0/255 armour 3.9
+abilities with three 7 AIs3 1 AIs6 1
+swap true 0,rst1,bgst,0,rst1,0 str 22/34 agi 13/13 int 17/17
+dead carrying 0,rst1,bgst,0,rst1,0 str 22/34 agi 13/13 int 17/17 life 0.0/950 mana 255.0/255 armour 3.9
+powerups
+tstr str 23/23 agi 13/13 int 17/17 life 415.0/675 mana 255.0/255 armour 3.9 level 1 xp 0 fields 23 23 23 13 13 13 17 17 17 slots 0,0,0,0,0,0
+tdex str 22/22 agi 14/14 int 17/17 life 400.0/650 mana 255.0/255 armour 4.2 level 1 xp 0 fields 22 22 22 14 14 14 17 17 17 slots 0,0,0,0,0,0
+tint str 22/22 agi 13/13 int 18/18 life 400.0/650 mana 270.0/270 armour 3.9 level 1 xp 0 fields 22 22 22 13 13 13 18 18 18 slots 0,0,0,0,0,0
+manh str 22/22 agi 13/13 int 17/17 life 450.0/700 mana 255.0/255 armour 3.9 level 1 xp 0 fields 22 22 22 13 13 13 17 17 17 slots 0,0,0,0,0,0
+texp str 22/22 agi 13/13 int 17/17 life 400.0/650 mana 255.0/255 armour 3.9 level 1 xp 100 fields 22 22 22 13 13 13 17 17 17 slots 0,0,0,0,0,0
+tome with boots str 22/22 agi 14/20 int 17/17 life 650.0/650 mana 255.0/255 armour 6.0
+tome then boots out str 22/22 agi 14/14 int 17/17 life 650.0/650 mana 255.0/255 armour 4.2
+tome of experience at level 4 4 1000
+tome of experience suspended 4 1000
+set
+set false str 30/33 agi 20/26 int 17/17 life 925.0/925 mana 255.0/255 armour 7.8 fields 30 30 33 20 20 26 17 17 17
+set false boots out str 30/33 agi 20/20 int 17/17 life 925.0/925 mana 255.0/255 armour 6.0
+set true str 30/33 agi 20/26 int 17/17 life 925.0/925 mana 255.0/255 armour 7.8 fields 30 30 33 20 20 26 17 17 17
+set true boots out str 30/33 agi 20/20 int 17/17 life 925.0/925 mana 255.0/255 armour 6.0
+level with boots str 32/32 agi 19/25 int 24/24 life 900.0/900 mana 360.0/360 armour 7.5 fields 32 32 32 19 19 25 24 24 24
+agility field true str 32/32 agi 10/16 int 24/24 fields 32 32 32 10 10 16 24 24 24
+with bonus field false str 32/32 agi 10/16 int 24/24 fields 32 32 32 10 10 16 24 24 24
+events
+pickup ckng str 22/27 agi 13/18 int 17/22 life 775.0/775 mana 330.0/330 armour 5.4 slots ckng,0,0,0,0,0
+pickup tstr str 23/28 agi 13/18 int 17/22 life 800.0/800 mana 330.0/330 armour 5.4 slots ckng,0,0,0,0,0
+drop tstr str 23/28 agi 13/18 int 17/22 life 800.0/800 mana 330.0/330 armour 5.4 slots ckng,0,0,0,0,0
+drop ckng str 23/28 agi 13/18 int 17/22 life 800.0/800 mana 330.0/330 armour 5.4 slots ckng,0,0,0,0,0
+after str 23/23 agi 13/13 int 17/17
+uses
+use event phea life 350.0/650 mana 255.0/255 armour 3.9 charges 0 phea,0,0,0,0,0
+use phea from 100 true life 350.0/650 mana 255.0/255 armour 3.9 charges 0 0,0,0,0,0,0
+use phea from 700 false life 650.0/650 mana 255.0/255 armour 3.9 charges 1 phea,0,0,0,0,0
+use pghe from 400 true life 650.0/650 mana 255.0/255 armour 3.9 charges 0 0,0,0,0,0,0
+use pghe from 700 false life 650.0/650 mana 255.0/255 armour 3.9 charges 1 pghe,0,0,0,0,0
+use pman from 50 true life 650.0/650 mana 200.0/255 armour 3.9 charges 0 0,0,0,0,0,0
+use pman from 300 false life 650.0/650 mana 255.0/255 armour 3.9
+dead use false life 0.0/650 mana 255.0/255 armour 3.9 charges 1
+uses later life 650.0/650 mana 255.0/255 armour 3.9 pman,0,0,0,0,0

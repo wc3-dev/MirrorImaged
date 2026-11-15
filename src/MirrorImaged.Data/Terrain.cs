@@ -17,17 +17,25 @@ public sealed class Terrain
     readonly int _width, _height;
     readonly float _left, _bottom;
     readonly float[] _corners, _ground;
+    readonly int[] _types, _variations, _cliffs;
 
     public Terrain(MapEnvironment environment)
     {
-        (_width, _height, _left, _bottom) = ((int)environment.Width, (int)environment.Height, environment.Left, environment.Bottom);
+        // War3Net's Width and Height count tiles; the file holds a corner more each way
+        (_width, _height, _left, _bottom) = ((int)environment.Width + 1, (int)environment.Height + 1, environment.Left, environment.Bottom);
         var tiles = environment.TerrainTiles;
         _corners = new float[tiles.Count];
         _ground = new float[tiles.Count];
+        _types = new int[tiles.Count];
+        _variations = new int[tiles.Count];
+        _cliffs = new int[tiles.Count];
         for (var y = 0; y < _height; y++)
             for (var x = 0; x < _width; x++)
             {
                 var corner = tiles[y * _width + x];
+                _types[y * _width + x] = corner.Texture >= 0 && corner.Texture < environment.TerrainTypes.Count ? (int)environment.TerrainTypes[corner.Texture] : 0;
+                _variations[y * _width + x] = corner.Variation;
+                _cliffs[y * _width + x] = corner.CliffLevel;
                 var ground = (corner.Height + corner.CliffLevel - 2) * Tile;
                 if (corner.IsRamp)
                     for (var tileY = y - 1; tileY <= y; tileY++)
@@ -40,29 +48,52 @@ public sealed class Terrain
             }
     }
 
+    /// <summary>The map from its west and south edges to its east and north ones, as GetWorldBounds reads it.</summary>
+    public (float MinX, float MinY, float MaxX, float MaxY) Bounds => (_left, _bottom, _left + (_width - 1) * Tile, _bottom + (_height - 1) * Tile);
+
     /// <summary>
-    /// The ground's height at (<paramref name="x"/>, <paramref name="y"/>); a point off the map reads its nearest edge
-    /// (inferred; W2-6 measures it).
+    /// The ground's height at (<paramref name="x"/>, <paramref name="y"/>); a point off the map reads 0, but within an
+    /// eighth of a unit past an edge, which reads its edge tile's blend carried on (probe terrain-edge: 0.1 past an
+    /// edge carried on, 0.2 and further 0).
     /// </summary>
-    public float Height(float x, float y) => Blend(_corners, x, y);
+    public float Height(float x, float y) => Blend(_corners, x, y, null);
+
+    /// <summary>
+    /// As <see cref="Height"/> with <paramref name="shift"/>, given a corner's column and row, added to each corner first
+    /// (the terrain deformations' craters, which move the 128 corners and blend between them).
+    /// </summary>
+    public float Height(float x, float y, Func<int, int, float> shift) => Blend(_corners, x, y, shift);
+
+    /// <summary>The corners across and up, and the world's west and south edges where the first one stands.</summary>
+    public (int Columns, int Rows, float Left, float Bottom) Grid => (_width, _height, _left, _bottom);
+
+    /// <summary>The tile id (a four-character code) the corner is drawn with, and its variation, as the map's list gives them.</summary>
+    /// <summary>The cliff level of the corner.</summary>
+    public int CliffLevel(int column, int row) => _cliffs[row * _width + column];
+
+    public (int Type, int Variation) TileAt(int column, int row) => (_types[row * _width + column], _variations[row * _width + column]);
 
     /// <summary>As <see cref="Height"/>, but the ground beneath any water, on which a bridge's deck stands (game-facts, "Units").</summary>
-    public float Ground(float x, float y) => Blend(_ground, x, y);
+    public float Ground(float x, float y) => Blend(_ground, x, y, null);
 
-    float Blend(float[] corners, float x, float y)
+    float Blend(float[] corners, float x, float y, Func<int, int, float>? shift)
     {
-        var (column, u) = Cell((x - _left) / Tile, _width);
-        var (row, v) = Cell((y - _bottom) / Tile, _height);
-        float At(int dx, int dy) => corners[(row + dy) * _width + column + dx];
+        double across = (x - _left) / Tile, up = (y - _bottom) / Tile;
+        if (Off(across, _width) || Off(up, _height)) return 0;
+        var (column, u) = Cell(across, _width);
+        var (row, v) = Cell(up, _height);
+        float At(int dx, int dy) => corners[(row + dy) * _width + column + dx] + (shift?.Invoke(column + dx, row + dy) ?? 0);
         return (float)((1 - v) * ((1 - u) * At(0, 0) + u * At(1, 0)) + v * ((1 - u) * At(0, 1) + u * At(1, 1)));
     }
 
-    // The tile a coordinate in tiles falls in, kept on the map, and how far across it the coordinate is, 0 to 1.
+    // Past an edge by an eighth of a unit (1/1024 of a tile) or more; shortcut: the game's line is between 0.1 and 0.2
+    static bool Off(double at, int corners) => at <= -1.0 / 1024 || at >= corners - 1 + 1.0 / 1024;
+
+    // The tile a coordinate in tiles falls in, the edge's for one just past it, and how far across it the coordinate is
     static (int Tile, double Across) Cell(double at, int corners)
     {
-        var clamped = Math.Clamp(at, 0, corners - 1);
-        var tile = Math.Min((int)clamped, corners - 2);
-        return (tile, clamped - tile);
+        var tile = Math.Clamp((int)Math.Floor(at), 0, corners - 2);
+        return (tile, at - tile);
     }
 
     bool HasRampAbove(List<TerrainTile> tiles, int tileX, int tileY, int level)

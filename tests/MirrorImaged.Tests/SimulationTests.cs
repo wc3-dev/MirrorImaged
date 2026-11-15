@@ -102,14 +102,14 @@ public sealed class SimulationTests : IDisposable
             function config() print("config") end
             function main()
               print("main")
-              StartMeleeAI(Player(0), "human.ai")
+              BlzGetUnitAnimationDurationByIndex(nil, 0)
               print("after")
             end
             """), "");
 
         var stop = simulation.Stopped!;
-        Assert.StartsWith("war3map.lua:4: The native StartMeleeAI is Missing", stop.Message);
-        Assert.Equal("StartMeleeAI", Assert.IsType<MissingNativeException>(stop.InnerException).Native);
+        Assert.StartsWith("war3map.lua:4: The native BlzGetUnitAnimationDurationByIndex is Missing", stop.Message);
+        Assert.Equal("BlzGetUnitAnimationDurationByIndex", Assert.IsType<MissingNativeException>(stop.InnerException).Native);
         Assert.Equal(["0.000 print: config", "0.000 print: main"], simulation.Log);
         Assert.Same(stop, Assert.Throws<LuaException>(() => simulation.Advance(TimeSpan.FromSeconds(1))));
     }
@@ -117,20 +117,20 @@ public sealed class SimulationTests : IDisposable
     [Fact]
     public void A_missing_native_stops_the_run_before_its_arguments_are_read()
     {
-        using var simulation = Load("StartMeleeAI({}, coroutine.create(print))");
+        using var simulation = Load("BlzGetUnitAnimationDurationByIndex({}, coroutine.create(print))");
 
-        Assert.StartsWith("war3map.lua:3: The native StartMeleeAI is Missing", simulation.Stopped!.Message);
+        Assert.StartsWith("war3map.lua:3: The native BlzGetUnitAnimationDurationByIndex is Missing", simulation.Stopped!.Message);
     }
 
     [Theory]
-    [InlineData("pcall(ClearTextMessages)")]
-    [InlineData("xpcall(ClearTextMessages, print)")]
-    [InlineData("coroutine.wrap(ClearTextMessages)()")]
+    [InlineData("pcall(BlzGetUnitAnimationDurationByIndex)")]
+    [InlineData("xpcall(BlzGetUnitAnimationDurationByIndex, print)")]
+    [InlineData("coroutine.wrap(BlzGetUnitAnimationDurationByIndex)()")]
     public void A_missing_native_called_straight_from_c_names_the_nearest_lua_line(string call)
     {
         using var simulation = Load(call);
 
-        Assert.StartsWith("war3map.lua:3: The native ClearTextMessages is Missing", simulation.Stopped!.Message);
+        Assert.StartsWith("war3map.lua:3: The native BlzGetUnitAnimationDurationByIndex is Missing", simulation.Stopped!.Message);
         Assert.Empty(simulation.Log);
     }
 
@@ -140,7 +140,7 @@ public sealed class SimulationTests : IDisposable
         using var simulation = Load("""
             TimerStart(CreateTimer(), 1, false, function()
               local ok = pcall(function()
-                ClearTextMessages()
+                BlzGetUnitAnimationDurationByIndex()
               end)
               print("carried on", ok)
             end)
@@ -149,7 +149,7 @@ public sealed class SimulationTests : IDisposable
 
         var error = Assert.Throws<LuaException>(() => simulation.Advance(TimeSpan.FromSeconds(3)));
 
-        Assert.StartsWith("war3map.lua:5: The native ClearTextMessages is Missing", error.Message);
+        Assert.StartsWith("war3map.lua:5: The native BlzGetUnitAnimationDurationByIndex is Missing", error.Message);
         Assert.IsType<MissingNativeException>(error.InnerException);
         Assert.Same(error, simulation.Stopped);
         Assert.Empty(simulation.Log);
@@ -259,8 +259,8 @@ public sealed class SimulationTests : IDisposable
 
         Assert.StartsWith("blizzard.lua:1: broken", Assert.Throws<LuaException>(() => Simulation.Load(map, "error('broken')")).Message);
         Assert.StartsWith("blizzard.lua:1:", Assert.Throws<LuaException>(() => Simulation.Load(map, "function (")).Message);
-        using var stopped = Simulation.Load(map, "\nClearTextMessages()");
-        Assert.StartsWith("blizzard.lua:2: The native ClearTextMessages is Missing", stopped.Stopped!.Message);
+        using var stopped = Simulation.Load(map, "\nBlzGetUnitAnimationDurationByIndex()");
+        Assert.StartsWith("blizzard.lua:2: The native BlzGetUnitAnimationDurationByIndex is Missing", stopped.Stopped!.Message);
         Assert.Empty(stopped.Log);
     }
 

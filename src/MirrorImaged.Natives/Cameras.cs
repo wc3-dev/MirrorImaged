@@ -362,6 +362,14 @@ public sealed partial class GameNatives
     [Native(Level.Close)]
     public float GetCameraEyePositionZ() => Eye().Z;
 
+    /// <summary>A new location each call at the target's x and y.</summary>
+    [Native(Level.Close)]
+    public location? GetCameraTargetPositionLoc() => Location(TargetX, TargetY);
+
+    /// <summary>A new location each call at the eye's x and y.</summary>
+    [Native(Level.Close)]
+    public location? GetCameraEyePositionLoc() => Location(Eye().X, Eye().Y);
+
     [Native(Level.Exact, Fact = Cameras)]
     public camerasetup? CreateCameraSetup() => Make(new camerasetup());
 
@@ -389,6 +397,11 @@ public sealed partial class GameNatives
 
     [Native(Level.Exact, Fact = Cameras)]
     public float CameraSetupGetDestPositionY(camerasetup? whichSetup) => whichSetup?.Y ?? 0;
+
+    /// <summary>A new location each call at the setup's destination; nil for nil (as the Loc natives of W2-6).</summary>
+    [Native(Level.Close)]
+    public location? CameraSetupGetDestPositionLoc(camerasetup? whichSetup) =>
+        whichSetup is null ? null : Location(whichSetup.X, whichSetup.Y);
 
     [Native(Level.Exact, Fact = Cameras)]
     public void BlzCameraSetupSetLabel(camerasetup? whichSetup, string? label)

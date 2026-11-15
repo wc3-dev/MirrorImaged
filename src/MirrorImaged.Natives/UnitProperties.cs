@@ -12,7 +12,10 @@ public sealed partial class GameNatives
 
     /// <summary>The unit's move speed: its type's, or what a set left (probe units).</summary>
     [Native(Level.Exact, Fact = UnitsProbe)]
-    public float GetUnitMoveSpeed(unit? whichUnit) => whichUnit is null ? 0 : Own(whichUnit, SpeedNow, whichUnit.Type.Real(MoveSpeed));
+    public float GetUnitMoveSpeed(unit? whichUnit) =>
+        whichUnit is null ? 0 : SpeedFactor(whichUnit) is var factor && factor != 1
+            ? Math.Min(Own(whichUnit, SpeedNow, whichUnit.Type.Real(MoveSpeed)) * factor, factor > 1 ? Data.Constant("MaxUnitSpeed", 522) : float.MaxValue)
+            : Own(whichUnit, SpeedNow, whichUnit.Type.Real(MoveSpeed));
 
     [Native(Level.Exact, Fact = UnitsProbe)]
     public float GetUnitDefaultMoveSpeed(unit? whichUnit) => whichUnit?.Type.Real(MoveSpeed) ?? 0;
@@ -184,6 +187,7 @@ public sealed partial class GameNatives
         var (dead, usesFood) = (u.Dead, u.UsesFood);
         var (lost, gained) = dead ? default : (Count(previous, u, -1), Count(whichPlayer, u, 1));
         u.Owner = whichPlayer;
+        foreach (var a in u.Abilities) Research(a, true);
         if (changeColor) u.Color = whichPlayer.Color;
         Announce(previous, lost);
         if (u.Owner != whichPlayer || u.Dead != dead) return;

@@ -1,0 +1,18 @@
+# Where MirrorImaged differs from the game's lines in expected/items-ankh.txt, in order, with why (decisions D121): a
+# line starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts
+# "# ".
+
+# The game fires a revivable event for a hero that died without an ankh, about 4 s after, for the hero; it never fires here (D335, Close).
+- empty revivable alive false life 0.0/650 mana 255.0 at -800.0 -1400.0 slots ankhx0,0,0,0,0,0
+
+# A living hero regenerates life, which comes with the units' regeneration (wave 3): a reincarnated hero stays at the 500 it came back with (D346, Close).
+- one +8 alive true life 501.4999/725 mana 255.0 at -1200.0 -1400.0 slots rst1x0,0,0,0,0,0 ground []
++ one +8 alive true life 500.0/725 mana 255.0 at -1200.0 -1400.0 slots rst1x0,0,0,0,0,0 ground []
+- one +9 alive true life 502.9996/725 mana 255.0 at -1200.0 -1400.0 slots rst1x0,0,0,0,0,0 ground []
++ one +9 alive true life 500.0/725 mana 255.0 at -1200.0 -1400.0 slots rst1x0,0,0,0,0,0 ground []
+- two +9 alive true life 502.6996/650 mana 255.0 at -1000.0 -1400.0 slots ankhx1,0,0,0,0,0 ground []
++ two +9 alive true life 500.0/650 mana 255.0 at -1000.0 -1400.0 slots ankhx1,0,0,0,0,0 ground []
+- charged +9 alive true life 502.6996/650 mana 255.0 at -600.0 -1400.0 slots ankhx1,0,0,0,0,0 ground []
++ charged +9 alive true life 500.0/650 mana 255.0 at -600.0 -1400.0 slots ankhx1,0,0,0,0,0 ground []
+- charged back alive true life 504.0494/650 mana 255.0 at -600.0 -1400.0 slots ankhx1,0,0,0,0,0
++ charged back alive true life 500.0/650 mana 255.0 at -600.0 -1400.0 slots ankhx1,0,0,0,0,0

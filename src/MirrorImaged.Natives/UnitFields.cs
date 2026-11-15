@@ -62,8 +62,8 @@ public sealed partial class GameNatives
     /// The unit's integer field: its type's number, or the constant for its word (armour, defence, regeneration and
     /// move types, primary attribute), or the flags of its words (targeted as, classification, placement prevented
     /// by), unless a set changed it; a hero's level for a hero. A hero attribute field on a unit that isn't a hero
-    /// closes the game (probe units-attribute). Close: with no bonuses and no permanent ones yet (W2-3), an attribute's
-    /// permanent and with-bonus fields read the attribute itself; the game read the permanent one 1 after its own set.
+    /// closes the game (probe units-attribute). Close: an attribute's permanent field reads the attribute itself, and
+    /// its with-bonus field adds what the hero carries; the game read the permanent one 1 after its own set.
     /// </summary>
     [Native(Level.Close)]
     public int BlzGetUnitIntegerField(unit? whichUnit, unitintegerfield? whichField)
@@ -71,9 +71,12 @@ public sealed partial class GameNatives
         if (whichUnit is null || whichField is null) return 0;
         var (u, field, type) = (whichUnit, whichField.Id, whichUnit.Type);
         Attribute(u, field);
-        if (field == Agility || field == AgilityPermanent || field == AgilityWithBonus) return Own(u, Agility, type.Integer(Code("uagi")));
-        if (field == IntelligenceNow || field == IntelligencePermanent || field == IntelligenceWithBonus) return Own(u, IntelligenceNow, type.Integer(Intelligence));
-        if (field == StrengthNow || field == StrengthPermanent || field == StrengthWithBonus) return Own(u, StrengthNow, type.Integer(Strength));
+        if (field == AgilityWithBonus) return WithBonus(u, 1);
+        if (field == IntelligenceWithBonus) return WithBonus(u, 2);
+        if (field == StrengthWithBonus) return WithBonus(u, 0);
+        if (field == Agility || field == AgilityPermanent) return Whole(u.Agi);
+        if (field == IntelligenceNow || field == IntelligencePermanent) return Whole(u.Int);
+        if (field == StrengthNow || field == StrengthPermanent) return Whole(u.Str);
         if (field == UnitLevel) return IsHero(type.Id) ? u.HeroLevel : Own(u, field, type.Integer(UnitLevel));
         if (field == TintAlpha || field == TintRed || field == TintGreen || field == TintBlue) return 255;
         return Own(u, field, field == ArmorType ? ArmorTypes.GetValueOrDefault(type.Text(field) ?? "")
@@ -105,9 +108,14 @@ public sealed partial class GameNatives
         if (field == AgilityWithBonus || field == IntelligenceWithBonus || field == StrengthWithBonus) return false;
         if (field == Primary && value is >= 1 and <= 3 && !IsHero(u.Type.Id))
             throw new GameClosedException($"The game closes: the primary attribute of {Name(u.Type.Id)}, which is no hero, set to {value}");
-        if (field == UnitLevel && IsHero(u.Type.Id)) u.HeroLevel = value + 1;
-        else if (field != Primary && field != TintAlpha && field != TintRed && field != TintGreen && field != TintBlue
-            && field != AgilityPermanent && field != IntelligencePermanent && field != StrengthPermanent) u.Fields[field] = value;
+        if (field == UnitLevel && IsHero(u.Type.Id)) SetLevelField(u, value);
+        else if (field == Agility) SetAttribute(u, 1, value);
+        else if (field == IntelligenceNow) SetAttribute(u, 2, value);
+        else if (field == StrengthNow) SetAttribute(u, 0, value);
+        else if (field == AgilityPermanent) SetAttribute(u, 1, 1);
+        else if (field == IntelligencePermanent) SetAttribute(u, 2, 1);
+        else if (field == StrengthPermanent) SetAttribute(u, 0, 1);
+        else if (field != Primary && field != TintAlpha && field != TintRed && field != TintGreen && field != TintBlue) u.Fields[field] = value;
         return true;
     }
 
@@ -137,7 +145,7 @@ public sealed partial class GameNatives
 
     // A hero's agility adds to its armour (the constants' AgiDefenseBase and AgiDefenseBonus; probe units: 2 + -2 + 13 x 0.3)
     float HeroArmor(unit u) => IsHero(u.Type.Id)
-        ? Data.Constant("AgiDefenseBase", 0) + u.Type.Integer(Code("uagi")) * Data.Constant("AgiDefenseBonus", 0)
+        ? Data.Constant("AgiDefenseBase", 0) + WithBonus(u, 1) * Data.Constant("AgiDefenseBonus", 0) + Carried(u, BonusArmour)
         : 0;
 
     bool IsDay => GetFloatGameState(Convert<fgamestate>(2)) is var hour && hour >= Data.Constant("Dawn", 6) && hour < Data.Constant("Dusk", 18);
@@ -207,7 +215,7 @@ public sealed partial class GameNatives
         if (whichUnit is null || whichField is null) return "";
         var (field, type) = (whichField.Id, whichUnit.Type);
         if (field == UnitName) return GetUnitName(whichUnit);
-        if (field == ProperNames) return IsHero(type.Id) ? Own(whichUnit, field, (type.Text(field) ?? "").Split(',')[0]) : "";
+        if (field == ProperNames) return GetHeroProperName(whichUnit);
         return Own(whichUnit, field, type.Text(field) ?? "");
     }
 
@@ -216,7 +224,8 @@ public sealed partial class GameNatives
     {
         if (whichUnit is null || whichField is null || value is null) return false;
         if (whichField.Id == UnitName) BlzSetUnitName(whichUnit, value);
-        else if (whichField.Id != ProperNames || IsHero(whichUnit.Type.Id)) whichUnit.Fields[whichField.Id] = value;
+        else if (whichField.Id == ProperNames) BlzSetHeroProperName(whichUnit, value);
+        else whichUnit.Fields[whichField.Id] = value;
         return true;
     }
 }
