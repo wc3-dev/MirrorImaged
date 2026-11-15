@@ -91,4 +91,16 @@ public sealed partial class GameNatives
     internal IEnumerable<unit> AllUnits => _units.Values;
 
     internal unit? UnitById(int id) => _units.GetValueOrDefault(id);
+
+    /// <summary>The pathing grid of the map, a byte a cell of 32 with the bits of <c>PATHING_TYPE_*</c>, from its south-west corner; none where the map has none.</summary>
+    internal (int Width, int Height, float Left, float Bottom, byte[] Cells)? PathingGrid() =>
+        Data.Terrain is { } terrain && Cells() is { } cells && Data.Map?.Files.PathingMap is { } pathing ? ((int)pathing.Width, (int)pathing.Height, terrain.Grid.Item3, terrain.Grid.Item4, cells) : null;
+
+    /// <summary>The cells the regions of the map hold, as rects in the world, the added blocks of each region in order.</summary>
+    internal IEnumerable<(int Region, float X1, float Y1, float X2, float Y2)> RegionRects() =>
+        _regionEvents.Select(e => e.Region).Distinct().SelectMany((region, index) =>
+            region.Blocks.Where(block => block.Added).Select(block => (index, block.West * 32f, block.South * 32f, (block.East + 1) * 32f, (block.North + 1) * 32f)));
+
+    /// <summary>The bounds of the map: west, south, east and north.</summary>
+    internal (float MinX, float MinY, float MaxX, float MaxY)? WorldBounds() => Data.Terrain?.Bounds;
 }
