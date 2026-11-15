@@ -2252,3 +2252,8 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   registrations of the player the text matches (a part of the message, or all of it when exact) with `GetEventPlayerChatString` and
   `GetEventPlayerChatStringMatched`. `mirror check <map>` lists the natives a map's script names with their trust levels and exits 1 when one is
   Missing; `mirror run --hash <n>` prints the hash every n seconds.
+- **D359. Pathfinding.** A walker goes straight until a step is blocked (an unwalkable cell of the pathing file, the world's edge, or a building it is
+  not working on and not standing in), then finds a path by A* over the 32 cells (eight neighbours, no cutting a corner, at most 6,000 nodes)
+  to the place, or to the cell nearest it that can be reached, follows its waypoints and finds it again if one is blocked. Fliers ignore
+  buildings and cells. Close: buildings block as circles of their collision size, trees and other units not at all, and the game's own
+  search is not copied; a place that can't be reached ends the order at the nearest cell, as a stuck unit would stop.
