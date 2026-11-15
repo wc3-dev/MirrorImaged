@@ -2355,3 +2355,9 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   whose name begins with the one asked for wins, and a model that is not in the install gives 0. The game may read the high-definition model
   where the classic one is read here. With this no native of `common.j` and `common.ai` is Missing (A1). To keep the Missing machinery
   tested, `SimulationOptions.TreatAsMissing` (and `MIRROR_MISSING` for the command line) runs named natives as Missing.
+
+- **D378 (The desync suite):** the state hash and its parts now hold the random generator's state and the next ids to be given (`random numbers`,
+  `handle ids`), so a draw from the shared generator or a handle made in one player's game only, which the facts name as desyncs, make the games
+  differ as they do in the game. A suite of patterns (a change to a player or unit, `GetRandomInt` and `GetRandomReal`, `CreateGroup` with `ForGroup`,
+  `Location`, `CreateTimer`, `BlzCreateFrame`, each in a local-player block) must be found by `mirror desync` with the part and the step, and what one
+  screen shows (text, camera, music, a name read) must not (A8). Not shown: the timer of 0.01 s and the upgrade dice, which the game does by chance.
