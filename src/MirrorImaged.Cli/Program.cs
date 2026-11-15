@@ -36,7 +36,7 @@ if (args is ["check", var mapPath])
 }
 
 // The commands that take a map or a recording, then --name value pairs
-if (args is [var command and ("run" or "replay" or "desync" or "bench" or "fuzz"), var file, .. var rest])
+if (args is [var command and ("run" or "replay" or "desync" or "bench" or "fuzz" or "test"), var file, .. var rest])
 {
     if (Flags(rest) is not { } flags) return Usage();
     double Number(string name, double fallback) => flags.TryGetValue(name, out var v) && double.TryParse(v, NumberStyles.Float, CultureInfo.InvariantCulture, out var n) ? n : fallback;
@@ -49,6 +49,7 @@ if (args is [var command and ("run" or "replay" or "desync" or "bench" or "fuzz"
             case "replay": return Replay(file, flags, Number("--hash", 0));
             case "desync": return DesyncCheck(file, seconds, seed);
             case "bench": return Bench(file, seconds, seed);
+            case "test": return Tests(file, flags.GetValueOrDefault("--junit"));
             default: return Fuzz(file, seconds, seed, (int)Number("--orders", 1));
         }
     }
@@ -72,7 +73,7 @@ static Dictionary<string, string>? Flags(string[] options)
             "--seconds" => double.TryParse(options[i + 1], NumberStyles.Float, CultureInfo.InvariantCulture, out var seconds) && seconds >= 0,
             "--hash" => double.TryParse(options[i + 1], NumberStyles.Float, CultureInfo.InvariantCulture, out _),
             "--seed" or "--orders" => int.TryParse(options[i + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out _),
-            "--record" or "--input" or "--map" => true,
+            "--record" or "--input" or "--map" or "--junit" => true,
             _ => false,
         };
         if (!valid) return null;
@@ -215,6 +216,30 @@ static int Fuzz(string map, double seconds, int seed, int orders)
     return errors.Count == 0 && simulation.Stopped is null ? 0 : 1;
 }
 
+static int Tests(string path, string? junit)
+{
+    var files = Directory.Exists(path) ? Directory.GetFiles(path, "*.test.lua", SearchOption.AllDirectories).Order(StringComparer.Ordinal).ToList() : [path];
+    if (files.Count == 0)
+    {
+        Console.Error.Write($"No *.test.lua files in {path}\n");
+        return 1;
+    }
+    var results = new List<LuaTestResult>();
+    foreach (var file in files)
+    {
+        using var host = new LuaTestHost();
+        foreach (var result in host.Run(file))
+        {
+            results.Add(result);
+            Console.Write($"{(result.Passed ? "PASS" : "FAIL")} {result.File}: {result.Name}\n");
+            if (!result.Passed) Console.Write($"     {result.Message}\n");
+        }
+    }
+    Console.Write($"{results.Count(r => r.Passed)} passed, {results.Count(r => !r.Passed)} failed\n");
+    if (junit is not null) File.WriteAllText(junit, LuaTestHost.JUnit(results));
+    return results.All(r => r.Passed) ? 0 : 1;
+}
+
 static int Usage()
 {
     Console.Error.Write("""
@@ -232,6 +257,8 @@ static int Usage()
                                                            its end (or every n seconds)
           mirror desync <map> [--seconds <n>] [--seed <n>] Runs the map for each person's slot as that player's own game
                                                            and reports where the runs first differ
+          mirror test <file or folder> [--junit <file>]    Runs the Lua tests (*.test.lua) with the Lua test API, prints each result and
+                                                           writes JUnit XML to the file
           mirror bench <map> [--seconds <n>] [--seed <n>]  Times a run: how many times faster than real time it goes
           mirror fuzz <map> [--seconds <n>] [--seed <n>] [--orders <n>]
                                                            Gives every player's units random legal orders each second

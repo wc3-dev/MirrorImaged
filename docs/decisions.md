@@ -2303,3 +2303,9 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   local player, and compare the state after each second; a difference is reported with its step, the part of the world (time, a player,
   a unit) and the first log line that differs. `mirror bench` times a run, and `mirror fuzz` gives every player's units random legal orders
   each second and reports script errors.
+
+- **D369 (Tests in Lua):** `mirror test <file or folder>` runs `*.test.lua` files in a Lua state of their own, apart from the games they
+  load. A file calls `test(name, function)`; inside, `mirror.load(map, {seed = n})` gives a simulation with the calls of the C# API (`advance`,
+  `units`, `order`, `select`, `key`, `mouse`, `leave`, `say`, `log`, `hash`, `wait_until`, `recording`), and `assert_eq`, `assert_true`,
+  `assert_close` and `assert_contains` check. Each result is printed and `--junit <file>` writes JUnit XML. A shared case list (a map script and
+  steps) runs through both APIs and must end at the same state hash and log (A9). Not done: finding the Lua tests from `dotnet test`.
