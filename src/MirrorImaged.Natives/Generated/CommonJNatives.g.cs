@@ -478,9 +478,6 @@ public sealed partial class GameNatives
     public bool CopySaveGame(string? sourceSaveName, string? destSaveName) => throw new MissingNativeException("CopySaveGame");
 
     [Native(Level.Missing)]
-    public defeatcondition? CreateDefeatCondition() => throw new MissingNativeException("CreateDefeatCondition");
-
-    [Native(Level.Missing)]
     public fogmodifier? CreateFogModifierRadius(player? forWhichPlayer, fogstate? whichState, float centerx, float centerY, float radius, bool useSharedVision, bool afterUnits) => throw new MissingNativeException("CreateFogModifierRadius");
 
     [Native(Level.Missing)]
@@ -490,64 +487,13 @@ public sealed partial class GameNatives
     public fogmodifier? CreateFogModifierRect(player? forWhichPlayer, fogstate? whichState, rect? where, bool useSharedVision, bool afterUnits) => throw new MissingNativeException("CreateFogModifierRect");
 
     [Native(Level.Missing)]
-    public leaderboard? CreateLeaderboard() => throw new MissingNativeException("CreateLeaderboard");
-
-    [Native(Level.Missing)]
-    public multiboard? CreateMultiboard() => throw new MissingNativeException("CreateMultiboard");
-
-    [Native(Level.Missing)]
-    public quest? CreateQuest() => throw new MissingNativeException("CreateQuest");
-
-    [Native(Level.Missing)]
-    public timerdialog? CreateTimerDialog(timer? t) => throw new MissingNativeException("CreateTimerDialog");
-
-    [Native(Level.Missing)]
     public unit? CreateUnitAtLocByName(player? id, string? unitname, location? whichLocation, float face) => throw new MissingNativeException("CreateUnitAtLocByName");
 
     [Native(Level.Missing)]
     public void CripplePlayer(player? whichPlayer, force? toWhichPlayers, bool flag) => throw new MissingNativeException("CripplePlayer");
 
     [Native(Level.Missing)]
-    public void DefeatConditionSetDescription(defeatcondition? whichCondition, string? description) => throw new MissingNativeException("DefeatConditionSetDescription");
-
-    [Native(Level.Missing)]
-    public void DestroyDefeatCondition(defeatcondition? whichCondition) => throw new MissingNativeException("DestroyDefeatCondition");
-
-    [Native(Level.Missing)]
     public void DestroyFogModifier(fogmodifier? whichFogModifier) => throw new MissingNativeException("DestroyFogModifier");
-
-    [Native(Level.Missing)]
-    public void DestroyLeaderboard(leaderboard? lb) => throw new MissingNativeException("DestroyLeaderboard");
-
-    [Native(Level.Missing)]
-    public void DestroyMultiboard(multiboard? lb) => throw new MissingNativeException("DestroyMultiboard");
-
-    [Native(Level.Missing)]
-    public void DestroyQuest(quest? whichQuest) => throw new MissingNativeException("DestroyQuest");
-
-    [Native(Level.Missing)]
-    public void DestroyTimerDialog(timerdialog? whichDialog) => throw new MissingNativeException("DestroyTimerDialog");
-
-    [Native(Level.Missing)]
-    public button? DialogAddButton(dialog? whichDialog, string? buttonText, int hotkey) => throw new MissingNativeException("DialogAddButton");
-
-    [Native(Level.Missing)]
-    public button? DialogAddQuitButton(dialog? whichDialog, bool doScoreScreen, string? buttonText, int hotkey) => throw new MissingNativeException("DialogAddQuitButton");
-
-    [Native(Level.Missing)]
-    public void DialogClear(dialog? whichDialog) => throw new MissingNativeException("DialogClear");
-
-    [Native(Level.Missing)]
-    public dialog? DialogCreate() => throw new MissingNativeException("DialogCreate");
-
-    [Native(Level.Missing)]
-    public void DialogDestroy(dialog? whichDialog) => throw new MissingNativeException("DialogDestroy");
-
-    [Native(Level.Missing)]
-    public void DialogDisplay(player? whichPlayer, dialog? whichDialog, bool flag) => throw new MissingNativeException("DialogDisplay");
-
-    [Native(Level.Missing)]
-    public void DialogSetMessage(dialog? whichDialog, string? messageText) => throw new MissingNativeException("DialogSetMessage");
 
     [Native(Level.Missing)]
     public void DisableRestartMission(bool flag) => throw new MissingNativeException("DisableRestartMission");
@@ -580,9 +526,6 @@ public sealed partial class GameNatives
     public void EnableUserUI(bool b) => throw new MissingNativeException("EnableUserUI");
 
     [Native(Level.Missing)]
-    public void FlashQuestDialogButton() => throw new MissingNativeException("FlashQuestDialogButton");
-
-    [Native(Level.Missing)]
     public void FogModifierStart(fogmodifier? whichFogModifier) => throw new MissingNativeException("FogModifierStart");
 
     [Native(Level.Missing)]
@@ -590,9 +533,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public void ForceCampaignSelectScreen() => throw new MissingNativeException("ForceCampaignSelectScreen");
-
-    [Native(Level.Missing)]
-    public void ForceQuestDialogUpdate() => throw new MissingNativeException("ForceQuestDialogUpdate");
 
     [Native(Level.Missing)]
     public void ForceUICancel() => throw new MissingNativeException("ForceUICancel");
@@ -620,12 +560,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public unit? GetCancelledStructure() => throw new MissingNativeException("GetCancelledStructure");
-
-    [Native(Level.Missing)]
-    public button? GetClickedButton() => throw new MissingNativeException("GetClickedButton");
-
-    [Native(Level.Missing)]
-    public dialog? GetClickedDialog() => throw new MissingNativeException("GetClickedDialog");
 
     [Native(Level.Missing)]
     public unit? GetConstructedStructure() => throw new MissingNativeException("GetConstructedStructure");
@@ -832,9 +766,6 @@ public sealed partial class GameNatives
     public bool IsGameTypeSupported(gametype? whichGameType) => throw new MissingNativeException("IsGameTypeSupported");
 
     [Native(Level.Missing)]
-    public bool IsLeaderboardDisplayed(leaderboard? lb) => throw new MissingNativeException("IsLeaderboardDisplayed");
-
-    [Native(Level.Missing)]
     public bool IsLocationFoggedToPlayer(location? whichLocation, player? whichPlayer) => throw new MissingNativeException("IsLocationFoggedToPlayer");
 
     [Native(Level.Missing)]
@@ -845,33 +776,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public bool IsMaskedToPlayer(float x, float y, player? whichPlayer) => throw new MissingNativeException("IsMaskedToPlayer");
-
-    [Native(Level.Missing)]
-    public bool IsMultiboardDisplayed(multiboard? lb) => throw new MissingNativeException("IsMultiboardDisplayed");
-
-    [Native(Level.Missing)]
-    public bool IsMultiboardMinimized(multiboard? lb) => throw new MissingNativeException("IsMultiboardMinimized");
-
-    [Native(Level.Missing)]
-    public bool IsQuestCompleted(quest? whichQuest) => throw new MissingNativeException("IsQuestCompleted");
-
-    [Native(Level.Missing)]
-    public bool IsQuestDiscovered(quest? whichQuest) => throw new MissingNativeException("IsQuestDiscovered");
-
-    [Native(Level.Missing)]
-    public bool IsQuestEnabled(quest? whichQuest) => throw new MissingNativeException("IsQuestEnabled");
-
-    [Native(Level.Missing)]
-    public bool IsQuestFailed(quest? whichQuest) => throw new MissingNativeException("IsQuestFailed");
-
-    [Native(Level.Missing)]
-    public bool IsQuestItemCompleted(questitem? whichQuestItem) => throw new MissingNativeException("IsQuestItemCompleted");
-
-    [Native(Level.Missing)]
-    public bool IsQuestRequired(quest? whichQuest) => throw new MissingNativeException("IsQuestRequired");
-
-    [Native(Level.Missing)]
-    public bool IsTimerDialogDisplayed(timerdialog? whichDialog) => throw new MissingNativeException("IsTimerDialogDisplayed");
 
     [Native(Level.Missing)]
     public bool IsUnitDetected(unit? whichUnit, player? whichPlayer) => throw new MissingNativeException("IsUnitDetected");
@@ -964,142 +868,7 @@ public sealed partial class GameNatives
     public bool IssueTargetOrderById(unit? whichUnit, int order, widget? targetWidget) => throw new MissingNativeException("IssueTargetOrderById");
 
     [Native(Level.Missing)]
-    public void LeaderboardAddItem(leaderboard? lb, string? label, int value, player? p) => throw new MissingNativeException("LeaderboardAddItem");
-
-    [Native(Level.Missing)]
-    public void LeaderboardClear(leaderboard? lb) => throw new MissingNativeException("LeaderboardClear");
-
-    [Native(Level.Missing)]
-    public void LeaderboardDisplay(leaderboard? lb, bool show) => throw new MissingNativeException("LeaderboardDisplay");
-
-    [Native(Level.Missing)]
-    public int LeaderboardGetItemCount(leaderboard? lb) => throw new MissingNativeException("LeaderboardGetItemCount");
-
-    [Native(Level.Missing)]
-    public string? LeaderboardGetLabelText(leaderboard? lb) => throw new MissingNativeException("LeaderboardGetLabelText");
-
-    [Native(Level.Missing)]
-    public int LeaderboardGetPlayerIndex(leaderboard? lb, player? p) => throw new MissingNativeException("LeaderboardGetPlayerIndex");
-
-    [Native(Level.Missing)]
-    public bool LeaderboardHasPlayerItem(leaderboard? lb, player? p) => throw new MissingNativeException("LeaderboardHasPlayerItem");
-
-    [Native(Level.Missing)]
-    public void LeaderboardRemoveItem(leaderboard? lb, int index) => throw new MissingNativeException("LeaderboardRemoveItem");
-
-    [Native(Level.Missing)]
-    public void LeaderboardRemovePlayerItem(leaderboard? lb, player? p) => throw new MissingNativeException("LeaderboardRemovePlayerItem");
-
-    [Native(Level.Missing)]
-    public void LeaderboardSetItemLabel(leaderboard? lb, int whichItem, string? val) => throw new MissingNativeException("LeaderboardSetItemLabel");
-
-    [Native(Level.Missing)]
-    public void LeaderboardSetItemLabelColor(leaderboard? lb, int whichItem, int red, int green, int blue, int alpha) => throw new MissingNativeException("LeaderboardSetItemLabelColor");
-
-    [Native(Level.Missing)]
-    public void LeaderboardSetItemStyle(leaderboard? lb, int whichItem, bool showLabel, bool showValue, bool showIcon) => throw new MissingNativeException("LeaderboardSetItemStyle");
-
-    [Native(Level.Missing)]
-    public void LeaderboardSetItemValue(leaderboard? lb, int whichItem, int val) => throw new MissingNativeException("LeaderboardSetItemValue");
-
-    [Native(Level.Missing)]
-    public void LeaderboardSetItemValueColor(leaderboard? lb, int whichItem, int red, int green, int blue, int alpha) => throw new MissingNativeException("LeaderboardSetItemValueColor");
-
-    [Native(Level.Missing)]
-    public void LeaderboardSetLabel(leaderboard? lb, string? label) => throw new MissingNativeException("LeaderboardSetLabel");
-
-    [Native(Level.Missing)]
-    public void LeaderboardSetLabelColor(leaderboard? lb, int red, int green, int blue, int alpha) => throw new MissingNativeException("LeaderboardSetLabelColor");
-
-    [Native(Level.Missing)]
-    public void LeaderboardSetSizeByItemCount(leaderboard? lb, int count) => throw new MissingNativeException("LeaderboardSetSizeByItemCount");
-
-    [Native(Level.Missing)]
-    public void LeaderboardSetStyle(leaderboard? lb, bool showLabel, bool showNames, bool showValues, bool showIcons) => throw new MissingNativeException("LeaderboardSetStyle");
-
-    [Native(Level.Missing)]
-    public void LeaderboardSetValueColor(leaderboard? lb, int red, int green, int blue, int alpha) => throw new MissingNativeException("LeaderboardSetValueColor");
-
-    [Native(Level.Missing)]
-    public void LeaderboardSortItemsByLabel(leaderboard? lb, bool ascending) => throw new MissingNativeException("LeaderboardSortItemsByLabel");
-
-    [Native(Level.Missing)]
-    public void LeaderboardSortItemsByPlayer(leaderboard? lb, bool ascending) => throw new MissingNativeException("LeaderboardSortItemsByPlayer");
-
-    [Native(Level.Missing)]
-    public void LeaderboardSortItemsByValue(leaderboard? lb, bool ascending) => throw new MissingNativeException("LeaderboardSortItemsByValue");
-
-    [Native(Level.Missing)]
     public void LoadGame(string? saveFileName, bool doScoreScreen) => throw new MissingNativeException("LoadGame");
-
-    [Native(Level.Missing)]
-    public void MultiboardClear(multiboard? lb) => throw new MissingNativeException("MultiboardClear");
-
-    [Native(Level.Missing)]
-    public void MultiboardDisplay(multiboard? lb, bool show) => throw new MissingNativeException("MultiboardDisplay");
-
-    [Native(Level.Missing)]
-    public int MultiboardGetColumnCount(multiboard? lb) => throw new MissingNativeException("MultiboardGetColumnCount");
-
-    [Native(Level.Missing)]
-    public multiboarditem? MultiboardGetItem(multiboard? lb, int row, int column) => throw new MissingNativeException("MultiboardGetItem");
-
-    [Native(Level.Missing)]
-    public int MultiboardGetRowCount(multiboard? lb) => throw new MissingNativeException("MultiboardGetRowCount");
-
-    [Native(Level.Missing)]
-    public string? MultiboardGetTitleText(multiboard? lb) => throw new MissingNativeException("MultiboardGetTitleText");
-
-    [Native(Level.Missing)]
-    public void MultiboardMinimize(multiboard? lb, bool minimize) => throw new MissingNativeException("MultiboardMinimize");
-
-    [Native(Level.Missing)]
-    public void MultiboardReleaseItem(multiboarditem? mbi) => throw new MissingNativeException("MultiboardReleaseItem");
-
-    [Native(Level.Missing)]
-    public void MultiboardSetColumnCount(multiboard? lb, int count) => throw new MissingNativeException("MultiboardSetColumnCount");
-
-    [Native(Level.Missing)]
-    public void MultiboardSetItemIcon(multiboarditem? mbi, string? iconFileName) => throw new MissingNativeException("MultiboardSetItemIcon");
-
-    [Native(Level.Missing)]
-    public void MultiboardSetItemStyle(multiboarditem? mbi, bool showValue, bool showIcon) => throw new MissingNativeException("MultiboardSetItemStyle");
-
-    [Native(Level.Missing)]
-    public void MultiboardSetItemValue(multiboarditem? mbi, string? val) => throw new MissingNativeException("MultiboardSetItemValue");
-
-    [Native(Level.Missing)]
-    public void MultiboardSetItemValueColor(multiboarditem? mbi, int red, int green, int blue, int alpha) => throw new MissingNativeException("MultiboardSetItemValueColor");
-
-    [Native(Level.Missing)]
-    public void MultiboardSetItemWidth(multiboarditem? mbi, float width) => throw new MissingNativeException("MultiboardSetItemWidth");
-
-    [Native(Level.Missing)]
-    public void MultiboardSetItemsIcon(multiboard? lb, string? iconPath) => throw new MissingNativeException("MultiboardSetItemsIcon");
-
-    [Native(Level.Missing)]
-    public void MultiboardSetItemsStyle(multiboard? lb, bool showValues, bool showIcons) => throw new MissingNativeException("MultiboardSetItemsStyle");
-
-    [Native(Level.Missing)]
-    public void MultiboardSetItemsValue(multiboard? lb, string? value) => throw new MissingNativeException("MultiboardSetItemsValue");
-
-    [Native(Level.Missing)]
-    public void MultiboardSetItemsValueColor(multiboard? lb, int red, int green, int blue, int alpha) => throw new MissingNativeException("MultiboardSetItemsValueColor");
-
-    [Native(Level.Missing)]
-    public void MultiboardSetItemsWidth(multiboard? lb, float width) => throw new MissingNativeException("MultiboardSetItemsWidth");
-
-    [Native(Level.Missing)]
-    public void MultiboardSetRowCount(multiboard? lb, int count) => throw new MissingNativeException("MultiboardSetRowCount");
-
-    [Native(Level.Missing)]
-    public void MultiboardSetTitleText(multiboard? lb, string? label) => throw new MissingNativeException("MultiboardSetTitleText");
-
-    [Native(Level.Missing)]
-    public void MultiboardSetTitleTextColor(multiboard? lb, int red, int green, int blue, int alpha) => throw new MissingNativeException("MultiboardSetTitleTextColor");
-
-    [Native(Level.Missing)]
-    public void MultiboardSuppressDisplay(bool flag) => throw new MissingNativeException("MultiboardSuppressDisplay");
 
     [Native(Level.Missing)]
     public int OrderId(string? orderIdString) => throw new MissingNativeException("OrderId");
@@ -1109,45 +878,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public void PauseCompAI(player? p, bool pause) => throw new MissingNativeException("PauseCompAI");
-
-    [Native(Level.Missing)]
-    public leaderboard? PlayerGetLeaderboard(player? toPlayer) => throw new MissingNativeException("PlayerGetLeaderboard");
-
-    [Native(Level.Missing)]
-    public void PlayerSetLeaderboard(player? toPlayer, leaderboard? lb) => throw new MissingNativeException("PlayerSetLeaderboard");
-
-    [Native(Level.Missing)]
-    public questitem? QuestCreateItem(quest? whichQuest) => throw new MissingNativeException("QuestCreateItem");
-
-    [Native(Level.Missing)]
-    public void QuestItemSetCompleted(questitem? whichQuestItem, bool completed) => throw new MissingNativeException("QuestItemSetCompleted");
-
-    [Native(Level.Missing)]
-    public void QuestItemSetDescription(questitem? whichQuestItem, string? description) => throw new MissingNativeException("QuestItemSetDescription");
-
-    [Native(Level.Missing)]
-    public void QuestSetCompleted(quest? whichQuest, bool completed) => throw new MissingNativeException("QuestSetCompleted");
-
-    [Native(Level.Missing)]
-    public void QuestSetDescription(quest? whichQuest, string? description) => throw new MissingNativeException("QuestSetDescription");
-
-    [Native(Level.Missing)]
-    public void QuestSetDiscovered(quest? whichQuest, bool discovered) => throw new MissingNativeException("QuestSetDiscovered");
-
-    [Native(Level.Missing)]
-    public void QuestSetEnabled(quest? whichQuest, bool enabled) => throw new MissingNativeException("QuestSetEnabled");
-
-    [Native(Level.Missing)]
-    public void QuestSetFailed(quest? whichQuest, bool failed) => throw new MissingNativeException("QuestSetFailed");
-
-    [Native(Level.Missing)]
-    public void QuestSetIconPath(quest? whichQuest, string? iconPath) => throw new MissingNativeException("QuestSetIconPath");
-
-    [Native(Level.Missing)]
-    public void QuestSetRequired(quest? whichQuest, bool required) => throw new MissingNativeException("QuestSetRequired");
-
-    [Native(Level.Missing)]
-    public void QuestSetTitle(quest? whichQuest, string? title) => throw new MissingNativeException("QuestSetTitle");
 
     [Native(Level.Missing)]
     public void RecycleGuardPosition(unit? hUnit) => throw new MissingNativeException("RecycleGuardPosition");
@@ -1264,31 +994,7 @@ public sealed partial class GameNatives
     public void SyncSelections() => throw new MissingNativeException("SyncSelections");
 
     [Native(Level.Missing)]
-    public void TimerDialogDisplay(timerdialog? whichDialog, bool display) => throw new MissingNativeException("TimerDialogDisplay");
-
-    [Native(Level.Missing)]
-    public void TimerDialogSetRealTimeRemaining(timerdialog? whichDialog, float timeRemaining) => throw new MissingNativeException("TimerDialogSetRealTimeRemaining");
-
-    [Native(Level.Missing)]
-    public void TimerDialogSetSpeed(timerdialog? whichDialog, float speedMultFactor) => throw new MissingNativeException("TimerDialogSetSpeed");
-
-    [Native(Level.Missing)]
-    public void TimerDialogSetTimeColor(timerdialog? whichDialog, int red, int green, int blue, int alpha) => throw new MissingNativeException("TimerDialogSetTimeColor");
-
-    [Native(Level.Missing)]
-    public void TimerDialogSetTitle(timerdialog? whichDialog, string? title) => throw new MissingNativeException("TimerDialogSetTitle");
-
-    [Native(Level.Missing)]
-    public void TimerDialogSetTitleColor(timerdialog? whichDialog, int red, int green, int blue, int alpha) => throw new MissingNativeException("TimerDialogSetTitleColor");
-
-    [Native(Level.Missing)]
     public @event? TriggerRegisterCommandEvent(trigger? whichTrigger, int whichAbility, string? order) => throw new MissingNativeException("TriggerRegisterCommandEvent");
-
-    [Native(Level.Missing)]
-    public @event? TriggerRegisterDialogButtonEvent(trigger? whichTrigger, button? whichButton) => throw new MissingNativeException("TriggerRegisterDialogButtonEvent");
-
-    [Native(Level.Missing)]
-    public @event? TriggerRegisterDialogEvent(trigger? whichTrigger, dialog? whichDialog) => throw new MissingNativeException("TriggerRegisterDialogEvent");
 
     [Native(Level.Missing)]
     public @event? TriggerRegisterPlayerChatEvent(trigger? whichTrigger, player? whichPlayer, string? chatMessageToDetect, bool exactMatchOnly) => throw new MissingNativeException("TriggerRegisterPlayerChatEvent");
