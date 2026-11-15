@@ -2411,3 +2411,9 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   (a full repair takes the build time times RepairTimeRatio, 1.5), paying that share of the price times RepairCostRatio (0.35) in whole points as it builds up, until the
   building is whole, the player cannot pay or the order changes. Close: the ratios are the constants' names as I know them (not measured), and mechanical units are not
   repaired.
+
+- **D388 (The corpus of shipped maps, A4 and A5):** all 466 maps of the installed game's Maps and Campaign folders load and run 10 game minutes with no Missing native; two
+  community maps of the Forsaken Kingdom scenarios fail in their own scripts and are named in the corpus test with the reason (ForgottenHollow indexes a table with nil
+  in its handle library at the start; SilverpineSprint's car physics finds no terrain family at about 13 s). The one fault in the runtime that the corpus found: JASS has a
+  unary plus (`+x`) that the transpiler wrote as it was and Lua refuses, in an AI script of a campaign; the operand is written alone now. `MIRROR_DUMP_AI` (a folder) writes
+  the Lua of each AI script, and `MIRROR_TRACEBACK` puts the Lua traceback of a script error in the log.
