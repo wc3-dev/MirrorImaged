@@ -2277,3 +2277,7 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
 
 - **D363 (Exploring is per unit):** a unit that moves a fog cell explores only what it sees, not what every unit of the player sees.
   A campaign map of 300 units took 1 s of real time per game second; it now takes a tenth of that. Not measured against the game.
+
+- **D364 (Path search is cheaper):** a search for a path lists the buildings once a tick and asks each cell once, and an idle unit that
+  looks for a target skips what is out of range before it asks who is an enemy. A campaign map that took 8 s of real time per game second
+  (Human01) takes a quarter of one. Not measured against the game.
