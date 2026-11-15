@@ -2222,3 +2222,8 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   finished town hall of its owner, then goes back until the mine or tree is spent. Close: refunds, rally behaviour, loads and trip times
   are the common ones, not measured; the building's life while it grows isn't modelled; no upkeep, transports, repairs, upgrades of a building
   into another, or merchants yet.
+- **D354. Attack events.** Each swing fires `EVENT_UNIT_ATTACKED` (player 18) for the unit attacked, `GetAttacker` naming the attacker; a
+  unit that takes a target of its own accord fires `EVENT_UNIT_ACQUIRED_TARGET`, `GetEventTargetUnit` the target, its order staying 0
+  (facts, 11-14); a unit with no order and nothing to fight that is hit takes its attacker as its target, however far (facts, 11-14).
+  The unit-level construct start event common.j lacks (`EVENT_UNIT_CONSTRUCT_START`) is kept under an id nothing registers: 63 is
+  `EVENT_UNIT_RESCUED`. Close: the target-in-range event and the call for help of allies are not fired.

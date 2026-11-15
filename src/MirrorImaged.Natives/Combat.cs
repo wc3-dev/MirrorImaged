@@ -22,7 +22,7 @@ public partial class unit
 public sealed partial class GameNatives
 {
     const double TickSeconds = 1.0 / 32;
-    const int OrderMove = 851986, OrderAIMove = 851987, OrderAttack = 851983, OrderAttackOnce = 851985, OrderPatrol = 851990, OrderHold = 851993, ScanEvery = 4;
+    const int UnitAttacked = 62, PlayerUnitAttacked = 18, UnitAcquiredTarget = 60, UnitTargetInRange = 61, OrderMove = 851986, OrderAIMove = 851987, OrderAttack = 851983, OrderAttackOnce = 851985, OrderPatrol = 851990, OrderHold = 851993, ScanEvery = 4;
 
     bool _engine;
     long _ticks;
@@ -104,7 +104,7 @@ public sealed partial class GameNatives
         }
         if (order == 0 || order == OrderHold)
         {
-            if (u.AttackTarget is null && armed && scan && Nearest(u, order == OrderHold ? HoldRange(u) : GetUnitAcquireRange(u)) is { } found) (u.AttackTarget, u.Weapon) = (found, Math.Max(WeaponFor(u, found), 0));
+            if (u.AttackTarget is null && armed && scan && Nearest(u, order == OrderHold ? HoldRange(u) : GetUnitAcquireRange(u)) is { } found) Acquired(u, found);
             if (u.AttackTarget is { } t) Engage(u, t, chase: order == 0);
             return armed;
         }
@@ -117,13 +117,27 @@ public sealed partial class GameNatives
                 if (target is not null && order == Smart) return Walk(u, target.X, target.Y, follow: true);
                 if (target is not null && order is OrderAttack or OrderAttackOnce) return Finish(u);
                 // An attack-move: fight what it comes upon, else walk on
-                if (u.AttackTarget is null && armed && scan && Nearest(u, GetUnitAcquireRange(u)) is { } near) (u.AttackTarget, u.Weapon) = (near, Math.Max(WeaponFor(u, near), 0));
+                if (u.AttackTarget is null && armed && scan && Nearest(u, GetUnitAcquireRange(u)) is { } near) Acquired(u, near);
                 if (u.AttackTarget is { } fighting) { Engage(u, fighting, chase: true); return true; }
                 return order == Smart ? Walk(u, x, y, follow: false) : Walk(u, x, y, follow: false);
             }
             return Walk(u, x, y, follow: false, patrol: order == OrderPatrol);
         }
         return armed;
+    }
+
+    // The unit takes the enemy as its target: the acquired-target event fires with it (the order stays what it was)
+    void Acquired(unit u, unit target)
+    {
+        (u.AttackTarget, u.Weapon) = (target, Math.Max(WeaponFor(u, target), 0));
+        FireUnit(new(u, Other: target), UnitAcquiredTarget, UnitAcquiredTarget);
+    }
+
+    // A unit hit with no order of its own and nothing to fight hits back at what hit it, however far it stood (facts, 11-14)
+    void HitBack(unit victim, unit attacker)
+    {
+        if (victim.Order != 0 || victim.AttackTarget is not null || victim.Dead || victim.Paused || !Hostile(victim, attacker) || !Armed(victim, attacker)) return;
+        Acquired(victim, attacker);
     }
 
     float HoldRange(unit u) => Math.Max(Reach(u, 0), Reach(u, 1));
@@ -195,6 +209,7 @@ public sealed partial class GameNatives
         var point = BlzGetUnitWeaponRealField(u, Convert<unitweaponrealfield>(Code("udp1")), weapon);
         var cooldown = Math.Max(BlzGetUnitAttackCooldown(u, weapon), 0.1f);
         (u.NextAttack, u.SwingEnds) = (Seconds + cooldown, Seconds + point);
+        FireUnit(new(t, Other: u), UnitAttacked, PlayerUnitAttacked);
         _game.At(_game.Step + Math.Max(1, Game.Steps(point)), () => Hit(u, t, weapon));
     }
 
@@ -209,5 +224,14 @@ public sealed partial class GameNatives
         var kind = u.Type.Text(Code($"ua{weapon + 1}w")) ?? "normal";
         var ranged = kind is "missile" or "mbounce" or "mline" or "msplash" or "artillery" or "aline" or "alsplash";
         Strike(new Hit(u, t, damage, true, ranged, Convert<attacktype>(attackType), Convert<damagetype>(NormalDamage), Convert<weapontype>(sound)) { Real = true }, t);
+        if (!t.Dead) HitBack(t, u);
     }
+
+    /// <summary>The unit that attacks in an attacked event, the event's own unit being the one attacked.</summary>
+    [Native(Level.Close)]
+    public unit? GetAttacker() => Response(UnitAttacked, PlayerUnitAttacked)?.Other;
+
+    /// <summary>The unit an acquired-target or target-in-range event is about; nil outside one.</summary>
+    [Native(Level.Close)]
+    public unit? GetEventTargetUnit() => Response(UnitAcquiredTarget, UnitTargetInRange)?.Other;
 }

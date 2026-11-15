@@ -113,4 +113,25 @@ public sealed class CombatTests : IDisposable
 
         Assert.Equal(["end\t700.0\tfalse\t0"], lines);
     }
+
+    // the attacked event fires at each swing for the target, naming the attacker; the acquired-target event for the unit that takes a target;
+    // a unit hit from beyond its acquisition range hits back
+    [Fact]
+    public void Attacks_and_acquisitions_fire_their_events_and_the_hit_unit_hits_back()
+    {
+        var lines = Run("""
+            local a, b = make("hfoo", Player(0), 0, 0), make("hfoo", Player(1), 2000, 0)
+            local hit = CreateTrigger()
+            TriggerRegisterUnitEvent(hit, b, EVENT_UNIT_ATTACKED)
+            TriggerAddAction(hit, function() print("attacked", GetUnitName(GetTriggerUnit()), GetUnitX(GetAttacker()), GetAttacker() == a) end)
+            local acq = CreateTrigger()
+            TriggerRegisterUnitEvent(acq, b, EVENT_UNIT_ACQUIRED_TARGET)
+            TriggerAddAction(acq, function() print("acquired", GetEventTargetUnit() == a, GetUnitCurrentOrder(b)) end)
+            IssueTargetOrder(a, "attack", b)
+            """, 40);
+
+        Assert.True(lines.Count >= 3, string.Join("|", lines));
+        Assert.Contains(lines, line => line.StartsWith("attacked	Footman	"));
+        Assert.Contains("acquired	true	0", lines);
+    }
 }

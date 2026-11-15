@@ -28,7 +28,8 @@ public partial class unit
 public sealed partial class GameNatives
 {
     const int OrderCancel = 851976;
-    const int UnitConstructStart = 63, UnitConstructCancel = 64, UnitConstructFinish = 65, PlayerConstructStart = 26, PlayerConstructCancel = 27, PlayerConstructFinish = 28;
+    // common.j has no unit-level construct start event (63 is EVENT_UNIT_RESCUED): this id is registered by nothing
+    const int UnitConstructStart = 9063, UnitConstructCancel = 64, UnitConstructFinish = 65, PlayerConstructStart = 26, PlayerConstructCancel = 27, PlayerConstructFinish = 28;
     const int UnitTrainStart = 69, UnitTrainCancel = 70, UnitTrainFinish = 71, PlayerTrainStart = 32, PlayerTrainCancel = 33, PlayerTrainFinish = 34;
     const int UnitResearchStart = 72, UnitResearchCancel = 73, UnitResearchFinish = 74, PlayerResearchStart = 35, PlayerResearchCancel = 36, PlayerResearchFinish = 37;
     const int QueueLength = 7;
