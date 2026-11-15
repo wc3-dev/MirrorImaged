@@ -1918,3 +1918,91 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   `IsFogEnabled`; `InitDNCSounds`; the ambient, volume group and music BJ functions; `PlaySound`). `GetAbilitySound` and
   `GetAbilitySoundById`, which read an ability's sound labels, stay Missing for W2-7 (`wave-2.md`). After W5-2, with
   W2-2 and W2-4 merged first: 229 Exact, 343 Close, 56 Recorded, 1,207 Missing.
+
+- **D240. A hero keeps its attributes as floats and reads the whole part.** `unit.Str`, `Agi` and `Int` start as the
+  type's and gain the level's `STRplus`, `AGIplus` and `INTplus` for each level (the unit's own field if it was set), so
+  a Paladin's 22 and 2.7 read 24 at level 2 and 46 at 10 (probe heroes). A set (`SetHeroStr`, the field set) is a whole
+  number and drops the fraction. A hair of 1e-4 is added before the floor: 17 + 9 x 1.8 - 9 x 1.8 in floats is a
+  hair under 17, and stripping levels must give the start back.
+- **D241. An attribute change moves the most life or mana, and the life or mana now, by the same.** Each whole point
+  adds `StrHitPointBonus` (25) or `IntManaBonus` (15); the life is kept to its most, the mana from 0 to it (probe
+  heroes: 325 of 650 at level 4 reads 525 of 850; strength 12 left 75 of 400, intelligence 7 mana 0 of 105; strength -5
+  reads life -25 of -25 and doesn't kill). Armour reads the whole agility: `AgiDefenseBase` + agility x
+  `AgiDefenseBonus`. The permanent flag of `SetHeroStr/Agi/Int` changes nothing and the "with bonus" reads equal the
+  plain ones: bonuses come with the abilities (W2-7). Close.
+- **D242. The experience table is the constants'.** Levels 2 up come from `NeedHeroXP`'s list as totals, then each
+  level is the one before's times `NeedHeroXPFormulaA` plus its number times `B` plus `C`, kept as a double and cut
+  when read, to `MaxHeroLevel` (defaults 200 / 1, 100, 0 / 10: game-facts "Heroes"). The level is kept apart from the
+  experience: `SetHeroXP` and `AddHeroXP` only raise the level, `AddHeroXP` can lower the experience (not under 0) and
+  nothing passes the last level's. A raise fires one level event inside the call, the player's first, reading the final
+  level, experience and skill points. A suspended hero ignores `SetHeroXP`, `AddHeroXP` and `SetHeroLevel`.
+- **D243. `UNIT_IF_LEVEL` set is a level change without an event.** From a higher level it goes to the value (level 5,
+  set 3, reads 3), from a lower one to the value plus one (level 1, set 3, reads 4; the old rule of adding one to every
+  set, D227, only held from level 1), with that level's experience. The permanent attribute fields set the attribute to
+  1 whatever the value (7 and 0 both: probe heroes). Inferred between: a set equal to the level.
+- **D244. Skills: a point, the type's list and the required level.** `SelectHeroSkill` learns the next level of an
+  ability in the type's `uhab` list when the hero has a point and its level is the ability's `arlv` plus 2 for each
+  level after the first (`alsk`, the data's level skip, reads 0 for Holy Light though the game needs hero level 3 for
+  its second, so 2 is used where it is 0). The skill event fires before the point is spent (the points read the same
+  inside it). The learned level is kept on the hero, but the ability itself is W2-7's: `GetUnitAbilityLevel` doesn't
+  read it yet, and the probes leave it out. `UnitModifySkillPoints` keeps from 0 up; `BlzResetUnitTalents` does
+  nothing (no talents in the Paladin).
+- **D245. Revival.** `ReviveHero` on a dead hero fires the start event with the hero dead where it died, then sets it
+  alive at the place with its most life and its type's `umpi` mana (100, not the full 495), counts its food again, and
+  fires the finish event, all inside the call. False for a living hero and for a unit that isn't one. The revivable
+  event the game fires long after (with a unit that isn't the hero) is never fired here; the probe's last line is a
+  recorded difference.
+- **D246. Units that aren't heroes read 0 and refuse every hero native, and nothing closes the game** (probes
+  heroes-nonhero-level, -str, -setstr and heroes-nonhero): `GetHeroStr` and the rest read 0, `SetHeroStr` and
+  `SetHeroLevel` change nothing, `ReviveHero` and `UnitStripHeroLevel` are false. Only `IsSuspendedXP` reads true on a
+  footman before any suspend, as the game does. D227's guess that a hero attribute set there closes the game was wrong
+  for the natives; the field natives still close it (probe units-attribute).
+- **D247. Proper names are drawn with a generator of their own** (seeded, not the map's: D523) from the type's list,
+  numbered with a roman numeral by how many times that name was drawn. The game's numbering isn't that count: its 15th
+  and 16th Paladin read "II" after about 35 had been made. Close; recorded in `probes/differences/heroes.txt`.
+- **D248. An item is a widget of its own that reads nothing the moment it is removed** (probe items: type id 0, place 0,
+  life 0, no charges, no player in the call), not after the step as a unit. It reads its type's data (`icla`, `ilev`,
+  `iuse`, `ihtp`, the flag codes) unless set. The item field ids are the data's four-letter codes (`ITEM_BF_*`
+  1769304929 is `iusa`...), so a field native reads the data with that code, `ipaw` (pawnable) being "can be sold to
+  merchants" and `ipow` (powerup) "use automatically". The class words give 0 Permanent, 1 Charged, 2 PowerUp, 3
+  Artifact, 4 Purchasable, 5 Campaign and 8 for the rest (the data's Miscellaneous read 8, not 6). The Blz setters of
+  booleans and reals answer false but keep the value; the integer ones answer true.
+- **D249. A hero's six slots, with the events inside the calls.** A pickup fires with the item in its slot, the
+  player's event before the unit's; a drop (also from a use that spends the last charge of a perishable item) fires
+  before the item leaves its slot; an item taken out lands 24 south of its carrier, visible and not owned; a powerup is
+  picked up and dropped at once and gone two steps on. An item doesn't stack. `UnitAddItemById` with no room leaves the
+  item at the unit and answers nil. `UnitDropItemSlot` swaps. `UnitDropItemPoint` and `UnitDropItemTarget` answer true
+  and do nothing (the walk is wave 3's). What carried items give (attribute bonuses), a potion's heal and an ankh's
+  reincarnation are the abilities' (W2-7); the probe's lines for them are recorded differences.
+- **D330. The item widget natives.** `GetWidgetLife`, `SetWidgetLife`, `GetWidgetX`, `GetWidgetY`,
+  `TriggerRegisterDeathEvent` and `GetTriggerWidget` take items (D252's Missing stop is gone): an item's life is kept to
+  its most, below 0.405 it dies once (life 0, the widget death event inside the call) and stays, an invulnerable one too.
+- **D331. `EnumItemsInRect` is `EnumDestructablesInRect`'s rule** on the items on the ground (a hidden one counts, a
+  carried one doesn't), the last made first in a square of 256 (probe items). Close: the destructables' 32-cell test
+  is used and the game's was not probed apart from them.
+- **D332. The random item picks and the pools use the map's random numbers.** `ChooseRandomItem` and its kin pick, in
+  the data's order, from the items marked `pickRandom` of the level and class (the level -1 and class ANY (9) all); the
+  one with includes takes the others when told. `ChooseRandomCreep` and `ChooseRandomNPBuilding` give 0 (the creep data
+  and camps come later). A pool picks by weight (a weight of 0 or less never), `PlaceRandomItem` and `PlaceRandomUnit`
+  make what they pick, nil for an empty pool. All Close: the game's draws aren't known (D46).
+- **D333. The stock natives are Recorded.** No shop sells or restocks until orders and the clock of wave 3, and no native
+  reads a stock back, so `AddItemToStock` and the others keep nothing, and `InitBlizzard`'s `SetAllItemTypeSlots` and
+  `SetAllUnitTypeSlots` get through.
+- **D334. A hero's inventory is six slots; any other unit has none.** `UnitInventorySize` is 6 for a hero and 0 for any
+  other unit (probe items). Close: a unit with the inventory ability has the size its data gives (Backpack, game-facts).
+- **D335. The hero-revivable event never fires** (D245): `GetRevivableUnit` reads nil.
+- **D336. The proper-name numbering is a count** (D247).
+- **D337. The game cache's unit natives are not done.** `StoreUnit`, `RestoreUnit`, `HaveStoredUnit`, `FlushStoredUnit`
+  and `SyncStoredUnit` stay Missing: restoring needs the whole unit's state (the attributes, levels, items and abilities
+  of D240 to D249) written to the cache and rebuilt, and the attack speed that survived the Paladin's store came from
+  an ability of wave 3. Left in `docs/tasks/later.md`.
+- **D338. Random picks are Close** (D332).
+- **D339. The hero and item probes change the world only with `CreateUnit`, `CreateItem` and the natives under test,**
+  each hero made on a spot of its own (the game moves a unit made on another), so the probes hold in the game and in
+  MirrorImaged. They read the installed data (`ProbeComparison.ReadsData`: names starting `heroes` and `items`).
+- **D340. The extended tooltip's tags stay as written** (`<AIh1,DataA1>`); the game resolves them from the ability's
+  data (`ParseTags`, W2-8). Close.
+- **D341. An item set far off stays where it is set;** the game keeps it inside the map (5000, -5000 read 2016, -2048).
+  The map's bounds aren't kept for items. Close.
+- **D342. Item abilities come with W2-7:** the tome's +1 agility, the carried items' attribute bonuses and the
+  resulting life, mana and armour, the potion's heal and the ankh. `probes/differences/items.txt` records each line.
