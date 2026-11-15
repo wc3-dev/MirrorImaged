@@ -1,0 +1,44 @@
+# probes/units-locust.lua on 3.0.1.24371, single player, 11-15 (W2-7): the game's lines. Run twice, the same.
+0 before range 5 back,enemy,hid,loc,plain
+0 before rect 5 back,enemy,hid,loc,plain
+0 before player 4 back,hid,loc,plain
+0 before type 5 back,enemy,hid,loc,plain
+0 before range filter 5 back,enemy,hid,loc,plain
+0 before selectable plain:t loc:t hid:t back:t 
+0 before inrange plain:tff loc:ttt hid:tff back:ttt 
+0 before level plain:0 loc:0 hid:0 back:0 
+add loc t again f
+1 now range 2 enemy,plain
+1 now rect 2 enemy,plain
+1 now player 4 back,hid,loc,plain
+1 now type 5 back,enemy,hid,loc,plain
+1 now range filter 2 enemy,plain
+1 now selectable plain:t loc:f hid:f back:f 
+1 now inrange plain:tff loc:ttt hid:tff back:ttt 
+1 now level plain:0 loc:1 hid:0 back:1 
+remove back t
+2 removed range 2 enemy,plain
+2 removed rect 2 enemy,plain
+2 removed player 4 back,hid,loc,plain
+2 removed type 5 back,enemy,hid,loc,plain
+2 removed range filter 2 enemy,plain
+2 removed selectable plain:t loc:f hid:f back:f 
+2 removed inrange plain:tff loc:ttt hid:tff back:ttt 
+2 removed level plain:0 loc:1 hid:0 back:0 
+held 4 back,hid,loc,plain in group t
+3 later range 1 enemy
+3 later rect 1 enemy
+3 later player 4 back,hid,loc,plain
+3 later type 5 back,enemy,hid,loc,plain
+3 later range filter 1 enemy
+3 later selectable plain:f loc:f hid:f back:f 
+3 later inrange plain:tff loc:ttt hid:tff back:ttt 
+3 later level plain:0 loc:1 hid:0 back:0 
+4 much later range 1 enemy
+4 much later rect 1 enemy
+4 much later player 4 back,hid,loc,plain
+4 much later type 5 back,enemy,hid,loc,plain
+4 much later range filter 1 enemy
+4 much later selectable plain:f loc:f hid:f back:f 
+4 much later inrange plain:tff loc:ttt hid:tff back:ttt 
+4 much later level plain:0 loc:1 hid:0 back:0 

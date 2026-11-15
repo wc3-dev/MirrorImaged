@@ -110,22 +110,31 @@ public sealed class InstalledDataTests
     // docs/upstream.md: War3Net refuses (1)SilverpineSprint's war3map.doo for a doodad state 14, which is read here
     // (decisions D258)
     [InstallFact]
-    public void SilverpineSprints_doodads_are_read()
+    public void SilverpineSprints_doodads_are_read() =>
+        Installed("War3.w3mod:Maps/ForsakenKingdom/Scenario/(1)SilverpineSprint.w3x", map =>
+        {
+            Assert.Empty(map.Unread);
+            Assert.Contains(map.Files.Doodads!.Doodads, doodad => (int)doodad.State == 14);
+        });
+
+    // docs/upstream.md: War3Net refuses (10)DustwallowKeys' war3map.w3e for a cliff type 0, which is read here (decisions
+    // D270), so the melee map has its ground
+    [InstallFact]
+    public void DustwallowKeys_terrain_is_read() =>
+        Installed("War3.w3mod:Maps/(10)DustwallowKeys.w3m", map =>
+        {
+            Assert.Empty(map.Unread);
+            Assert.Contains(map.Files.Environment!.CliffTypes, type => (int)type == 0);
+            Assert.Equal((map.Files.Environment.Width + 1) * (map.Files.Environment.Height + 1), (uint)map.Files.Environment.TerrainTiles.Count);
+        });
+
+    static void Installed(string name, Action<MapArchive> check)
     {
         using var storage = CascStorage.Open(GameInstall.Require());
         var path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".w3x");
-        File.WriteAllBytes(path, storage.Read("War3.w3mod:Maps/ForsakenKingdom/Scenario/(1)SilverpineSprint.w3x")!);
-        try
-        {
-            var map = MapArchive.Read(path);
-
-            Assert.Empty(map.Unread);
-            Assert.Contains(map.Files.Doodads!.Doodads, doodad => (int)doodad.State == 14);
-        }
-        finally
-        {
-            File.Delete(path);
-        }
+        File.WriteAllBytes(path, storage.Read(name)!);
+        try { check(MapArchive.Read(path)); }
+        finally { File.Delete(path); }
     }
 
     // game-facts, "Object data": oshm 350 in the base tables, 260 under custom_v0, 335 under custom_v1, 355 under
@@ -171,6 +180,22 @@ public sealed class InstalledDataTests
         var named = Data.Objects(ObjectKind.Unit).Where(o => o.Text(Id("name")) is "paladin" or "archmage").Select(o => o.Id).ToList();
         Assert.Equal([Id("Hamg"), Id("Hpal")], named.Take(2));
         Assert.True(named.IndexOf(Id("Hpal")) < named.IndexOf(Id("Hssa")));
+    }
+
+    // probe heroes: the Paladin's skills Holy Light and Resurrection are learned at hero levels 1, 3, 5 and 6; the hero
+    // abilities the data lists for the type, the ability's required level and its level skip
+    [InstallFact]
+    public void Heroes_list_their_abilities_and_their_levels_to_learn()
+    {
+        var paladin = Data.Object(ObjectKind.Unit, Id("Hpal"))!;
+        var (holyLight, resurrection) = (Data.Object(ObjectKind.Ability, Id("AHhb"))!, Data.Object(ObjectKind.Ability, Id("AHre"))!);
+
+        Assert.Contains("AHhb", paladin.Text(Id("uhab"))!.Split(','));
+        Assert.Contains("AHre", paladin.Text(Id("uhab"))!.Split(','));
+        Assert.DoesNotContain("AHbz", paladin.Text(Id("uhab"))!.Split(','));
+        // its level skip reads 0, though the game makes the second level need hero level 3: the skip is 2 where the data has none
+        Assert.Equal((3, 1, "0"), (holyLight.Levels, holyLight.Integer(Id("arlv")), holyLight.Text(Id("alsk"))));
+        Assert.Equal(6, resurrection.Integer(Id("arlv")));
     }
 }
 

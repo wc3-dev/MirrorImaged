@@ -60,6 +60,7 @@ public sealed partial class Simulation
             };
         if (value is null || value == None) return null;
         if (type == typeof(Action) && value is LuaFunction code) return (Action)new LuaCode(this, code.Keep()).Run;
+        if (type == typeof(Func<int>) && value is LuaFunction number) return (Func<int>)new LuaCode(this, number.Keep()).EvaluateInt;
         if (type == typeof(Func<bool>) && value is LuaFunction condition) return (Func<bool>)new LuaCode(this, condition.Keep()).Evaluate;
         // Found by its key, whatever type Lua sees it as; one of another type is refused, as the type Lua sees is. A
         // destroyed one reads as null, but GetHandleId, the one native taking any handle, reads its id (probe handles),

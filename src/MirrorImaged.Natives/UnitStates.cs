@@ -8,13 +8,13 @@ public sealed partial class GameNatives
     // A unit's life is kept up to the most life, as the most life less the damage that leaves, in floats (0.41 reads
     // 0.4100037 on a footman of 420, 0.4099731 on a Paladin of 650); below 0.405 the unit dies, the death event inside
     // the call reading life 0 (facts, Units; probe units). A dead unit stays dead, its life kept from 0 to its most.
-    void SetLife(unit u, float life)
+    void SetLife(unit u, float life, unit? killer = null)
     {
         var (max, old) = (u.MaxLife, u.Life);
         var now = max - (max - Math.Min(life, max));
         if (!u.Dead && now < Dying)
         {
-            Kill(u);
+            Kill(u, killer);
             return;
         }
         u.Life = u.Dead ? Math.Max(now, 0) : now;
@@ -80,22 +80,25 @@ public sealed partial class GameNatives
     [Native(Level.Exact, Fact = UnitsProbe)]
     public float GetUnitY(unit? whichUnit) => whichUnit?.Y ?? 0;
 
-    /// <summary>Moves the unit, ignoring pathing and the map's bounds (facts, Units: x 5096 past an edge of 4096 stays).</summary>
-    [Native(Level.Exact, Fact = "game-facts.md, Units: SetUnitX/Y ignore pathing and bounds (10-21); " + UnitsProbe)]
+    /// <summary>
+    /// Moves the unit, ignoring pathing and the map's bounds (facts, Units: x 5096 past an edge of 4096 stays), firing the
+    /// regions' events (probe units-regions).
+    /// </summary>
+    [Native(Level.Exact, Fact = "game-facts.md, Units: SetUnitX/Y ignore pathing and bounds (10-21); " + UnitsProbe + "; " + RegionsProbe)]
     public void SetUnitX(unit? whichUnit, float newX)
     {
-        if (whichUnit is not null) whichUnit.X = newX;
+        if (whichUnit is not null) Move(whichUnit, newX, whichUnit.Y);
     }
 
-    [Native(Level.Exact, Fact = "game-facts.md, Units: SetUnitX/Y ignore pathing and bounds (10-21); " + UnitsProbe)]
+    [Native(Level.Exact, Fact = "game-facts.md, Units: SetUnitX/Y ignore pathing and bounds (10-21); " + UnitsProbe + "; " + RegionsProbe)]
     public void SetUnitY(unit? whichUnit, float newY)
     {
-        if (whichUnit is not null) whichUnit.Y = newY;
+        if (whichUnit is not null) Move(whichUnit, whichUnit.X, newY);
     }
 
     /// <summary>The ground under the unit, not its height above it (facts, Units: 0 for a lifted footman on flat ground).</summary>
     [Native(Level.Exact, Fact = "game-facts.md, Units: BlzGetUnitZ reads the ground under the unit (10-27); " + UnitsProbe)]
-    public float BlzGetUnitZ(unit? whichUnit) => whichUnit is null ? 0 : Data.Terrain?.Height(whichUnit.X, whichUnit.Y) ?? 0;
+    public float BlzGetUnitZ(unit? whichUnit) => whichUnit is null ? 0 : Ground(whichUnit.X, whichUnit.Y);
 
     /// <summary>As BlzGetUnitZ; Close: not measured, and the game may draw the unit elsewhere.</summary>
     [Native(Level.Close)]

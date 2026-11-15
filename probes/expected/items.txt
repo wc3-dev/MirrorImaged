@@ -1,0 +1,115 @@
+# probes/items.lua on 3.0.1.24371, single player, 11-15 (W2-3): the game's lines, one run.
+create
+ids 1 1 item
+phea at 100.5 -200.25 100.5 -200.25 life 75.0 player 27 data 0 name Potion of Healing
+phea flags visible true owned false invulnerable false powerup false sellable true pawnable true bag false equipped false
+phea charges 1 level 1 type 4 powerup false sellable true pawnable true life 75.0
+ratc charges 0 level 5 type 0 powerup false sellable true pawnable true life 75.0
+rag1 charges 0 level 1 type 0 powerup false sellable true pawnable true life 75.0
+tdex charges 1 level 1 type 2 powerup true sellable false pawnable true life 75.0
+stwp charges 1 level 2 type 4 powerup false sellable true pawnable true life 75.0
+wneg charges 3 level 2 type 4 powerup false sellable true pawnable true life 75.0
+ankh charges 1 level 5 type 1 powerup false sellable true pawnable true life 75.0
+gold charges 1 level 0 type 2 powerup true sellable false pawnable true life 75.0
+rej1 charges 1 level 1 type 8 powerup false sellable true pawnable true life 75.0
+rej3 charges 1 level 2 type 1 powerup false sellable true pawnable true life 75.0
+ckng charges 0 level 8 type 3 powerup false sellable true pawnable true life 75.0
+pghe charges 1 level 3 type 1 powerup false sellable true pawnable true life 75.0
+texp charges 1 level 2 type 2 powerup true sellable false pawnable true life 75.0
+manh charges 1 level 1 type 2 powerup true sellable false pawnable true life 75.0
+make hfoo nil 0 nil zzzz nil
+skin phea true Claws of Attack +12 1
+tips [Purchase Potion of Healing] [Restores lost hit points.]
+ext [Heals 250 hit points when used.]
+icon [ReplaceableTextures\CommandButtons\BTNPotionGreenSmall.blp]
+renamed Probe Potion Probe Tip Potion of Healing
+removed 0 0.0 0.0 0 nil
+values
+charges 7 7
+charges -2 0
+data 42
+player 2 owned false
+invulnerable true
+hidden false
+pawnable false true
+bools true false false true false false true
+ints 2 0 1095328873 75 75 110 3 255 255
+real 1.0 model [Objects\InventoryItems\TreasureChest\treasurechest.mdl]
+set level true 9 9
+set charges true 4
+set hp true 30.0 true 50 30.0
+set bool false false false true
+set real false 2.0
+position 300.5 400.25
+far 2016.0 -2048.0
+life
+life 30.5 30.5
+life 500 75.0
+death 89 true widget life 0.0 type phea unit nil
+life 0.3 0.0 phea
+life 0 0.0 phea
+invulnerable life 0 0.0 phea
+later phea 0.0
+inventory
+size 6 0 0,0,0,0,0,0 count 0
+event 49 true true 0 item ratc has true charges 0 slots ratc,0,0,0,0,0 count 1 stack 0 0 0
+event 86 true true 0 item ratc has true charges 0 slots ratc,0,0,0,0,0 count 1 stack 0 0 0
+added ratc ratc,0,0,0,0,0 count 1 owned true player 27 visible false at -1200.0 -1400.0 hero -1200.0 -1400.0
+event 49 true true 0 item rag1 has true charges 0 slots ratc,0,0,rag1,0,0 count 2 stack 0 0 0
+event 86 true true 0 item rag1 has true charges 0 slots ratc,0,0,rag1,0,0 count 2 stack 0 0 0
+to slot 3 true ratc,0,0,rag1,0,0 count 2
+to slot 3 again false ratc,0,0,rag1,0,0 count 2
+slots -1 6 nil nil
+event 49 true true 0 item phea has true charges 1 slots ratc,phea,0,rag1,0,0 count 3 stack 0 0 0
+event 86 true true 0 item phea has true charges 1 slots ratc,phea,0,rag1,0,0 count 3 stack 0 0 0
+event 49 true true 0 item phea has true charges 1 slots ratc,phea,phea,rag1,0,0 count 4 stack 0 0 0
+event 86 true true 0 item phea has true charges 1 slots ratc,phea,phea,rag1,0,0 count 4 stack 0 0 0
+two potions ratc,phea,phea,rag1,0,0 count 4 1 phea 1
+event 49 true true 0 item phea has true charges 1 slots ratc,phea,phea,rag1,phea,0 count 5 stack 0 0 0
+event 86 true true 0 item phea has true charges 1 slots ratc,phea,phea,rag1,phea,0 count 5 stack 0 0 0
+ground potion true ratc,phea,phea,rag1,phea,0 count 5 phea 1
+event 49 true true 0 item tdex has false charges 1 slots ratc,phea,phea,rag1,phea,0 count 5 stack 0 0 0
+event 86 true true 0 item tdex has false charges 1 slots ratc,phea,phea,rag1,phea,0 count 5 stack 0 0 0
+event 48 true true 0 item tdex has false charges 1 slots ratc,phea,phea,rag1,phea,0 count 5 stack 0 0 0
+event 85 true true 0 item tdex has false charges 1 slots ratc,phea,phea,rag1,phea,0 count 5 stack 0 0 0
+tome tdex ratc,phea,phea,rag1,phea,0 count 5 agi 14 17
+attrs 22 14 17 17 armour 5.1
+event 48 true true 0 item rag1 has true charges 0 slots ratc,phea,phea,rag1,phea,0 count 5 stack 0 0 0
+event 85 true true 0 item rag1 has true charges 0 slots ratc,phea,phea,rag1,phea,0 count 5 stack 0 0 0
+from slot 3 rag1 ratc,phea,phea,0,phea,0 count 4 at -1200.0 -1424.0 visible true owned false agi 14
+from slot 3 again nil
+event 50 true true 0 item phea has true charges 0 slots ratc,phea,phea,0,phea,0 count 4 stack 0 0 0
+event 87 true true 0 item phea has true charges 0 slots ratc,phea,phea,0,phea,0 count 4 stack 0 0 0
+event 48 true true 0 item phea has true charges 0 slots ratc,phea,phea,0,phea,0 count 4 stack 0 0 0
+event 85 true true 0 item phea has true charges 0 slots ratc,phea,phea,0,phea,0 count 4 stack 0 0 0
+use true life 350.0 charges 0 ratc,0,phea,0,phea,0 count 3
+tome later tdex ratc,0,phea,0,phea,0 count 3 agi 14
+used later 0 life 350.6748 ratc,0,phea,0,phea,0 count 3
+full
+event 49 false false 0 item ratc has false charges 0 slots ratc,0,phea,0,phea,0 count 3 stack 0 0 0
+event 49 false false 0 item rag1 has false charges 0 slots ratc,0,phea,0,phea,0 count 3 stack 0 0 0
+event 49 false false 0 item ckng has false charges 0 slots ratc,0,phea,0,phea,0 count 3 stack 0 0 0
+event 49 false false 0 item modt has false charges 0 slots ratc,0,phea,0,phea,0 count 3 stack 0 0 0
+event 49 false false 0 item ankh has false charges 1 slots ratc,0,phea,0,phea,0 count 3 stack 0 0 0
+event 49 false false 0 item stwp has false charges 1 slots ratc,0,phea,0,phea,0 count 3 stack 0 0 0
+full ratc,rag1,ckng,modt,ankh,stwp count 6 life 775.0 775 mana 330 attrs 27 21 22
+seventh nil ratc,rag1,ckng,modt,ankh,stwp count 6
+near phea at 0.0 0.0
+near count 1
+full add false false
+to slot 6 false -1 false
+drop slot 0 to 4 true ankh,rag1,ckng,modt,ratc,stwp count 6
+drop point true ankh,rag1,ckng,modt,ratc,stwp count 6
+drop target true ankh,rag1,ckng,modt,ratc,stwp count 6 0,0,0,0,0,0 count 0
+event 48 false false 0 item modt has false charges 0 slots ratc,0,phea,0,phea,0 count 3 stack 0 0 0
+event 49 false false 0 item modt has false charges 0 slots ratc,0,phea,0,phea,0 count 3 stack 0 0 0
+give true ankh,rag1,ckng,0,ratc,stwp count 5 modt,0,0,0,0,0 count 1
+event 48 false false 0 item stwp has false charges 1 slots ratc,0,phea,0,phea,0 count 3 stack 0 0 0
+removed ankh,rag1,ckng,0,ratc,0 count 4 attrs 27 21 22 life 775.0 775
+event 50 false false 0 item ankh has false charges 0 slots ratc,0,phea,0,phea,0 count 3 stack 0 0 0
+event 48 false false 0 item ankh has false charges 0 slots ratc,0,phea,0,phea,0 count 3 stack 0 0 0
+dead hero 0,rag1,ckng,0,ratc,0 count 3
+enum
+enum rag1/rag1 ratc/ratc phea/phea outside nil
+enum removed wneg rag1 ratc
+drop point later 0,rag1,ckng,0,ratc,0 count 3

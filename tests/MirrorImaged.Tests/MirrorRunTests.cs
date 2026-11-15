@@ -30,26 +30,26 @@ public sealed class MirrorRunTests : IDisposable
     [Trait("Needs", "Game")]
     public void Mirror_run_prints_the_log_then_what_stopped_the_run()
     {
-        var map = Map("print('before') TimerStart(CreateTimer(), 1, false, function() ClearTextMessages() end)");
+        var map = Map("print('before') TimerStart(CreateTimer(), 1, false, function() BlzGetUnitAnimationDurationByIndex() end)");
 
         var (exit, output, error) = Mirror("run", map);
 
         Assert.Equal(1, exit);
         Assert.Equal("0.000 print: before\n", output);
-        Assert.StartsWith("war3map.lua:3: The native ClearTextMessages is Missing", error);
+        Assert.StartsWith("war3map.lua:3: The native BlzGetUnitAnimationDurationByIndex is Missing", error);
     }
 
     [InstallFact]
     [Trait("Needs", "Game")]
     public void Mirror_run_prints_the_log_of_config_and_main_before_a_stop_in_main()
     {
-        var map = _maps.Build("function config() print('config') end\nfunction main() print('main\\nagain') ClearTextMessages() end\n");
+        var map = _maps.Build("function config() print('config') end\nfunction main() print('main\\nagain') BlzGetUnitAnimationDurationByIndex() end\n");
 
         var (exit, output, error) = Mirror("run", map);
 
         Assert.Equal(1, exit);
         Assert.Equal("0.000 print: config\n0.000 print: main\n0.000 print: again\n", output);
-        Assert.StartsWith("war3map.lua:2: The native ClearTextMessages is Missing", error);
+        Assert.StartsWith("war3map.lua:2: The native BlzGetUnitAnimationDurationByIndex is Missing", error);
     }
 
     [InstallFact]

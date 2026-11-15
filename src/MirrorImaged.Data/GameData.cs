@@ -57,8 +57,15 @@ public sealed class GameData
     /// <summary>The map's files; null when the run has no map's data.</summary>
     public MapArchive? Map { get; }
 
+    /// <summary>A file of the installed game by its storage path (<c>War3.w3mod:Scripts/common.ai</c>); null where the data didn't come from an install or the file isn't there.</summary>
+    public byte[]? InstallFile(string path) => Standard.Storage?.Invoke(path);
+
     /// <summary>The ground of the map's <c>war3map.w3e</c>; null when it has none.</summary>
     public Terrain? Terrain { get; }
+
+    /// <summary>The id of the first object of <paramref name="kind"/> whose name is <paramref name="name"/> (any case); null when none is.</summary>
+    public int? Id(ObjectKind kind, string name) =>
+        _objects.Where(pair => pair.Key.Item1 == kind).FirstOrDefault(pair => pair.Value.Text(Ids.Of(kind == ObjectKind.Ability ? "anam" : "unam"))?.Equals(name, StringComparison.OrdinalIgnoreCase) == true).Key is { Item1: var found, Item2: var id } && found == kind && id != 0 ? id : null;
 
     /// <summary>The object of <paramref name="kind"/> with <paramref name="id"/>; null when the game has none.</summary>
     public GameObject? Object(ObjectKind kind, int id) => _objects.GetValueOrDefault((kind, id));
@@ -94,6 +101,44 @@ public sealed class GameData
 
     /// <summary>The hotkey of <c>ui/miscui.txt</c> for <paramref name="key"/> (any case), as written (<c>C</c>); null when it has none.</summary>
     public string? Hotkey(string key) => Standard.Hotkeys.GetValueOrDefault(key);
+
+    /// <summary>The metadata row of a kind's field: where its value is, and its type; null when the game has none.</summary>
+    public Field? Field(ObjectKind kind, int id) => Standard.Fields.GetValueOrDefault(kind)?.GetValueOrDefault(id);
+
+    /// <summary>
+    /// The kind's field kept in the column <paramref name="column"/> (any case), at <paramref name="element"/> of its list
+    /// when it is one; null when there is none.
+    /// </summary>
+    public int? FieldAt(ObjectKind kind, string column, int element = 0) =>
+        Standard.Fields.GetValueOrDefault(kind)?.FirstOrDefault(pair => pair.Value.Column.Equals(column, StringComparison.OrdinalIgnoreCase) && (pair.Value.Element == element || pair.Value.Element < 0)).Key is var id and not 0 ? id : null;
+
+    /// <summary>An object the game has without data: the abilities it gives units for what they are (<c>Aque</c>, <c>Aupg</c>).</summary>
+    public GameObject Bare(ObjectKind kind, int id) => Object(kind, id) ?? new GameObject(this, kind, id, id, null);
+
+    /// <summary>
+    /// The field <paramref name="item"/> keeps <paramref name="field"/>'s column in: the one at that column listed for it
+    /// (its id, the object it is made from, or an ability's code), else <paramref name="field"/> itself. Holy Light keeps
+    /// its <c>DataA</c> as <c>Hhb1</c>, a real, which Storm Bolt's <c>Htb1</c> reads there too (probe abilities-fields).
+    /// </summary>
+    public int Own(GameObject item, int field)
+    {
+        if (_own.TryGetValue((item.Kind, item.Id, field), out var own)) return own;
+        own = field;
+        if (Field(item.Kind, field) is { } where && Standard.Fields.GetValueOrDefault(item.Kind) is { } fields)
+        {
+            var code = item.Kind == ObjectKind.Ability && item.Text(Ids.Of("code")) is { Length: 4 } text ? Ids.Of(text) : 0;
+            foreach (var (id, other) in fields)
+                if (other.Column.Equals(where.Column, StringComparison.OrdinalIgnoreCase) && other.PerLevel == where.PerLevel
+                    && other.Specific is { } listed && (listed.Contains(item.Id) || listed.Contains(item.BaseId) || listed.Contains(code)))
+                {
+                    own = id;
+                    break;
+                }
+        }
+        return _own[(item.Kind, item.Id, field)] = own;
+    }
+
+    readonly Dictionary<(ObjectKind, int, int), int> _own = [];
 
     /// <summary>The World Editor string the game keeps for <paramref name="key"/> (any case); null when it has none.</summary>
     public string? EditorString(string key) => Standard.EditorStrings.GetValueOrDefault(key);

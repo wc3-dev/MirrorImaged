@@ -60,10 +60,10 @@ public sealed partial class GameNatives
 
     /// <summary>
     /// Whether it can be selected: alive, shown and not removed, a paused unit, a hero and a building too (probe
-    /// units-more). Not measured: a unit with Locust, which W2-7 is to probe.
+    /// units-more); never one that had Locust, though the ability is taken off again (probe units-locust).
     /// </summary>
     [Native(Level.Exact, Fact = MoreProbe)]
-    public bool BlzIsUnitSelectable(unit? whichUnit) => whichUnit is { Dead: false, Hidden: false, Removed: false };
+    public bool BlzIsUnitSelectable(unit? whichUnit) => whichUnit is { Dead: false, Hidden: false, Locust: false, Removed: false };
 
     /// <summary>A structure keeps the flag and answers true; any other unit false, keeping nothing (probe units-more-2).</summary>
     [Native(Level.Exact, Fact = MoreProbe)]

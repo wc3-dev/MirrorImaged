@@ -16,6 +16,11 @@ public partial class unit
     internal string? Name; // BlzSetUnitName's
     internal readonly Dictionary<int, object> Fields = []; // what BlzSetUnit*Field and the setters sharing a field set
     internal Change Facing;
+    internal double Str, Agi, Int; // a hero's attributes with the fractions its gains per level add up to
+    internal int Xp, SkillPoints;
+    internal bool XpSuspended;
+    internal string ProperName = "";
+    internal readonly Dictionary<int, int> Skills = []; // a hero's learned skills and their levels
 }
 
 /// <summary>
@@ -67,13 +72,16 @@ public sealed partial class GameNatives
             Type = type, Owner = owner, X = x, Y = y, Skin = skin, HeroLevel = hero ? 1 : 0, Color = owner.Color, Scale = type.Real(ModelScale),
             Facing = new(Angle(face)), FlyHeight = type.Real(Code("umvh")),
         });
+        Arrived(u);
         // A hero's most life and mana count its strength and intelligence (facts, Units: StrHitPointBonus, IntManaBonus)
         u.MaxLife = type.Integer(HitPoints) + (hero ? Data.Constant("StrHitPointBonus", 25) * type.Integer(Strength) : 0);
         u.MaxMana = type.Integer(ManaMaximum) + (hero ? Data.Constant("IntManaBonus", 15) * type.Integer(Intelligence) : 0);
         u.Life = corpse ? 0 : u.MaxLife;
         u.Mana = Math.Min(type.Integer(ManaInitial) + (hero ? Data.Constant("IntManaBonus", 15) * type.Integer(Intelligence) : 0), u.MaxMana);
         u.Dead = corpse;
+        if (hero) Begin(u);
         FallAsleep(u);
+        GiveAbilities(u);
         // A corpse counts its food and gives it back (two food events), and gets its undefend, with no death event
         // (probes units-more and units-bones); taken back from the owner it was counted for, as a food event may give it away
         var (counter, counted) = (u.Owner, Count(u.Owner, u, 1));
@@ -89,10 +97,12 @@ public sealed partial class GameNatives
     static float Angle(float degrees) => degrees % 360 is var a && a < 0 ? a + 360 : a;
 
     /// <summary>
-    /// A unit of the type for the player, taking one id, alive, at full life, at the place and facing given; nil for an
-    /// id that is no unit's (an item's, a destructable's, an ability's, 0) and for no player (probe units). Close: the
-    /// game moves a unit made where others stand off them, and one made off the map onto it (wave 3's pathing, W2-6's
-    /// bounds), and keeps a facing outside 0 to 360 a little otherwise (decisions D223, D224).
+    /// A unit of the type for the player, taking one id, alive, at full life, at the place and facing given, held in the
+    /// world (from its west and south edges to 32 short of its east and north ones, probe units-bounds), entering the
+    /// regions there; nil for an id that is no unit's (an item's, a destructable's, an ability's, 0) and for no player
+    /// (probe units). Close: the game moves a ground unit made where others stand off them, and one near the map's edge
+    /// off it, by its pathing (wave 3), and keeps a facing outside 0 to 360 a little otherwise (decisions D223, D224,
+    /// D273).
     /// </summary>
     [Native(Level.Close)]
     public unit? CreateUnit(player? id, int unitid, float x, float y, float face) => Create(id, unitid, x, y, face, unitid);
@@ -138,7 +148,9 @@ public sealed partial class GameNatives
         Undefend(u, undefends);
         _game.Remove(u.Key);
         _widgetEvents.Remove(u);
+        _units.Remove(u.Id);
         _sleepers.Remove(u);
+        TakeAbilities(u);
     }
 
     // Dead: life 0, its pause and timed life over (probe units-more-2: a paused unit's death events read it unpaused),
@@ -169,16 +181,21 @@ public sealed partial class GameNatives
     // decay at its death time, neither with a decay event; any other unit decays then (the decay event) and is gone
     // DecayTime plus BoneDecayTime after that. A unit removed and then killed in one step stays (probe units). The killer
     // comes with damage (W2-5): no death this wave makes has one.
-    void Kill(unit u)
+    void Kill(unit u, unit? killer = null)
     {
         if (u.Dead) return;
         var life = u.Life;
+        u.Buffs.Clear();
         Die(u);
         u.Removed = false;
         Counting(u, -1);
         StateChanged(u, LifeState, life, 0);
         Undefend(u, Defends(u));
-        FireUnit(new(u), UnitDeath, PlayerUnitDeath);
+        if (!Reincarnate(u))
+        {
+            FireUnit(new(u, Killer: killer), UnitDeath, PlayerUnitDeath);
+            if (killer is not null) Reward(killer, u);
+        }
         if (u.Exploded)
         {
             u.Removed = true;

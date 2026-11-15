@@ -1,0 +1,39 @@
+footman
+have before false restore before nil
+store false have true original hfoo player 0 at -1200.0 -1400.0 face 0.0 life 100.0/420 mana 0.0/0 data 55 name Stored Footman dead false abilities 4
+restored unit same false hfoo player 1 at 300.5 -400.25 face 89.99999 life 420.0/420 mana 0.0/0 data 0 name Footman dead false abilities 4
+original after hfoo player 0 at -1200.0 -1400.0 face 0.0 life 100.0/420 mana 0.0/0 data 55 name Stored Footman dead false abilities 4
+restored again, other case unit same false hfoo player 2 at -800.0 -1400.0 face 0.0 life 420.0/420 mana 0.0/0 data 0 name Footman dead false abilities 4
+store again false 420.0
+restore nil player nil
+restore missing nil nil
+other types false false
+integer beside it true true
+sync true
+flushed false nil integer true
+mission flushed false
+stored nil false false nil cache false false nil
+second handle true
+flushed cache false false false
+paladin
+original Hpal player 0 at 400.0 -1400.0 face 0.0 life 400.0/925 mana 100.0/360 data 9 name Paladin dead false abilities 8
+original level 5 xp 1400 points 4 str 30/33 agi 20/26 int 24/24 proper true AHhb 1 AHds 0 slots rst1x0,belvx0,pheax3,0,0,0
+store false have true
+after store Hpal player 0 at 400.0 -1400.0 face 0.0 life 400.0/925 mana 100.0/360 data 9 name Paladin dead false abilities 8 level 5 xp 1400 points 4 str 30/33 agi 20/26 int 24/24 proper true AHhb 1 AHds 0 slots rst1x0,belvx0,pheax3,0,0,0
+restored unit same false Hpal player 0 at 100.0 200.0 face 45.0 life 925.0/925 mana 360.0/360 data 0 name Paladin dead false abilities 8
+restored level 5 xp 1400 points 4 str 30/33 agi 20/26 int 24/24 proper false AHhb 1 AHds 0 slots rst1x0,belvx0,pheax3,0,0,0
+events 3 1
+restore for 3 3
+gloves store false
+gloves restored unit gcelx0,0,0,0,0,0 abilities 5 AIsx 1
+later Hpal player 0 at 100.0 200.0 face 45.0 life 925.0/925 mana 360.0/360 data 0 name Paladin dead false abilities 8
+later level 5 xp 1400 points 4 str 30/33 agi 20/26 int 24/24 proper false AHhb 1 AHds 0 slots rst1x0,belvx0,pheax3,0,0,0
+events later 5 1
+others
+dead store false true
+dead restored unit Hpal player 0 at -1400.0 -1200.0 face 0.0 life 725.0/725 mana 255.0/255 data 0 name Paladin dead false abilities 5 level 1 xp 0 points 1 str 22/25 agi 13/13 int 17/17 proper false AHhb 0 AHds 0 slots rst1x0,0,0,0,0,0
+building store false
+building restored unit hbar player 0 at -768.0 -1152.0 face 0.0 life 1500.0/1500 mana 0.0/0 data 0 name Barracks dead false abilities 5
+removed store false true
+flags false hidden false AHhb 0 abilities 4 6 speed 270.0 scale 1.0 color 0
+gone store false false

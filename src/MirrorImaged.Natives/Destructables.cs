@@ -356,7 +356,7 @@ public sealed partial class GameNatives
         try
         {
             if (r is null) return;
-            var found = _destructables.Where(d => d.Listed && Inside(r, d))
+            var found = _destructables.Where(d => d.Listed && Inside(r, d.X, d.Y))
                 .OrderBy(d => MathF.Floor(d.Y / 256)).ThenBy(d => MathF.Floor(d.X / 256)).ThenByDescending(d => d.Key).ToList();
             foreach (var d in found)
             {
@@ -372,9 +372,11 @@ public sealed partial class GameNatives
         }
     }
 
-    static bool Inside(rect r, destructable d)
+    // A place is in a rect when its 32 cell is, the cell's west and south edges past the rect's (probes destructables,
+    // units-groups)
+    static bool Inside(rect r, float x, float y)
     {
-        float west = MathF.Floor(d.X / 32) * 32, south = MathF.Floor(d.Y / 32) * 32;
+        float west = MathF.Floor(x / 32) * 32, south = MathF.Floor(y / 32) * 32;
         return west > r.MinX && west + 32 <= r.MaxX && south > r.MinY && south + 32 <= r.MaxY;
     }
 
@@ -395,7 +397,7 @@ public sealed partial class GameNatives
     // place (game-facts, "Units"; probe destructables).
     float Height(float x, float y)
     {
-        var height = Data.Terrain?.Height(x, y) ?? 0;
+        var height = Ground(x, y);
         foreach (var d in _decks)
         {
             var (dx, dy) = (x - d.X, y - d.Y);

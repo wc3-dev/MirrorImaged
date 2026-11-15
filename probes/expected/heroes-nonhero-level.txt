@@ -1,0 +1,6 @@
+# probes/heroes-nonhero-level.lua, as above.
+level 0 2 0 420.0
+xp 0 0
+add 0 0
+strip false 0
+revive false false

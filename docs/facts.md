@@ -1124,6 +1124,130 @@ same. The two closing probes each closed the game once, as the units probe's run
   on a footman closes the game (probe `units-attribute` and the units probe's first two runs), and so does setting a
   footman's primary attribute to 3 (`units-primary` and the units probe's third run); 7 is refused there.
 
+## Groups
+
+Probes `probes/units-groups.lua` (two runs as it grew, the lines they shared the same) and `units-order.lua` (three
+runs) on 3.0.1.24371, 11-08 (W2-6), MirrorImaged's probe map (32 by 32 tiles, flat), single player, custom_v1's data.
+Their lines are in `probes/expected`.
+
+- A group holds a unit once: `GroupAddUnit` gives true, false for a unit already in it, nil or no group;
+  `GroupRemoveUnit` true when it was in it. `BlzGroupGetSize` counts, `BlzGroupUnitAt` reads by index from 0 (nil at
+  -1 and at the size), `FirstOfGroup` is index 0; nil and no group read 0 and nil. A destroyed group reads 0 and nil
+  and takes nothing. `BlzGroupAddGroupFast(a, b)` adds a's units to b and gives how many were new (2 of 4);
+  `BlzGroupRemoveGroupFast(a, b)` takes a's out of b and gives how many were there (2 of 3); with nil, 0.
+- A group's order is its own, not the order added: 64 footmen made in one go came in the order made (their handle ids
+  0 to 63 apart, in order), however they were added (forwards, backwards, by an enumeration). Units made around a
+  Paladin and a peasant came Paladin first and peasant last, and footmen made after others had been removed came in a
+  scrambled order (6, 7, 2, 1, 4, 5, 3 for the 1st to 7th made, their ids in order): the order of the units' memory,
+  inferred.
+- `ForGroup` runs over the units the group held as it started, in its order: a unit taken out by the callback
+  before its turn is still visited, one added isn't, and `GroupClear` in the first callback leaves the rest visited.
+  `GetEnumUnit` is the outer unit again after a nested `ForGroup`, nil outside.
+- A dead unit stays in its groups and is visited. A removed unit (`RemoveUnit`, or an exploded death) reads as before
+  for the rest of its step, `FirstOfGroup` giving it. After a 0 s timer it stays in the group, counted by
+  `BlzGroupGetSize`, but reads nil at its index, so `FirstOfGroup` is nil while it is first though the group holds
+  others (the facts' claim); `ForGroup` passes it over; adding, removing and `IsUnitInGroup` work on the others;
+  only `GroupClear` takes it out.
+- The enumerations empty their group first. By place (`GroupEnumUnitsInRect`, `GroupEnumUnitsInRange`,
+  `...OfLoc`): a dead unit is found, a hidden one and one removed in the same step aren't. Of a player
+  (`GroupEnumUnitsOfPlayer`) and of a type (`GroupEnumUnitsOfType`, every player's): hidden, dead and removed in the
+  step too. `GroupEnumUnitsOfType` reads the name as `UnitId` does: "footman" and "Footman" find footmen, "hfoo" none.
+  A nil rect leaves the group as it was; a nil group, nothing.
+- The `...Counted` enumerations pass the count over: 3, 2, 1, 0 and -1 all gave every unit.
+- A filter is called once for each unit taken, before it is added, with `GetFilterUnit` the unit (`GetEnumUnit` and
+  `GetTriggerUnit` nil in a timer's callback), nil after; it passes on 1 and fails on nil, `Filter(nil)` passing all.
+  An enumeration in a filter gives the outer filter its unit back after.
+- The order the filter sees: of a player or a type, newest first. By place, in squares of 256 world units, rows from
+  the south, west to east, the last unit to enter a square first: the 64 footmen made out of order came by square,
+  newest first in each; one moved into another square by `SetUnitPosition` came first there; one moved within its
+  square by `SetUnitX` kept its place. A unit's square is that of its place less its collision size: a footman (31) at
+  x 276 was in the square below 256 with one at 100, and a gryphon rider (8) at 270 and a peasant (16) at 280 in the
+  square from 256 (the squares of the place itself, or of the place less a fixed amount, fit neither run).
+- Edges, a footman (collision 31) at (40, 50): a rect finds it when its 32 cell (32 to 64, 32 to 64) lies in the rect,
+  the cell's west and south edges past the rect's: (0, 0)-(64, 100) finds it; (32, ...), (33, ...), (40, ...) and
+  (0, 0)-(63, 100) don't, nor (0, 49)-(100, 51); a swapped rect (100, 100, 0, 0) finds it. A range from (0, 0) finds a
+  footman at (200, 0) at 200 and 200.01, not 199.99 nor 169: its place alone; a range of 0 at its place finds it, -1
+  doesn't.
+- `IsUnitInRangeXY` adds the collision size and compares squared: the footman at 200 is in range of (0, 0) from 169,
+  not 168.9; at its own place every distance down to -32 reads true. `IsUnitInRangeLoc` the same. `IsUnitInRange` of
+  a footman and a Paladin (32) 300 apart is true from 237 (300 less both sizes) either way round; a unit with itself
+  true at 0 and -1; nil false.
+- `BlzGetUnitCollisionSize`: footman 31, Paladin 32, knight 32, rifleman 32, peasant 16, sheep 16, gryphon rider 8,
+  barracks 144.
+
+## Regions
+
+Probe `probes/units-regions.lua` on 3.0.1.24371, 11-08 (W2-6), the probe map, custom_v1's data. Its lines are in
+`probes/expected/units-regions.txt`.
+
+- Cells, as the facts measured: `RegionAddCell(10, 10)` covers 0 to 32 and `(-10, -10)` -32 to 0; `RegionAddRect` of
+  (100.5, 100.5)-(300.5, 300.5) 96 to 320. `RegionClearRect` clears by the same cells ((150, 150)-(200, 200) clears 128
+  to 224) and `RegionClearCell` one cell; an add after a clear covers again. A swapped rect covers as the rect in
+  order. `RegionAddCellAtLoc` and `RegionClearCellAtLoc` as the cell natives. nil reads false, and a removed region too.
+- `IsUnitInRegion` reads the unit's place against the cells as they are now: true at once for a cell added under a
+  standing unit, false for one cleared; true for a dead unit and one removed in the step.
+- Enter and leave events fire for `CreateUnit` in a region, `SetUnitX`, `SetUnitY` and `SetUnitPosition` into or out
+  of it, for a dead unit moved too, a hidden one, and one removed in the step after it moved; nothing for a move within
+  the region, a death or a removal inside, nor for a cell added or cleared under a unit standing still, then or when it
+  moves within: a region reads places, not who is in it.
+- None fires inside the call. Each registration keeps the units it has to fire for and fires them in turn later in
+  the same step, at the place it took among what falls due when its first unit came: a unit made in A, then a 0 s
+  timer started, then a unit moved into A and B (B's triggers registered first) and out of both, and one made in A
+  and B and removed: A's enters (all three), the timer, B's enters, B's leave, A's leave. A leave registration whose
+  first unit came before an enter one's fires first. Two regions entered in one move take their places in the order
+  their triggers were registered (the facts). Each unit is read where it is as its event fires.
+- A filter runs inside the call that moved the unit, with `GetFilterUnit` the unit (in `CreateUnit`, before the probe
+  set its data), `GetTriggerUnit`, `GetEnteringUnit` nil and the event id 0 there. A trigger registered twice on a
+  region fires twice.
+- In the event: `GetTriggerUnit` the unit, `GetEnteringUnit` it in an enter event and nil in a leave, `GetLeavingUnit`
+  the other way, `GetFilterUnit` nil, `GetTriggerEventId` 5 (`EVENT_GAME_ENTER_REGION`) or 6, `GetTriggeringRegion`
+  the region, `GetTriggerPlayer` nil. A removed region's events fire nothing.
+
+## Rects and locations
+
+Probes `probes/units-bounds.lua` (two runs as it grew) and `terrain-edge.lua` (three runs, on the probe map with its
+ground a plane, `ProbeComparison.Change`) on 3.0.1.24371, 11-08 (W2-6). The probe map's world is -2048 to 2048 each way
+(32 tiles from -2048), its playable area -1280 to 1280 across and -1536 to 1024 up.
+
+- A rect keeps its corners in order whichever way they are given (`Rect(30, 40, 10, 20)` reads 10, 20, 30, 40), and
+  `Rect`, `SetRect`, `RectFromLoc` and `SetRectFromLoc` hold each corner from the world's west (south) edge to 32 short
+  of its east (north) one: (-3e38, -1, 3e38, 1e38) reads -2048, -1, 2016, 2016; (2020, 2020)-(2040, 2040) 2016 four
+  times. `MoveRectTo` keeps the size about the new centre and isn't held (to 5000, 5000: 4950 to 5050).
+  `GetRectCenterX` and `Y` are the middle; a removed rect and nil read 0.
+- `GetWorldBounds` gives a new rect each call (ids one apart) of the world, -2048 to 2048, not held, and another after
+  one was removed. blizzard.j's `bj_mapInitialPlayableArea` read -512, -256, 512, 256: the camera's bounds, which this
+  map's `main` never sets, 0, and its margins.
+- Locations are places anywhere (5000, -5000 kept); a removed one reads (0, 0). `GetUnitLoc` and `GetStartLocationLoc`
+  give a new location each call; an undefined start location's is (0, 0), not nil. `DefineStartLocationLoc` defines
+  as `DefineStartLocation`; with nil, nothing.
+- `CreateUnit`, `CreateUnitAtLoc` and `SetUnitPosition` hold a unit in the world as a rect's corner: a gryphon rider
+  asked at (5000, -5000) stood at (2016, -2048), at (-5000, 5000) at (-2048, 2016), at (0, -2040) where asked. A ground
+  unit is also kept off the map's west and south edges by its pathing: a footman and a peasant at (2032, -2000),
+  (-2000, 2000), (-2000, -2000) and (48, -2000) for (0, -2040), a Paladin at (2000, -2000) and (2000, 48) for (2040, 0);
+  a barracks on the 64 grid toward 0 (1500 at 1472). A footman made on another was put at (272, 240) for (300, 300).
+  `SetUnitX` and `SetUnitY` hold nothing (5000, -5000 kept). `CreateUnitAtLoc` of nil is nil; `SetUnitPositionLoc` of
+  nil moves nothing.
+- `GetLocationZ` off the map reads 0, but less than a fifth of a unit past an edge, which reads the edge tile's blend
+  carried on: on a plane of heights x * 8 + y * 32 by corner, 0.1 past each edge read the plane's value there (793.006
+  at x 2048.1), and 0.2, 0.25, 0.5, 1 and on to 951 past it, and points far off, 0. Inside, every point read the plane,
+  the corners 33 to a row on the 32-tile map.
+
+## Callbacks' threads and nesting
+
+Probes `probes/units-threads.lua`, `units-nesting.lua` and `jass-executefunc-120.j`, `-200.j`, `-900.j` and `-1000.j`
+(and 300, 500, 700 and 800, run once each, not kept) on 3.0.1.24371, 11-08 (W2-6).
+
+- `ForGroup`'s and `ForForce`'s callbacks, the unit and player enumerations' filters and `EnumDestructablesInRect`'s
+  filter and callback each run in a thread of their own, not the caller's, from a trigger's action and from a timer's
+  callback alike: `coroutine.isyieldable()` false, not the main thread. A trigger's action isn't yieldable either.
+- A `TriggerSleepAction` in any of them lets that callback go at the wait (nothing after it ran, 10 s later), and the
+  call returns at once; the calling action goes on in the same instant, and the next callbacks run (a waiting filter
+  fails, so `EnumDestructablesInRect` called nothing back).
+- In a Lua map, `ForForce`, `ForGroup` and an enumeration's filter each calling themselves again went 99 deep and every
+  level went on after its call; `ExecuteFunc` 98 deep, the same.
+- In a JASS map, `ExecuteFunc` calling itself went 120, 200, 300, 500, 700, 800 and 900 deep, every level going on
+  after its call; guarded at 1000 the game closed.
+
 ## Cameras
 
 Probes `probes/cameras.lua`, `cameras-2.lua`, `cameras-3.lua`, `cameras-4.lua`, `units-camera.lua` and
@@ -1371,3 +1495,168 @@ one (`_HD.w3mod:`, `.ogg`), of other lengths.
   "TRIGSTR_70")` and `SetDialogueTextKey(s, "Some text")`, which give true, what was set; on nil they read "" and the
   sets give false. `SetSoundFacialAnimationLabel`, `SetSoundFacialAnimationGroupLabel` and
   `SetSoundFacialAnimationSetFilepath` give true on a sound and false on nil.
+
+## Heroes and items (W2-3)
+
+The probes `heroes`, `heroes-nonhero` (and its `-level`, `-str` and `-setstr`) and `items`, 3.0.1.24371, single player,
+11-15, run by the game runner from the PowerShell tool. Their lines are in `probes/expected`; each ran once for its
+expected file (`heroes` several times before ability reads were taken out).
+
+- **Attributes and levels.** A Paladin reads 22 strength, 13 agility, 17 intelligence, life 650, mana 255, armour 3.9
+  (2 - 2 + 13 x 0.3). Levels 2, 3, 5 and 10 read strength 24, 27, 32, 46 (gain 2.7), agility 14, 16, 19, 26 (1.5),
+  intelligence 18, 20, 24, 33, life 700, 775, 900, 1250 and mana 270, 300, 360, 495: a whole attribute is the whole part
+  of the sum of the gains. A level's gain is added to the life and mana the hero has (325 of 650 at level 4 read 525 of
+  850; mana 100 of 255 read 175 of 330), and the same for `SetHeroStr/Agi/Int(.., true)`: strength 32 on 325 of 650
+  read 575 of 900, strength 12 then 75 of 400, intelligence 7 left mana 0 of 105. A strength of 0 reads life 100 and
+  of -5 life -25 of -25 (no death). `UNIT_RF_STRENGTH_PER_LEVEL` set to 10 made level 3 read strength 42.
+  `SetHeroStr(h, 40, false)` read 40 as well.
+- **Attribute fields.** `UNIT_IF_STRENGTH` set to 30 gives strength 30 and life 850. The permanent fields set to 7 or
+  0 read 1 and the attribute 1 (life 125), at once; a set of the field with bonus gives false. `UNIT_IF_LEVEL` set to 3
+  from level 5 reads 3 (experience 500, points 3), from level 1 reads 4 (900, points 4), and set to 1 from 4 reads 1.
+- **Experience, events and points.** `SetHeroXP` 450 gives level 2, 450 and 2 points; a lower value changes nothing;
+  `AddHeroXP` 100 at level 2 reached level 3; a suspended hero ignored `AddHeroXP`, `SetHeroXP` and `SetHeroLevel`;
+  `UnitStripHeroLevel` 1 from 3 gave level 2, experience 200, points 2; 5 from 2 gave level 1, 0, 1 and answered true.
+  The level event fired player first (event 41, then unit 78) with the final level, experience, points and strength
+  and the new life (700 at level 2) read inside it.
+- **Skills.** A new Paladin has 1 point; the ultimate `AHre` at level 1 learned nothing; `AHhb` at level 1 learned level
+  1 (event 42 then 79 with the points still 1; 0 after); again with no point nothing; at hero level 2 nothing for
+  level 2 (a point left), at 3 level 2 (event reading points 2, 1 after); `AHbz`, not the Paladin's, nothing;
+  `UnitModifySkillPoints` 3 answered true (1 to 4), -10 true (to 0); at level 6 the ultimate learned (points 3 inside
+  the event, 2 after). `BlzResetUnitTalents` changed nothing. The learned skill and level read 0 outside the event.
+- **Revival.** `ReviveHero` on a living hero false; after `KillUnit` the start event (44 then 81) read the hero dead at
+  its old place with life 0 and mana 495 (full), the finish event (46 then 83) alive at (300.5, -400.25) with life 775
+  (full) and mana 100 (the type's starting mana); facing unchanged. A hero-revivable event (43) fired later with a
+  unit that wasn't the hero, after the probe's other lines.
+- **Names.** 16 Paladins made in the part after about 35 in earlier parts read 13 distinct names in the first 14, only
+  one of them a bare name of the type's list, the 15th and 16th "... II". `BlzSetHeroProperName` and the string field
+  change the one hero's name, not `GetUnitName`.
+- **Not heroes.** On a footman: `GetHeroLevel`, `GetHeroXP`, `GetHeroSkillPoints` 0, `IsSuspendedXP` true before any
+  suspend, `GetHeroProperName` "", `GetHeroStr/Agi/Int` 0 (no close), `SetHeroStr`, `SetHeroLevel`, `SetHeroXP`,
+  `AddHeroXP`, `SelectHeroSkill` change nothing (life stays 420), `UnitStripHeroLevel` and `ReviveHero` false,
+  `UnitModifySkillPoints` false.
+- **Items made.** `CreateItem` takes one handle id; an item reads its place, life 75 (the type's `ihtp`), the neutral
+  passive player's number 27, user data 0, its name, visible, not owned, vulnerable, not in a bag or equipped. A unit's id
+  (`hfoo`), 0 and an unknown id give nil. Charges are the type's (`phea` 1, `wneg` 3, `ratc` 0), level the type's, class
+  `phea` 4, `ratc` 0, `tdex` 2, `ankh` 1, `ckng` 3, `rej1` 8 (data Miscellaneous). `BlzCreateItemWithSkin` keeps the skin
+  id and reads the skin's name ("Claws of Attack +12"). The tooltip, description and icon are the data's; the extended
+  tooltip has its tags resolved ("Heals 250 hit points when used."). A renamed item changes only that one's name.
+- **Items removed.** After `RemoveItem`, in the same call, the type id, place, life and charges read 0 and the player nil.
+- **Items set.** Charges 7 read 7, -2 read 0; the player set read 2 but not owned; hiding read false; `SetItemPawnable`
+  false changes the item's flag, not `IsItemIdPawnable`; the Boolean fields read the flags; the integer fields read the
+  level, charges, most and current life (75), cooldown group, priority 110 (the data's `ipri`), armour type 3 and tint
+  255; sets of level, charges and life answer true and read back; a set of the most life leaves the life; the Boolean
+  and real sets answer false but keep the value (a scaling value set to 2 read 2). `SetItemPosition` far off read
+  (2016, -2048) for (5000, -5000).
+- **Item life.** Set to 30.5 read 30.5, to 500 read 75; 0.3 killed it: life 0, the widget death event (89) inside the
+  call with the item and no unit, the item still there with its type; a set to 0 later changed nothing more and fired
+  nothing; an invulnerable item died at 0 too.
+- **Inventory.** A Paladin has 6 slots, a footman 0. `UnitAddItemById` puts the item in the first free slot and answers
+  it; the pickup events (49 then 86) read it in its slot; it is owned (the player still 27), not visible, at the hero's
+  place. `UnitAddItemToSlotById` slot 3 true, again false, slot -1 and 6 nil / false. Two potions didn't stack (charges
+  1 and 1). A ground potion added true. A tome (powerup) answered the item, fired pickup then drop, read with no slot,
+  and was still there at a 0 s timer. An item taken out of a slot read visible, not owned, 24 south of the hero; a
+  second take gave nil. A use (`UnitUseItem` true) took the charge (1 to 0), fired use (50, 87) with the item in its
+  slot, then drop with it still there, and the item was gone from the slots; the heal raised life from 100 to 350.
+  With six items a seventh `UnitAddItemById` answered nil and the item lay at the hero's place; `UnitAddItem` full
+  false, not owned; a slot of 6 and -1 false. `UnitDropItemSlot` 0 to 4 true swapped the two items; `UnitDropItemPoint`
+  and `UnitDropItemTarget` answered true and changed nothing for the moment. `UnitAddItem` to another hero fired a drop
+  and a pickup. Carried items changed attributes, life and mana (strength 27, agility 21, intelligence 22, life 775);
+  a hero's death used the ankh (use, then drop), after which the hero held 3 items.
+- **Rects.** `EnumItemsInRect` found the four items made in a rect of 400 by 400 in reverse order of making, a hidden one
+  too, a filtered one not; a removed one not.
+
+## Items carried (W2-3)
+
+The probes `items-carried` and `items-ankh`, 3.0.1.24371, single player, 11-15, run by the game runner from the PowerShell
+tool. Their lines are in `probes/expected`. A Paladin (strength 22, agility 13, intelligence 17, life 650, mana 255,
+armour 3.9).
+
+- **Abilities on the carrier.** Every item's ability (`iabi`) is on the carrier while the item is in a slot: the ability
+  count read one more, the item's ability first at index 0, `GetUnitAbilityLevel` 1; once taken out the count and level
+  are back. That holds for `ratc` (`AItc`), `modt` (`AIva`) and `gcel` (`AIsx`) too, which change no attribute.
+- **Attribute bonuses.** `rst1` +3 strength (25 with bonus, 22 without, life 725), `rag1` +3 agility (armour 4.8),
+  `rin1` +3 intelligence (mana 300), `bgst` +6 strength (800), `belv` +6 agility (5.7), `ciri` +6 intelligence (345),
+  `ckng` +5 each (775, 330, 5.4), `cnob` +2 each (700, 285, 4.5), `rnsp` +1 each, `rde1` armour 5.9 (+2), `prvt`
+  life 800 (+150), `pmna` mana 505 (+250), `rlif` nothing. The plain, `_PERMANENT` and base reads stay 22; `_WITH_BONUS`
+  reads 25. Three strength items (3, 3, 6) read 34, life 950. A dead hero keeps them.
+- **Life and mana keep their share.** 300 of 650 with `rst1` read 335 of 725, 50 mana with `pmna` read 99 of 505, with
+  `prvt` 369 of 800; the items out read 300 of 650 and 50 of 255 again; 700 of 800 with `prvt` out read 569 of 650.
+- **Events.** The pickup event reads the bonus already in (life 775, the item in its slot); the drop event still reads it
+  (the item in its slot), and it is gone after.
+- **Powerups.** `tstr` +1 strength for good (400 of 650 read 415 of 675), `tdex` +1 agility (armour 4.2), `tint` +1
+  intelligence (mana 270), `manh` +50 life (450 of 700), `texp` +100 experience (xp 100, level 1); none in a slot. A
+  suspended hero's experience didn't change. A tome picked up with boots: base 14, with 20.
+- **Setting.** `SetHeroAgi(h, 20, false)` and `SetHeroStr(h, 30, true)` under +6 and +3 read 20/26 and 30/33, life 925
+  (full), whatever the flag; `UNIT_IF_AGILITY` set 10 read 10/16, `UNIT_IF_AGILITY_WITH_BONUS` set answered false and
+  changed nothing. A level 5 hero with `belv` read 19/25.
+- **Uses.** `phea` at 100 life read 350 inside the use event, with the item in its slot and 0 charges, gone after; at
+  full life `UnitUseItem` answered false, the charge kept; `pghe` from 400 read 650 (capped); `pman` from 50 mana read
+  200; a use at full mana answered false; a dead hero's answered false with the charge kept. Half a second after the
+  potion the life read 350.6748 (regeneration).
+- **The ankh.** A hero killed with a charged `ankh`: the use event fires with the hero dead (life 0) and the item in its
+  slot with one charge less, then the drop event when none are left, the item gone inside the call and not on the
+  ground, and no death event; with two, the last slot's was used. Alive 7 s later where it died with 500 life and
+  mana unchanged (255), regenerating from there; no revive event for it. An ankh with 0 charges isn't used: the death
+  event fires and the hero stays dead, and a revivable event for it came about 4 s after. An ankh of 2 charges used
+  once left 1 and the hero came back; killed again it used the last, dropped and was gone, and was back 7 s later.
+
+## Stored units (W2-3)
+
+The probe `heroes-store`, 3.0.1.24371, single player, 11-15; no cache is ever saved.
+
+- **Store.** `StoreUnit` answered false for a footman, a hero, a dead hero, a building and a unit removed in the same
+  step, and `HaveStoredUnit` read true afterwards; one removed a step before answered false and kept nothing. The unit
+  stays as it was. A nil unit, a nil cache and a flushed cache's handle answered false. Mission and key are found in any case; the integer
+  and the unit of one key are apart; `FlushStoredUnit` takes the unit only; `FlushStoredMission` took it; `SyncStoredUnit`
+  changed nothing.
+- **Restore.** `RestoreUnit` for another player gave a new unit of that player at the place and facing (90 read
+  89.99999), alive with its most life and mana (420 of 420; a hero 925 of 925 and 360 of 360 after 400 and 100); a
+  second restore made a second unit; nil for nothing stored and for a nil player. A hero of level 5 kept level, experience
+  1400, skill points 4, `AHhb` level 1, strength 30/33 and agility 19, and its items in their slots with their charges
+  (`phea` x3), and 3 pickup events and 1 hero level event fired inside the call. Not kept: the user data, the custom
+  name, the proper name (a new one), the flags (invulnerable, hidden), the colour, the abilities added with
+  `UnitAddAbility`, the move speed; a restored footman read scale 1.0 (a made one 0.8). A dead hero came back alive at
+  level 1 with its item; a barracks came back at 1500 life.
+- **Gloves.** A Paladin with `gcel` restored with `gcel` in slot 0 and its ability `AIsx` on it.
+
+## Abilities (W2-7)
+
+Probes `probes/abilities.lua`, `abilities-lists`, `abilities-types`, `abilities-fields`, `abilities-columns`,
+`abilities-sets`, `abilities-boolean` and `abilities-upgrades`, on 3.0.1.24371, 11-08, on the
+probe map (custom_v1's data); the lines are in `probes/expected`.
+
+- `UnitAddAbility` gives true and level 1, false for an ability the unit has, an id with no ability (`zzzz`, a buff, an
+  item, a unit, an upgrade) and 0; Aatk and Amov can't be added to a building. A dead unit takes and loses one. An
+  added ability goes first in `BlzGetUnitAbilityByIndex`'s order; an index out of range gives nil.
+- `SetUnitAbilityLevel` keeps to 1 to the ability's levels (4 and 100 on a 3-level ability give 3; 0 and -1 give 1)
+  and gives the level it set; `IncUnitAbilityLevel` and `DecUnitAbilityLevel` stop at the ends. A unit lacking the
+  ability reads 0. `UnitRemoveAbility` gives true and level 0, false the second time; a removed ability's handle reads
+  id 0 and a re-added one is a new handle.
+- A hidden or disabled ability stays in the list. With `SetPlayerAbilityAvailable` false for a player, the unit's
+  ability reads level 1 still, one added after reads 1 and can be set to 2, and another player's is unaffected.
+- `SetUnitInvulnerable` is having Avul: true puts it first in the list, false removes it, and `UnitAddAbility` of Avul
+  reads as invulnerable.
+- An upgrade that raises an ability's level (Skeletal Mastery on Raise Dead) raises the level when researched and
+  lowers it when unresearched, for abilities added before or after; a unit given to a new owner gains only.
+
+### Locust (probe `units-locust`)
+
+3.0.1.24371, 11-15, single player, run twice with the same lines; on the probe map's data, four footmen of Player 0 and
+one of Player 1 placed 100 apart (so none is moved aside).
+
+- A unit that gets Locust (`Aloc`, `UnitAddAbility` answers true, false the second time, `GetUnitAbilityLevel` 1) leaves
+  `GroupEnumUnitsInRange` and `GroupEnumUnitsInRect` at once, with or without a filter, and `BlzIsUnitSelectable`
+  reads false for it. It stays in `GroupEnumUnitsOfPlayer` and `GroupEnumUnitsOfType`, in a group it was already in
+  (`IsUnitInGroup` true), and `IsUnitInRangeXY` and `IsUnitInRange` read it as any unit's place (a hidden unit is
+  in these too, and out of the range and rect enumerations and selection as a Locust one is).
+- Taking the ability off (`UnitRemoveAbility` true, `GetUnitAbilityLevel` 0) brings the unit back into neither: the
+  range and rect enumerations still missed it, and it was still unselectable, at once, 0.5 s and 3.5 s later. The same
+  for a unit that had Locust added and removed in the same instant.
+
+## Orders (W3 start)
+
+- `OrderId2String` over 851968 to 852800 names 373 ids, from `smart` (851971), `stop` (851972), `setrally` (851980), `attack` (851983),
+  `move` (851986), `patrol` (851990) and `holdposition` (851993) to `witheringfire` (852711); the others, 852008 and 851974 among them, give
+  "" (3.0.1.24371, probe `orders-table`, 11-15: the table is `OrderTable.cs`). The build orders are named (`build` 851994, `humanbuild`
+  851995 ...); the unit-id orders of building, training and upgrading have no name. A probe must end with `done()`: without it the
+  runner reads no lines (four runs of this probe gave none until it did).

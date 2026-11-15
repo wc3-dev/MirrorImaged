@@ -1793,7 +1793,7 @@ where not.
   `SetPlayerUnitsOwner` gave nothing away and fired nothing, and what the game keeps it for isn't known: Recorded.
   `IsUnitIllusion` is false, Close until abilities and items make illusions (wave 4; game-facts: they read true), as
   `IsUnitType`'s wave-4 kinds are (D230); `BlzIsUnitSelectable` is alive, shown and not removed, and a unit with Locust
-  is for W2-7 to probe (game-facts measured only `SelectUnit` on one).
+  is for W2-7 to probe (game-facts measured only `SelectUnit` on one): done in D288.
 - **D315. Unit state events** fire inside the set or death that brings the life or mana from failing the comparison to
   passing it, kept in the unit's event list with their comparison (`UnitLimit`), so `DestroyTrigger` lets go of them as
   of any unit event. `EQUAL`, `NOT_EQUAL` and the most life and mana never fire, nor a registration that passes when
@@ -1918,3 +1918,366 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   `IsFogEnabled`; `InitDNCSounds`; the ambient, volume group and music BJ functions; `PlaySound`). `GetAbilitySound` and
   `GetAbilitySoundById`, which read an ability's sound labels, stay Missing for W2-7 (`wave-2.md`). After W5-2, with
   W2-2 and W2-4 merged first: 229 Exact, 343 Close, 56 Recorded, 1,207 Missing.
+
+- **D240. A hero keeps its attributes as floats and reads the whole part.** `unit.Str`, `Agi` and `Int` start as the
+  type's and gain the level's `STRplus`, `AGIplus` and `INTplus` for each level (the unit's own field if it was set), so
+  a Paladin's 22 and 2.7 read 24 at level 2 and 46 at 10 (probe heroes). A set (`SetHeroStr`, the field set) is a whole
+  number and drops the fraction. A hair of 1e-4 is added before the floor: 17 + 9 x 1.8 - 9 x 1.8 in floats is a
+  hair under 17, and stripping levels must give the start back.
+- **D241. An attribute change moves the most life or mana, and the life or mana now, by the same.** Each whole point
+  adds `StrHitPointBonus` (25) or `IntManaBonus` (15); the life is kept to its most, the mana from 0 to it (probe
+  heroes: 325 of 650 at level 4 reads 525 of 850; strength 12 left 75 of 400, intelligence 7 mana 0 of 105; strength -5
+  reads life -25 of -25 and doesn't kill). Armour reads the whole agility: `AgiDefenseBase` + agility x
+  `AgiDefenseBonus`. The permanent flag of `SetHeroStr/Agi/Int` changes nothing and the "with bonus" reads equal the
+  plain ones: bonuses come with the abilities (W2-7). Close.
+- **D242. The experience table is the constants'.** Levels 2 up come from `NeedHeroXP`'s list as totals, then each
+  level is the one before's times `NeedHeroXPFormulaA` plus its number times `B` plus `C`, kept as a double and cut
+  when read, to `MaxHeroLevel` (defaults 200 / 1, 100, 0 / 10: game-facts "Heroes"). The level is kept apart from the
+  experience: `SetHeroXP` and `AddHeroXP` only raise the level, `AddHeroXP` can lower the experience (not under 0) and
+  nothing passes the last level's. A raise fires one level event inside the call, the player's first, reading the final
+  level, experience and skill points. A suspended hero ignores `SetHeroXP`, `AddHeroXP` and `SetHeroLevel`.
+- **D243. `UNIT_IF_LEVEL` set is a level change without an event.** From a higher level it goes to the value (level 5,
+  set 3, reads 3), from a lower one to the value plus one (level 1, set 3, reads 4; the old rule of adding one to every
+  set, D227, only held from level 1), with that level's experience. The permanent attribute fields set the attribute to
+  1 whatever the value (7 and 0 both: probe heroes). Inferred between: a set equal to the level.
+- **D244. Skills: a point, the type's list and the required level.** `SelectHeroSkill` learns the next level of an
+  ability in the type's `uhab` list when the hero has a point and its level is the ability's `arlv` plus 2 for each
+  level after the first (`alsk`, the data's level skip, reads 0 for Holy Light though the game needs hero level 3 for
+  its second, so 2 is used where it is 0). The skill event fires before the point is spent (the points read the same
+  inside it). The learned level is kept on the hero, and the ability is on it too (D348). `UnitModifySkillPoints` keeps from 0 up; `BlzResetUnitTalents` does
+  nothing (no talents in the Paladin).
+- **D245. Revival.** `ReviveHero` on a dead hero fires the start event with the hero dead where it died, then sets it
+  alive at the place with its most life and its type's `umpi` mana (100, not the full 495), counts its food again, and
+  fires the finish event, all inside the call. False for a living hero and for a unit that isn't one. The revivable
+  event the game fires long after (with a unit that isn't the hero) is never fired here; the probe's last line is a
+  recorded difference.
+- **D246. Units that aren't heroes read 0 and refuse every hero native, and nothing closes the game** (probes
+  heroes-nonhero-level, -str, -setstr and heroes-nonhero): `GetHeroStr` and the rest read 0, `SetHeroStr` and
+  `SetHeroLevel` change nothing, `ReviveHero` and `UnitStripHeroLevel` are false. Only `IsSuspendedXP` reads true on a
+  footman before any suspend, as the game does. D227's guess that a hero attribute set there closes the game was wrong
+  for the natives; the field natives still close it (probe units-attribute).
+- **D247. Proper names are drawn with a generator of their own** (seeded, not the map's: D523) from the type's list,
+  numbered with a roman numeral by how many times that name was drawn. The game's numbering isn't that count: its 15th
+  and 16th Paladin read "II" after about 35 had been made. Close; recorded in `probes/differences/heroes.txt`.
+- **D248. An item is a widget of its own that reads nothing the moment it is removed** (probe items: type id 0, place 0,
+  life 0, no charges, no player in the call), not after the step as a unit. It reads its type's data (`icla`, `ilev`,
+  `iuse`, `ihtp`, the flag codes) unless set. The item field ids are the data's four-letter codes (`ITEM_BF_*`
+  1769304929 is `iusa`...), so a field native reads the data with that code, `ipaw` (pawnable) being "can be sold to
+  merchants" and `ipow` (powerup) "use automatically". The class words give 0 Permanent, 1 Charged, 2 PowerUp, 3
+  Artifact, 4 Purchasable, 5 Campaign and 8 for the rest (the data's Miscellaneous read 8, not 6). The Blz setters of
+  booleans and reals answer false but keep the value; the integer ones answer true.
+- **D249. A hero's six slots, with the events inside the calls.** A pickup fires with the item in its slot, the
+  player's event before the unit's; a drop (also from a use that spends the last charge of a perishable item) fires
+  before the item leaves its slot; an item taken out lands 24 south of its carrier, visible and not owned; a powerup is
+  picked up and dropped at once and gone two steps on. An item doesn't stack. `UnitAddItemById` with no room leaves the
+  item at the unit and answers nil. `UnitDropItemSlot` swaps. `UnitDropItemPoint` and `UnitDropItemTarget` answer true
+  and do nothing (the walk is wave 3's). What carried items give (attribute bonuses), a potion's heal and an ankh's
+  reincarnation are the abilities' (W2-7); the probe's lines for them are recorded differences.
+- **D330. The item widget natives.** `GetWidgetLife`, `SetWidgetLife`, `GetWidgetX`, `GetWidgetY`,
+  `TriggerRegisterDeathEvent` and `GetTriggerWidget` take items (D252's Missing stop is gone): an item's life is kept to
+  its most, below 0.405 it dies once (life 0, the widget death event inside the call) and stays, an invulnerable one too.
+- **D331. `EnumItemsInRect` is `EnumDestructablesInRect`'s rule** on the items on the ground (a hidden one counts, a
+  carried one doesn't), the last made first in a square of 256 (probe items). Close: the destructables' 32-cell test
+  is used and the game's was not probed apart from them.
+- **D332. The random item picks and the pools use the map's random numbers.** `ChooseRandomItem` and its kin pick, in
+  the data's order, from the items marked `pickRandom` of the level and class (the level -1 and class ANY (9) all); the
+  one with includes takes the others when told. `ChooseRandomCreep` and `ChooseRandomNPBuilding` give 0 (the creep data
+  and camps come later). A pool picks by weight (a weight of 0 or less never), `PlaceRandomItem` and `PlaceRandomUnit`
+  make what they pick, nil for an empty pool. All Close: the game's draws aren't known (D46).
+- **D333. The stock natives are Recorded.** No shop sells or restocks until orders and the clock of wave 3, and no native
+  reads a stock back, so `AddItemToStock` and the others keep nothing, and `InitBlizzard`'s `SetAllItemTypeSlots` and
+  `SetAllUnitTypeSlots` get through.
+- **D334. A hero's inventory is six slots; any other unit has none.** `UnitInventorySize` is 6 for a hero and 0 for any
+  other unit (probe items). Close: a unit with the inventory ability has the size its data gives (Backpack, game-facts).
+- **D335. The hero-revivable event never fires** (D245): `GetRevivableUnit` reads nil.
+- **D336. The proper-name numbering is a count** (D247).
+- **D337. (Replaced by D347: the unit natives are done.)** The game cache's unit natives were left Missing: `StoreUnit`, `RestoreUnit`, `HaveStoredUnit`, `FlushStoredUnit`
+  and `SyncStoredUnit` stay Missing: restoring needs the whole unit's state (the attributes, levels, items and abilities
+  of D240 to D249) written to the cache and rebuilt, and the attack speed that survived the Paladin's store came from
+  an ability of wave 3. Left in `docs/tasks/later.md`.
+- **D338. Random picks are Close** (D332).
+- **D339. The hero and item probes change the world only with `CreateUnit`, `CreateItem` and the natives under test,**
+  each hero made on a spot of its own (the game moves a unit made on another), so the probes hold in the game and in
+  MirrorImaged. They read the installed data (`ProbeComparison.ReadsData`: names starting `heroes` and `items`).
+- **D340. The extended tooltip's tags stay as written** (`<AIh1,DataA1>`); the game resolves them from the ability's
+  data (`ParseTags`, W2-8). Close.
+- **D341. An item set far off stays where it is set;** the game keeps it inside the map (5000, -5000 read 2016, -2048).
+  The map's bounds aren't kept for items. Close.
+- **D342. (Replaced by D343 to D346 and D348.)** Item abilities were left to W2-7: the tome's +1 agility, the carried items' attribute bonuses and the
+  resulting life, mana and armour, the potion's heal and the ankh. `probes/differences/items.txt` records each line.
+- **D343. A carried item puts its abilities on its carrier and its bonuses count while it is in a slot** (probe
+  items-carried, `ItemBonuses.cs`). Each of the item's `iabi` abilities is given to the unit first in its list (one ability
+  more for each; `GetUnitAbilityLevel` reads 1) and goes when the item leaves the slot, after the drop event. The
+  bonuses are read from the ability's own data fields where it keeps them (`Istr`, `Iagi`, `Iint`, `Idef`, `Ilif`, `Iman`,
+  a field another ability keeps in that column reads 0), so `AIs3` is +3 strength and `AIx5` +5 of each: `GetHeroStr`,
+  `Agi` and `Int` with `true`, and the `_WITH_BONUS` fields, add them; the base, `_PERMANENT` and the plain field don't.
+  Armour counts the agility with the bonus and `Idef` (`rde1` +2). The pickup event reads the bonus already in, the
+  drop event still has it. Close: with two items of one kind the game's ability count wasn't probed.
+- **D344. A change of what the hero carries keeps the life and mana's share of the most** (probe items-carried: 300 of
+  650 with +3 strength reads 335 of 725, with +150 life 369 of 800, mana 50 of 255 with +250 reads 99 of 505, and
+  taking the item out gives 300 of 650 again; rounded to the nearest). A hero at full life stays full. A level's gain
+  and a set of the attribute add to the life as before, and a tome of strength keeps the share too (400 of 650
+  reads 415 of 675); a manual of health adds its 50 to both (450 of 700), a tome of experience gives its experience (100,
+  none while the hero's is suspended). A set of an attribute under a bonus sets the base, whether permanent or not.
+- **D345. Using a potion heals before the use event and is refused when it can't** (probe items-carried). `phea` gives
+  `Ihpg` 250 life, `pman` `Impg` mana, inside the call and capped at the most; a use at full life (or mana) or by a dead
+  hero answers false and keeps the charge, with no event. Close: the refusal was measured for the two potions and a
+  dead hero's `phea`.
+- **D346. A hero dying with an ankh uses it, and comes back** (probe items-ankh, `ItemBonuses.Reincarnate`). The last
+  slot's item with a charge and the reincarnation ability is used as the hero dies: the use event with the hero dead,
+  the drop event and the item gone inside the call when it was the last charge, and no death event. 7 s later (`Ircd`) the
+  hero lives where it died with 500 life (`irc2`) and the mana it had, with no revive event. An ankh with no charge isn't
+  used: the hero dies with its death event. Close: a hero that regenerates (wave 3) keeps its 500, so the game's later
+  lines differ, and the game's revivable event for an ordinary dead hero never fires here (D335).
+- **D347. The game cache's unit natives** (probe heroes-store, `UnitCache.cs`; replaces D337). `StoreUnit` keeps the unit
+  in the cache under the mission and key and answers false, whatever the unit (the game does, a dead hero, a building and
+  a unit removed in the same step too; one already gone isn't kept); `HaveStoredUnit` reads true then, `FlushStoredUnit`
+  and `FlushStoredMission` take it out (other types of the same key stay: the types are apart), and `SyncStoredUnit`
+  does nothing. `RestoreUnit` makes a new unit of the stored type for the player at the place, alive with its most life
+  and mana; a hero comes back with its level, experience, skill points, learned skills (with the ability), base
+  attributes and items in their slots with their charges (the pickup events fire for each, and one hero level event for a
+  level above 1); nothing else is kept: not the life, name, user data, flags, scale, abilities added or the proper name
+  (a new one is drawn). Nil where nothing is stored and for no player. Close: a restored facing reads 89.99999 for 90, a
+  restored footman reads scale 1.0, and the game moves a building made on others (`probes/differences/heroes-store.txt`).
+- **D348. A learned skill is an ability on the hero** (probe heroes-store: after `SelectHeroSkill` of `AHhb`, `GetUnitAbilityLevel`
+  reads 1 and the hero has one ability more); changes D244's "the ability itself is W2-7's".
+- **D349. Not done:** equipment and the extended inventory, items with other abilities (`AItc` damage, `AIva` life steal,
+  `AIsx` attack speed and the rest give their ability to the carrier and nothing more), regeneration (the potion probe's
+  `350.6748`), and the `AIrc` ankh's first-found choice between two (the last slot is used, as the probe read).
+- **D280. A unit's abilities are its own list** (`unit.Abilities`, `Abilities.cs`), made when the unit is, in the order
+  `BlzGetUnitAbilityByIndex` gives them (probe abilities-lists, 60 kinds of unit): what the game gives it for what it
+  is (Aatk, Amov, a building's Aalr and the race's Afi*, the build, upgrade and train commands), around the type's
+  `uabi` held last first. One added goes first. A unit's end takes its abilities' handles. Ids the data lacks are
+  made as bare objects only for the game's own commands (`Data.Bare`); a type's listed ability must be in the data.
+- **D281. An ability's handle is made when a native first gives it out** and kept while the ability is on the unit
+  (probe abilities: the id reads 0 after the unit or the ability goes, a re-added ability is a new handle).
+- **D282. Extended tooltips keep their `<id,column>` tags as written.** The game fills them (`<AHhb,DataA1>` reads
+  200); W2-8's `ParseTags` does it, so `probes/differences/abilities-*.txt` records the difference (Close).
+- **D283. An upgrade raising an ability's level** (effect `rlev`) is applied by the change of its bonus since the
+  ability last counted it (`Research`), so a level set in between moves with it. An ability given to a new owner only
+  gains from the new owner's research; what the old owner had researched stays (probe abilities-upgrades).
+- **D284. Probes whose names start `abilities`, and `files`, read the install's standard data** (`ReadsData`).
+- **D285. `Defends` and a mine's gold read the unit's own abilities** (D310's shortcut, the type's `uabi`, is gone): an
+  added `Adef` gives undefend and a removed one none.
+- **D286. A cooldown started without a cast is the clock's, not the game's frames'.** The game's reads carry the float
+  error of its frames (`1.192093e-07` after a start of 4, `0.2500001`); MirrorImaged's steps don't (Close, recorded in
+  `probes/differences/abilities-fields.txt` and `abilities-sets.txt`).
+- **D287. `GetAbilitySoundById`** reads the ability's or buff's `Effectsound` (`Effectsoundlooped` for
+  `SOUND_TYPE_EFFECT_LOOPED`), "" without. `GetAbilitySound` reads "" for every string measured (an id, a name, a
+  buff's id): Close, since what it reads wasn't found (probe abilities-types).
+- **D288. Locust stays.** A unit that has had `Aloc` (the ability's id or one whose `code` is `Aloc`, given by add or by
+  its type) is left out of `GroupEnumUnitsInRange` and `GroupEnumUnitsInRect`, and `BlzIsUnitSelectable` reads false,
+  from the add on and after `UnitRemoveAbility` too, as the game gave (probe units-locust, facts "Locust"); the unit
+  keeps a flag the add sets and nothing clears. `GroupEnumUnitsOfPlayer`, `OfType` and the range tests still find it.
+  Exact. The game's selection natives are D278's, Missing.
+- **D270. Terrain the readers refuse** (`(10)DustwallowKeys.w3m`'s `war3map.w3e`, a cliff type 0 War3Net doesn't
+  define): `MapArchive` reads the file itself and keeps the type as written, so the map has the ground the game loads,
+  and a melee map no longer lacks terrain. A file that can't be read either is left out, as before (W2-6).
+- **D271. A group keeps its units in the order made.** The game's order is the order made while its memory is fresh and
+  otherwise its memory's, which isn't modelled; every enumeration, `FirstOfGroup` and `ForGroup` go in the order made,
+  with a removed unit dropped on the next read. Close (W2-6).
+- **D272. The enumerations' filters.** `GetFilterUnit` reads the unit being filtered inside the filter and is nil
+  outside; a filter runs in a thread of its own (D277) and a player-unit event's filter never runs (D223).
+- **D273. Every unit is held in the world as a flier is.** A unit made or moved goes from the world's west and south
+  edges to 32 short of its east and north ones; the game also moves a ground unit off the map's edge, off other units
+  and buildings and onto a building's grid by its pathing, which is wave 3. The comparison files name these as Close.
+- **D274. Rects, regions and locations** keep their corners in order as probe units-bounds measured, hold them in the
+  world as units are, and a removed rect, location or nil reads 0. A region is the rect cells it was given, with the
+  game's 32-cell rule; `GetLocationZ` reads the terrain and keeps `GameNatives.Height`'s bridge decks as W2-4 left them.
+- **D275. Enter and leave events** fire for every way a unit's place changes: made, `SetUnitX`/`SetUnitY`,
+  `SetUnitPosition`, `SetUnitPositionLoc`, removal and death with decay. They fire inside the call that moved it.
+- **D276. The camera's location natives** (`GetCameraTargetPositionLoc`, `GetCameraEyePositionLoc`,
+  `CameraSetupGetDestPositionLoc`) make a new location from their X and Y natives' values each call, nil for a nil setup.
+  Close, as the X and Y natives are.
+- **D277. Nesting.** A callback started inside a native runs in a thread nested in the calling one. A Lua map goes
+  98 to 99 deep where the game went 99 (the deepest callback here ends at its call; Close); a JASS map's threads nest
+  from the main thread (`LuaState.NestsInMain`), which gives 120 deep and closes the game from about 190, where the
+  game's JASS ran 900 and closed by 1000. Close; the game's closing is kept as `GameClosedException`.
+- **D278. `GroupEnumUnitsSelected`** stays Missing: selection comes with the player's input (a later wave).
+- **D260. Damage from code.** `UnitDamageTarget` fires DAMAGING with the amount as given, cuts it by the armour (damage type
+  normal only; the attack type's `DamageBonus` row for the target's defence type, then `1 / (1 + 0.06 x armour)`, or `2 - 0.94^n` for
+  a negative armour, n its whole part to 20), fires DAMAGED with the result and takes the life after its actions, a killing
+  blow's death inside the call naming the source (`Kill` and `SetLife` carry the killer; `GetKillingUnit` reads it). The
+  same `Hit` object goes through both events, so a type changed in DAMAGING reaches the armour and one set in DAMAGED
+  does nothing. A nil source answers false and deals nothing (the game's answer is not measured: Close).
+- **D261. Hits abilities change** (Hardened Skin, Mana Shield, evasion, Defend and the rest of the facts' list) wait for wave 4;
+  here only invulnerability (reads 0 in DAMAGED) and spell immunity by `ACmi` (the damage and attack types the facts list
+  get DAMAGING and no DAMAGED, no life lost) act. `BlzGetEventIsAttack` reads false until real attacks (wave 3).
+- **D262. `UnitDamagePoint`** runs after its delay (at least one step) on each living unit whose origin is within the radius,
+  in the units' grid order, through `UnitDamageTarget`; Close.
+- **D290. Tags** (`ParseTags`, and the extended, learn and turned-on tooltips of abilities and an item's extended tooltip) fill each
+  `<id,column>` as the facts of 10-29 and 11-08 read them: the id exact in case (an ability, a unit, an item or an upgrade),
+  the column in any case with its trailing digits as the level, the value through `GameData.Own` so a column shared by
+  ability ids (`Hbz1` on `AHhb`) reads the object's own and its map change, whole by default (cut toward zero), `,%` times 100,
+  `,.` one decimal. Anything unfillable shows 0. Close: a unit reads only `HP`, `realHP`, `mindmg1/2` and `maxdmg1/2` (the facts:
+  `spd`, `dmgplus1` and `cool1` read 0, with no rule found), and a standard buff's comma cut is not modelled.
+- **D320. Pathing and blight** live in one byte a 32 cell, read from the map's `war3map.wpm` (none: every cell open, and a map
+  with no ground reads nothing). `IsTerrainPathable` is true when the kind's bit is set (true means not pathable), kinds 1 to 7
+  in `PATHING_TYPE_*`'s order and 0 (any) any bit; a point off the grid reads blocked; `SetTerrainPathable` sets or clears one
+  cell for one kind. Close: a map without a pathing file reads open where the game works its own out from the ground.
+- **D321. Blight** is kept on 64 cells (four pathing cells) whose centre lies within 0.8 of the radius (radius 300 reached 240
+  along a line, taking off with 150 cleared to 112: both match), `SetBlightPoint` is a radius of 200 (the game reached about
+  160: Close), a rect takes the cells whose centre is inside it, and the player changes nothing. Blight touches no other
+  pathing bit. A Necropolis's blight comes with buildings (wave 3 and 4); `CreateBlightedGoldmine` makes an `ugol` and a point of
+  blight under it.
+- **D322. Painted tiles** are kept by corner: `SetTerrainType` paints the corners within area - 1 of the nearest one, a circle
+  for shape 0 and a square for shape 1, a variation of -1 as 0; `GetTerrainType` and `GetTerrainVariance` read the nearest
+  corner, 0 off the map. A tile the map's list lacks is read back as set, as in the game.
+- **D323. Craters** (`TerrainDeformCrater`) move the 128 corners by -depth x cos(90 degrees x distance / radius) inside the
+  radius, from the step after they are made, linearly over their duration (Close: the game's ramp starts slower), adding
+  up, until `TerrainDeformStop` (gone from the step after the stop, so a read in the same instant still sees it; with a
+  duration, faded over it). `GetLocationZ`, `BlzGetUnitZ` and a bridge's ground read them. Ripple, random and wave are
+  Recorded: `GetLocationZ` ignores them.
+- **D560. Boards and dialogs** keep what their getters read: a leaderboard's rows (a second row for a player who has one, the index of the
+  first, sorted by label, value or player as asked) and flags, a multiboard's row and column counts (cells cut off with them, one
+  handle for a cell until released, nil outside the board), title and its own displayed and minimised flags (two boards can both
+  read displayed, as the game's did), a timer dialog's displayed flag, a quest's flags and its items' completion, a dialog's buttons.
+  Colours, styles, texts of cells and the like are Recorded. A leaderboard with two rows for a player, set as the player's, closes
+  the game (twice seen). A dialog's click, and so `GetClickedButton`, waits for input (wave 6); the quest defaults are not measured.
+- **D540. Effects** are handles with their place, kept as the facts of 11-03 read it: an effect made at a point stands on the
+  ground there (a crater's raised z included), `BlzSetSpecialEffectX`/`Y` keep its z, `BlzSetSpecialEffectHeight` reads as the z
+  until a place is set, and one made on a widget reads x, y and z 0 and scale 1 wherever the widget goes. Colour, turn,
+  animation and time are Recorded (nothing reads them back); `DestroyEffect` and `BlzRemoveEffect` leave the place readable.
+- **D541. Lightning** is made for any non-empty code (the game draws the ones it knows: Close) and reads the colour back as
+  `SetLightningColor` set it, also after a move; a destroyed bolt answers false to destroy, move and colour. Floating text,
+  weather, images, ubersplats, minimap icons, the cinematic filter and scenes, unit animations, indicators and command
+  button effects are Recorded handles that nothing reads back; `IsCineFilterDisplayed` and the hero glow flag read what was set.
+- **D340. The bag and equipment slots** (3.0) are a unit's 30-place bag (a unit with `AIni`; `UnitExtendedInventorySize` reads 30 or 0)
+  and nine equipment slots (head, chest, gloves, boots, ring, second ring, primary, offhand, trinket; a unit with `AEqu`). An
+  item whose `iequ` names an equipment type goes to the bag of a unit that has one when given, and any item does when the six
+  slots are full; a bagged item is owned and hidden, `UnitHasItem` false, `IsItemInBag` true. `UnitEquipItem` puts it in its
+  type's slot with the pick-up and equip events (`GetEquippedItem` the item), a third ring going to the bag; the item's abilities
+  work from the slot, not the bag. `UnitUnequipItem` fires the drop, the pick-up into the bag and the unequip event.
+  Close: `UnitCanEquipItemOfEquipmentType` reads false as in the game for gloves, the item tags read 0, and an item's ability
+  objects (`BlzGetItemAbility`) are nil.
+- **D263. Weapon fields** take the weapon index (0 or 1, any other the first) as the digit of the data code: `ua1b` for weapon
+  0, `ua2b` for weapon 1, `umh1` to `umh2`; a set is kept per unit and weapon. The attack type reads JASS's numbers (spells 0,
+  normal 1, pierce 2, siege 3, magic 4, chaos 5, hero 6: a footman's normal reads 1), the targets allowed the flags of their words
+  (the footman's 314, `air,enemies` 65540), the weapon sound `WEAPON_TYPE_*`'s number, and attacks enabled the bit of the weapon in
+  `uaen`. Close: an index past 1 is read as 0, which is not measured.
+- **D264. Base damage, dice and cooldown** are the weapon's `ua1b`, `ua1d`, `ua1s` and `ua1c`; a hero's base damage adds its primary
+  attribute (22 strength reads 23 with +1), and setting it takes that off first. The cooldown is the base one, not the attack
+  speed bonus's. `BlzUnitHeal` answers the amount and changes the life (a negative amount takes it), nothing for a nil source.
+- **D265. Doodads** the map places are those of the doodad kind in `war3map.doo`, in the file's order; an index outside gives 0.
+  Buffs and cooldowns come with wave 4: `UnitRemoveBuffs*`, `UnitHasBuffsEx` and `UnitResetCooldown` have nothing to act on.
+- **D600. Settings and menus.** The natives of the game's options and menus keep what their getters read (selection, HUD scale, the
+  ally and creep filters, difficulty, densities, game types, tax rates, campaign buttons); the screens, saves, campaign menus,
+  the cinematic panels and the automation harness are Recorded. `ChangeLevel`, `RestartGame`, `ReloadGame` and `LoadGame` end
+  this run as `EndGame` does (the next level is another map's run). `OrderId` knows only the orders the facts name (wave 3 brings
+  the rest); `AbilityId` is the four-character code; `GetAbilityEffect*` reads the ability's art column by effect type;
+  `CreateUnitAtLocByName` finds a unit by its data name; `GetTerrainCliffLevel` reads the nearest corner. Close: defaults not
+  measured (HUD scale 1, selection on, difficulty Normal, a computer's difficulty Normal, no saves).
+- **D350. Orders from code.** `Issue*Order` (immediate, point, target, build, neutral, instant, by name or id, by location) answer false for an
+  order the unit cannot take (an unknown name, a removed unit, a dead one for anything but attack) and otherwise make it the
+  unit's current order at once ('stop' makes it 0) and fire its order event inside the call, the unit's player-unit registrations
+  first as for any unit event, with `GetIssuedOrderId`, `GetOrderPointX/Y` (a target's place for a target order) and
+  `GetOrderTarget*` in the event; a nested order fires nested. A build order carries the building's type id and needs it in the
+  unit's build list. `BlzQueue*` on an idle unit gives the order at once, on a busy one queues it; `BlzGetUnitOrderCount` counts the
+  current order and the queue, `BlzUnitClearOrders` and `BlzUnitForceStopOrder` clear them. Group orders answer true when every
+  unit took the order. A `setrally` order keeps the rally point and target; waygates keep their destination and flag. What an order
+  does (walking, fighting, casting, building) comes with waves 3 and 4: an order stays current until another replaces it. Close:
+  `OrderId` knows only the orders the facts name until the order table is probed.
+- **D561. Frames.** A frame is a handle with its name, type, parent and children, text, alpha, visibility (a frame inside a hidden one
+  is not visible), enable flag, value range and size; a frame without a size takes the size of the one it fills (`BlzFrameSetAllPoints`).
+  `BlzCreateFrame` finds a template the map's loaded TOC lists (its FDF's `Frame "TYPE" "Name"` lines) or one of a few game templates, else nil;
+  `BlzCreateFrameByType` always makes a frame; the origin frames are made on the first ask, one for each type and index. Destroying a
+  frame destroys its children. `BlzFrameClick` fires the frame's `FRAMEEVENT_CONTROL_CLICK` registrations with it as the trigger frame;
+  the mouse and key events are wave 6's. Textures, models, fonts, colours and anchors are Recorded. Close: the game's own TOC files
+  and its frame tree are not read, and layout is the size given. The missing-native tests now use `BlzGetUnitAnimationDurationByIndex`, the last native to be
+  written (wave 7).
+- **D601. Vision.** A place is visible to a player within the sight (day or night field) of a living, shown unit the player owns, shares's
+  or sees through by a shared-vision alliance or `UnitShareVision`; else a running fog modifier's state at the place, the later
+  started winning; else fogged where the player has seen (kept in 64-unit cells, marked by every read and every move of
+  a unit that has gone a cell) and masked elsewhere. `FogEnable(false)` shows fogged ground as visible, `FogMaskEnable(false)` shows
+  masked as fogged, both off everything visible (facts, 10-09 and 11-06). A stopped modifier leaves its area explored. Selection is
+  a set for each player; `SelectUnit` acts on the local player. Close: invisibility, detection, transports and the in-range event
+  come with abilities and movement (waves 3 and 4), and the game's later recompute of overlapping modifiers (the oldest wins) isn't modelled.
+- **D602. Events whose sources come later.** The spell, training, building, shop, summon and attack responses read nil or 0 outside
+  their events, as every response does outside one; the registrations of the command, upgrade-command, chat, trackable and key events
+  answer an event that never fires; the key and mouse state reads false and 0. Sync data (`BlzSendSyncData`) is real: it reaches
+  the registrations for its prefix for the local player a step later, refused over 255 characters. Using an item on a place or a
+  target needs its ability (wave 4) and is refused.
+- **D352. Movement and fighting.** A 1/32 s step (woken by an order or a unit made, and running while a living unit could walk or fight)
+  moves each unit with a walking order toward its place or target at its speed, in a straight line: only unwalkable cells (for
+  walkers and riders) and the edge of the world stop it; an order ends on arrival and the next queued one starts, firing its event.
+  An attack order, a smart order on an enemy, an attack-move and an idle or holding unit fight: the unit walks into the weapon's
+  range (plus the target's collision size), swings when its cooldown is over (the base cooldown), and the damage lands at the damage
+  point through the damage events as a real attack (`BlzGetEventIsAttack` true), base damage and a die roll from the game's generator,
+  damage type normal and the weapon's attack and weapon types. A unit with no order, and a holding one, takes the nearest enemy
+  it may attack within its acquisition range (hold: its weapon range) every fourth step, its current order staying 0 as the facts
+  say; neutral passive players and allies are never attacked. Close: no pathfinding, collision or turning, no missile flight, no
+  damage loss or splash, and the order of units acting in a step is the game's units order, not measured.
+- **D351. The order table** is the 373 names the game gives (probe `orders-table`), kept as `OrderNames` and, by name in any case, `OrderIds`;
+  `OrderId` and `OrderId2String` read it (Exact: the probe's expected lines are the table itself), and the Issue natives find a named order in
+  it. A name the game doesn't give is 0 and an unnamed id ""; the stunned order (851973) is the pause's own and has no name.
+- **D353. Buildings, training, research and harvesting.** A worker given a build order walks to within 100 of the site, pays the building's gold and
+  lumber (the order ends with nothing made when the player can't), and makes the building at 10% life with its construct start event; the
+  building finishes after its build time (life full, the food it makes counted then, the finish event) and the worker, busy until then, goes
+  idle. Cancelling it (order 851976) refunds 75% and fires the cancel event. A finished building given a unit or an upgrade it lists (`utra`,
+  `ures`) as an immediate order queues it (seven at most), takes the cost at once and holds the unit's food; the first starts at once with
+  its start event and ends with the finish event and the unit made below the building (sent to the rally point if one is set); cancel
+  takes the newest back with all of its cost. An upgrade's level, cost and time follow its base and per-level fields. `GetTrainedUnit`,
+  `GetTrainedUnitType`, `GetResearched`, `GetResearchingUnit` and the construct responses read these events. A worker ordered to
+  harvest a mine or a tree walks to it, works a second, takes 10 gold or 10 lumber (a tree loses 10 life) and carries it to the nearest
+  finished town hall of its owner, then goes back until the mine or tree is spent. Close: refunds, rally behaviour, loads and trip times
+  are the common ones, not measured; the building's life while it grows isn't modelled; no upkeep, transports, repairs, upgrades of a building
+  into another, or merchants yet.
+- **D354. Attack events.** Each swing fires `EVENT_UNIT_ATTACKED` (player 18) for the unit attacked, `GetAttacker` naming the attacker; a
+  unit that takes a target of its own accord fires `EVENT_UNIT_ACQUIRED_TARGET`, `GetEventTargetUnit` the target, its order staying 0
+  (facts, 11-14); a unit with no order and nothing to fight that is hit takes its attacker as its target, however far (facts, 11-14).
+  The unit-level construct start event common.j lacks (`EVENT_UNIT_CONSTRUCT_START`) is kept under an id nothing registers: 63 is
+  `EVENT_UNIT_RESCUED`. Close: the target-in-range event and the call for help of allies are not fired.
+- **D355. The cast flow.** An order whose name is the `Order` of an ability the unit has (and not hidden or disabled) is a spell order: refused
+  (false, no order) when the unit lacks the mana or the ability is cooling down, else the unit's current order. It walks into the
+  ability's range (plus the target's collision), fires the channel and cast events, waits the cast time, spends the mana, starts the cooldown, fires
+  the effect event and does the effect, then fires finish and end cast and is idle. `GetSpellAbilityId`, `GetSpellAbility`,
+  `GetSpellAbilityUnit` and the target responses read these events. Effects are the data-driven ones of Holy Light (heals `DataA`), Storm Bolt
+  (a hit of 0 of unknown type, then `DataA` of damage type sonic: facts) and Thunder Clap (`DataA` to enemy ground units in the area); every
+  other ability fires its events and does nothing yet (Close, wave 4 goes on with each base ability and its buffs).
+- **D356. Buffs.** A buff is a type id, its giver, a sign (positive or negative), an end and what it changes: the unit's move speed (a factor, held
+  to `MaxUnitSpeed` when it raises), its attack rate (the cooldown divided by 1 plus the bonuses), its armour, or the unit doing nothing (a
+  stun). Giving one a unit has refreshes it; it ends at its time (a hero's own duration for a hero), with the unit's death or when dispelled
+  (`UnitRemoveBuffs*` take the ones the sign and magic flags pick; `UnitCountBuffsEx` and `UnitHasBuffsEx` count them), and
+  `GetUnitAbilityLevel` of its id reads 1 while it is on. Storm Bolt stuns after its hit, Slow (`Aslo`: `DataA` the speed lost, `DataB` the attack
+  rate lost) and Bloodlust (`Ablo`: `DataA` attack rate, `DataB` speed gained) give theirs. Close: no other stats, no buff objects of
+  their own (`BlzGetUnitAbility` of a buff, tooltips) and no auras yet.
+- **D357. The AI's economy natives** (counts, costs, `SetProduce`, `SetUpgrade`, `HarvestGold`, towns and mines) act for `AiFor`, the player an AI script runs
+  for (the local player where none does), on the buildings, queues and workers of wave 3: a count includes units in training, a town is a finished
+  town hall (the first made is town 0), a mine belongs to the town it stands within 1,000 of, `SetProduce` queues what is missing at buildings
+  that list the unit, and `HarvestGold` sends idle workers to the mine nearest the hall. Wood, the captains and assaults, the expansion natives
+  and running the scripts themselves (a Lua state of their own for each AI player, with `Sleep` as the wait) are still to do (wave 7).
+- **D358. State hash, chat and `mirror check`.** `Simulation.StateHash()` hashes the time, each player's states and tech, and each unit's place, life,
+  mana, owner, order, buffs and queue in the order of their ids (SHA-256, 16 hex digits): two runs of a map with one seed and the same input give
+  the same hash at every step, a fight with dice included (the determinism suite's first case). `Simulation.Say(player, text)` fires the chat
+  registrations of the player the text matches (a part of the message, or all of it when exact) with `GetEventPlayerChatString` and
+  `GetEventPlayerChatStringMatched`. `mirror check <map>` lists the natives a map's script names with their trust levels and exits 1 when one is
+  Missing; `mirror run --hash <n>` prints the hash every n seconds.
+- **D359. Pathfinding.** A walker goes straight until a step is blocked (an unwalkable cell of the pathing file, the world's edge, or a building it is
+  not working on and not standing in), then finds a path by A* over the 32 cells (eight neighbours, no cutting a corner, at most 6,000 nodes)
+  to the place, or to the cell nearest it that can be reached, follows its waypoints and finds it again if one is blocked. Fliers ignore
+  buildings and cells. Close: buildings block as circles of their collision size, trees and other units not at all, and the game's own
+  search is not copied; a place that can't be reached ends the order at the nearest cell, as a stuck unit would stop.
+- **D360. Kill rewards.** A kill by a unit whose owner is an enemy of the victim's gives the killer's owner the bounty of the victim's type (`ubba` plus
+  `ubdi` rolls of `ubsi`) when the victim's owner gives bounty (the neutral players by default), and the experience of the constants'
+  `GrantNormalXP` or, for a hero, `GrantHeroXP` list by the victim's level, shared equally by the killer's owner's living heroes within
+  `HeroExpRange` of the victim. Close: the field codes of the bounty, the shares and the range follow the data and the common values.
+- **D361. Running the AI scripts.** `StartMeleeAI` and `StartCampaignAI` read the script (the map's `Scripts\<name>`, else `War3.w3mod:Scripts/<name>` of the
+  install; which of the install's three copies a game loads is still open, D26) with `common.ai` in front, make both into Lua with the JASS rules and
+  run them in an environment of their own, so two players' scripts keep their globals apart, in a thread whose natives act for that player
+  (`AiFor`): `Sleep` waits on a game timer and `StartThread` starts a function in a thread of its own. A function argument that gives an
+  integer (`SetHeroLevels`) is accepted. Kill the AI commands that are command-card orders (`harvest`, `build`, `load`...) are not spell orders.
+  Seen: the human melee AI, given a town hall, a worker, a mine and 500 gold, trains workers and mines gold for two minutes with no script
+  error. Close: the buildings, the captains and attack waves, expansion and the heroes are the AI natives still to do.
+
+- **D362 (The AI builds and gathers):** `SetProduce(qty, id, town)` makes qty more: a building is built by a worker at a site found in rings round
+  the hall (buildable and walkable ground when the map has a pathing map, clear of buildings, ordered sites and mines), a unit is queued where
+  it is trained. `HarvestGold` and `HarvestWood` ask for worker slots in order within a round (`ClearHarvestAI` empties them), and workers are
+  assigned by id to the slots, so some go to trees. Seen: in five minutes the human melee AI builds an altar, barracks, farms and a blacksmith
+  and trains footmen and a hero. Close: not measured against the game.
+
+- **D363 (Exploring is per unit):** a unit that moves a fog cell explores only what it sees, not what every unit of the player sees.
+  A campaign map of 300 units took 1 s of real time per game second; it now takes a tenth of that. Not measured against the game.
+
+- **D364 (Path search is cheaper):** a search for a path lists the buildings once a tick and asks each cell once, and an idle unit that
+  looks for a target skips what is out of range before it asks who is an enemy. A campaign map that took 8 s of real time per game second
+  (Human01) takes a quarter of one. Not measured against the game.
