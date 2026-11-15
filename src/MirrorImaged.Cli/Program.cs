@@ -46,7 +46,7 @@ if (args is [var command and ("run" or "replay" or "desync" or "bench" or "fuzz"
         switch (command)
         {
             case "run": return Run(file, flags, seconds, seed);
-            case "replay": return Replay(file, flags, Number("--hash", 0));
+            case "replay": return PlayRecording(file, flags, Number("--hash", 0));
             case "desync": return DesyncCheck(file, seconds, seed);
             case "bench": return Bench(file, seconds, seed);
             case "test": return Tests(file, flags.GetValueOrDefault("--junit"));
@@ -120,9 +120,11 @@ static int Run(string map, Dictionary<string, string> flags, double seconds, int
     return Finish(simulation);
 }
 
-static int Replay(string recordingFile, Dictionary<string, string> flags, double hashEvery)
+static int PlayRecording(string recordingFile, Dictionary<string, string> flags, double hashEvery)
 {
-    var recording = Recording.FromJson(File.ReadAllText(recordingFile));
+    var recording = recordingFile.EndsWith(".w3g", StringComparison.OrdinalIgnoreCase)
+        ? Replay.Read(recordingFile).ToRecording(flags.GetValueOrDefault("--map") ?? throw new ArgumentException("A replay needs the map it was played on: --map <map>"))
+        : Recording.FromJson(File.ReadAllText(recordingFile));
     var steps = recording.Steps;
     recording.Steps = 0;
     using var simulation = Simulation.Load(flags.GetValueOrDefault("--map") ?? recording.Map, new SimulationOptions { Seed = recording.Seed, Users = recording.Users, Computers = recording.Computers });
@@ -316,9 +318,9 @@ static int Usage()
                                                            every n seconds; with --input, the inputs of a recording
                                                            (or a list of them) at their steps; with --record, saves
                                                            the run as a recording
-          mirror replay <recording> [--map <map>] [--hash <n>]
+          mirror replay <recording or .w3g> [--map <map>] [--hash <n>]
                                                            Runs a recording again, exactly, and prints the state hash at
-                                                           its end (or every n seconds)
+                                                           its end (or every n seconds); a game replay (.w3g) needs its --map
           mirror desync <map> [--seconds <n>] [--seed <n>] Runs the map for each person's slot as that player's own game
                                                            and reports where the runs first differ
           mirror snapshot <map or recording> [--at <n>] [--seed <n>] [--out <file>]

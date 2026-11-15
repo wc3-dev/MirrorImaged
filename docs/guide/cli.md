@@ -7,7 +7,7 @@
 | `mirror coverage` | How many natives are at each trust level, and which are Missing |
 | `mirror check <map>` | The natives a map's script calls, with their trust levels; exits 1 when one is Missing |
 | `mirror run <map> [--seconds n] [--seed n] [--hash n] [--record file] [--input file]` | Runs a Lua or JASS map for n simulated seconds (60) with a seed (0), then prints its log. `--hash n` prints the world's hash every n seconds. `--input` gives the inputs of a recording (or a JSON list of them) at their steps. `--record` saves the run as a recording |
-| `mirror replay <recording> [--map map] [--hash n]` | Runs a recording again, exactly, and prints the hash at its end (or every n seconds) |
+| `mirror replay <recording or .w3g> [--map map] [--hash n]` | Runs a recording again, exactly, and prints the hash at its end (or every n seconds); a game replay (`.w3g`) needs the map it was played on with `--map` |
 | `mirror snapshot <map or recording> [--at n] [--seed n] [--out file]` | Saves the world after n simulated seconds with what runs it again |
 | `mirror compare <snapshot> [--map map]` | Runs the snapshot's run again to its step and lists the parts of the world that differ |
 | `mirror desync <map> [--seconds n] [--seed n]` | Runs the map once for each person's slot as that player's own game, and reports where the runs first differ |
