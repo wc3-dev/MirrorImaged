@@ -94,6 +94,7 @@ public sealed partial class GameNatives
         u.HeroLevel = level;
         u.SkillPoints = Math.Max(0, u.SkillPoints + gained);
         if (announce) FireUnit(new(u), HeroLevelEvent, PlayerHeroLevel);
+        LearnSkills(u);
     }
 
     static bool IsHeroUnit(unit? u) => u is not null && IsHero(u.Type.Id);

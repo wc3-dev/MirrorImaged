@@ -2388,3 +2388,7 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   player's unit nearest the shop within 900 pays the price and takes the item (or the shop makes the unit at its door, the food counted), and the sell events
   fire for the buyer's player (`GetSoldItem`, `GetSoldUnit`, `GetSellingUnit`, `GetBuyingUnit`). Without a unit of the player near, or the price, nothing
   happens. Close: the stock a shop keeps and its wait are not (it always has the thing), and selling an item to a shop (pawn) is not.
+
+- **D383 (The AI's heroes learn skills):** `SetHeroLevels(function)` gives, for the AI player, the function that names the ability a hero learns: for a hero with a skill
+  point it is asked (`GetHeroId` the hero's type, `GetHeroLevelAI` its level), and the hero learns what it names (`SelectHeroSkill`), when the hero is made, when it
+  reaches a level, and for the heroes the player has when the function is given. A point that is not spent stops the asking.
