@@ -2310,6 +2310,9 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   `assert_close` and `assert_contains` check. Each result is printed and `--junit <file>` writes JUnit XML. A shared case list (a map script and
   steps) runs through both APIs and must end at the same state hash and log (A9). Not done: finding the Lua tests from `dotnet test`.
 
+- **D371 (Buildings in a grid):** the buildings that block a walk are listed once a tick in a grid of squares of 256, and a search for a
+  path reads the move type once, so a cell costs a look at the few buildings near it. A campaign map that took 1.3 s of real time per game
+  second (HumanX05) takes a fifteenth of that. Not measured against the game.
 - **D370 (Snapshots and stepping back):** a snapshot is the step, the state hash, the hash of each part (time, a player, a unit) and the
   recording to that step. `Snapshot.Differences` lists the parts that differ from a simulation at the same step, `Simulation.Restore` runs the
   snapshot again, and `Simulation.StepBack` runs the map again to an earlier step, which lands on the state the run had then (A11). The

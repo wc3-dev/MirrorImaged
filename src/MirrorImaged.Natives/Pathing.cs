@@ -17,27 +17,37 @@ public sealed partial class GameNatives
     const float SearchCell = 32;
     const int PathNodes = 6000;
 
-    // Whether a building (not one the unit is working on or standing inside) is in the way at the place
-    // The buildings, listed again once in a tick, as the search for a path asks about thousands of places
-    List<unit> _buildingList = [];
-    long _buildingListAt = -1;
-    int _buildingListOf;
+    // Whether a building (not one the unit is working on or standing inside) is in the way at the place. The buildings are listed again once in a
+    // tick, in a grid of squares of 256, as the search for a path asks about thousands of places
+    readonly Dictionary<(int, int), List<(unit Building, float X, float Y, float Reach)>> _buildingGrid = [];
+    long _buildingGridAt = -1;
+    int _buildingGridOf;
 
     bool BlockedByBuilding(unit u, float x, float y)
     {
-        if (_buildingListAt != _ticks || _buildingListOf != _units.Count)
+        if (_buildingGridAt != _ticks || _buildingGridOf != _units.Count)
         {
-            (_buildingListAt, _buildingListOf) = (_ticks, _units.Count);
-            _buildingList = _units.Values.Where(b => !b.Dead && !b.Removed && IsBuildingNow(b)).ToList();
+            (_buildingGridAt, _buildingGridOf) = (_ticks, _units.Count);
+            _buildingGrid.Clear();
+            foreach (var b in _units.Values.Where(b => !b.Dead && !b.Removed && IsBuildingNow(b)))
+            {
+                var reach = b.Type.Real(Collision) + 8;
+                for (var cx = (int)MathF.Floor((b.X - reach) / 256); cx <= (int)MathF.Floor((b.X + reach) / 256); cx++)
+                    for (var cy = (int)MathF.Floor((b.Y - reach) / 256); cy <= (int)MathF.Floor((b.Y + reach) / 256); cy++)
+                    {
+                        if (!_buildingGrid.TryGetValue((cx, cy), out var list)) _buildingGrid[(cx, cy)] = list = [];
+                        list.Add((b, b.X, b.Y, reach));
+                    }
+            }
         }
-        foreach (var b in _buildingList)
+        if (!_buildingGrid.TryGetValue(((int)MathF.Floor(x / 256), (int)MathF.Floor(y / 256)), out var near)) return false;
+        foreach (var (b, bx, by, reach) in near)
         {
             if (b == u || b.Dead || b.Removed) continue;
             if (b == u.OrderTarget || b == u.AttackTarget || b == u.Building || b == u.HarvestTarget) continue;
-            var reach = b.Type.Real(Collision) + 8;
-            if (Distance2(b.X - x, b.Y - y) > reach * reach) continue;
+            if (Distance2(bx - x, by - y) > reach * reach) continue;
             // A unit already inside may walk out
-            if (Distance2(b.X - u.X, b.Y - u.Y) <= reach * reach) continue;
+            if (Distance2(bx - u.X, by - u.Y) <= reach * reach) continue;
             return true;
         }
         return false;
@@ -92,11 +102,12 @@ public sealed partial class GameNatives
         var (columns, rows) = (Column(maxX) + 1, Row(maxY) + 1);
         float CenterX(int c) => minX + (c + 0.5f) * SearchCell;
         float CenterY(int r) => minY + (r + 0.5f) * SearchCell;
+        var moveType = BlzGetUnitIntegerField(u, Convert<unitintegerfield>(MoveType));
         var freeCells = new Dictionary<(int, int), bool>();
         bool Free(int c, int r)
         {
             if (c < 0 || r < 0 || c >= columns || r >= rows) return false;
-            if (!freeCells.TryGetValue((c, r), out var free)) freeCells[(c, r)] = free = !Blocked(u, CenterX(c), CenterY(r));
+            if (!freeCells.TryGetValue((c, r), out var free)) freeCells[(c, r)] = free = !Blocked(u, moveType, CenterX(c), CenterY(r));
             return free;
         }
         var start = (c: Math.Clamp(Column(u.X), 0, columns - 1), r: Math.Clamp(Row(u.Y), 0, rows - 1));
