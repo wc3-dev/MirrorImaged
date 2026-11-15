@@ -75,7 +75,7 @@ public sealed partial class GameNatives
         var row = Data.Constant("DamageBonus" + AttackRows[Math.Clamp(hit.AttackType?.Id ?? 0, 0, AttackRows.Length - 1)])?.Split(',');
         var defence = BlzGetUnitIntegerField(target, Convert<unitintegerfield>(DefenseType));
         var bonus = row is not null && defence < row.Length && float.TryParse(row[defence], System.Globalization.CultureInfo.InvariantCulture, out var factor) ? factor : 1;
-        var armor = BlzGetUnitArmor(target);
+        var armor = BlzGetUnitArmor(target) + ArmorBonus(target);
         var step = Data.Constant("DefenseArmor", 0.06f);
         var cut = armor >= 0 ? 1 / (1 + step * armor) : 2 - MathF.Pow(1 - step, Math.Min(MathF.Truncate(-armor), 20));
         return hit.Amount * bonus * cut;

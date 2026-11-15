@@ -12,7 +12,10 @@ public sealed partial class GameNatives
 
     /// <summary>The unit's move speed: its type's, or what a set left (probe units).</summary>
     [Native(Level.Exact, Fact = UnitsProbe)]
-    public float GetUnitMoveSpeed(unit? whichUnit) => whichUnit is null ? 0 : Own(whichUnit, SpeedNow, whichUnit.Type.Real(MoveSpeed));
+    public float GetUnitMoveSpeed(unit? whichUnit) =>
+        whichUnit is null ? 0 : SpeedFactor(whichUnit) is var factor && factor != 1
+            ? Math.Min(Own(whichUnit, SpeedNow, whichUnit.Type.Real(MoveSpeed)) * factor, factor > 1 ? Data.Constant("MaxUnitSpeed", 522) : float.MaxValue)
+            : Own(whichUnit, SpeedNow, whichUnit.Type.Real(MoveSpeed));
 
     [Native(Level.Exact, Fact = UnitsProbe)]
     public float GetUnitDefaultMoveSpeed(unit? whichUnit) => whichUnit?.Type.Real(MoveSpeed) ?? 0;

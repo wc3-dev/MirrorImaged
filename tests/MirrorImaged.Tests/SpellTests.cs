@@ -21,12 +21,14 @@ public sealed class SpellTests : IDisposable
         {
             ("alev", new("levels", PerLevel.None, -1, "int")), ("code", new("code", PerLevel.None, -1)), ("aord", new("Order", PerLevel.None, -1, "string")),
             ("acas", Column("Cast", "unreal")), ("aran", Column("Rng", "unreal")), ("aare", Column("Area", "unreal")), ("acdn", Column("Cool", "unreal")), ("amcs", Column("Cost", "int")),
-            ("Hhb1", Column("DataA", "unreal", "AHhb")), ("Htb1", Column("DataA", "unreal", "AHtb")),
+            ("adur", Column("Dur", "unreal")), ("ahdu", Column("HeroDur", "unreal")), ("Hhb1", Column("DataA", "unreal", "AHhb")), ("Htb1", Column("DataA", "unreal", "AHtb")),
+            ("Slo1", Column("DataA", "unreal", "Aslo")), ("Slo2", Column("DataB", "unreal", "Aslo")),
         })
             data.Add(ObjectKind.Ability, id, field);
         return data
             .Add(ObjectKind.Ability, "AHhb", Values("code=AHhb;alev=1;aord=holybolt;acas:1=0.3;aran:1=800;aare:1=0;acdn:1=5;amcs:1=65;Hhb1:1=200"))
-            .Add(ObjectKind.Ability, "AHtb", Values("code=AHtb;alev=1;aord=thunderbolt;acas:1=0.3;aran:1=600;aare:1=0;acdn:1=9;amcs:1=75;Htb1:1=100"))
+            .Add(ObjectKind.Ability, "AHtb", Values("code=AHtb;alev=1;aord=thunderbolt;acas:1=0.3;aran:1=600;aare:1=0;acdn:1=9;amcs:1=75;Htb1:1=100;adur:1=2;ahdu:1=1"))
+            .Add(ObjectKind.Ability, "Aslo", Values("code=Aslo;alev=1;aord=slow;acas:1=0.1;aran:1=600;aare:1=0;acdn:1=1;amcs:1=10;Slo1:1=0.6;Slo2:1=0.25;adur:1=3;ahdu:1=3"))
             .Add(ObjectKind.Unit, "hfoo", Values("unam=Footman;uhpm=420;umpm=100;umpi=100;umvs=270;umvt=foot;uaen=0;ucol=31;udef=0"));
     }
 
@@ -91,5 +93,26 @@ public sealed class SpellTests : IDisposable
             """, 4);
 
         Assert.Equal(["false", "true", "damaged\t0.0\t0", "damaged\t100.0\t15", "320.0\tfalse"], lines.Where(line => !line.StartsWith("hit\t")).ToList());
+    }
+
+    // a slow and a stun are buffs: they end at their time, change the unit's speed, hold it still, and read through the buff natives
+    [Fact]
+    public void Slow_and_stun_buffs_change_the_unit_and_end_at_their_time()
+    {
+        var lines = Run("""
+            local caster, foe, other = make(Player(0), 0, 0), make(Player(1), 100, 0), make(Player(1), 100, 500)
+            UnitAddAbility(caster, FourCC("Aslo"))
+            UnitAddAbility(caster, FourCC("AHtb"))
+            print(f1(GetUnitMoveSpeed(foe)), IssueTargetOrder(caster, "slow", foe))
+            TimerStart(CreateTimer(), 1, false, function()
+                print("slowed", f1(GetUnitMoveSpeed(foe)), GetUnitAbilityLevel(foe, FourCC("Bslo")), UnitHasBuffsEx(foe, false, true, true, true, false, false, false), UnitCountBuffsEx(foe, true, false, true, true, false, false, false))
+                IssueTargetOrder(caster, "thunderbolt", other)
+            end)
+            TimerStart(CreateTimer(), 2, false, function() IssuePointOrder(other, "move", 900, 500) end)
+            TimerStart(CreateTimer(), 3, false, function() print("stunned", f1(GetUnitX(other)), GetUnitAbilityLevel(other, FourCC("BSTN"))) end)
+            TimerStart(CreateTimer(), 4.5, false, function() print("freed", f1(GetUnitMoveSpeed(foe)), GetUnitAbilityLevel(foe, FourCC("Bslo")), GetUnitAbilityLevel(other, FourCC("BSTN")), GetUnitX(other) > 100) end)
+            """, 5);
+
+        Assert.Equal(["270.0	true", "slowed	108.0	1	true	0", "stunned	100.0	1", "freed	270.0	0	0	true"], lines);
     }
 }

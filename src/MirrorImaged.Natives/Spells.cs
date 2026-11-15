@@ -75,6 +75,9 @@ public sealed partial class GameNatives
         return Finish(u);
     }
 
+    // How long a buff of the ability lasts on the unit: its duration, a hero's own where it has one
+    double Lasts(ability a, unit target) => IsHero(target.Type.Id) && Field(a, Code("ahdu")) is var hero and > 0 ? hero : Field(a, Code("adur"));
+
     // What the spell does: the data-driven effects of the abilities modelled here (waves 4's first set), nothing for the rest
     void Effect(unit caster, ability a, float x, float y, widget? target)
     {
@@ -88,6 +91,13 @@ public sealed partial class GameNatives
                 // Storm Bolt: a hit of 0 of unknown type, then the damage of type sonic (facts, Damage)
                 UnitDamageTarget(caster, foe, 0, false, false, Convert<attacktype>(0), Convert<damagetype>(0), Convert<weapontype>(0));
                 UnitDamageTarget(caster, foe, amount, false, false, Convert<attacktype>(0), Convert<damagetype>(15), Convert<weapontype>(0));
+                if (!foe.Dead) Apply(foe, caster, StunBuff, Lasts(a, foe), false, b => b.Stun = true);
+                break;
+            case var id when id == Code("Aslo") && target is unit slowed && !slowed.Dead:
+                Apply(slowed, caster, SlowBuff, Lasts(a, slowed), false, b => (b.SpeedFactor, b.AttackSpeedBonus) = (1 - amount, -TagValue(a.Type, "DataB" + a.Level)));
+                break;
+            case var id when id == Code("Ablo") && target is unit hasted && !hasted.Dead:
+                Apply(hasted, caster, BloodlustBuff, Lasts(a, hasted), true, b => (b.AttackSpeedBonus, b.SpeedFactor) = (amount, 1 + TagValue(a.Type, "DataB" + a.Level)));
                 break;
             case var id when id == Code("AHtc"):
                 var area = Field(a, CastArea);

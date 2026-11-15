@@ -90,7 +90,7 @@ public sealed partial class GameNatives
         if (u.Casting is not null && u.Order != 0 && !u.Paused) return Cast(u);
         var armed = u.Type.Integer(WeaponsOn) != 0;
         var mobile = GetUnitMoveSpeed(u) > 0;
-        if (u.Paused || u.Hidden || Asleep(u)) return armed || mobile;
+        if (u.Paused || u.Hidden || IsStunned(u) || Asleep(u)) return armed || mobile;
         if (u.AttackTarget is { } stale && (stale.Dead || stale.Removed || stale.Hidden)) u.AttackTarget = null;
         var scan = _ticks % ScanEvery == 0;
         var order = u.Order;
@@ -208,7 +208,7 @@ public sealed partial class GameNatives
         if (Seconds < u.NextAttack || u.SwingEnds > Seconds) return;
         u.Facing.Go(MathF.Atan2(t.Y - u.Y, t.X - u.X), Seconds, 0);
         var point = BlzGetUnitWeaponRealField(u, Convert<unitweaponrealfield>(Code("udp1")), weapon);
-        var cooldown = Math.Max(BlzGetUnitAttackCooldown(u, weapon), 0.1f);
+        var cooldown = Math.Max(BlzGetUnitAttackCooldown(u, weapon) / AttackRate(u), 0.1f);
         (u.NextAttack, u.SwingEnds) = (Seconds + cooldown, Seconds + point);
         FireUnit(new(t, Other: u), UnitAttacked, PlayerUnitAttacked);
         _game.At(_game.Step + Math.Max(1, Game.Steps(point)), () => Hit(u, t, weapon));

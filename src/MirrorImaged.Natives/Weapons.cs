@@ -205,17 +205,4 @@ public sealed partial class GameNatives
 
     [Native(Level.Recorded, Reason = "Cooldowns come with abilities and buffs (wave 4); nothing here reads one back")]
     public void UnitResetCooldown(unit? whichUnit) { }
-
-    /// <summary>Buffs come with wave 4: none to remove.</summary>
-    [Native(Level.Close)]
-    public void UnitRemoveBuffs(unit? whichUnit, bool removePositive, bool removeNegative) { }
-
-    [Native(Level.Close)]
-    public void UnitRemoveBuffsEx(unit? whichUnit, bool removePositive, bool removeNegative, bool magic, bool physical, bool timedLife, bool aura, bool autoDispel) { }
-
-    [Native(Level.Close)]
-    public bool UnitHasBuffsEx(unit? whichUnit, bool removePositive, bool removeNegative, bool magic, bool physical, bool timedLife, bool aura, bool autoDispel) => false;
-
-    [Native(Level.Close)]
-    public int UnitCountBuffsEx(unit? whichUnit, bool removePositive, bool removeNegative, bool magic, bool physical, bool timedLife, bool aura, bool autoDispel) => 0;
 }
