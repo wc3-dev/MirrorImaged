@@ -1,7 +1,7 @@
 namespace MirrorImaged.Natives;
 
 // What happened to a unit, for the event responses: the unit, and the previous owner, order or state where one fits.
-sealed record Happening(unit Unit, player? Previous = null, int Order = 0, unitstate? State = null, int Skill = 0, int SkillLevel = 0, item? Item = null, Hit? Hit = null, unit? Killer = null);
+sealed record Happening(unit Unit, player? Previous = null, int Order = 0, unitstate? State = null, int Skill = 0, int SkillLevel = 0, item? Item = null, Hit? Hit = null, unit? Killer = null, float PointX = 0, float PointY = 0, widget? Target = null);
 
 // A unit state event's registration: its state and comparison, and whether the comparison held at the last frame's look
 // at the unit's mana
@@ -165,11 +165,11 @@ public sealed partial class GameNatives
     public player? GetChangingUnitPrevOwner() => Response(UnitChangeOwner, PlayerUnitChangeOwner)?.Previous;
 
     [Native(Level.Exact, Fact = UnitsProbe + "; " + MoreProbe)]
-    public unit? GetOrderedUnit() => Response(UnitIssuedOrder, PlayerUnitIssuedOrder, UnitIssuedPointOrder, PlayerUnitIssuedPointOrder)?.Unit;
+    public unit? GetOrderedUnit() => AnyOrder?.Unit;
 
     /// <summary>The order of an order event; 0 outside one.</summary>
     [Native(Level.Exact, Fact = UnitsProbe + "; " + MoreProbe)]
-    public int GetIssuedOrderId() => Response(UnitIssuedOrder, PlayerUnitIssuedOrder, UnitIssuedPointOrder, PlayerUnitIssuedPointOrder)?.Order ?? 0;
+    public int GetIssuedOrderId() => AnyOrder?.Order ?? 0;
 
     Happening? Response(params int[] kinds) => Current.Unit is { } happening && kinds.Contains(Current.Event.Id) ? happening : null;
 
