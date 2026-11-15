@@ -98,7 +98,7 @@ public sealed partial class GameNatives
 
     /// <summary>The ground under the unit, not its height above it (facts, Units: 0 for a lifted footman on flat ground).</summary>
     [Native(Level.Exact, Fact = "game-facts.md, Units: BlzGetUnitZ reads the ground under the unit (10-27); " + UnitsProbe)]
-    public float BlzGetUnitZ(unit? whichUnit) => whichUnit is null ? 0 : Data.Terrain?.Height(whichUnit.X, whichUnit.Y) ?? 0;
+    public float BlzGetUnitZ(unit? whichUnit) => whichUnit is null ? 0 : Ground(whichUnit.X, whichUnit.Y);
 
     /// <summary>As BlzGetUnitZ; Close: not measured, and the game may draw the unit elsewhere.</summary>
     [Native(Level.Close)]

@@ -760,9 +760,6 @@ public sealed partial class GameNatives
     public bool CopySaveGame(string? sourceSaveName, string? destSaveName) => throw new MissingNativeException("CopySaveGame");
 
     [Native(Level.Missing)]
-    public unit? CreateBlightedGoldmine(player? id, float x, float y, float face) => throw new MissingNativeException("CreateBlightedGoldmine");
-
-    [Native(Level.Missing)]
     public commandbuttoneffect? CreateCommandButtonEffect(int abilityId, string? order) => throw new MissingNativeException("CreateCommandButtonEffect");
 
     [Native(Level.Missing)]
@@ -1132,12 +1129,6 @@ public sealed partial class GameNatives
     public int GetTerrainCliffLevel(float x, float y) => throw new MissingNativeException("GetTerrainCliffLevel");
 
     [Native(Level.Missing)]
-    public int GetTerrainType(float x, float y) => throw new MissingNativeException("GetTerrainType");
-
-    [Native(Level.Missing)]
-    public int GetTerrainVariance(float x, float y) => throw new MissingNativeException("GetTerrainVariance");
-
-    [Native(Level.Missing)]
     public player? GetTournamentFinishNowPlayer() => throw new MissingNativeException("GetTournamentFinishNowPlayer");
 
     [Native(Level.Missing)]
@@ -1240,9 +1231,6 @@ public sealed partial class GameNatives
     public bool IsMultiboardMinimized(multiboard? lb) => throw new MissingNativeException("IsMultiboardMinimized");
 
     [Native(Level.Missing)]
-    public bool IsPointBlighted(float x, float y) => throw new MissingNativeException("IsPointBlighted");
-
-    [Native(Level.Missing)]
     public bool IsQuestCompleted(quest? whichQuest) => throw new MissingNativeException("IsQuestCompleted");
 
     [Native(Level.Missing)]
@@ -1259,9 +1247,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public bool IsQuestRequired(quest? whichQuest) => throw new MissingNativeException("IsQuestRequired");
-
-    [Native(Level.Missing)]
-    public bool IsTerrainPathable(float x, float y, pathingtype? t) => throw new MissingNativeException("IsTerrainPathable");
 
     [Native(Level.Missing)]
     public bool IsTimerDialogDisplayed(timerdialog? whichDialog) => throw new MissingNativeException("IsTimerDialogDisplayed");
@@ -1615,18 +1600,6 @@ public sealed partial class GameNatives
     public void SetAltMinimapIcon(string? iconPath) => throw new MissingNativeException("SetAltMinimapIcon");
 
     [Native(Level.Missing)]
-    public void SetBlight(player? whichPlayer, float x, float y, float radius, bool addBlight) => throw new MissingNativeException("SetBlight");
-
-    [Native(Level.Missing)]
-    public void SetBlightLoc(player? whichPlayer, location? whichLocation, float radius, bool addBlight) => throw new MissingNativeException("SetBlightLoc");
-
-    [Native(Level.Missing)]
-    public void SetBlightPoint(player? whichPlayer, float x, float y, bool addBlight) => throw new MissingNativeException("SetBlightPoint");
-
-    [Native(Level.Missing)]
-    public void SetBlightRect(player? whichPlayer, rect? r, bool addBlight) => throw new MissingNativeException("SetBlightRect");
-
-    [Native(Level.Missing)]
     public void SetCampaignAvailable(int campaignNumber, bool available) => throw new MissingNativeException("SetCampaignAvailable");
 
     [Native(Level.Missing)]
@@ -1756,12 +1729,6 @@ public sealed partial class GameNatives
     public void SetResourceDensity(mapdensity? whichdensity) => throw new MissingNativeException("SetResourceDensity");
 
     [Native(Level.Missing)]
-    public void SetTerrainPathable(float x, float y, pathingtype? t, bool flag) => throw new MissingNativeException("SetTerrainPathable");
-
-    [Native(Level.Missing)]
-    public void SetTerrainType(float x, float y, int terrainType, int variation, int area, int shape) => throw new MissingNativeException("SetTerrainType");
-
-    [Native(Level.Missing)]
     public void SetTextTagAge(texttag? t, float age) => throw new MissingNativeException("SetTextTagAge");
 
     [Native(Level.Missing)]
@@ -1844,24 +1811,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public void SyncSelections() => throw new MissingNativeException("SyncSelections");
-
-    [Native(Level.Missing)]
-    public terraindeformation? TerrainDeformCrater(float x, float y, float radius, float depth, int duration, bool permanent) => throw new MissingNativeException("TerrainDeformCrater");
-
-    [Native(Level.Missing)]
-    public terraindeformation? TerrainDeformRandom(float x, float y, float radius, float minDelta, float maxDelta, int duration, int updateInterval) => throw new MissingNativeException("TerrainDeformRandom");
-
-    [Native(Level.Missing)]
-    public terraindeformation? TerrainDeformRipple(float x, float y, float radius, float depth, int duration, int count, float spaceWaves, float timeWaves, float radiusStartPct, bool limitNeg) => throw new MissingNativeException("TerrainDeformRipple");
-
-    [Native(Level.Missing)]
-    public void TerrainDeformStop(terraindeformation? deformation, int duration) => throw new MissingNativeException("TerrainDeformStop");
-
-    [Native(Level.Missing)]
-    public void TerrainDeformStopAll() => throw new MissingNativeException("TerrainDeformStopAll");
-
-    [Native(Level.Missing)]
-    public terraindeformation? TerrainDeformWave(float x, float y, float dirX, float dirY, float distance, float speed, float radius, float depth, int trailTime, int count) => throw new MissingNativeException("TerrainDeformWave");
 
     [Native(Level.Missing)]
     public void TimerDialogDisplay(timerdialog? whichDialog, bool display) => throw new MissingNativeException("TimerDialogDisplay");
