@@ -3,6 +3,5 @@
 
 # An extended tooltip's <id,column> tags are filled by the game (<AHhb,DataA1> reads 200) and stay as written here,
 # W2-8's ParseTags (D282, Close).
-
 - Adef extended 130 research 266
-+ Adef extended 156 research 295
++ Adef extended 130 research 265

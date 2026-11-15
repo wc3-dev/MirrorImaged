@@ -2,4 +2,5 @@
 # starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
 
 # ParseTags is left for a follow-up of W2-1 (decisions D212).
-! war3map.lua:53: The native ParseTags is Missing: MirrorImaged does not simulate it yet.
+- tags [<AHhb,DataA4>] [600]
++ tags [<AHhb,DataA4>] [0]
