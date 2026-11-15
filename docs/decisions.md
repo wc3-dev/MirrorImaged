@@ -2285,3 +2285,11 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
 - **D365 (A blocked unit searches less):** a unit blocked again on its way searches for a path at most once in half a second, and one whose
   search found no way to a place does not search for that place again for two seconds, so it ends the order. A campaign map (NightElf01)
   that ran at a third of real time after 150 s now runs seven times faster. Not measured against the game.
+
+- **D366 (The AI wages war):** the wave the AI asks for (`InitAssault`, `AddAssault`) is made at the buildings that train it and forms the
+  attack captain, a group the natives send (`CaptainAttack`, `AttackMoveXY`, `AttackMoveKill`) as an attack-move and bring home, and answer
+  for (`CaptainIsFull`, `CaptainAtGoal`, `CaptainInCombat`, `CaptainReadiness`). `GetEnemyBase` is the nearest enemy building, a town hall first,
+  found at once (`WaitGetEnemyBase` is false: the AI loops while it is true). Expansion is a gold mine no town hall stands within reach of
+  (`GetNextExpansion` is -1 with none), with its creeps, a worker sent to build there, and the camps of creeps. Seen: the human melee AI, five
+  minutes in, sends eight footmen, four riflemen and a hero at an enemy second town hall and takes its life down. Close: the AI never attacks
+  a main base without siege, as its script has it.

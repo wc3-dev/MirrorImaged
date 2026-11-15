@@ -47,4 +47,36 @@ public sealed class AiRunTests : IDisposable
         var last = simulation.Log.Last(line => line.Contains("status"));
         foreach (var name in new[] { "Altar of Kings", "Barracks", "Farm", "Footman" }) Assert.Contains(name, last);
     }
+
+    [InstallFact]
+    public void The_human_melee_ai_sends_an_attack_wave_at_an_enemy_town()
+    {
+        var data = StandardData.Installed(GameInstall.Require(), null);
+        using var simulation = Simulation.Load(_maps.Build("""
+            function config() SetPlayers(2) end
+            function main()
+                SetPlayerState(Player(0), PLAYER_STATE_RESOURCE_GOLD, 5000)
+                SetPlayerState(Player(0), PLAYER_STATE_RESOURCE_LUMBER, 5000)
+                SetPlayerAlliance(Player(0), Player(1), ALLIANCE_PASSIVE, false)
+                SetPlayerAlliance(Player(1), Player(0), ALLIANCE_PASSIVE, false)
+                CreateUnit(Player(0), FourCC("htow"), 0, 0, 0)
+                for i = 0, 4 do CreateUnit(Player(0), FourCC("hpea"), 100, i * 40, 0) end
+                CreateUnit(Player(1), FourCC("htow"), 2500, 0, 0)
+                local enemy = CreateUnit(Player(1), FourCC("htow"), 2500, 1200, 0)
+                StartMeleeAI(Player(0), "human.ai")
+                for i = 0, 11 do CreateDestructable(FourCC("LTlt"), -300 - (i % 4) * 64, 100 + (i // 4) * 64, 270, 1, 0) end
+                local mine = CreateUnit(Player(PLAYER_NEUTRAL_PASSIVE), FourCC("ngol"), 600, 0, 0)
+                SetResourceAmount(mine, 50000)
+                TimerStart(CreateTimer(), 120, true, function()
+                    print("status", GetUnitState(enemy, UNIT_STATE_LIFE))
+                end)
+            end
+            """), "", data: data);
+        simulation.Advance(TimeSpan.FromSeconds(900));
+
+        Assert.Null(simulation.Stopped);
+        Assert.DoesNotContain(simulation.Log, line => line.Contains("error", StringComparison.OrdinalIgnoreCase));
+        var life = simulation.Log.Where(line => line.Contains("status")).Select(line => float.Parse(line.Split('	')[1], System.Globalization.CultureInfo.InvariantCulture)).ToList();
+        Assert.True(life[^1] < life[0], string.Join(",", life));
+    }
 }
