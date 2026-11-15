@@ -2142,3 +2142,11 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   `SetLightningColor` set it, also after a move; a destroyed bolt answers false to destroy, move and colour. Floating text,
   weather, images, ubersplats, minimap icons, the cinematic filter and scenes, unit animations, indicators and command
   button effects are Recorded handles that nothing reads back; `IsCineFilterDisplayed` and the hero glow flag read what was set.
+- **D340. The bag and equipment slots** (3.0) are a unit's 30-place bag (a unit with `AIni`; `UnitExtendedInventorySize` reads 30 or 0)
+  and nine equipment slots (head, chest, gloves, boots, ring, second ring, primary, offhand, trinket; a unit with `AEqu`). An
+  item whose `iequ` names an equipment type goes to the bag of a unit that has one when given, and any item does when the six
+  slots are full; a bagged item is owned and hidden, `UnitHasItem` false, `IsItemInBag` true. `UnitEquipItem` puts it in its
+  type's slot with the pick-up and equip events (`GetEquippedItem` the item), a third ring going to the bag; the item's abilities
+  work from the slot, not the bag. `UnitUnequipItem` fires the drop, the pick-up into the bag and the unequip event.
+  Close: `UnitCanEquipItemOfEquipmentType` reads false as in the game for gloves, the item tags read 0, and an item's ability
+  objects (`BlzGetItemAbility`) are nil.

@@ -259,18 +259,18 @@ public sealed partial class GameNatives
         if (Live(whichItem) is { } i) i.Fields[-1] = unitId;
     }
 
-    /// <summary>Always false until equipment and bags (items of the Reforged inventory) are brought.</summary>
+    /// <summary>True for an item in a unit's bag (facts: inside the pick-up event into it too).</summary>
     [Native(Level.Close)]
-    public bool IsItemInBag(item? whichItem) => false;
+    public bool IsItemInBag(item? whichItem) => Live(whichItem) is { Where: 1, Holder: not null };
 
     [Native(Level.Close)]
-    public bool IsItemEquipped(item? whichItem) => false;
+    public bool IsItemEquipped(item? whichItem) => Live(whichItem) is { Where: 2, Holder: not null };
 
     [Native(Level.Close)]
-    public bool BlzIsItemInBag(item? whichItem) => false;
+    public bool BlzIsItemInBag(item? whichItem) => IsItemInBag(whichItem);
 
     [Native(Level.Close)]
-    public bool BlzIsItemEquipped(item? whichItem) => false;
+    public bool BlzIsItemEquipped(item? whichItem) => IsItemEquipped(whichItem);
 
     // ---- Life and death
 

@@ -27,7 +27,7 @@ public sealed partial class GameNatives
         whichUnit is not null && itemSlot >= 0 && itemSlot < Size(whichUnit) ? whichUnit.Slots[itemSlot] : null;
 
     [Native(Level.Close)]
-    public bool UnitHasItem(unit? whichUnit, item? whichItem) => whichUnit is not null && Live(whichItem)?.Holder == whichUnit;
+    public bool UnitHasItem(unit? whichUnit, item? whichItem) => whichUnit is not null && Live(whichItem) is { Where: 0 } i && i.Holder == whichUnit;
 
     // The item into the slot, owned by the unit and hidden; the pickup events fire with it in place
     void Put(unit u, item i, int slot)
@@ -44,6 +44,7 @@ public sealed partial class GameNatives
         if (announce) FireUnit(new(u, Item: i), UnitDropItem, PlayerDropItem);
         var slot = Array.IndexOf(u.Slots, i);
         if (slot >= 0) Release(u, i, slot);
+        else Unplace(u, i);
         (i.Holder, i.X, i.Y) = (null, u.X, u.Y - Dropped);
     }
 
@@ -75,7 +76,9 @@ public sealed partial class GameNatives
             Consume(u, i);
             return true;
         }
+        // An item of an equipment type goes to the bag of a unit that has one, and any item does when the slots are full
         var slot = Array.IndexOf(u.Slots, null);
+        if (HasBag(u) && (EquipmentOf(i) != 0 || slot < 0 || slot >= Size(u))) return Bagged(u, i);
         if (slot < 0 || slot >= Size(u)) return false;
         Put(u, i, slot);
         return true;
