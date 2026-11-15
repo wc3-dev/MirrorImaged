@@ -30,7 +30,7 @@ public sealed class SimulationOptions
 }
 
 /// <summary>
-/// A map's script running on a simulated game, with no game open. <see cref="Load"/> sets <c>common.j</c>'s globals,
+/// A map's script running on a simulated game, with no game open. <see cref="Load(string, SimulationOptions?)"/> sets <c>common.j</c>'s globals,
 /// runs the installed game's <c>blizzard.j</c>, then the script, its <c>config</c> and <c>main</c>;
 /// <see cref="Advance"/> moves the clock on and runs the timers that fall due. A Lua error goes in the log and the run
 /// carries on, as the game drops it. A Missing native stops the run, and so does a call the game closes on:
@@ -221,6 +221,7 @@ public sealed partial class Simulation : IDisposable
         if (_game.Paused || _game.Ended) _time = TimeSpan.FromSeconds((double)_game.Step / Game.StepsPerSecond);
     }
 
+    /// <summary>Ends the run and frees what it holds.</summary>
     public void Dispose() => _lua.Dispose();
 
     // Runs Lua with os.clock and os.time on the game's clock; an error goes in the log, unless it stops the run.

@@ -239,8 +239,10 @@ public sealed class GameObject
 
     internal Dictionary<(int Field, int Level), string> Changes { get; } = [];
 
+    /// <summary>The kind of object this is.</summary>
     public ObjectKind Kind { get; }
 
+    /// <summary>The four-character id of the object, as an integer.</summary>
     public int Id { get; }
 
     /// <summary>The standard object it is made from: its own id for a standard object.</summary>

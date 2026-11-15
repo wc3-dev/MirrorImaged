@@ -18,6 +18,7 @@ public sealed class Game
     int _nextId = 0x100000, _nextKey;
     ulong _random;
 
+    /// <summary>Makes a game whose random numbers start from the seed.</summary>
     public Game(int seed)
     {
         RunSeed = seed;
@@ -113,6 +114,7 @@ public sealed class Game
     /// <summary>The handle with <paramref name="key"/>, or null once it is removed.</summary>
     public object? Handle(int key) => _handles.GetValueOrDefault(key);
 
+    /// <summary>Takes the handle with the key out of the game.</summary>
     public void Remove(int key) => _handles.Remove(key);
 
     /// <summary>Starts the random numbers over from <paramref name="seed"/>.</summary>
