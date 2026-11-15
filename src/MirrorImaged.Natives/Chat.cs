@@ -50,6 +50,7 @@ public sealed partial class GameNatives
         void Add(long value) => hash.AppendData(BitConverter.GetBytes(value));
         void AddF(float value) => hash.AppendData(BitConverter.GetBytes(value));
         Add(_game.Step);
+        Add((long)_game.Counters.Random); Add(_game.Counters.NextId); Add(_game.Counters.NextKey);
         for (var n = 0; n < 28; n++)
             if (Player(n) is { } p)
             {
@@ -77,6 +78,9 @@ public sealed partial class GameNatives
             return System.Convert.ToHexString(hash.GetHashAndReset())[..12];
         }
         yield return ("time", Of((add, _) => add(_game.Step)));
+        // The random numbers drawn and the ids given out: in the game a draw in one player's game only, or a handle made there, makes the games differ
+        yield return ("random numbers", Of((add, _) => add((long)_game.Counters.Random)));
+        yield return ("handle ids", Of((add, _) => { add(_game.Counters.NextId); add(_game.Counters.NextKey); }));
         for (var n = 0; n < 28; n++)
             if (Player(n) is { } p)
                 yield return ($"player {n}", Of((add, _) =>

@@ -46,5 +46,5 @@ Desync at step 4096 (4 s): player 0 differs
   player 1's game: 51AB...
 ```
 
-The part says where the games differ first: the time, a player, or a unit. The first line of the log that differs is printed too. A map with one user slot
+The part says where the games differ first: the time, a player, a unit, `random numbers` (the shared random generator was drawn from in one game only) or `handle ids` (a handle was made in one game only, as `CreateGroup()`, `Location()`, `CreateTimer()` or a frame in a local-player block does). These are the patterns the facts name as desyncs (`docs/game-facts.md`, "Desyncs"); what only one player's screen shows (text, camera, music) is not a difference. The first line of the log that differs is printed too. A map with one user slot
 has nothing to compare. `Desync.Check(map, time)` is the same check from C#.

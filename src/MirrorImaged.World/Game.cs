@@ -101,6 +101,9 @@ public sealed class Game
     /// <summary>The next agent's id; ids count up from 0x100000 and are never given twice.</summary>
     public int NewId() => _nextId++;
 
+    /// <summary>The state of the random numbers and the next ids to be given, as one number each: games that drew or made differently differ in them.</summary>
+    public (ulong Random, int NextId, int NextKey) Counters => (_random, _nextId, _nextKey);
+
     /// <summary>
     /// Keeps <paramref name="handle"/> under a new key, by which it is found again: one key a handle, whatever its type,
     /// never given twice, and not the id the game shows.
