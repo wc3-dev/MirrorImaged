@@ -163,10 +163,7 @@ public sealed partial class GameNatives
             }
             return follow ? true : Finish(u);
         }
-        var (nx, ny) = (u.X + dx / left * step, u.Y + dy / left * step);
-        if (Blocked(u, nx, ny)) return Finish(u);
-        Move(u, nx, ny);
-        return true;
+        return Go(u, x, y, step);
     }
 
     // Whether the ground the unit would step onto stops it: walkers and riders can't enter unwalkable cells or leave the world
@@ -178,7 +175,8 @@ public sealed partial class GameNatives
             if (x < minX || x > maxX || y < minY || y > maxY) return true;
         }
         var type = BlzGetUnitIntegerField(u, Convert<unitintegerfield>(MoveType));
-        return type is 1 or 4 && Data.Map?.Files.PathingMap is not null && IsTerrainPathable(x, y, Convert<pathingtype>(1));
+        if (type is 1 or 4 && Data.Map?.Files.PathingMap is not null && IsTerrainPathable(x, y, Convert<pathingtype>(1))) return true;
+        return type is not 2 && BlockedByBuilding(u, x, y);
     }
 
     // The order done: the unit is idle, or takes the next queued order
