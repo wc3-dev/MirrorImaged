@@ -69,12 +69,6 @@ public sealed partial class GameNatives
     public unit? GetAllianceTarget() => null;
 
     [Native(Level.Close)]
-    public int GetHeroId() => 0;
-
-    [Native(Level.Close)]
-    public int GetHeroLevelAI() => 0;
-
-    [Native(Level.Close)]
     public int GetLastCommand() => 0;
 
     [Native(Level.Close)]
@@ -127,9 +121,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Close)]
     public void SetGroupsFlee(bool state) { }
-
-    [Native(Level.Close)]
-    public void SetHeroLevels(Func<int>? func) { }
 
     [Native(Level.Close)]
     public void SetHeroesBuyItems(bool state) { }
