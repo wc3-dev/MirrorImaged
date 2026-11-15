@@ -3,6 +3,8 @@ namespace MirrorImaged.Natives;
 public partial class unit
 {
     internal readonly List<(float X, float Y)> Path = [];  // the waypoints a walker takes round what blocks it
+    internal (float X, float Y)? NoWayTo;                   // a place a search found no way toward, and until when
+    internal double NoWayUntil, ReplanAt;
     internal (float X, float Y)? PathGoal;                  // where that path leads
 }
 
@@ -64,8 +66,16 @@ public sealed partial class GameNatives
             Move(u, nx, ny);
             return true;
         }
+        if (u.NoWayTo == (x, y) && Seconds < u.NoWayUntil) return Finish(u);
+        // Blocked again soon after a search: wait a moment before the next one, as a search costs thousands of looks at the ground
+        if (Seconds < u.ReplanAt) return true;
+        u.ReplanAt = Seconds + 0.5;
         var way = FindPath(u, x, y);
-        if (way is null || way.Count == 0) return Finish(u);
+        if (way is null || way.Count == 0)
+        {
+            (u.NoWayTo, u.NoWayUntil) = ((x, y), Seconds + 2);
+            return Finish(u);
+        }
         u.Path.Clear();
         u.Path.AddRange(way);
         return true;
