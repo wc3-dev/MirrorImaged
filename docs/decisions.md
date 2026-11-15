@@ -2134,3 +2134,11 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   read displayed, as the game's did), a timer dialog's displayed flag, a quest's flags and its items' completion, a dialog's buttons.
   Colours, styles, texts of cells and the like are Recorded. A leaderboard with two rows for a player, set as the player's, closes
   the game (twice seen). A dialog's click, and so `GetClickedButton`, waits for input (wave 6); the quest defaults are not measured.
+- **D540. Effects** are handles with their place, kept as the facts of 11-03 read it: an effect made at a point stands on the
+  ground there (a crater's raised z included), `BlzSetSpecialEffectX`/`Y` keep its z, `BlzSetSpecialEffectHeight` reads as the z
+  until a place is set, and one made on a widget reads x, y and z 0 and scale 1 wherever the widget goes. Colour, turn,
+  animation and time are Recorded (nothing reads them back); `DestroyEffect` and `BlzRemoveEffect` leave the place readable.
+- **D541. Lightning** is made for any non-empty code (the game draws the ones it knows: Close) and reads the colour back as
+  `SetLightningColor` set it, also after a move; a destroyed bolt answers false to destroy, move and colour. Floating text,
+  weather, images, ubersplats, minimap icons, the cinematic filter and scenes, unit animations, indicators and command
+  button effects are Recorded handles that nothing reads back; `IsCineFilterDisplayed` and the hero glow flag read what was set.
