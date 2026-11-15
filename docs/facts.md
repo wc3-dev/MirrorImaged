@@ -1496,6 +1496,74 @@ one (`_HD.w3mod:`, `.ogg`), of other lengths.
   sets give false. `SetSoundFacialAnimationLabel`, `SetSoundFacialAnimationGroupLabel` and
   `SetSoundFacialAnimationSetFilepath` give true on a sound and false on nil.
 
+## Heroes and items (W2-3)
+
+The probes `heroes`, `heroes-nonhero` (and its `-level`, `-str` and `-setstr`) and `items`, 3.0.1.24371, single player,
+11-15, run by the game runner from the PowerShell tool. Their lines are in `probes/expected`; each ran once for its
+expected file (`heroes` several times before ability reads were taken out).
+
+- **Attributes and levels.** A Paladin reads 22 strength, 13 agility, 17 intelligence, life 650, mana 255, armour 3.9
+  (2 - 2 + 13 x 0.3). Levels 2, 3, 5 and 10 read strength 24, 27, 32, 46 (gain 2.7), agility 14, 16, 19, 26 (1.5),
+  intelligence 18, 20, 24, 33, life 700, 775, 900, 1250 and mana 270, 300, 360, 495: a whole attribute is the whole part
+  of the sum of the gains. A level's gain is added to the life and mana the hero has (325 of 650 at level 4 read 525 of
+  850; mana 100 of 255 read 175 of 330), and the same for `SetHeroStr/Agi/Int(.., true)`: strength 32 on 325 of 650
+  read 575 of 900, strength 12 then 75 of 400, intelligence 7 left mana 0 of 105. A strength of 0 reads life 100 and
+  of -5 life -25 of -25 (no death). `UNIT_RF_STRENGTH_PER_LEVEL` set to 10 made level 3 read strength 42.
+  `SetHeroStr(h, 40, false)` read 40 as well.
+- **Attribute fields.** `UNIT_IF_STRENGTH` set to 30 gives strength 30 and life 850. The permanent fields set to 7 or
+  0 read 1 and the attribute 1 (life 125), at once; a set of the field with bonus gives false. `UNIT_IF_LEVEL` set to 3
+  from level 5 reads 3 (experience 500, points 3), from level 1 reads 4 (900, points 4), and set to 1 from 4 reads 1.
+- **Experience, events and points.** `SetHeroXP` 450 gives level 2, 450 and 2 points; a lower value changes nothing;
+  `AddHeroXP` 100 at level 2 reached level 3; a suspended hero ignored `AddHeroXP`, `SetHeroXP` and `SetHeroLevel`;
+  `UnitStripHeroLevel` 1 from 3 gave level 2, experience 200, points 2; 5 from 2 gave level 1, 0, 1 and answered true.
+  The level event fired player first (event 41, then unit 78) with the final level, experience, points and strength
+  and the new life (700 at level 2) read inside it.
+- **Skills.** A new Paladin has 1 point; the ultimate `AHre` at level 1 learned nothing; `AHhb` at level 1 learned level
+  1 (event 42 then 79 with the points still 1; 0 after); again with no point nothing; at hero level 2 nothing for
+  level 2 (a point left), at 3 level 2 (event reading points 2, 1 after); `AHbz`, not the Paladin's, nothing;
+  `UnitModifySkillPoints` 3 answered true (1 to 4), -10 true (to 0); at level 6 the ultimate learned (points 3 inside
+  the event, 2 after). `BlzResetUnitTalents` changed nothing. The learned skill and level read 0 outside the event.
+- **Revival.** `ReviveHero` on a living hero false; after `KillUnit` the start event (44 then 81) read the hero dead at
+  its old place with life 0 and mana 495 (full), the finish event (46 then 83) alive at (300.5, -400.25) with life 775
+  (full) and mana 100 (the type's starting mana); facing unchanged. A hero-revivable event (43) fired later with a
+  unit that wasn't the hero, after the probe's other lines.
+- **Names.** 16 Paladins made in the part after about 35 in earlier parts read 13 distinct names in the first 14, only
+  one of them a bare name of the type's list, the 15th and 16th "... II". `BlzSetHeroProperName` and the string field
+  change the one hero's name, not `GetUnitName`.
+- **Not heroes.** On a footman: `GetHeroLevel`, `GetHeroXP`, `GetHeroSkillPoints` 0, `IsSuspendedXP` true before any
+  suspend, `GetHeroProperName` "", `GetHeroStr/Agi/Int` 0 (no close), `SetHeroStr`, `SetHeroLevel`, `SetHeroXP`,
+  `AddHeroXP`, `SelectHeroSkill` change nothing (life stays 420), `UnitStripHeroLevel` and `ReviveHero` false,
+  `UnitModifySkillPoints` false.
+- **Items made.** `CreateItem` takes one handle id; an item reads its place, life 75 (the type's `ihtp`), the neutral
+  passive player's number 27, user data 0, its name, visible, not owned, vulnerable, not in a bag or equipped. A unit's id
+  (`hfoo`), 0 and an unknown id give nil. Charges are the type's (`phea` 1, `wneg` 3, `ratc` 0), level the type's, class
+  `phea` 4, `ratc` 0, `tdex` 2, `ankh` 1, `ckng` 3, `rej1` 8 (data Miscellaneous). `BlzCreateItemWithSkin` keeps the skin
+  id and reads the skin's name ("Claws of Attack +12"). The tooltip, description and icon are the data's; the extended
+  tooltip has its tags resolved ("Heals 250 hit points when used."). A renamed item changes only that one's name.
+- **Items removed.** After `RemoveItem`, in the same call, the type id, place, life and charges read 0 and the player nil.
+- **Items set.** Charges 7 read 7, -2 read 0; the player set read 2 but not owned; hiding read false; `SetItemPawnable`
+  false changes the item's flag, not `IsItemIdPawnable`; the Boolean fields read the flags; the integer fields read the
+  level, charges, most and current life (75), cooldown group, priority 110 (the data's `ipri`), armour type 3 and tint
+  255; sets of level, charges and life answer true and read back; a set of the most life leaves the life; the Boolean
+  and real sets answer false but keep the value (a scaling value set to 2 read 2). `SetItemPosition` far off read
+  (2016, -2048) for (5000, -5000).
+- **Item life.** Set to 30.5 read 30.5, to 500 read 75; 0.3 killed it: life 0, the widget death event (89) inside the
+  call with the item and no unit, the item still there with its type; a set to 0 later changed nothing more and fired
+  nothing; an invulnerable item died at 0 too.
+- **Inventory.** A Paladin has 6 slots, a footman 0. `UnitAddItemById` puts the item in the first free slot and answers
+  it; the pickup events (49 then 86) read it in its slot; it is owned (the player still 27), not visible, at the hero's
+  place. `UnitAddItemToSlotById` slot 3 true, again false, slot -1 and 6 nil / false. Two potions didn't stack (charges
+  1 and 1). A ground potion added true. A tome (powerup) answered the item, fired pickup then drop, read with no slot,
+  and was still there at a 0 s timer. An item taken out of a slot read visible, not owned, 24 south of the hero; a
+  second take gave nil. A use (`UnitUseItem` true) took the charge (1 to 0), fired use (50, 87) with the item in its
+  slot, then drop with it still there, and the item was gone from the slots; the heal raised life from 100 to 350.
+  With six items a seventh `UnitAddItemById` answered nil and the item lay at the hero's place; `UnitAddItem` full
+  false, not owned; a slot of 6 and -1 false. `UnitDropItemSlot` 0 to 4 true swapped the two items; `UnitDropItemPoint`
+  and `UnitDropItemTarget` answered true and changed nothing for the moment. `UnitAddItem` to another hero fired a drop
+  and a pickup. Carried items changed attributes, life and mana (strength 27, agility 21, intelligence 22, life 775);
+  a hero's death used the ankh (use, then drop), after which the hero held 3 items.
+- **Rects.** `EnumItemsInRect` found the four items made in a rect of 400 by 400 in reverse order of making, a hidden one
+  too, a filtered one not; a removed one not.
 ## Abilities (W2-7)
 
 Probes `probes/abilities.lua`, `abilities-lists`, `abilities-types`, `abilities-fields`, `abilities-columns`,

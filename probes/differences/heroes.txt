@@ -1,0 +1,15 @@
+# Where MirrorImaged differs from the game's lines in expected/heroes.txt, in order, with why (decisions D121): a
+# line starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts
+# "# ".
+
+# A proper name taken once already reads "II" in the game for the 15th and 16th hero of the type made in this part,
+# after about 35 made before, so the game's numbering isn't a count of the names drawn so far (D336); here it is, so
+# the numerals are the count of the draws of that name (Close).
+- then 15 true II
++ then 15 true III
+- then 16 true II
++ then 16 true IV
+
+# The hero-revivable event the game fires long after the hero died and was revived, with a unit that isn't the hero;
+# it never fires here (D335, Close).
+- ~ event 43 false false false 0 alive true 775.0 {t} at 300.5 -400.25

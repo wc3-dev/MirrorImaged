@@ -1,7 +1,7 @@
 namespace MirrorImaged.Natives;
 
 // What happened to a unit, for the event responses: the unit, and the previous owner, order or state where one fits.
-sealed record Happening(unit Unit, player? Previous = null, int Order = 0, unitstate? State = null);
+sealed record Happening(unit Unit, player? Previous = null, int Order = 0, unitstate? State = null, int Skill = 0, int SkillLevel = 0, item? Item = null);
 
 // A unit state event's registration: its state and comparison, and whether the comparison held at the last frame's look
 // at the unit's mana

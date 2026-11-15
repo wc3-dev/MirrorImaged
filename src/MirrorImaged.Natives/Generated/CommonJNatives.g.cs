@@ -13,16 +13,7 @@ public sealed partial class GameNatives
     public string? AbilityId2String(int abilityId) => throw new MissingNativeException("AbilityId2String");
 
     [Native(Level.Missing)]
-    public void AddHeroXP(unit? whichHero, int xpToAdd, bool showEyeCandy) => throw new MissingNativeException("AddHeroXP");
-
-    [Native(Level.Missing)]
     public void AddIndicator(widget? whichWidget, int red, int green, int blue, int alpha) => throw new MissingNativeException("AddIndicator");
-
-    [Native(Level.Missing)]
-    public void AddItemToAllStock(int itemId, int currentStock, int stockMax) => throw new MissingNativeException("AddItemToAllStock");
-
-    [Native(Level.Missing)]
-    public void AddItemToStock(unit? whichUnit, int itemId, int currentStock, int stockMax) => throw new MissingNativeException("AddItemToStock");
 
     [Native(Level.Missing)]
     public lightning? AddLightning(string? codeName, bool checkVisibility, float x1, float y1, float x2, float y2) => throw new MissingNativeException("AddLightning");
@@ -61,12 +52,6 @@ public sealed partial class GameNatives
     public void AddUnitAnimationProperties(unit? whichUnit, string? animProperties, bool add) => throw new MissingNativeException("AddUnitAnimationProperties");
 
     [Native(Level.Missing)]
-    public void AddUnitToAllStock(int unitId, int currentStock, int stockMax) => throw new MissingNativeException("AddUnitToAllStock");
-
-    [Native(Level.Missing)]
-    public void AddUnitToStock(unit? whichUnit, int unitId, int currentStock, int stockMax) => throw new MissingNativeException("AddUnitToStock");
-
-    [Native(Level.Missing)]
     public weathereffect? AddWeatherEffect(rect? where, int effectID) => throw new MissingNativeException("AddWeatherEffect");
 
     [Native(Level.Missing)]
@@ -95,9 +80,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public framehandle? BlzCreateFrameByType(string? typeName, string? name, framehandle? owner, string? inherits, int createContext) => throw new MissingNativeException("BlzCreateFrameByType");
-
-    [Native(Level.Missing)]
-    public item? BlzCreateItemWithSkin(int itemid, float x, float y, int skinId) => throw new MissingNativeException("BlzCreateItemWithSkin");
 
     [Native(Level.Missing)]
     public framehandle? BlzCreateSimpleFrame(string? name, framehandle? owner, int createContext) => throw new MissingNativeException("BlzCreateSimpleFrame");
@@ -322,37 +304,10 @@ public sealed partial class GameNatives
     public ability? BlzGetItemAbilityByIndex(item? whichItem, int index) => throw new MissingNativeException("BlzGetItemAbilityByIndex");
 
     [Native(Level.Missing)]
-    public bool BlzGetItemBooleanField(item? whichItem, itembooleanfield? whichField) => throw new MissingNativeException("BlzGetItemBooleanField");
-
-    [Native(Level.Missing)]
-    public string? BlzGetItemDescription(item? whichItem) => throw new MissingNativeException("BlzGetItemDescription");
-
-    [Native(Level.Missing)]
     public equipmentType? BlzGetItemEquipmentType(item? whichItem) => throw new MissingNativeException("BlzGetItemEquipmentType");
 
     [Native(Level.Missing)]
-    public string? BlzGetItemExtendedTooltip(item? whichItem) => throw new MissingNativeException("BlzGetItemExtendedTooltip");
-
-    [Native(Level.Missing)]
-    public string? BlzGetItemIconPath(item? whichItem) => throw new MissingNativeException("BlzGetItemIconPath");
-
-    [Native(Level.Missing)]
-    public int BlzGetItemIntegerField(item? whichItem, itemintegerfield? whichField) => throw new MissingNativeException("BlzGetItemIntegerField");
-
-    [Native(Level.Missing)]
-    public float BlzGetItemRealField(item? whichItem, itemrealfield? whichField) => throw new MissingNativeException("BlzGetItemRealField");
-
-    [Native(Level.Missing)]
-    public int BlzGetItemSkin(item? whichItem) => throw new MissingNativeException("BlzGetItemSkin");
-
-    [Native(Level.Missing)]
-    public string? BlzGetItemStringField(item? whichItem, itemstringfield? whichField) => throw new MissingNativeException("BlzGetItemStringField");
-
-    [Native(Level.Missing)]
     public itemTag? BlzGetItemTag(item? whichItem) => throw new MissingNativeException("BlzGetItemTag");
-
-    [Native(Level.Missing)]
-    public string? BlzGetItemTooltip(item? whichItem) => throw new MissingNativeException("BlzGetItemTooltip");
 
     [Native(Level.Missing)]
     public int BlzGetLocalClientHeight() => throw new MissingNativeException("BlzGetLocalClientHeight");
@@ -407,15 +362,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public float BlzGetSpecialEffectScale(effect? whichEffect) => throw new MissingNativeException("BlzGetSpecialEffectScale");
-
-    [Native(Level.Missing)]
-    public item? BlzGetStackingItemSource() => throw new MissingNativeException("BlzGetStackingItemSource");
-
-    [Native(Level.Missing)]
-    public item? BlzGetStackingItemTarget() => throw new MissingNativeException("BlzGetStackingItemTarget");
-
-    [Native(Level.Missing)]
-    public int BlzGetStackingItemTargetPreviousCharges() => throw new MissingNativeException("BlzGetStackingItemTargetPreviousCharges");
 
     [Native(Level.Missing)]
     public framehandle? BlzGetTriggerFrame() => throw new MissingNativeException("BlzGetTriggerFrame");
@@ -500,12 +446,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public void BlzHideOriginFrames(bool enable) => throw new MissingNativeException("BlzHideOriginFrames");
-
-    [Native(Level.Missing)]
-    public bool BlzIsItemEquipped(item? whichItem) => throw new MissingNativeException("BlzIsItemEquipped");
-
-    [Native(Level.Missing)]
-    public bool BlzIsItemInBag(item? whichItem) => throw new MissingNativeException("BlzIsItemInBag");
 
     [Native(Level.Missing)]
     public bool BlzIsKeyPressed(oskeytype? key) => throw new MissingNativeException("BlzIsKeyPressed");
@@ -601,9 +541,6 @@ public sealed partial class GameNatives
     public void BlzResetUnitAttack(unit? whichUnit, int weaponIndex) => throw new MissingNativeException("BlzResetUnitAttack");
 
     [Native(Level.Missing)]
-    public void BlzResetUnitTalents(unit? whichUnit) => throw new MissingNativeException("BlzResetUnitTalents");
-
-    [Native(Level.Missing)]
     public bool BlzSendSyncData(string? prefix, string? data) => throw new MissingNativeException("BlzSendSyncData");
 
     [Native(Level.Missing)]
@@ -625,40 +562,7 @@ public sealed partial class GameNatives
     public void BlzSetHUDScale(int percentage) => throw new MissingNativeException("BlzSetHUDScale");
 
     [Native(Level.Missing)]
-    public void BlzSetHeroProperName(unit? whichUnit, string? heroProperName) => throw new MissingNativeException("BlzSetHeroProperName");
-
-    [Native(Level.Missing)]
-    public bool BlzSetItemBooleanField(item? whichItem, itembooleanfield? whichField, bool value) => throw new MissingNativeException("BlzSetItemBooleanField");
-
-    [Native(Level.Missing)]
     public void BlzSetItemColor(item? whichItem, playercolor? whichColor) => throw new MissingNativeException("BlzSetItemColor");
-
-    [Native(Level.Missing)]
-    public void BlzSetItemDescription(item? whichItem, string? description) => throw new MissingNativeException("BlzSetItemDescription");
-
-    [Native(Level.Missing)]
-    public void BlzSetItemExtendedTooltip(item? whichItem, string? extendedTooltip) => throw new MissingNativeException("BlzSetItemExtendedTooltip");
-
-    [Native(Level.Missing)]
-    public void BlzSetItemIconPath(item? whichItem, string? iconPath) => throw new MissingNativeException("BlzSetItemIconPath");
-
-    [Native(Level.Missing)]
-    public bool BlzSetItemIntegerField(item? whichItem, itemintegerfield? whichField, int value) => throw new MissingNativeException("BlzSetItemIntegerField");
-
-    [Native(Level.Missing)]
-    public void BlzSetItemName(item? whichItem, string? name) => throw new MissingNativeException("BlzSetItemName");
-
-    [Native(Level.Missing)]
-    public bool BlzSetItemRealField(item? whichItem, itemrealfield? whichField, float value) => throw new MissingNativeException("BlzSetItemRealField");
-
-    [Native(Level.Missing)]
-    public void BlzSetItemSkin(item? whichItem, int skinId) => throw new MissingNativeException("BlzSetItemSkin");
-
-    [Native(Level.Missing)]
-    public bool BlzSetItemStringField(item? whichItem, itemstringfield? whichField, string? value) => throw new MissingNativeException("BlzSetItemStringField");
-
-    [Native(Level.Missing)]
-    public void BlzSetItemTooltip(item? whichItem, string? tooltip) => throw new MissingNativeException("BlzSetItemTooltip");
 
     [Native(Level.Missing)]
     public void BlzSetMinShadowCastingPointLightCount(int count) => throw new MissingNativeException("BlzSetMinShadowCastingPointLightCount");
@@ -844,24 +748,6 @@ public sealed partial class GameNatives
     public void Cheat(string? cheatStr) => throw new MissingNativeException("Cheat");
 
     [Native(Level.Missing)]
-    public int ChooseRandomCreep(int level) => throw new MissingNativeException("ChooseRandomCreep");
-
-    [Native(Level.Missing)]
-    public int ChooseRandomItem(int level) => throw new MissingNativeException("ChooseRandomItem");
-
-    [Native(Level.Missing)]
-    public int ChooseRandomItemEx(itemtype? whichType, int level) => throw new MissingNativeException("ChooseRandomItemEx");
-
-    [Native(Level.Missing)]
-    public int ChooseRandomItemExWithFilter(itemtype? whichType, int level, equipmentType? whichEquipmentType, itemTag? whichTag) => throw new MissingNativeException("ChooseRandomItemExWithFilter");
-
-    [Native(Level.Missing)]
-    public int ChooseRandomItemExWithFilterAndIncludes(itemtype? whichType, int level, equipmentType? whichEquipmentType, itemTag? whichTag, bool includeInvalidMorphs, bool includeNonPickRandom) => throw new MissingNativeException("ChooseRandomItemExWithFilterAndIncludes");
-
-    [Native(Level.Missing)]
-    public int ChooseRandomNPBuilding() => throw new MissingNativeException("ChooseRandomNPBuilding");
-
-    [Native(Level.Missing)]
     public void ClearSelection() => throw new MissingNativeException("ClearSelection");
 
     [Native(Level.Missing)]
@@ -893,12 +779,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public image? CreateImage(string? file, float sizeX, float sizeY, float sizeZ, float posX, float posY, float posZ, float originX, float originY, float originZ, int imageType) => throw new MissingNativeException("CreateImage");
-
-    [Native(Level.Missing)]
-    public item? CreateItem(int itemid, float x, float y) => throw new MissingNativeException("CreateItem");
-
-    [Native(Level.Missing)]
-    public itempool? CreateItemPool() => throw new MissingNativeException("CreateItemPool");
 
     [Native(Level.Missing)]
     public leaderboard? CreateLeaderboard() => throw new MissingNativeException("CreateLeaderboard");
@@ -937,9 +817,6 @@ public sealed partial class GameNatives
     public unit? CreateUnitAtLocByName(player? id, string? unitname, location? whichLocation, float face) => throw new MissingNativeException("CreateUnitAtLocByName");
 
     [Native(Level.Missing)]
-    public unitpool? CreateUnitPool() => throw new MissingNativeException("CreateUnitPool");
-
-    [Native(Level.Missing)]
     public commandbuttoneffect? CreateUpgradeCommandButtonEffect(int whichUprgade) => throw new MissingNativeException("CreateUpgradeCommandButtonEffect");
 
     [Native(Level.Missing)]
@@ -964,9 +841,6 @@ public sealed partial class GameNatives
     public void DestroyImage(image? whichImage) => throw new MissingNativeException("DestroyImage");
 
     [Native(Level.Missing)]
-    public void DestroyItemPool(itempool? whichItemPool) => throw new MissingNativeException("DestroyItemPool");
-
-    [Native(Level.Missing)]
     public void DestroyLeaderboard(leaderboard? lb) => throw new MissingNativeException("DestroyLeaderboard");
 
     [Native(Level.Missing)]
@@ -989,9 +863,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public void DestroyUbersplat(ubersplat? whichSplat) => throw new MissingNativeException("DestroyUbersplat");
-
-    [Native(Level.Missing)]
-    public void DestroyUnitPool(unitpool? whichPool) => throw new MissingNativeException("DestroyUnitPool");
 
     [Native(Level.Missing)]
     public button? DialogAddButton(dialog? whichDialog, string? buttonText, int hotkey) => throw new MissingNativeException("DialogAddButton");
@@ -1058,9 +929,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public void EndCinematicScene() => throw new MissingNativeException("EndCinematicScene");
-
-    [Native(Level.Missing)]
-    public void EnumItemsInRect(rect? r, boolexpr? filter, Action? actionFunc) => throw new MissingNativeException("EnumItemsInRect");
 
     [Native(Level.Missing)]
     public void FinishUbersplat(ubersplat? whichSplat) => throw new MissingNativeException("FinishUbersplat");
@@ -1141,9 +1009,6 @@ public sealed partial class GameNatives
     public unit? GetDetectedUnit() => throw new MissingNativeException("GetDetectedUnit");
 
     [Native(Level.Missing)]
-    public item? GetEnumItem() => throw new MissingNativeException("GetEnumItem");
-
-    [Native(Level.Missing)]
     public item? GetEquippedItem() => throw new MissingNativeException("GetEquippedItem");
 
     [Native(Level.Missing)]
@@ -1165,73 +1030,10 @@ public sealed partial class GameNatives
     public unit? GetEventTargetUnit() => throw new MissingNativeException("GetEventTargetUnit");
 
     [Native(Level.Missing)]
-    public item? GetFilterItem() => throw new MissingNativeException("GetFilterItem");
-
-    [Native(Level.Missing)]
-    public int GetHeroAgi(unit? whichHero, bool includeBonuses) => throw new MissingNativeException("GetHeroAgi");
-
-    [Native(Level.Missing)]
-    public int GetHeroInt(unit? whichHero, bool includeBonuses) => throw new MissingNativeException("GetHeroInt");
-
-    [Native(Level.Missing)]
-    public int GetHeroLevel(unit? whichHero) => throw new MissingNativeException("GetHeroLevel");
-
-    [Native(Level.Missing)]
-    public string? GetHeroProperName(unit? whichHero) => throw new MissingNativeException("GetHeroProperName");
-
-    [Native(Level.Missing)]
-    public int GetHeroSkillPoints(unit? whichHero) => throw new MissingNativeException("GetHeroSkillPoints");
-
-    [Native(Level.Missing)]
-    public int GetHeroStr(unit? whichHero, bool includeBonuses) => throw new MissingNativeException("GetHeroStr");
-
-    [Native(Level.Missing)]
-    public int GetHeroXP(unit? whichHero) => throw new MissingNativeException("GetHeroXP");
-
-    [Native(Level.Missing)]
-    public int GetItemCharges(item? whichItem) => throw new MissingNativeException("GetItemCharges");
-
-    [Native(Level.Missing)]
     public equipmentType? GetItemEquipmentType(item? whichItem) => throw new MissingNativeException("GetItemEquipmentType");
 
     [Native(Level.Missing)]
-    public int GetItemLevel(item? whichItem) => throw new MissingNativeException("GetItemLevel");
-
-    [Native(Level.Missing)]
-    public string? GetItemName(item? whichItem) => throw new MissingNativeException("GetItemName");
-
-    [Native(Level.Missing)]
-    public player? GetItemPlayer(item? whichItem) => throw new MissingNativeException("GetItemPlayer");
-
-    [Native(Level.Missing)]
     public itemTag? GetItemTag(item? whichItem) => throw new MissingNativeException("GetItemTag");
-
-    [Native(Level.Missing)]
-    public itemtype? GetItemType(item? whichItem) => throw new MissingNativeException("GetItemType");
-
-    [Native(Level.Missing)]
-    public int GetItemTypeId(item? i) => throw new MissingNativeException("GetItemTypeId");
-
-    [Native(Level.Missing)]
-    public int GetItemUserData(item? whichItem) => throw new MissingNativeException("GetItemUserData");
-
-    [Native(Level.Missing)]
-    public float GetItemX(item? i) => throw new MissingNativeException("GetItemX");
-
-    [Native(Level.Missing)]
-    public float GetItemY(item? i) => throw new MissingNativeException("GetItemY");
-
-    [Native(Level.Missing)]
-    public int GetLearnedSkill() => throw new MissingNativeException("GetLearnedSkill");
-
-    [Native(Level.Missing)]
-    public int GetLearnedSkillLevel() => throw new MissingNativeException("GetLearnedSkillLevel");
-
-    [Native(Level.Missing)]
-    public unit? GetLearningUnit() => throw new MissingNativeException("GetLearningUnit");
-
-    [Native(Level.Missing)]
-    public unit? GetLevelingUnit() => throw new MissingNativeException("GetLevelingUnit");
 
     [Native(Level.Missing)]
     public float GetLightningColorA(lightning? whichBolt) => throw new MissingNativeException("GetLightningColorA");
@@ -1247,12 +1049,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public unit? GetLoadedUnit() => throw new MissingNativeException("GetLoadedUnit");
-
-    [Native(Level.Missing)]
-    public item? GetManipulatedItem() => throw new MissingNativeException("GetManipulatedItem");
-
-    [Native(Level.Missing)]
-    public unit? GetManipulatingUnit() => throw new MissingNativeException("GetManipulatingUnit");
 
     [Native(Level.Missing)]
     public location? GetOrderPointLoc() => throw new MissingNativeException("GetOrderPointLoc");
@@ -1289,12 +1085,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public mapdensity? GetResourceDensity() => throw new MissingNativeException("GetResourceDensity");
-
-    [Native(Level.Missing)]
-    public unit? GetRevivableUnit() => throw new MissingNativeException("GetRevivableUnit");
-
-    [Native(Level.Missing)]
-    public unit? GetRevivingUnit() => throw new MissingNativeException("GetRevivingUnit");
 
     [Native(Level.Missing)]
     public string? GetSaveBasicFilename() => throw new MissingNativeException("GetSaveBasicFilename");
@@ -1435,39 +1225,6 @@ public sealed partial class GameNatives
     public bool IsGameTypeSupported(gametype? whichGameType) => throw new MissingNativeException("IsGameTypeSupported");
 
     [Native(Level.Missing)]
-    public bool IsItemEquipped(item? whichItem) => throw new MissingNativeException("IsItemEquipped");
-
-    [Native(Level.Missing)]
-    public bool IsItemIdPawnable(int itemId) => throw new MissingNativeException("IsItemIdPawnable");
-
-    [Native(Level.Missing)]
-    public bool IsItemIdPowerup(int itemId) => throw new MissingNativeException("IsItemIdPowerup");
-
-    [Native(Level.Missing)]
-    public bool IsItemIdSellable(int itemId) => throw new MissingNativeException("IsItemIdSellable");
-
-    [Native(Level.Missing)]
-    public bool IsItemInBag(item? whichItem) => throw new MissingNativeException("IsItemInBag");
-
-    [Native(Level.Missing)]
-    public bool IsItemInvulnerable(item? whichItem) => throw new MissingNativeException("IsItemInvulnerable");
-
-    [Native(Level.Missing)]
-    public bool IsItemOwned(item? whichItem) => throw new MissingNativeException("IsItemOwned");
-
-    [Native(Level.Missing)]
-    public bool IsItemPawnable(item? whichItem) => throw new MissingNativeException("IsItemPawnable");
-
-    [Native(Level.Missing)]
-    public bool IsItemPowerup(item? whichItem) => throw new MissingNativeException("IsItemPowerup");
-
-    [Native(Level.Missing)]
-    public bool IsItemSellable(item? whichItem) => throw new MissingNativeException("IsItemSellable");
-
-    [Native(Level.Missing)]
-    public bool IsItemVisible(item? whichItem) => throw new MissingNativeException("IsItemVisible");
-
-    [Native(Level.Missing)]
     public bool IsLeaderboardDisplayed(leaderboard? lb) => throw new MissingNativeException("IsLeaderboardDisplayed");
 
     [Native(Level.Missing)]
@@ -1508,9 +1265,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public bool IsQuestRequired(quest? whichQuest) => throw new MissingNativeException("IsQuestRequired");
-
-    [Native(Level.Missing)]
-    public bool IsSuspendedXP(unit? whichHero) => throw new MissingNativeException("IsSuspendedXP");
 
     [Native(Level.Missing)]
     public bool IsTerrainPathable(float x, float y, pathingtype? t) => throw new MissingNativeException("IsTerrainPathable");
@@ -1607,12 +1361,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public bool IssueTargetOrderById(unit? whichUnit, int order, widget? targetWidget) => throw new MissingNativeException("IssueTargetOrderById");
-
-    [Native(Level.Missing)]
-    public void ItemPoolAddItemType(itempool? whichItemPool, int itemId, float weight) => throw new MissingNativeException("ItemPoolAddItemType");
-
-    [Native(Level.Missing)]
-    public void ItemPoolRemoveItemType(itempool? whichItemPool, int itemId) => throw new MissingNativeException("ItemPoolRemoveItemType");
 
     [Native(Level.Missing)]
     public void LeaderboardAddItem(leaderboard? lb, string? label, int value, player? p) => throw new MissingNativeException("LeaderboardAddItem");
@@ -1777,12 +1525,6 @@ public sealed partial class GameNatives
     public void PingMinimapEx(float x, float y, float duration, int red, int green, int blue, bool extraEffects) => throw new MissingNativeException("PingMinimapEx");
 
     [Native(Level.Missing)]
-    public item? PlaceRandomItem(itempool? whichItemPool, float x, float y) => throw new MissingNativeException("PlaceRandomItem");
-
-    [Native(Level.Missing)]
-    public unit? PlaceRandomUnit(unitpool? whichPool, player? forWhichPlayer, float x, float y, float facing) => throw new MissingNativeException("PlaceRandomUnit");
-
-    [Native(Level.Missing)]
     public void PlayCinematic(string? movieName) => throw new MissingNativeException("PlayCinematic");
 
     [Native(Level.Missing)]
@@ -1843,22 +1585,7 @@ public sealed partial class GameNatives
     public void RemoveGuardPosition(unit? hUnit) => throw new MissingNativeException("RemoveGuardPosition");
 
     [Native(Level.Missing)]
-    public void RemoveItem(item? whichItem) => throw new MissingNativeException("RemoveItem");
-
-    [Native(Level.Missing)]
-    public void RemoveItemFromAllStock(int itemId) => throw new MissingNativeException("RemoveItemFromAllStock");
-
-    [Native(Level.Missing)]
-    public void RemoveItemFromStock(unit? whichUnit, int itemId) => throw new MissingNativeException("RemoveItemFromStock");
-
-    [Native(Level.Missing)]
     public bool RemoveSaveDirectory(string? sourceDirName) => throw new MissingNativeException("RemoveSaveDirectory");
-
-    [Native(Level.Missing)]
-    public void RemoveUnitFromAllStock(int unitId) => throw new MissingNativeException("RemoveUnitFromAllStock");
-
-    [Native(Level.Missing)]
-    public void RemoveUnitFromStock(unit? whichUnit, int unitId) => throw new MissingNativeException("RemoveUnitFromStock");
 
     [Native(Level.Missing)]
     public void RemoveWeatherEffect(weathereffect? whichEffect) => throw new MissingNativeException("RemoveWeatherEffect");
@@ -1879,12 +1606,6 @@ public sealed partial class GameNatives
     public unit? RestoreUnit(gamecache? cache, string? missionKey, string? key, player? forWhichPlayer, float x, float y, float facing) => throw new MissingNativeException("RestoreUnit");
 
     [Native(Level.Missing)]
-    public bool ReviveHero(unit? whichHero, float x, float y, bool doEyecandy) => throw new MissingNativeException("ReviveHero");
-
-    [Native(Level.Missing)]
-    public bool ReviveHeroLoc(unit? whichHero, location? loc, bool doEyecandy) => throw new MissingNativeException("ReviveHeroLoc");
-
-    [Native(Level.Missing)]
     public void SaveGame(string? saveFileName) => throw new MissingNativeException("SaveGame");
 
     [Native(Level.Missing)]
@@ -1894,16 +1615,7 @@ public sealed partial class GameNatives
     public bool SaveGameExists(string? saveName) => throw new MissingNativeException("SaveGameExists");
 
     [Native(Level.Missing)]
-    public void SelectHeroSkill(unit? whichHero, int abilcode) => throw new MissingNativeException("SelectHeroSkill");
-
-    [Native(Level.Missing)]
     public void SelectUnit(unit? whichUnit, bool flag) => throw new MissingNativeException("SelectUnit");
-
-    [Native(Level.Missing)]
-    public void SetAllItemTypeSlots(int slots) => throw new MissingNativeException("SetAllItemTypeSlots");
-
-    [Native(Level.Missing)]
-    public void SetAllUnitTypeSlots(int slots) => throw new MissingNativeException("SetAllUnitTypeSlots");
 
     [Native(Level.Missing)]
     public void SetAllyColorFilterState(int state) => throw new MissingNativeException("SetAllyColorFilterState");
@@ -1990,21 +1702,6 @@ public sealed partial class GameNatives
     public void SetGameTypeSupported(gametype? whichGameType, bool value) => throw new MissingNativeException("SetGameTypeSupported");
 
     [Native(Level.Missing)]
-    public void SetHeroAgi(unit? whichHero, int newAgi, bool permanent) => throw new MissingNativeException("SetHeroAgi");
-
-    [Native(Level.Missing)]
-    public void SetHeroInt(unit? whichHero, int newInt, bool permanent) => throw new MissingNativeException("SetHeroInt");
-
-    [Native(Level.Missing)]
-    public void SetHeroLevel(unit? whichHero, int level, bool showEyeCandy) => throw new MissingNativeException("SetHeroLevel");
-
-    [Native(Level.Missing)]
-    public void SetHeroStr(unit? whichHero, int newStr, bool permanent) => throw new MissingNativeException("SetHeroStr");
-
-    [Native(Level.Missing)]
-    public void SetHeroXP(unit? whichHero, int newXpVal, bool showEyeCandy) => throw new MissingNativeException("SetHeroXP");
-
-    [Native(Level.Missing)]
     public void SetImageAboveWater(image? whichImage, bool flag, bool useWaterAlpha) => throw new MissingNativeException("SetImageAboveWater");
 
     [Native(Level.Missing)]
@@ -2032,40 +1729,7 @@ public sealed partial class GameNatives
     public void SetIntroShotText(string? introText) => throw new MissingNativeException("SetIntroShotText");
 
     [Native(Level.Missing)]
-    public void SetItemCharges(item? whichItem, int charges) => throw new MissingNativeException("SetItemCharges");
-
-    [Native(Level.Missing)]
     public void SetItemColor(item? whichItem, playercolor? whichColor) => throw new MissingNativeException("SetItemColor");
-
-    [Native(Level.Missing)]
-    public void SetItemDropID(item? whichItem, int unitId) => throw new MissingNativeException("SetItemDropID");
-
-    [Native(Level.Missing)]
-    public void SetItemDropOnDeath(item? whichItem, bool flag) => throw new MissingNativeException("SetItemDropOnDeath");
-
-    [Native(Level.Missing)]
-    public void SetItemDroppable(item? i, bool flag) => throw new MissingNativeException("SetItemDroppable");
-
-    [Native(Level.Missing)]
-    public void SetItemInvulnerable(item? whichItem, bool flag) => throw new MissingNativeException("SetItemInvulnerable");
-
-    [Native(Level.Missing)]
-    public void SetItemPawnable(item? i, bool flag) => throw new MissingNativeException("SetItemPawnable");
-
-    [Native(Level.Missing)]
-    public void SetItemPlayer(item? whichItem, player? whichPlayer, bool changeColor) => throw new MissingNativeException("SetItemPlayer");
-
-    [Native(Level.Missing)]
-    public void SetItemPosition(item? i, float x, float y) => throw new MissingNativeException("SetItemPosition");
-
-    [Native(Level.Missing)]
-    public void SetItemTypeSlots(unit? whichUnit, int slots) => throw new MissingNativeException("SetItemTypeSlots");
-
-    [Native(Level.Missing)]
-    public void SetItemUserData(item? whichItem, int data) => throw new MissingNativeException("SetItemUserData");
-
-    [Native(Level.Missing)]
-    public void SetItemVisible(item? whichItem, bool show) => throw new MissingNativeException("SetItemVisible");
 
     [Native(Level.Missing)]
     public bool SetLightningColor(lightning? whichBolt, float r, float g, float b, float a) => throw new MissingNativeException("SetLightningColor");
@@ -2170,9 +1834,6 @@ public sealed partial class GameNatives
     public void SetUnitTimeScale(unit? whichUnit, float timeScale) => throw new MissingNativeException("SetUnitTimeScale");
 
     [Native(Level.Missing)]
-    public void SetUnitTypeSlots(unit? whichUnit, int slots) => throw new MissingNativeException("SetUnitTypeSlots");
-
-    [Native(Level.Missing)]
     public void ShowImage(image? whichImage, bool flag) => throw new MissingNativeException("ShowImage");
 
     [Native(Level.Missing)]
@@ -2192,9 +1853,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public bool StoreUnit(gamecache? cache, string? missionKey, string? key, unit? whichUnit) => throw new MissingNativeException("StoreUnit");
-
-    [Native(Level.Missing)]
-    public void SuspendHeroXP(unit? whichHero, bool flag) => throw new MissingNativeException("SuspendHeroXP");
 
     [Native(Level.Missing)]
     public void SyncSelections() => throw new MissingNativeException("SyncSelections");
@@ -2272,15 +1930,6 @@ public sealed partial class GameNatives
     public void UnitAddIndicator(unit? whichUnit, int red, int green, int blue, int alpha) => throw new MissingNativeException("UnitAddIndicator");
 
     [Native(Level.Missing)]
-    public bool UnitAddItem(unit? whichUnit, item? whichItem) => throw new MissingNativeException("UnitAddItem");
-
-    [Native(Level.Missing)]
-    public item? UnitAddItemById(unit? whichUnit, int itemId) => throw new MissingNativeException("UnitAddItemById");
-
-    [Native(Level.Missing)]
-    public bool UnitAddItemToSlotById(unit? whichUnit, int itemId, int itemSlot) => throw new MissingNativeException("UnitAddItemToSlotById");
-
-    [Native(Level.Missing)]
     public bool UnitCanEquipItemOfEquipmentType(unit? whichUnit, equipmentType? equipmentId) => throw new MissingNativeException("UnitCanEquipItemOfEquipmentType");
 
     [Native(Level.Missing)]
@@ -2291,15 +1940,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public bool UnitDamageTarget(unit? whichUnit, widget? target, float amount, bool attack, bool ranged, attacktype? attackType, damagetype? damageType, weapontype? weaponType) => throw new MissingNativeException("UnitDamageTarget");
-
-    [Native(Level.Missing)]
-    public bool UnitDropItemPoint(unit? whichUnit, item? whichItem, float x, float y) => throw new MissingNativeException("UnitDropItemPoint");
-
-    [Native(Level.Missing)]
-    public bool UnitDropItemSlot(unit? whichUnit, item? whichItem, int slot) => throw new MissingNativeException("UnitDropItemSlot");
-
-    [Native(Level.Missing)]
-    public bool UnitDropItemTarget(unit? whichUnit, item? whichItem, widget? target) => throw new MissingNativeException("UnitDropItemTarget");
 
     [Native(Level.Missing)]
     public bool UnitEquipItem(unit? whichUnit, item? whichItem) => throw new MissingNativeException("UnitEquipItem");
@@ -2314,9 +1954,6 @@ public sealed partial class GameNatives
     public bool UnitHasBuffsEx(unit? whichUnit, bool removePositive, bool removeNegative, bool magic, bool physical, bool timedLife, bool aura, bool autoDispel) => throw new MissingNativeException("UnitHasBuffsEx");
 
     [Native(Level.Missing)]
-    public bool UnitHasItem(unit? whichUnit, item? whichItem) => throw new MissingNativeException("UnitHasItem");
-
-    [Native(Level.Missing)]
     public bool UnitHasItemBagged(unit? whichUnit, item? whichItem) => throw new MissingNativeException("UnitHasItemBagged");
 
     [Native(Level.Missing)]
@@ -2329,37 +1966,16 @@ public sealed partial class GameNatives
     public bool UnitHasLoadoutSlotEmpty(unit? whichUnit, loadoutslot? itemSlot) => throw new MissingNativeException("UnitHasLoadoutSlotEmpty");
 
     [Native(Level.Missing)]
-    public int UnitInventorySize(unit? whichUnit) => throw new MissingNativeException("UnitInventorySize");
-
-    [Native(Level.Missing)]
     public item? UnitItemInBagSlot(unit? whichUnit, int itemSlot) => throw new MissingNativeException("UnitItemInBagSlot");
 
     [Native(Level.Missing)]
     public item? UnitItemInEquipmentSlot(unit? whichUnit, loadoutslot? itemSlot) => throw new MissingNativeException("UnitItemInEquipmentSlot");
 
     [Native(Level.Missing)]
-    public item? UnitItemInSlot(unit? whichUnit, int itemSlot) => throw new MissingNativeException("UnitItemInSlot");
-
-    [Native(Level.Missing)]
-    public bool UnitModifySkillPoints(unit? whichHero, int skillPointDelta) => throw new MissingNativeException("UnitModifySkillPoints");
-
-    [Native(Level.Missing)]
-    public void UnitPoolAddUnitType(unitpool? whichPool, int unitId, float weight) => throw new MissingNativeException("UnitPoolAddUnitType");
-
-    [Native(Level.Missing)]
-    public void UnitPoolRemoveUnitType(unitpool? whichPool, int unitId) => throw new MissingNativeException("UnitPoolRemoveUnitType");
-
-    [Native(Level.Missing)]
     public void UnitRemoveBuffs(unit? whichUnit, bool removePositive, bool removeNegative) => throw new MissingNativeException("UnitRemoveBuffs");
 
     [Native(Level.Missing)]
     public void UnitRemoveBuffsEx(unit? whichUnit, bool removePositive, bool removeNegative, bool magic, bool physical, bool timedLife, bool aura, bool autoDispel) => throw new MissingNativeException("UnitRemoveBuffsEx");
-
-    [Native(Level.Missing)]
-    public void UnitRemoveItem(unit? whichUnit, item? whichItem) => throw new MissingNativeException("UnitRemoveItem");
-
-    [Native(Level.Missing)]
-    public item? UnitRemoveItemFromSlot(unit? whichUnit, int itemSlot) => throw new MissingNativeException("UnitRemoveItemFromSlot");
 
     [Native(Level.Missing)]
     public void UnitResetCooldown(unit? whichUnit) => throw new MissingNativeException("UnitResetCooldown");
@@ -2374,16 +1990,10 @@ public sealed partial class GameNatives
     public void UnitShareVision(unit? whichUnit, player? whichPlayer, bool share) => throw new MissingNativeException("UnitShareVision");
 
     [Native(Level.Missing)]
-    public bool UnitStripHeroLevel(unit? whichHero, int howManyLevels) => throw new MissingNativeException("UnitStripHeroLevel");
-
-    [Native(Level.Missing)]
     public void UnitUnequipItem(unit? whichUnit, item? whichItem) => throw new MissingNativeException("UnitUnequipItem");
 
     [Native(Level.Missing)]
     public item? UnitUnequipItemFromSlot(unit? whichUnit, loadoutslot? slot) => throw new MissingNativeException("UnitUnequipItemFromSlot");
-
-    [Native(Level.Missing)]
-    public bool UnitUseItem(unit? whichUnit, item? whichItem) => throw new MissingNativeException("UnitUseItem");
 
     [Native(Level.Missing)]
     public bool UnitUseItemPoint(unit? whichUnit, item? whichItem, float x, float y) => throw new MissingNativeException("UnitUseItemPoint");

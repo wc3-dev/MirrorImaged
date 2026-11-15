@@ -1,0 +1,2 @@
+# probes/heroes-nonhero-setstr.lua, as above.
+set 420.0 420

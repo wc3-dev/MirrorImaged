@@ -505,10 +505,10 @@ public sealed class DestructableTests : IDisposable
             """, Placed));
     }
 
-    // D252: the widget natives and the death registration take units and destructables alike; an item waits for W2-3
-    // and stops the run as the native being Missing
+    // D252, D330: the widget natives and the death registration take units, destructables and items alike (an item's are
+    // ItemTests')
     [Fact]
-    public void The_widget_natives_take_units_and_destructables_and_an_item_stops_the_run()
+    public void The_widget_natives_take_units_and_destructables_alike()
     {
         Assert.Equal(["420.000 -32.000 tree 50.000", "  death footman", "  death tree life 0.000 widget true event 89"], Run("""
             local footman, tree = CreateUnit(Player(0), id("hfoo"), -32, 0, 0), make("tree", "LTlt")
@@ -521,12 +521,6 @@ public sealed class DestructableTests : IDisposable
             """));
 
         var natives = new GameNatives(new World.Game(0));
-        var potion = new item();
-        Assert.Equal("GetWidgetLife", Assert.Throws<MissingNativeException>(() => natives.GetWidgetLife(potion)).Native);
-        Assert.Equal("SetWidgetLife", Assert.Throws<MissingNativeException>(() => natives.SetWidgetLife(potion, 1)).Native);
-        Assert.Equal("GetWidgetY", Assert.Throws<MissingNativeException>(() => natives.GetWidgetY(potion)).Native);
-        Assert.Equal("TriggerRegisterDeathEvent",
-            Assert.Throws<MissingNativeException>(() => natives.TriggerRegisterDeathEvent(natives.CreateTrigger(), potion)).Native);
         Assert.Equal(0, natives.GetWidgetLife(null));
     }
 

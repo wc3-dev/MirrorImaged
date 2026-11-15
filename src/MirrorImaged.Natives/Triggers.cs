@@ -98,7 +98,7 @@ public sealed partial class GameNatives
     // What the event responses read in a thread: the trigger it runs for and the event that started it (decisions D75),
     // and the unit or destructable it is about
     sealed record Firing(trigger? Trigger, eventid Event, gamestate? State = null, player? Player = null, playerstate? PlayerState = null,
-        Happening? Unit = null, destructable? Destructable = null, region? Region = null);
+        Happening? Unit = null, destructable? Destructable = null, region? Region = null, item? Item = null);
 
     readonly List<(gamestate State, limitop Op, float Limit, @event Event)> _stateEvents = [];
     Firing? _firing, _outside;
@@ -474,12 +474,12 @@ public sealed partial class GameNatives
 
     // An event: counted; then, when the trigger is enabled and its conditions pass, its actions run (probe triggers-2)
     void Fire(@event registered, eventid id, gamestate? state = null, player? player = null, playerstate? playerState = null,
-        Happening? unit = null, destructable? destructable = null, region? region = null)
+        Happening? unit = null, destructable? destructable = null, region? region = null, item? item = null)
     {
         if (registered.Trigger is not { Destroyed: false } t) return;
         t.EvalCount++;
         if (!t.Enabled) return;
-        var firing = new Firing(t, id, state, player, playerState, unit, destructable, region);
+        var firing = new Firing(t, id, state, player, playerState, unit, destructable, region, item);
         if (!In(firing, () => Passes(t))) return;
         t.ExecCount++;
         Execute(t, firing);

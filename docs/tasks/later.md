@@ -86,3 +86,12 @@ Each item names the wave whose file it goes into when that file is written.
 - Wave 7 (AI): creep camps guarding and going back, for `SetUnitCreepGuard`, which does nothing yet (D314); and the
   creeps' sleep 0.2 to 0.25 s after dusk and waking as long after dawn, where MirrorImaged acts at the hour (D313;
   `probes/differences/units-more-2.txt`) (W2-10).
+
+- Wave 3 or 4 (W2-3's leftovers): the unit game-cache natives `StoreUnit`, `RestoreUnit`, `HaveStoredUnit`,
+  `FlushStoredUnit` and `SyncStoredUnit` (they need a unit's state, with its attributes, items and abilities, stored and
+  rebuilt; a probe never calls `SaveGameCache`); what items give a hero (attribute bonuses, a potion's heal, the ankh;
+  `probes/differences/items.txt`); `GetUnitAbilityLevel` on the probes `heroes` and `heroes-nonhero` after W2-7 (their
+  lines for it were taken out); the hero-revivable event; the game's proper-name numbering; stacking items; shops,
+  the stock and the restock timer; `UnitDropItemPoint` and `UnitDropItemTarget`'s walk; `ChooseRandomCreep` and
+  `ChooseRandomNPBuilding`; equipment and bags; `GetItemTag`, `GetItemEquipmentType`; the resolved tags in
+  `BlzGetItemExtendedTooltip` (W2-8's `ParseTags`); clamping an item's place to the map.

@@ -181,6 +181,22 @@ public sealed class InstalledDataTests
         Assert.Equal([Id("Hamg"), Id("Hpal")], named.Take(2));
         Assert.True(named.IndexOf(Id("Hpal")) < named.IndexOf(Id("Hssa")));
     }
+
+    // probe heroes: the Paladin's skills Holy Light and Resurrection are learned at hero levels 1, 3, 5 and 6; the hero
+    // abilities the data lists for the type, the ability's required level and its level skip
+    [InstallFact]
+    public void Heroes_list_their_abilities_and_their_levels_to_learn()
+    {
+        var paladin = Data.Object(ObjectKind.Unit, Id("Hpal"))!;
+        var (holyLight, resurrection) = (Data.Object(ObjectKind.Ability, Id("AHhb"))!, Data.Object(ObjectKind.Ability, Id("AHre"))!);
+
+        Assert.Contains("AHhb", paladin.Text(Id("uhab"))!.Split(','));
+        Assert.Contains("AHre", paladin.Text(Id("uhab"))!.Split(','));
+        Assert.DoesNotContain("AHbz", paladin.Text(Id("uhab"))!.Split(','));
+        // its level skip reads 0, though the game makes the second level need hero level 3: the skip is 2 where the data has none
+        Assert.Equal((3, 1, "0"), (holyLight.Levels, holyLight.Integer(Id("arlv")), holyLight.Text(Id("alsk"))));
+        Assert.Equal(6, resurrection.Integer(Id("arlv")));
+    }
 }
 
 /// <summary>A theory that reads the Warcraft III install on this computer; skipped when there is none.</summary>
