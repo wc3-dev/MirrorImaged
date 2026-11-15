@@ -52,11 +52,36 @@ public sealed partial class GameNatives
         return true;
     }
 
+    // Whether a unit type is a town hall, kept by type, as a worker asks about every unit of the game each step
+    readonly Dictionary<int, bool> _hallTypes = [];
+
+    bool IsTownHall(unit u)
+    {
+        if (!_hallTypes.TryGetValue(u.Type.Id, out var hall))
+            _hallTypes[u.Type.Id] = hall = (BlzGetUnitIntegerField(u, Convert<unitintegerfield>(Classification)) & TownHallKind) != 0;
+        return hall;
+    }
+
+    // The town halls of each player, listed again once in a tick
+    readonly Dictionary<player, List<unit>> _hallsOf = [];
+    long _hallsAt = -1;
+    int _hallsUnits;
+
     // The nearest finished town hall of the worker's owner, or none
-    unit? DropOff(unit u) =>
-        _units.Values.Where(hall => hall.Owner == u.Owner && !hall.Dead && !hall.Removed && !hall.Constructing
-                && (BlzGetUnitIntegerField(hall, Convert<unitintegerfield>(Classification)) & TownHallKind) != 0)
-            .OrderBy(hall => Distance2(hall.X - u.X, hall.Y - u.Y)).FirstOrDefault();
+    unit? DropOff(unit u)
+    {
+        if (_hallsAt != _ticks || _hallsUnits != _units.Count)
+        {
+            (_hallsAt, _hallsUnits) = (_ticks, _units.Count);
+            _hallsOf.Clear();
+            foreach (var hall in _units.Values.Where(h => !h.Dead && !h.Removed && !h.Constructing && IsTownHall(h)))
+            {
+                if (!_hallsOf.TryGetValue(hall.Owner, out var list)) _hallsOf[hall.Owner] = list = [];
+                list.Add(hall);
+            }
+        }
+        return _hallsOf.TryGetValue(u.Owner, out var halls) ? halls.MinBy(hall => Distance2(hall.X - u.X, hall.Y - u.Y)) : null;
+    }
 
     bool ReturnLoad(unit u)
     {

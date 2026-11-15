@@ -90,15 +90,23 @@ public sealed partial class GameNatives
         _destructables.Where(d => !d.Dead && d.Life > 0.405f && (d.Type.Text(Code("btar")) ?? "").Contains("tree", StringComparison.OrdinalIgnoreCase)
                 && Distance2(d.X - hall.X, d.Y - hall.Y) <= 1500 * 1500).OrderBy(d => Distance2(d.X - hall.X, d.Y - hall.Y)).FirstOrDefault();
 
-    // The workers go to the slots in the order of their ids, each keeping what it does when that is the kind of work its slot is
+    // A unit that gathers lumber without being a worker that builds, as the undead ghoul does (the lumber harvest ability)
+    bool GathersLumberOnly(unit u) => u.Abilities.Any(a => a.Type.Id == LumberHarvest) && !IsWorker(u);
+
+    static readonly int LumberHarvest = Code("Ahrl");
+
+    // The workers go to the slots in the order asked, each slot taking the first idle or gathering worker by id that can do its work (a ghoul
+    // only cuts wood, so it takes the wood slots first), each keeping what it does when that is the kind of work its slot is
     void Assign()
     {
-        var workers = Mine(Ai).Where(u => !u.Constructing && u.Building is null && IsWorker(u) && u.Order is 0 or OrderHarvest or OrderReturn).OrderBy(u => u.Id).ToList();
-        for (var i = 0; i < _slots.Count && i < workers.Count; i++)
+        var pool = Mine(Ai).Where(u => !u.Constructing && u.Building is null && (IsWorker(u) || GathersLumberOnly(u)) && u.Order is 0 or OrderHarvest or OrderReturn).OrderBy(u => u.Id).ToList();
+        var used = new HashSet<unit>();
+        foreach (var (gold, town) in _slots)
         {
-            var (gold, town) = _slots[i];
+            var worker = pool.Where(w => !used.Contains(w) && (!gold || IsWorker(w))).OrderBy(w => !gold && GathersLumberOnly(w) ? 0 : 1).FirstOrDefault();
+            if (worker is null) continue;
+            used.Add(worker);
             if (!TownHasHall(town)) continue;
-            var worker = workers[i];
             var current = worker.Order == OrderReturn ? worker.HarvestTarget : worker.OrderTarget;
             if (worker.Order != 0 && (gold ? current is unit : current is destructable) && !SpentTarget(this, current)) continue;
             widget? target = gold ? MineNear(Towns()[town]) : TreeNear(Towns()[town]);
