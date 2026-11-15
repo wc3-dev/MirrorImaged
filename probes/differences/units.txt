@@ -23,21 +23,6 @@
 - killed at 0.4000
 + killed at 0.4004
 
-# A hero's attributes are W2-3's: a set changes only the field here, not life, and the permanent attribute isn't
-# modelled (D227, Close).
-- permanent 0 1 1
-+ permanent 0 13 13
-- strength 30 850.0 850 30
-+ strength 30 650.0 650 30
-
-# A hero's permanent attribute set (W2-3; D227, Close).
-- set Hpal true 1
-+ set Hpal true 13
-- set Hpal true 1
-+ set Hpal true 17
-- set Hpal true 1
-+ set Hpal true 22
-
 # The decay events come their death time after the death, in the clock's steps (D45, Close).
 - decay 3.1400 21 false false 0 0.0
 + decay 3.1396 21 false false 0 0.0

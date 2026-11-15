@@ -138,8 +138,7 @@ part(0.3, "skills", function()
   end)
   local function learn(label, id)
     SelectHeroSkill(h, FourCC(id))
-    out(label .. " points " .. GetHeroSkillPoints(h) .. " AHhb " .. GetUnitAbilityLevel(h, FourCC("AHhb")) .. " AHre "
-      .. GetUnitAbilityLevel(h, FourCC("AHre")) .. " learned " .. GetLearnedSkill() .. " " .. GetLearnedSkillLevel())
+    out(label .. " points " .. GetHeroSkillPoints(h) .. " learned " .. GetLearnedSkill() .. " " .. GetLearnedSkillLevel())
   end
   learn("ultimate at 1", "AHre")
   learn("AHhb at 1", "AHhb")
@@ -154,7 +153,7 @@ part(0.3, "skills", function()
   SetHeroLevel(h, 6, false)
   learn("ultimate at 6", "AHre")
   BlzResetUnitTalents(h)
-  out("reset talents points " .. GetHeroSkillPoints(h) .. " AHhb " .. GetUnitAbilityLevel(h, FourCC("AHhb")))
+  out("reset talents points " .. GetHeroSkillPoints(h))
 end)
 
 part(0.35, "revive", function()

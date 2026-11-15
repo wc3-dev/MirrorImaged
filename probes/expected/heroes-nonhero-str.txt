@@ -1,0 +1,2 @@
+# probes/heroes-nonhero-str.lua, as above.
+str 0 0 agi 0 int 0

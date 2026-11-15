@@ -16,6 +16,11 @@ public partial class unit
     internal string? Name; // BlzSetUnitName's
     internal readonly Dictionary<int, object> Fields = []; // what BlzSetUnit*Field and the setters sharing a field set
     internal Change Facing;
+    internal double Str, Agi, Int; // a hero's attributes with the fractions its gains per level add up to
+    internal int Xp, SkillPoints;
+    internal bool XpSuspended;
+    internal string ProperName = "";
+    internal readonly Dictionary<int, int> Skills = []; // a hero's learned skills and their levels
 }
 
 /// <summary>
@@ -73,6 +78,7 @@ public sealed partial class GameNatives
         u.Life = corpse ? 0 : u.MaxLife;
         u.Mana = Math.Min(type.Integer(ManaInitial) + (hero ? Data.Constant("IntManaBonus", 15) * type.Integer(Intelligence) : 0), u.MaxMana);
         u.Dead = corpse;
+        if (hero) Begin(u);
         FallAsleep(u);
         // A corpse counts its food and gives it back (two food events), and gets its undefend, with no death event
         // (probes units-more and units-bones); taken back from the owner it was counted for, as a food event may give it away
