@@ -1453,9 +1453,6 @@ public sealed partial class GameNatives
     public string? OrderId2String(int orderId) => throw new MissingNativeException("OrderId2String");
 
     [Native(Level.Missing)]
-    public string? ParseTags(string? taggedString) => throw new MissingNativeException("ParseTags");
-
-    [Native(Level.Missing)]
     public void PauseCompAI(player? p, bool pause) => throw new MissingNativeException("PauseCompAI");
 
     [Native(Level.Missing)]

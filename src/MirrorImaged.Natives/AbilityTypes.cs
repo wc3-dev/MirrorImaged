@@ -84,11 +84,10 @@ public sealed partial class GameNatives
     public void BlzSetAbilityTooltip(int abilCode, string? tooltip, int level) => SetTypeText(abilCode, "Tip", tooltip, level);
 
     /// <summary>
-    /// As the tooltip, "" where there is none. Close: its <c>&lt;id,column&gt;</c> tags stay as written, which the game
-    /// fills (game-facts: <c>&lt;AHhb,DataA1&gt;</c> reads 200), W2-8's.
+    /// As the tooltip, "" where there is none, its <c>&lt;id,column&gt;</c> tags filled (<see cref="ParseTags"/>).
     /// </summary>
-    [Native(Level.Close)]
-    public string? BlzGetAbilityExtendedTooltip(int abilCode, int level) => TypeText(abilCode, "Ubertip", level);
+    [Native(Level.Close, Fact = TagFacts)]
+    public string? BlzGetAbilityExtendedTooltip(int abilCode, int level) => ParseTags(TypeText(abilCode, "Ubertip", level));
 
     [Native(Level.Exact, Fact = AbilityTypesProbe + "; game-facts.md, Files and Preload: tooltips (11-03)")]
     public void BlzSetAbilityExtendedTooltip(int abilCode, string? extendedTooltip, int level) => SetTypeText(abilCode, "Ubertip", extendedTooltip, level);
@@ -101,9 +100,9 @@ public sealed partial class GameNatives
     [Native(Level.Exact, Fact = AbilityTypesProbe)]
     public void BlzSetAbilityResearchTooltip(int abilCode, string? researchTooltip, int level) => SetTypeText(abilCode, "Researchtip", researchTooltip, level);
 
-    /// <summary>The learn extended tooltip, one for every level. Close: its tags stay as written (W2-8).</summary>
-    [Native(Level.Close)]
-    public string? BlzGetAbilityResearchExtendedTooltip(int abilCode, int level) => TypeText(abilCode, "Researchubertip", level);
+    /// <summary>The learn extended tooltip, one for every level, its tags filled.</summary>
+    [Native(Level.Close, Fact = TagFacts)]
+    public string? BlzGetAbilityResearchExtendedTooltip(int abilCode, int level) => ParseTags(TypeText(abilCode, "Researchubertip", level));
 
     [Native(Level.Exact, Fact = AbilityTypesProbe)]
     public void BlzSetAbilityResearchExtendedTooltip(int abilCode, string? researchExtendedTooltip, int level) => SetTypeText(abilCode, "Researchubertip", researchExtendedTooltip, level);
@@ -116,9 +115,9 @@ public sealed partial class GameNatives
     [Native(Level.Exact, Fact = AbilityTypesProbe)]
     public void BlzSetAbilityActivatedTooltip(int abilCode, string? tooltip, int level) => SetTypeText(abilCode, "Untip", tooltip, level);
 
-    /// <summary>"" without one. Close: its tags stay as written (W2-8).</summary>
-    [Native(Level.Close)]
-    public string? BlzGetAbilityActivatedExtendedTooltip(int abilCode, int level) => TypeText(abilCode, "Unubertip", level);
+    /// <summary>"" without one, its tags filled.</summary>
+    [Native(Level.Close, Fact = TagFacts)]
+    public string? BlzGetAbilityActivatedExtendedTooltip(int abilCode, int level) => ParseTags(TypeText(abilCode, "Unubertip", level));
 
     [Native(Level.Exact, Fact = AbilityTypesProbe)]
     public void BlzSetAbilityActivatedExtendedTooltip(int abilCode, string? extendedTooltip, int level) => SetTypeText(abilCode, "Unubertip", extendedTooltip, level);
