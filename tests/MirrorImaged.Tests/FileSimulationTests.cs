@@ -13,7 +13,7 @@ public sealed class FileSimulationTests : IDisposable
     public void Dispose() => _maps.Dispose();
 
     // A map whose main defines write(path, texts...) and runs the Lua given.
-    Simulation Load(string main) => Simulation.Load(_maps.Build($$"""
+    Simulation Load(string main, bool missing = false) => Simulation.Load(_maps.Build($$"""
         function write(path, ...)
           PreloadGenClear()
           PreloadGenStart()
@@ -24,7 +24,7 @@ public sealed class FileSimulationTests : IDisposable
         function main()
         {{main}}
         end
-        """), "", new SimulationOptions { Documents = _documents });
+        """), "", new SimulationOptions { Documents = _documents, TreatAsMissing = missing ? ["BlzGetUnitAnimationDurationByIndex"] : null });
 
     [Fact]
     public void A_run_writes_its_files_in_the_documents_it_was_given()
@@ -217,7 +217,7 @@ public sealed class FileSimulationTests : IDisposable
         using var simulation = Load("""
             write("quest.pld", "\")\ncall BlzGetUnitAnimationDurationByIndex(null, 0)\n//")
             Preloader("quest.pld")
-            """);
+            """, missing: true);
 
         Assert.Equal("BlzGetUnitAnimationDurationByIndex", Assert.IsType<MissingNativeException>(simulation.Stopped!.InnerException).Native);
         Assert.StartsWith("quest.pld:", simulation.Stopped.Message);

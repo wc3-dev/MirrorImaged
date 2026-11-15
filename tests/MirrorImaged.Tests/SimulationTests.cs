@@ -13,8 +13,8 @@ public sealed class SimulationTests : IDisposable
 
     public void Dispose() => _maps.Dispose();
 
-    Simulation Load(string main, int seed = 0) =>
-        Simulation.Load(_maps.Build($"function config() end\nfunction main()\n{main}\nend\n"), "", new SimulationOptions { Seed = seed });
+    Simulation Load(string main, int seed = 0, bool missing = false) =>
+        Simulation.Load(_maps.Build($"function config() end\nfunction main()\n{main}\nend\n"), "", new SimulationOptions { Seed = seed, TreatAsMissing = missing ? ["BlzGetUnitAnimationDurationByIndex"] : null });
 
     [Fact]
     public void The_script_then_config_then_main_run_and_print_goes_in_the_log()
@@ -105,7 +105,7 @@ public sealed class SimulationTests : IDisposable
               BlzGetUnitAnimationDurationByIndex(nil, 0)
               print("after")
             end
-            """), "");
+            """), "", new SimulationOptions { TreatAsMissing = ["BlzGetUnitAnimationDurationByIndex"] });
 
         var stop = simulation.Stopped!;
         Assert.StartsWith("war3map.lua:4: The native BlzGetUnitAnimationDurationByIndex is Missing", stop.Message);
@@ -117,7 +117,7 @@ public sealed class SimulationTests : IDisposable
     [Fact]
     public void A_missing_native_stops_the_run_before_its_arguments_are_read()
     {
-        using var simulation = Load("BlzGetUnitAnimationDurationByIndex({}, coroutine.create(print))");
+        using var simulation = Load("BlzGetUnitAnimationDurationByIndex({}, coroutine.create(print))", missing: true);
 
         Assert.StartsWith("war3map.lua:3: The native BlzGetUnitAnimationDurationByIndex is Missing", simulation.Stopped!.Message);
     }
@@ -128,7 +128,7 @@ public sealed class SimulationTests : IDisposable
     [InlineData("coroutine.wrap(BlzGetUnitAnimationDurationByIndex)()")]
     public void A_missing_native_called_straight_from_c_names_the_nearest_lua_line(string call)
     {
-        using var simulation = Load(call);
+        using var simulation = Load(call, missing: true);
 
         Assert.StartsWith("war3map.lua:3: The native BlzGetUnitAnimationDurationByIndex is Missing", simulation.Stopped!.Message);
         Assert.Empty(simulation.Log);
@@ -145,7 +145,7 @@ public sealed class SimulationTests : IDisposable
               print("carried on", ok)
             end)
             TimerStart(CreateTimer(), 2, false, function() print("later") end)
-            """);
+            """, missing: true);
 
         var error = Assert.Throws<LuaException>(() => simulation.Advance(TimeSpan.FromSeconds(3)));
 
@@ -259,7 +259,7 @@ public sealed class SimulationTests : IDisposable
 
         Assert.StartsWith("blizzard.lua:1: broken", Assert.Throws<LuaException>(() => Simulation.Load(map, "error('broken')")).Message);
         Assert.StartsWith("blizzard.lua:1:", Assert.Throws<LuaException>(() => Simulation.Load(map, "function (")).Message);
-        using var stopped = Simulation.Load(map, "\nBlzGetUnitAnimationDurationByIndex()");
+        using var stopped = Simulation.Load(map, "\nBlzGetUnitAnimationDurationByIndex()", new SimulationOptions { TreatAsMissing = ["BlzGetUnitAnimationDurationByIndex"] });
         Assert.StartsWith("blizzard.lua:2: The native BlzGetUnitAnimationDurationByIndex is Missing", stopped.Stopped!.Message);
         Assert.Empty(stopped.Log);
     }

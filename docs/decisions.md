@@ -2349,3 +2349,9 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   hero's price (0.4 and 0.1 for each level above the first, ReviveBaseFactor and ReviveLevelFactor) and revives it at its door when the time
   (0.65 of the hero's build time) is out; a hero a player already has, alive or in training, can't be trained again. Close: the revive price
   and time are the constants' names as I know them, not measured.
+
+- **D377 (Animation lengths, and none Missing):** `BlzGetUnitAnimationDuration` and `BlzGetUnitAnimationDurationByIndex` read the sequences of the
+  unit's model (its `umdl` file with `.mdx`) in the installed game: each is a name and the time it starts and ends in milliseconds; the first
+  whose name begins with the one asked for wins, and a model that is not in the install gives 0. The game may read the high-definition model
+  where the classic one is read here. With this no native of `common.j` and `common.ai` is Missing (A1). To keep the Missing machinery
+  tested, `SimulationOptions.TreatAsMissing` (and `MIRROR_MISSING` for the command line) runs named natives as Missing.
