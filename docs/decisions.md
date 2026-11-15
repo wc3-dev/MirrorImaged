@@ -2309,3 +2309,9 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   `units`, `order`, `select`, `key`, `mouse`, `leave`, `say`, `log`, `hash`, `wait_until`, `recording`), and `assert_eq`, `assert_true`,
   `assert_close` and `assert_contains` check. Each result is printed and `--junit <file>` writes JUnit XML. A shared case list (a map script and
   steps) runs through both APIs and must end at the same state hash and log (A9). Not done: finding the Lua tests from `dotnet test`.
+
+- **D370 (Snapshots and stepping back):** a snapshot is the step, the state hash, the hash of each part (time, a player, a unit) and the
+  recording to that step. `Snapshot.Differences` lists the parts that differ from a simulation at the same step, `Simulation.Restore` runs the
+  snapshot again, and `Simulation.StepBack` runs the map again to an earlier step, which lands on the state the run had then (A11). The
+  world is not copied: a run repeats exactly from its recording, so going back costs the run to that step. `mirror snapshot` saves one and
+  `mirror compare` runs it again and lists what differs.

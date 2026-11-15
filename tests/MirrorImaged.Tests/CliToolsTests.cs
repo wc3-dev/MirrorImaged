@@ -78,4 +78,27 @@ public sealed class CliToolsTests : IDisposable
         Assert.Equal(0, exit);
         Assert.Contains("1 user slot(s)", output);
     }
+
+    [InstallFact]
+    public void A_snapshot_compares_equal_to_its_own_run_and_unequal_to_another_map()
+    {
+        var map = Map("""
+            TimerStart(CreateTimer(), 1, true, function() SetPlayerState(Player(0), PLAYER_STATE_RESOURCE_GOLD, GetPlayerState(Player(0), PLAYER_STATE_RESOURCE_GOLD) + GetRandomInt(1, 9)) end)
+            """);
+        var other = Map("""
+            TimerStart(CreateTimer(), 1, true, function() SetPlayerState(Player(0), PLAYER_STATE_RESOURCE_GOLD, GetPlayerState(Player(0), PLAYER_STATE_RESOURCE_GOLD) + 50) end)
+            """);
+        var snapshot = Path.Combine(_folder, "s.json");
+
+        var saved = CoverageTests.Mirror("snapshot", map, "--at", "5", "--seed", "2", "--out", snapshot);
+        var same = CoverageTests.Mirror("compare", snapshot);
+        var different = CoverageTests.Mirror("compare", snapshot, "--map", other);
+
+        Assert.Equal(0, saved.Exit);
+        Assert.Contains("Snapshot at step 5120", saved.Output);
+        Assert.Equal(0, same.Exit);
+        Assert.Contains("Same world at step 5120", same.Output);
+        Assert.Equal(1, different.Exit);
+        Assert.Contains("player 0 differs", different.Output);
+    }
 }
