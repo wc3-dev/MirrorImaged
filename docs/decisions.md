@@ -2324,3 +2324,5 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   grid and regions, the units as circles in the colours of their players with a life bar, a timeline to scrub with play, step and speed, the
   log (a line seeks to its time) and a panel for the selected unit. No missiles are drawn: attacks land at their damage point here. Heights
   are not drawn. Seen in the in-app browser on a shipped campaign map; a headless browser opens it in the tests where one starts.
+- **D372 (Determinism across systems):** a test runs a map of dice, trigonometry, a fight, timers and many units for 20 seconds and compares
+  the state hash at 1, 5, 10, 15 and 20 seconds with the hashes made on Windows. CI runs it on Windows, Linux and macOS (A7).
