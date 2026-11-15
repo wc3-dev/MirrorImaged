@@ -41,14 +41,13 @@ Each item names the wave whose file it goes into when that file is written.
   D86). And binary `load`: MirrorImaged refuses binary chunks on purpose (D36, D126: bytecode isn't verified, so a
   map could corrupt the test process), which keeps `lua-config` different for good; that A6 exception is the
   coordinator's call, listed for Sven's review at the end.
-- Wave 5 (presentation): sound file lengths (`GetSoundDuration`, from the install's sound files), and a map's own
-  FDF/TOC string lists (D211, `BlzLoadTOCFile`) for `GetLocalizedString` (W2-1).
+- Wave 5 (presentation): a map's own FDF/TOC string lists (D211, `BlzLoadTOCFile`) for `GetLocalizedString` (W2-1).
 - Wave 7 (AI): the balance sets hold their own AI scripts (`_Balance/Custom_V0.w3mod`, `Melee_V0.w3mod`:
   `Scripts/human.ai` etc. and `*Melee.pld`); take them from the set `StandardData.Sets` picks (W2-1).
 - Wave 3 (orders and movement): the game moves a unit made where others stand off them (D223); `SetUnitPosition`;
   what `PauseUnit` and `BlzPauseUnitEx` hold back; `SetUnitFacing`'s turning eased into its end and on the game's
   frames, and the facing of angles past a turn (D224); orders beyond `SetUnitOwner`'s stop (W2-2).
-- Wave 5 (presentation): the unit animation natives and `SetUnitTimeScale` (W2-2).
+- (The unit animation natives and `SetUnitTimeScale` moved to wave-5.md, W5-3.)
 - Wave 10 (speed): a cross-process cache of the standard data (about 1.2-1.7 s a process) if the benchmark or the
   corpus runs need it; it must live outside the repo and packages (A15) (W2-1).
 - Wave 10 (the number model, W1-10's rest): find the game's `exp`, `log` and `atan` (tables on straight lines, by the
@@ -63,6 +62,12 @@ Each item names the wave whose file it goes into when that file is written.
 - Wave 10 (JASS): functions with more than 200 locals don't load (D139; Lua's limit). No shipped map has one (most
   is 24); two maps in Sven's Documents do (Gaia's ORPG, Survival Chaos Reborn) (W1-7).
 - Wave 10 (JASS): a rawcode with a backslash (`'a\bc'`) loads here but the game refuses the map (D137) (W1-7).
+- Wave 10 (cameras, W5-1): a position set as the game starts lands 0.2 to 0.25 s later in the game, here in the next
+  step (D502); the bounds held the target 200 along the view past their corner, in every run, after pans with a z made
+  while the bounds were 0, then bounds of 200 each way and a position at (1000, 1000) at rotation 120 (the cameras
+  probe, D502): find the rule; the game's cos(300 degrees) in the eye (D503); a followed unit's move reaches the
+  target a frame later (D504); a cinematic camera's target and eye, read from the camera in its model (D505). Each is
+  in `probes/differences`.
 - Wave 10 (accuracy, W2-4): the decks are measured in whole units (D255), so `GetLocationZ` on a bridge is up to 0.5
   off; measure them to a tenth with the workspace's deck probe, and the fall of a killed deck (over 2 s, its ends left)
   and the rise of one restored (0.5 s, 7 s with birth), to make it Exact.
@@ -72,3 +77,12 @@ Each item names the wave whose file it goes into when that file is written.
   map) closed the game with any doo War3Net wrote (docs/facts.md, "Destructables"), while the way Moonwell's physics
   gate took works (game-facts, "Units", 10-27): a World Editor map's files with its `war3map.doo` written by War3Net,
   `MapDoodads.UseNewFormat` set.
+- Wave 3 (orders, combat): `PauseUnit(false)` gives the unit back the order it had (game-facts: the move, 0.016 s
+  later), which W2-10's order events can't (D310); regeneration can bring life or mana across a unit state event's
+  limit, and the game looks at mana a frame (about 0.005 s) after a set (D315) (W2-10).
+- Wave 4 (abilities): `IsUnitType`'s stunned, plagued, snared, poisoned, polymorphed, resistant, ethereal and magic
+  immune (D230); summon events with `GetSummonedUnit` and `GetSummoningUnit`; illusions for `IsUnitIllusion`; and
+  timed life with a summon's buff (`BHwe`: no decay event, the body gone at its decay time, D312) (W2-10).
+- Wave 7 (AI): creep camps guarding and going back, for `SetUnitCreepGuard`, which does nothing yet (D314); and the
+  creeps' sleep 0.2 to 0.25 s after dusk and waking as long after dawn, where MirrorImaged acts at the hour (D313;
+  `probes/differences/units-more-2.txt`) (W2-10).
