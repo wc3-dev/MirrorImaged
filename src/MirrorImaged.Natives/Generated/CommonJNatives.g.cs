@@ -6,9 +6,4 @@ namespace MirrorImaged.Natives;
 
 public sealed partial class GameNatives
 {
-    [Native(Level.Missing)]
-    public float BlzGetUnitAnimationDuration(unit? whichUnit, string? whichAnimation) => throw new MissingNativeException("BlzGetUnitAnimationDuration");
-
-    [Native(Level.Missing)]
-    public float BlzGetUnitAnimationDurationByIndex(unit? whichUnit, int index) => throw new MissingNativeException("BlzGetUnitAnimationDurationByIndex");
 }

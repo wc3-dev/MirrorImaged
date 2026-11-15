@@ -27,6 +27,12 @@ public sealed class SimulationOptions
     /// game caches. Give the same one to the next run to keep them.
     /// </summary>
     public Documents Documents { get; init; } = new();
+
+    /// <summary>
+    /// Natives to run as Missing: calling one stops the run with its name, as a native MirrorImaged does not have would. For testing how a map or a
+    /// tool copes with one. The <c>MIRROR_MISSING</c> environment variable, names separated by commas, adds to it.
+    /// </summary>
+    public IReadOnlyList<string>? TreatAsMissing { get; init; }
 }
 
 /// <summary>
@@ -45,6 +51,7 @@ public sealed partial class Simulation : IDisposable
     readonly LuaState _lua = new() { Halts = e => e is MissingNativeException or GameClosedException };
     readonly bool _jass;
     TimeSpan _time;
+    readonly HashSet<string> _treatAsMissing;
     Func<SimulationOptions?, Simulation> _reload = _ => throw new InvalidOperationException("The simulation was not loaded from a map");
 
     // script: the map's Lua, for a JASS map made from its war3map.j with JASS's rules, which the run keeps (decisions D130)
@@ -53,6 +60,7 @@ public sealed partial class Simulation : IDisposable
         var info = data.Map!.Files.Info;
         _jass = data.Map.Jass;
         _game = new Game(options.Seed);
+        _treatAsMissing = [.. options.TreatAsMissing ?? [], .. (Environment.GetEnvironmentVariable("MIRROR_MISSING") ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
         _natives = new GameNatives(_game) { Threads = new ScriptThreads(this), Documents = options.Documents, RunPreloadFile = RunPreloadFile, AiLoader = LoadAi, Data = data, Jass = _jass };
         try
         {

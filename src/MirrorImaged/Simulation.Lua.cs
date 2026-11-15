@@ -13,7 +13,7 @@ public sealed partial class Simulation
 
     Func<object?[], object?[]> Bind(MethodInfo native)
     {
-        if (native.GetCustomAttribute<NativeAttribute>()!.Level == Level.Missing)
+        if (native.GetCustomAttribute<NativeAttribute>()!.Level == Level.Missing || _treatAsMissing.Contains(native.Name))
             return _ => throw new MissingNativeException(native.Name);
         var parameters = native.GetParameters();
         return args =>
