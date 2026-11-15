@@ -172,6 +172,15 @@ public sealed partial class Simulation : IDisposable
     /// <summary>The natives the run's script calls.</summary>
     internal GameNatives Natives => _natives;
 
+    /// <summary>A hash of the world now (time, players, units): equal for two runs of a map with one seed and the same input at every step.</summary>
+    public string StateHash() => _natives.Hash();
+
+    /// <summary>The player says the message, as if typed in the game: the chat events registered for it fire.</summary>
+    public void Say(int player, string message)
+    {
+        if (_natives.Player(player) is { } speaker) _natives.Say(speaker, message);
+    }
+
     /// <summary>
     /// What the run showed, an entry each: the time in seconds, where it came from (<c>print</c>, <c>player 0</c> for
     /// text shown to a player, <c>error</c> for a Lua error) and the text, every line of it so marked.

@@ -2246,3 +2246,9 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   town hall (the first made is town 0), a mine belongs to the town it stands within 1,000 of, `SetProduce` queues what is missing at buildings
   that list the unit, and `HarvestGold` sends idle workers to the mine nearest the hall. Wood, the captains and assaults, the expansion natives
   and running the scripts themselves (a Lua state of their own for each AI player, with `Sleep` as the wait) are still to do (wave 7).
+- **D358. State hash, chat and `mirror check`.** `Simulation.StateHash()` hashes the time, each player's states and tech, and each unit's place, life,
+  mana, owner, order, buffs and queue in the order of their ids (SHA-256, 16 hex digits): two runs of a map with one seed and the same input give
+  the same hash at every step, a fight with dice included (the determinism suite's first case). `Simulation.Say(player, text)` fires the chat
+  registrations of the player the text matches (a part of the message, or all of it when exact) with `GetEventPlayerChatString` and
+  `GetEventPlayerChatStringMatched`. `mirror check <map>` lists the natives a map's script names with their trust levels and exits 1 when one is
+  Missing; `mirror run --hash <n>` prints the hash every n seconds.

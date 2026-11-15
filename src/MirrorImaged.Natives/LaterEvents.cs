@@ -38,13 +38,6 @@ public sealed partial class GameNatives
 
     // ---- Chat, keys, the mouse and trackables (wave 6)
 
-    [Native(Level.Close)] public string? GetEventPlayerChatString() => "";
-    [Native(Level.Close)] public string? GetEventPlayerChatStringMatched() => "";
-
-    [Native(Level.Close)]
-    public @event? TriggerRegisterPlayerChatEvent(trigger? whichTrigger, player? whichPlayer, string? chatMessageToDetect, bool exactMatchOnly) =>
-        whichTrigger is null || whichPlayer is null ? null : Register(whichTrigger);
-
     [Native(Level.Close)]
     public @event? TriggerRegisterTrackableHitEvent(trigger? whichTrigger, trackable? t) => whichTrigger is null || t is null ? null : Register(whichTrigger);
 
