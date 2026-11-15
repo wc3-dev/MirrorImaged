@@ -7,45 +7,6 @@ namespace MirrorImaged.Natives;
 public sealed partial class GameNatives
 {
     [Native(Level.Missing)]
-    public item? BlzGetAbsorbingItem() => throw new MissingNativeException("BlzGetAbsorbingItem");
-
-    [Native(Level.Missing)]
-    public bool BlzGetManipulatedItemWasAbsorbed() => throw new MissingNativeException("BlzGetManipulatedItemWasAbsorbed");
-
-    [Native(Level.Missing)]
-    public int BlzGetMouseScreenPosX() => throw new MissingNativeException("BlzGetMouseScreenPosX");
-
-    [Native(Level.Missing)]
-    public int BlzGetMouseScreenPosY() => throw new MissingNativeException("BlzGetMouseScreenPosY");
-
-    [Native(Level.Missing)]
-    public bool BlzGetTriggerPlayerIsKeyDown() => throw new MissingNativeException("BlzGetTriggerPlayerIsKeyDown");
-
-    [Native(Level.Missing)]
-    public oskeytype? BlzGetTriggerPlayerKey() => throw new MissingNativeException("BlzGetTriggerPlayerKey");
-
-    [Native(Level.Missing)]
-    public int BlzGetTriggerPlayerMetaKey() => throw new MissingNativeException("BlzGetTriggerPlayerMetaKey");
-
-    [Native(Level.Missing)]
-    public mousebuttontype? BlzGetTriggerPlayerMouseButton() => throw new MissingNativeException("BlzGetTriggerPlayerMouseButton");
-
-    [Native(Level.Missing)]
-    public location? BlzGetTriggerPlayerMousePosition() => throw new MissingNativeException("BlzGetTriggerPlayerMousePosition");
-
-    [Native(Level.Missing)]
-    public float BlzGetTriggerPlayerMouseX() => throw new MissingNativeException("BlzGetTriggerPlayerMouseX");
-
-    [Native(Level.Missing)]
-    public float BlzGetTriggerPlayerMouseY() => throw new MissingNativeException("BlzGetTriggerPlayerMouseY");
-
-    [Native(Level.Missing)]
-    public string? BlzGetTriggerSyncData() => throw new MissingNativeException("BlzGetTriggerSyncData");
-
-    [Native(Level.Missing)]
-    public string? BlzGetTriggerSyncPrefix() => throw new MissingNativeException("BlzGetTriggerSyncPrefix");
-
-    [Native(Level.Missing)]
     public float BlzGetUnitAnimationDuration(unit? whichUnit, string? whichAnimation) => throw new MissingNativeException("BlzGetUnitAnimationDuration");
 
     [Native(Level.Missing)]
@@ -53,15 +14,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public int BlzGetUnitOrderCount(unit? whichUnit) => throw new MissingNativeException("BlzGetUnitOrderCount");
-
-    [Native(Level.Missing)]
-    public bool BlzIsKeyPressed(oskeytype? key) => throw new MissingNativeException("BlzIsKeyPressed");
-
-    [Native(Level.Missing)]
-    public bool BlzIsMetaKeyPressed(int metakey) => throw new MissingNativeException("BlzIsMetaKeyPressed");
-
-    [Native(Level.Missing)]
-    public bool BlzIsMouseButtonPressed(mousebuttontype? mouseButtonType) => throw new MissingNativeException("BlzIsMouseButtonPressed");
 
     [Native(Level.Missing)]
     public bool BlzQueueBuildOrderById(unit? whichPeon, int unitId, float x, float y) => throw new MissingNativeException("BlzQueueBuildOrderById");
@@ -91,49 +43,13 @@ public sealed partial class GameNatives
     public bool BlzQueueTargetOrderById(unit? whichUnit, int order, widget? targetWidget) => throw new MissingNativeException("BlzQueueTargetOrderById");
 
     [Native(Level.Missing)]
-    public bool BlzSendSyncData(string? prefix, string? data) => throw new MissingNativeException("BlzSendSyncData");
-
-    [Native(Level.Missing)]
-    public @event? BlzTriggerRegisterPlayerKeyEvent(trigger? whichTrigger, player? whichPlayer, oskeytype? key, int metaKey, bool keyDown) => throw new MissingNativeException("BlzTriggerRegisterPlayerKeyEvent");
-
-    [Native(Level.Missing)]
-    public @event? BlzTriggerRegisterPlayerSyncEvent(trigger? whichTrigger, player? whichPlayer, string? prefix, bool fromServer) => throw new MissingNativeException("BlzTriggerRegisterPlayerSyncEvent");
-
-    [Native(Level.Missing)]
     public void BlzUnitClearOrders(unit? whichUnit, bool onlyQueued) => throw new MissingNativeException("BlzUnitClearOrders");
-
-    [Native(Level.Missing)]
-    public void BlzUnitEnableAuras(unit? whichUnit, bool enable, bool affectsUI) => throw new MissingNativeException("BlzUnitEnableAuras");
 
     [Native(Level.Missing)]
     public void BlzUnitForceStopOrder(unit? whichUnit, bool clearQueue) => throw new MissingNativeException("BlzUnitForceStopOrder");
 
     [Native(Level.Missing)]
     public void CommandAI(player? num, int command, int data) => throw new MissingNativeException("CommandAI");
-
-    [Native(Level.Missing)]
-    public unit? GetAttacker() => throw new MissingNativeException("GetAttacker");
-
-    [Native(Level.Missing)]
-    public unit? GetBuyingUnit() => throw new MissingNativeException("GetBuyingUnit");
-
-    [Native(Level.Missing)]
-    public unit? GetCancelledStructure() => throw new MissingNativeException("GetCancelledStructure");
-
-    [Native(Level.Missing)]
-    public unit? GetConstructedStructure() => throw new MissingNativeException("GetConstructedStructure");
-
-    [Native(Level.Missing)]
-    public unit? GetConstructingStructure() => throw new MissingNativeException("GetConstructingStructure");
-
-    [Native(Level.Missing)]
-    public string? GetEventPlayerChatString() => throw new MissingNativeException("GetEventPlayerChatString");
-
-    [Native(Level.Missing)]
-    public string? GetEventPlayerChatStringMatched() => throw new MissingNativeException("GetEventPlayerChatStringMatched");
-
-    [Native(Level.Missing)]
-    public unit? GetEventTargetUnit() => throw new MissingNativeException("GetEventTargetUnit");
 
     [Native(Level.Missing)]
     public location? GetOrderPointLoc() => throw new MissingNativeException("GetOrderPointLoc");
@@ -157,63 +73,6 @@ public sealed partial class GameNatives
     public unit? GetOrderTargetUnit() => throw new MissingNativeException("GetOrderTargetUnit");
 
     [Native(Level.Missing)]
-    public int GetResearched() => throw new MissingNativeException("GetResearched");
-
-    [Native(Level.Missing)]
-    public unit? GetResearchingUnit() => throw new MissingNativeException("GetResearchingUnit");
-
-    [Native(Level.Missing)]
-    public unit? GetSellingUnit() => throw new MissingNativeException("GetSellingUnit");
-
-    [Native(Level.Missing)]
-    public item? GetSoldItem() => throw new MissingNativeException("GetSoldItem");
-
-    [Native(Level.Missing)]
-    public unit? GetSoldUnit() => throw new MissingNativeException("GetSoldUnit");
-
-    [Native(Level.Missing)]
-    public ability? GetSpellAbility() => throw new MissingNativeException("GetSpellAbility");
-
-    [Native(Level.Missing)]
-    public int GetSpellAbilityId() => throw new MissingNativeException("GetSpellAbilityId");
-
-    [Native(Level.Missing)]
-    public unit? GetSpellAbilityUnit() => throw new MissingNativeException("GetSpellAbilityUnit");
-
-    [Native(Level.Missing)]
-    public destructable? GetSpellTargetDestructable() => throw new MissingNativeException("GetSpellTargetDestructable");
-
-    [Native(Level.Missing)]
-    public item? GetSpellTargetItem() => throw new MissingNativeException("GetSpellTargetItem");
-
-    [Native(Level.Missing)]
-    public location? GetSpellTargetLoc() => throw new MissingNativeException("GetSpellTargetLoc");
-
-    [Native(Level.Missing)]
-    public unit? GetSpellTargetUnit() => throw new MissingNativeException("GetSpellTargetUnit");
-
-    [Native(Level.Missing)]
-    public float GetSpellTargetX() => throw new MissingNativeException("GetSpellTargetX");
-
-    [Native(Level.Missing)]
-    public float GetSpellTargetY() => throw new MissingNativeException("GetSpellTargetY");
-
-    [Native(Level.Missing)]
-    public unit? GetSummonedUnit() => throw new MissingNativeException("GetSummonedUnit");
-
-    [Native(Level.Missing)]
-    public unit? GetSummoningUnit() => throw new MissingNativeException("GetSummoningUnit");
-
-    [Native(Level.Missing)]
-    public unit? GetTrainedUnit() => throw new MissingNativeException("GetTrainedUnit");
-
-    [Native(Level.Missing)]
-    public int GetTrainedUnitType() => throw new MissingNativeException("GetTrainedUnitType");
-
-    [Native(Level.Missing)]
-    public trackable? GetTriggeringTrackable() => throw new MissingNativeException("GetTriggeringTrackable");
-
-    [Native(Level.Missing)]
     public int GetUnitCurrentOrder(unit? whichUnit) => throw new MissingNativeException("GetUnitCurrentOrder");
 
     [Native(Level.Missing)]
@@ -224,9 +83,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public unit? GetUnitRallyUnit(unit? whichUnit) => throw new MissingNativeException("GetUnitRallyUnit");
-
-    [Native(Level.Missing)]
-    public player? GetWinningPlayer() => throw new MissingNativeException("GetWinningPlayer");
 
     [Native(Level.Missing)]
     public bool GroupImmediateOrder(group? whichGroup, string? order) => throw new MissingNativeException("GroupImmediateOrder");
@@ -329,33 +185,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Missing)]
     public void StartMeleeAI(player? num, string? script) => throw new MissingNativeException("StartMeleeAI");
-
-    [Native(Level.Missing)]
-    public @event? TriggerRegisterCommandEvent(trigger? whichTrigger, int whichAbility, string? order) => throw new MissingNativeException("TriggerRegisterCommandEvent");
-
-    [Native(Level.Missing)]
-    public @event? TriggerRegisterPlayerChatEvent(trigger? whichTrigger, player? whichPlayer, string? chatMessageToDetect, bool exactMatchOnly) => throw new MissingNativeException("TriggerRegisterPlayerChatEvent");
-
-    [Native(Level.Missing)]
-    public @event? TriggerRegisterTrackableHitEvent(trigger? whichTrigger, trackable? t) => throw new MissingNativeException("TriggerRegisterTrackableHitEvent");
-
-    [Native(Level.Missing)]
-    public @event? TriggerRegisterTrackableTrackEvent(trigger? whichTrigger, trackable? t) => throw new MissingNativeException("TriggerRegisterTrackableTrackEvent");
-
-    [Native(Level.Missing)]
-    public @event? TriggerRegisterUpgradeCommandEvent(trigger? whichTrigger, int whichUpgrade) => throw new MissingNativeException("TriggerRegisterUpgradeCommandEvent");
-
-    [Native(Level.Missing)]
-    public void TriggerSyncReady() => throw new MissingNativeException("TriggerSyncReady");
-
-    [Native(Level.Missing)]
-    public void TriggerSyncStart() => throw new MissingNativeException("TriggerSyncStart");
-
-    [Native(Level.Missing)]
-    public bool UnitUseItemPoint(unit? whichUnit, item? whichItem, float x, float y) => throw new MissingNativeException("UnitUseItemPoint");
-
-    [Native(Level.Missing)]
-    public bool UnitUseItemTarget(unit? whichUnit, item? whichItem, widget? target) => throw new MissingNativeException("UnitUseItemTarget");
 
     [Native(Level.Missing)]
     public void WaygateActivate(unit? waygate, bool activate) => throw new MissingNativeException("WaygateActivate");
