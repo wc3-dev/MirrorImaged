@@ -30,8 +30,6 @@ public sealed partial class GameNatives
 
     // ---- Combat, buildings, training, shops and summons (wave 3)
 
-    [Native(Level.Close)] public unit? GetAttacker() => null;
-    [Native(Level.Close)] public unit? GetEventTargetUnit() => null;
     [Native(Level.Close)] public unit? GetBuyingUnit() => null;
     [Native(Level.Close)] public unit? GetSellingUnit() => null;
     [Native(Level.Close)] public item? GetSoldItem() => null;
