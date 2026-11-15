@@ -2128,6 +2128,12 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   up, until `TerrainDeformStop` (gone from the step after the stop, so a read in the same instant still sees it; with a
   duration, faded over it). `GetLocationZ`, `BlzGetUnitZ` and a bridge's ground read them. Ripple, random and wave are
   Recorded: `GetLocationZ` ignores them.
+- **D560. Boards and dialogs** keep what their getters read: a leaderboard's rows (a second row for a player who has one, the index of the
+  first, sorted by label, value or player as asked) and flags, a multiboard's row and column counts (cells cut off with them, one
+  handle for a cell until released, nil outside the board), title and its own displayed and minimised flags (two boards can both
+  read displayed, as the game's did), a timer dialog's displayed flag, a quest's flags and its items' completion, a dialog's buttons.
+  Colours, styles, texts of cells and the like are Recorded. A leaderboard with two rows for a player, set as the player's, closes
+  the game (twice seen). A dialog's click, and so `GetClickedButton`, waits for input (wave 6); the quest defaults are not measured.
 - **D540. Effects** are handles with their place, kept as the facts of 11-03 read it: an effect made at a point stands on the
   ground there (a crater's raised z included), `BlzSetSpecialEffectX`/`Y` keep its z, `BlzSetSpecialEffectHeight` reads as the z
   until a place is set, and one made on a widget reads x, y and z 0 and scale 1 wherever the widget goes. Colour, turn,
