@@ -2177,3 +2177,23 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   unit took the order. A `setrally` order keeps the rally point and target; waygates keep their destination and flag. What an order
   does (walking, fighting, casting, building) comes with waves 3 and 4: an order stays current until another replaces it. Close:
   `OrderId` knows only the orders the facts name until the order table is probed.
+- **D561. Frames.** A frame is a handle with its name, type, parent and children, text, alpha, visibility (a frame inside a hidden one
+  is not visible), enable flag, value range and size; a frame without a size takes the size of the one it fills (`BlzFrameSetAllPoints`).
+  `BlzCreateFrame` finds a template the map's loaded TOC lists (its FDF's `Frame "TYPE" "Name"` lines) or one of a few game templates, else nil;
+  `BlzCreateFrameByType` always makes a frame; the origin frames are made on the first ask, one for each type and index. Destroying a
+  frame destroys its children. `BlzFrameClick` fires the frame's `FRAMEEVENT_CONTROL_CLICK` registrations with it as the trigger frame;
+  the mouse and key events are wave 6's. Textures, models, fonts, colours and anchors are Recorded. Close: the game's own TOC files
+  and its frame tree are not read, and layout is the size given. The missing-native tests now use `StartCampaignAI`, the last native to be
+  written (wave 7).
+- **D601. Vision.** A place is visible to a player within the sight (day or night field) of a living, shown unit the player owns, shares's
+  or sees through by a shared-vision alliance or `UnitShareVision`; else a running fog modifier's state at the place, the later
+  started winning; else fogged where the player has seen (kept in 64-unit cells, marked by every read and every move of
+  a unit that has gone a cell) and masked elsewhere. `FogEnable(false)` shows fogged ground as visible, `FogMaskEnable(false)` shows
+  masked as fogged, both off everything visible (facts, 10-09 and 11-06). A stopped modifier leaves its area explored. Selection is
+  a set for each player; `SelectUnit` acts on the local player. Close: invisibility, detection, transports and the in-range event
+  come with abilities and movement (waves 3 and 4), and the game's later recompute of overlapping modifiers (the oldest wins) isn't modelled.
+- **D602. Events whose sources come later.** The spell, training, building, shop, summon and attack responses read nil or 0 outside
+  their events, as every response does outside one; the registrations of the command, upgrade-command, chat, trackable and key events
+  answer an event that never fires; the key and mouse state reads false and 0. Sync data (`BlzSendSyncData`) is real: it reaches
+  the registrations for its prefix for the local player a step later, refused over 255 characters. Using an item on a place or a
+  target needs its ability (wave 4) and is refused.
