@@ -9,23 +9,38 @@ namespace MirrorImaged;
 /// <summary>A run seen from above: the map, then what each unit was at each sampled time, and what the log said when.</summary>
 public sealed class Trace
 {
+    /// <summary>The file name of the map.</summary>
     public string Map { get; set; } = "";
+    /// <summary>The map's west, south, east and north edges; null when the map has no terrain.</summary>
     public float[]? Bounds { get; set; }
+    /// <summary>The columns of the pathing grid.</summary>
     public int GridWidth { get; set; }
+    /// <summary>The rows of the pathing grid.</summary>
     public int GridHeight { get; set; }
+    /// <summary>The west edge of the pathing grid.</summary>
     public float GridLeft { get; set; }
+    /// <summary>The south edge of the pathing grid.</summary>
     public float GridBottom { get; set; }
+    /// <summary>The pathing grid, a byte a cell of 32 in base 64.</summary>
     public string? Grid { get; set; }
+    /// <summary>The regions the map made, each as the index of the region and the west, south, east and north edges of a rect it holds.</summary>
     public List<float[]> Regions { get; set; } = [];
+    /// <summary>The names units have, each unit holding the index of its name.</summary>
     public List<string> Names { get; set; } = [];
+    /// <summary>The units at each sampled time.</summary>
     public List<TraceFrame> Frames { get; set; } = [];
+    /// <summary>The log, each line with the time it was shown at.</summary>
     public List<TraceLine> Log { get; set; } = [];
+    /// <summary>What stopped the run, if something did.</summary>
     public string? Stopped { get; set; }
 }
 
 /// <summary>The units at a time: each as its id, type, player, place, life, most life, order and the index of its name in <see cref="Trace.Names"/>.</summary>
 public sealed record TraceFrame(double Time, List<object[]> Units);
 
+/// <summary>A line of the log, and the time in seconds it was shown at.</summary>
+/// <param name="Time">The time in seconds.</param>
+/// <param name="Text">What was shown, with where it came from.</param>
 public sealed record TraceLine(double Time, string Text);
 
 /// <summary>The viewer: a page that opens a trace of a run, scrubs through it, shows the units and regions, and inspects a unit.</summary>

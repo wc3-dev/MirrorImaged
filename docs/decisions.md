@@ -2326,3 +2326,10 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   are not drawn. Seen in the in-app browser on a shipped campaign map; a headless browser opens it in the tests where one starts.
 - **D372 (Determinism across systems):** a test runs a map of dice, trigonometry, a fight, timers and many units for 20 seconds and compares
   the state hash at 1, 5, 10, 15 and 20 seconds with the hashes made on Windows. CI runs it on Windows, Linux and macOS (A7).
+
+- **D374 (Docs):** the public API of every project but the natives has XML docs, and the compiler refuses one without (`CS1591` as an error);
+  the natives are documented by common.j and common.ai and by the trust level each carries (`mirror coverage`). `docs/guide` has a page for
+  each part (getting started, Lua tests, C# tests, JASS and TypeScript, the command line, recordings and the desync check, the viewer, trust
+  levels, CI) and tests check that its links go somewhere, the index lists every page and the command line page names every command. The
+  `examples` folder has the gold map in Lua, JASS and TypeScript, built into maps and run by the suite. `.github/actions/mirror-test` runs a
+  map's Lua tests on a self-hosted runner. A Lua test reads its maps from its own folder.

@@ -12,14 +12,20 @@ public sealed record SnapshotPart(string Name, string Hash);
 /// </summary>
 public sealed class Snapshot
 {
+    /// <summary>The step the snapshot was taken at.</summary>
     public long Step { get; set; }
+    /// <summary>The state hash at that step.</summary>
     public string Hash { get; set; } = "";
+    /// <summary>Each part of the world and its hash.</summary>
     public List<SnapshotPart> Parts { get; set; } = [];
+    /// <summary>What runs the map again to that step.</summary>
     public Recording Recording { get; set; } = new();
 
     static readonly JsonSerializerOptions Format = new() { WriteIndented = true };
 
+    /// <summary>The snapshot as JSON.</summary>
     public string ToJson() => JsonSerializer.Serialize(this, Format);
+    /// <summary>A snapshot from the JSON that <see cref="ToJson"/> makes.</summary>
     public static Snapshot FromJson(string json) => JsonSerializer.Deserialize<Snapshot>(json) ?? throw new InvalidDataException("Not a snapshot");
 
     /// <summary>What differs between the snapshot and the simulation, which must be at the snapshot's step: nothing when it is the same world.</summary>

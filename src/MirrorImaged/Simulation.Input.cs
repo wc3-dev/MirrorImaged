@@ -14,16 +14,24 @@ public sealed record Input(long Step, string Kind, int Player, int[]? Ints = nul
 /// <summary>What a run was given: its map, seed and seats, each input at its step and the step it ran to. Running the map again with it repeats the run exactly.</summary>
 public sealed class Recording
 {
+    /// <summary>The map the run was started from.</summary>
     public string Map { get; set; } = "";
+    /// <summary>The seed of the random numbers.</summary>
     public int Seed { get; set; }
+    /// <summary>The slots people play, the first the local player; null for the map's first user.</summary>
     public int[]? Users { get; set; }
+    /// <summary>The slots computers play; null for the map's computers.</summary>
     public int[]? Computers { get; set; }
+    /// <summary>What was given, in the order it was given.</summary>
     public List<Input> Inputs { get; set; } = [];
+    /// <summary>The step the run had reached.</summary>
     public long Steps { get; set; }
 
     static readonly JsonSerializerOptions Format = new() { WriteIndented = true };
 
+    /// <summary>The recording as JSON.</summary>
     public string ToJson() => JsonSerializer.Serialize(this, Format);
+    /// <summary>A recording from the JSON that <see cref="ToJson"/> makes.</summary>
     public static Recording FromJson(string json) => JsonSerializer.Deserialize<Recording>(json) ?? throw new InvalidDataException("Not a recording");
 }
 

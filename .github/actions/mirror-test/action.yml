@@ -1,0 +1,24 @@
+name: Mirror test
+description: Installs mirror and runs a map's Lua tests. Run it on a runner that has Warcraft III installed; MirrorImaged never downloads or ships game data.
+inputs:
+  tests:
+    description: The Lua test file, or the folder whose *.test.lua files are run.
+    default: tests
+  junit:
+    description: Where the JUnit XML of the results is written.
+    default: mirror-junit.xml
+  version:
+    description: The version of the MirrorImaged.Cli tool to install; the latest when empty.
+    default: ''
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+    - name: Install mirror
+      shell: bash
+      run: dotnet tool install --global MirrorImaged.Cli ${{ inputs.version != '' && format('--version {0}', inputs.version) || '' }}
+    - name: Run the tests
+      shell: bash
+      run: mirror test "${{ inputs.tests }}" --junit "${{ inputs.junit }}"

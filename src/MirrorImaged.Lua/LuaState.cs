@@ -26,6 +26,7 @@ public sealed unsafe class LuaState : IDisposable
     int _limit;
     nint _calling; // the Lua thread calling the C# function running now, if one is, which a thread it runs nests in
 
+    /// <summary>Makes a state with the standard libraries of the game's Lua.</summary>
     public LuaState()
     {
         _handle = new StateHandle(mirror_newstate());

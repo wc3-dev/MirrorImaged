@@ -10,7 +10,7 @@ public sealed record LuaTestResult(string File, string Name, bool Passed, string
 /// <summary>
 /// Tests written in Lua: a file calls <c>test(name, function)</c>, and inside a test <c>mirror.load(map, {seed = n})</c> gives a simulation
 /// with the calls of the C# API (<c>advance</c>, <c>units</c>, <c>order</c>, <c>select</c>, <c>key</c>, <c>mouse</c>, <c>leave</c>, <c>say</c>,
-/// <c>log</c>, <c>hash</c>, <c>wait_until</c>, <c>recording</c>), and <c>assert_eq</c>, <c>assert_true</c>, <c>assert_close</c> and
+/// <c>log</c>, <c>hash</c>, <c>wait_until</c>, <c>recording</c>; a map path that is not rooted is read from the test file's folder), and <c>assert_eq</c>, <c>assert_true</c>, <c>assert_close</c> and
 /// <c>assert_contains</c> check results. The test files run in a Lua state of their own, apart from the games they load.
 /// </summary>
 public sealed class LuaTestHost : IDisposable
@@ -18,7 +18,9 @@ public sealed class LuaTestHost : IDisposable
     readonly LuaState _lua = new();
     readonly Dictionary<int, Simulation> _simulations = [];
     int _next = 1;
+    string _folder = "";
 
+    /// <summary>Makes a host with the test API ready.</summary>
     public LuaTestHost()
     {
         _lua.Register("__load", args => Open(Text(args, 0), Int(args, 1)));
@@ -68,7 +70,7 @@ public sealed class LuaTestHost : IDisposable
     object?[] Open(string path, int seed)
     {
         var id = _next++;
-        _simulations[id] = Simulation.Load(path, new SimulationOptions { Seed = seed });
+        _simulations[id] = Simulation.Load(Path.IsPathRooted(path) ? path : Path.Combine(_folder, path), new SimulationOptions { Seed = seed });
         return [id];
     }
 
@@ -77,6 +79,7 @@ public sealed class LuaTestHost : IDisposable
     {
         var results = new List<LuaTestResult>();
         var file = Path.GetFileName(path);
+        _folder = Path.GetDirectoryName(Path.GetFullPath(path)) ?? "";
         try { _lua.Run(File.ReadAllText(path), "@" + file); }
         catch (LuaException e)
         {
@@ -117,6 +120,7 @@ public sealed class LuaTestHost : IDisposable
         return text.ToString();
     }
 
+    /// <summary>Closes the simulations the tests opened and the host.</summary>
     public void Dispose()
     {
         foreach (var simulation in _simulations.Values) simulation.Dispose();

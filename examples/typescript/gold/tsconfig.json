@@ -1,0 +1,4 @@
+{
+  "compilerOptions": { "target": "esnext", "lib": ["esnext"], "types": ["@lua-types/jass-types"], "strict": true, "outDir": "." },
+  "tstl": { "luaTarget": "5.3", "luaBundle": "war3map.lua", "luaBundleEntry": "src/main.ts", "buildMode": "default" }
+}
