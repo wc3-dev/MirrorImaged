@@ -2281,3 +2281,7 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
 - **D364 (Path search is cheaper):** a search for a path lists the buildings once a tick and asks each cell once, and an idle unit that
   looks for a target skips what is out of range before it asks who is an enemy. A campaign map that took 8 s of real time per game second
   (Human01) takes a quarter of one. Not measured against the game.
+
+- **D365 (A blocked unit searches less):** a unit blocked again on its way searches for a path at most once in half a second, and one whose
+  search found no way to a place does not search for that place again for two seconds, so it ends the order. A campaign map (NightElf01)
+  that ran at a third of real time after 150 s now runs seven times faster. Not measured against the game.
