@@ -13,7 +13,7 @@ public sealed partial class GameNatives
         PlayerHeroLevel = 41, PlayerHeroSkill = 42, PlayerHeroReviveStart = 44, PlayerHeroReviveFinish = 46;
 
     static readonly int HeroAbilities = Code("uhab"), InitialMana = Code("umpi"), AgilityBase = Code("uagi"),
-        RequiredLevel = Code("arlv"), LevelSkip = Code("alsk");
+        RequiredLevel = Code("arlv"), SkillLevelSkip = Code("alsk");
 
     // the gains are floats added and taken back, so 17 + 9 x 1.8 - 9 x 1.8 may be a hair under 17
     static int Whole(double attribute) => (int)Math.Floor(attribute + 1e-4);
@@ -248,7 +248,7 @@ public sealed partial class GameNatives
         var abilities = (whichHero.Type.Text(HeroAbilities) ?? "").Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         if (!abilities.Contains(Name(abilcode))) return;
         var next = whichHero.Skills.GetValueOrDefault(abilcode) + 1;
-        if (next > ability.Levels || whichHero.HeroLevel < ability.Integer(RequiredLevel) + (next - 1) * (ability.Integer(LevelSkip) is var skip and > 0 ? skip : 2)) return;
+        if (next > ability.Levels || whichHero.HeroLevel < ability.Integer(RequiredLevel) + (next - 1) * (ability.Integer(SkillLevelSkip) is var skip and > 0 ? skip : 2)) return;
         whichHero.Skills[abilcode] = next;
         FireUnit(new(whichHero, Skill: abilcode, SkillLevel: next), HeroSkillEvent, PlayerHeroSkill);
         whichHero.SkillPoints = Math.Max(0, whichHero.SkillPoints - 1);

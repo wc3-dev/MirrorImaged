@@ -2006,6 +2006,27 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   The map's bounds aren't kept for items. Close.
 - **D342. Item abilities come with W2-7:** the tome's +1 agility, the carried items' attribute bonuses and the
   resulting life, mana and armour, the potion's heal and the ankh. `probes/differences/items.txt` records each line.
+- **D280. A unit's abilities are its own list** (`unit.Abilities`, `Abilities.cs`), made when the unit is, in the order
+  `BlzGetUnitAbilityByIndex` gives them (probe abilities-lists, 60 kinds of unit): what the game gives it for what it
+  is (Aatk, Amov, a building's Aalr and the race's Afi*, the build, upgrade and train commands), around the type's
+  `uabi` held last first. One added goes first. A unit's end takes its abilities' handles. Ids the data lacks are
+  made as bare objects only for the game's own commands (`Data.Bare`); a type's listed ability must be in the data.
+- **D281. An ability's handle is made when a native first gives it out** and kept while the ability is on the unit
+  (probe abilities: the id reads 0 after the unit or the ability goes, a re-added ability is a new handle).
+- **D282. Extended tooltips keep their `<id,column>` tags as written.** The game fills them (`<AHhb,DataA1>` reads
+  200); W2-8's `ParseTags` does it, so `probes/differences/abilities-*.txt` records the difference (Close).
+- **D283. An upgrade raising an ability's level** (effect `rlev`) is applied by the change of its bonus since the
+  ability last counted it (`Research`), so a level set in between moves with it. An ability given to a new owner only
+  gains from the new owner's research; what the old owner had researched stays (probe abilities-upgrades).
+- **D284. Probes whose names start `abilities`, and `files`, read the install's standard data** (`ReadsData`).
+- **D285. `Defends` and a mine's gold read the unit's own abilities** (D310's shortcut, the type's `uabi`, is gone): an
+  added `Adef` gives undefend and a removed one none.
+- **D286. A cooldown started without a cast is the clock's, not the game's frames'.** The game's reads carry the float
+  error of its frames (`1.192093e-07` after a start of 4, `0.2500001`); MirrorImaged's steps don't (Close, recorded in
+  `probes/differences/abilities-fields.txt` and `abilities-sets.txt`).
+- **D287. `GetAbilitySoundById`** reads the ability's or buff's `Effectsound` (`Effectsoundlooped` for
+  `SOUND_TYPE_EFFECT_LOOPED`), "" without. `GetAbilitySound` reads "" for every string measured (an id, a name, a
+  buff's id): Close, since what it reads wasn't found (probe abilities-types).
 - **D270. Terrain the readers refuse** (`(10)DustwallowKeys.w3m`'s `war3map.w3e`, a cliff type 0 War3Net doesn't
   define): `MapArchive` reads the file itself and keeps the type as written, so the map has the ground the game loads,
   and a melee map no longer lacks terrain. A file that can't be read either is left out, as before (W2-6).

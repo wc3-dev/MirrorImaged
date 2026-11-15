@@ -11,14 +11,12 @@ public sealed partial class GameNatives
     const int Stop = 851972, Stunned = 851973, Undefending = 852056;
     const double Frame = 0.01; // when PauseUnit(false)'s order comes back: 0.01 s later, twice (probes units-more, units-more-2)
 
-    static readonly int AbilityList = Code("uabi"), Defend = Code("Adef");
+    static readonly int Defend = Code("Adef");
 
     // How many Defends the unit has: its abilities made from Adef, a map's copies too (game-facts)
     int Defends(unit u) => Abilities(u).Count(a => a?.BaseId == Defend);
 
-    // shortcut: the unit's type's abilities (uabi), not the unit's own; W2-7's UnitAddAbility and UnitRemoveAbility change those.
-    IEnumerable<GameObject?> Abilities(unit u) =>
-        (u.Type.Text(AbilityList) ?? "").Split(',', StringSplitOptions.TrimEntries).Where(id => id.Length == 4).Select(id => Data.Object(ObjectKind.Ability, Code(id)));
+    IEnumerable<GameObject?> Abilities(unit u) => u.Abilities.Select(a => a.Type);
 
     // undefend's order events, on the owner's registrations and the unit's
     void Undefend(unit u, int times)
