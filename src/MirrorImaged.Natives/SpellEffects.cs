@@ -184,6 +184,26 @@ public sealed partial class GameNatives
             case var id when id == Code("AUcb"):
                 Summon(caster, a, target is unit bt2 ? bt2.X : x != 0 || y != 0 ? x : caster.X, target is unit bu2 ? bu2.Y : x != 0 || y != 0 ? y : caster.Y, Math.Max((int)Datum(a, 'A'), 1));
                 return true;
+            case var id when id == Code("AEim"):
+                // Immolation: DataA a second to the foes round the caster for the ability's time (ten seconds without one)
+                for (var n = 1; n <= Math.Max((int)Lasts(a, caster), 10); n++)
+                    _game.At(_game.Step + Game.Steps(n), () => { if (!caster.Dead) foreach (var near in Foes(caster, caster.X, caster.Y, area <= 0 ? 160 : area)) Spell(caster, near, Datum(a, 'A')); });
+                return true;
+            case var id when id == Code("AOmi"):
+                // Mirror Image: DataA copies of the caster stand by it for the ability's time
+                for (var n = 0; n < Math.Max((int)Datum(a, 'A'), 1); n++)
+                    if (Create(caster.Owner, caster.Type.Id, caster.X + 60 * (n + 1), caster.Y, 270, caster.Type.Id) is { } image)
+                    {
+                        UnitApplyTimedLife(image, Code("BTLF"), Field(a, Code("adur")));
+                        FireUnit(new(caster, Other: image, Skill: a.Type.Id), UnitSummon, PlayerUnitSummon);
+                    }
+                return true;
+            case var id when id == Code("AOeq"):
+                // Earthquake: DataA a second to the buildings round the place for the ability's time
+                var (qx, qy) = target is unit qt ? (qt.X, qt.Y) : x != 0 || y != 0 ? (x, y) : (caster.X, caster.Y);
+                for (var n = 1; n <= Math.Max((int)Lasts(a, caster), 1); n++)
+                    _game.At(_game.Step + Game.Steps(n), () => { if (!caster.Dead) foreach (var near in Foes(caster, qx, qy, area <= 0 ? 300 : area).Where(IsBuildingNow)) Spell(caster, near, Datum(a, 'A')); });
+                return true;
             case var id when id == Code("AHds"):
                 Apply(caster, caster, InvulnerableBuff, Lasts(a, caster), true, b => b.Invulnerable = true);
                 return true;
