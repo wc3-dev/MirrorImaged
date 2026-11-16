@@ -42,6 +42,7 @@ public sealed class SpellEffectTests : IDisposable
         ("AHre", "resurrection", "A=2;area=900"),
         ("AUin", "inferno", "A=50;area=250;dur=20;unit=hfoo"),
         ("AHab", "", "A=5;area=900"),
+        ("AOeq", "earthquake", "A=20;area=300;dur=3"),
         ("AEim", "immolation", "A=10;area=200;dur=3"),
         ("AOmi", "mirrorimage", "A=2;dur=20"),
         ("AEah", "", "A=0.5"),
@@ -74,7 +75,7 @@ public sealed class SpellEffectTests : IDisposable
             if (n.TryGetValue("unit", out var summoned)) own += $";uuid:1={summoned}";
             data.Add(ObjectKind.Ability, id, Values(own));
         }
-        return data.Add(ObjectKind.Unit, "nfro", Values("unam=Frog;uhpm=50;umvs=100;umvt=foot;uaen=0;ucol=31")).Add(ObjectKind.Unit, "hbig", Values("unam=Big;uhpm=2000;umvs=300;umvt=foot;uaen=0;ucol=31")).Add(ObjectKind.Unit, "hatk", Values("unam=Attacker;uhpm=1000;umpm=500;umpi=500;umvs=270;umvt=foot;uacq=500;uaen=1;ua1w=normal;ua1t=normal;ua1g=ground;ua1b=10;ua1d=1;ua1s=1;ua1c=1;ua1r=90;udp1=0.5;ucol=31;udef=0")).Add(ObjectKind.Unit, "hfoo", Values("unam=Footman;uhpm=1000;umpm=500;umpi=500;umvs=270;umvt=foot;uacq=500;udea=3;uaen=0;ua1w=normal;ua1t=normal;ua1g=ground;ua1b=10;ua1d=1;ua1s=1;ua1c=1;ua1r=90;udp1=0.5;ucol=31;udef=0"));
+        return data.Add(ObjectKind.Unit, "hbld", Values("unam=Hall;uhpm=1000;ubdg=1;umvt=;uaen=0;ucol=31")).Add(ObjectKind.Unit, "nfro", Values("unam=Frog;uhpm=50;umvs=100;umvt=foot;uaen=0;ucol=31")).Add(ObjectKind.Unit, "hbig", Values("unam=Big;uhpm=2000;umvs=300;umvt=foot;uaen=0;ucol=31")).Add(ObjectKind.Unit, "hatk", Values("unam=Attacker;uhpm=1000;umpm=500;umpi=500;umvs=270;umvt=foot;uacq=500;uaen=1;ua1w=normal;ua1t=normal;ua1g=ground;ua1b=10;ua1d=1;ua1s=1;ua1c=1;ua1r=90;udp1=0.5;ucol=31;udef=0")).Add(ObjectKind.Unit, "hfoo", Values("unam=Footman;uhpm=1000;umpm=500;umpi=500;umvs=270;umvt=foot;uacq=500;udea=3;uaen=0;ua1w=normal;ua1t=normal;ua1g=ground;ua1b=10;ua1d=1;ua1s=1;ua1c=1;ua1r=90;udp1=0.5;ucol=31;udef=0"));
     }
 
     List<string> Run(string main, double seconds)
@@ -337,5 +338,18 @@ public sealed class SpellEffectTests : IDisposable
             TimerStart(CreateTimer(), 3, false, function() print("thorns", GetWidgetLife(attacker) < 1000) end)
             """, 4);
         Assert.Equal(["thorns	true"], thorns);
+    }
+
+    [Fact]
+    public void Earthquake_hurts_buildings_only()
+    {
+        var lines = Run("""
+            local caster, foe, hall = make(Player(0)), make(Player(1), 300, 0), CreateUnit(Player(1), FourCC("hbld"), 300, 50, 0)
+            UnitAddAbility(caster, FourCC("AOeq"))
+            IssuePointOrder(caster, "earthquake", 300, 0)
+            TimerStart(CreateTimer(), 6, false, function() print("quake", f1(1000 - GetWidgetLife(foe)), f1(1000 - GetWidgetLife(hall))) end)
+            """, 7);
+
+        Assert.Equal(["quake	0.0	60.0"], lines);
     }
 }

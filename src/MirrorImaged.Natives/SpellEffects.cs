@@ -198,6 +198,12 @@ public sealed partial class GameNatives
                         FireUnit(new(caster, Other: image, Skill: a.Type.Id), UnitSummon, PlayerUnitSummon);
                     }
                 return true;
+            case var id when id == Code("AOeq"):
+                // Earthquake: DataA a second to the buildings round the place for the ability's time
+                var (qx, qy) = target is unit qt ? (qt.X, qt.Y) : x != 0 || y != 0 ? (x, y) : (caster.X, caster.Y);
+                for (var n = 1; n <= Math.Max((int)Lasts(a, caster), 1); n++)
+                    _game.At(_game.Step + Game.Steps(n), () => { if (!caster.Dead) foreach (var near in Foes(caster, qx, qy, area <= 0 ? 300 : area).Where(IsBuildingNow)) Spell(caster, near, Datum(a, 'A')); });
+                return true;
             case var id when id == Code("AHds"):
                 Apply(caster, caster, InvulnerableBuff, Lasts(a, caster), true, b => b.Invulnerable = true);
                 return true;

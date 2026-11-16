@@ -2465,3 +2465,5 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   A button frame made by type (GLUETEXTBUTTON and the like) has three backdrop children (normal, pushed, disabled), as the game's buttons do: ForgottenHollow's level-up panel reads them with `BlzFrameGetChild(button, 0)` to 2 and, without them, fails at its start. Close, from the maps that use it.
 
 - **D399 (Immolation, Mirror Image, Thorns):** Immolation hurts the foes round the caster for DataA a second for the ability's time (ten seconds when it has none, the toggle off is not modelled), Mirror Image stands DataA timed copies of the caster beside it, and Thorns returns DataA of a melee hit's damage to the attacker. Close.
+
+- **D400 (Earthquake):** Earthquake hurts the buildings round the place for DataA a second for the ability's time; units are left alone. Close.
