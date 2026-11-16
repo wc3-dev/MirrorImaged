@@ -110,13 +110,8 @@ public sealed class ShippedMapTests(ITestOutputHelper output) : IDisposable
         Assert.Empty(errors);
     }
 
-    // The two maps of the Forsaken Kingdom's scenarios whose own scripts fail here: the first indexes a table with nil in its handle library at the start, the second
-    // reads a terrain family for its car physics that this runtime's terrain does not give (decisions D388)
-    static readonly Dictionary<string, string> KnownScriptErrors = new()
-    {
-        ["Maps/ForsakenKingdom/Scenario/(1)ForgottenHollow.w3x"] = "table index is nil in its handle type cache at 0 s",
-        ["Maps/ForsakenKingdom/Scenario/(1)SilverpineSprint.w3x"] = "its car physics finds no terrain family at about 13 s",
-    };
+    // Maps whose own script fails here; none now (ForgottenHollow ran into the game UI's frames, decisions D398)
+    static readonly Dictionary<string, string> KnownScriptErrors = new();
 
     static PlayerData Player(int id, PlayerController controller, PlayerRace race, PlayerFlags flags, string name, Vector2 start, int priorities) => new()
     {

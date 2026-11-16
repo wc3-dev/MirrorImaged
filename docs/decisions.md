@@ -2421,3 +2421,45 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
 - **D389 (The melee corpus, A4):** the install's classic melee maps ((2) to (12) players: 42 maps) each run 30 game minutes with a person in the first slot and computers in the rest, with
   no script error, and the computers' units grow (a 2-player map from 6 to about 18 units, a 4-player from 18 to about 75, an 8-player from 42 to about 160): 9 to 230 s a map
   with eight runs at once, a 4-player map alone 23 s (A10). The test counts a melee map as one with two or more user slots, and the computers' own units only.
+
+- **D390 (The game's own constants, Blizzard and Animate Dead):** a hero's revival at an altar uses the install's constants: the share of its price is ReviveBaseFactor (.40) plus ReviveLevelFactor
+  (.10) for each level above the first, at most ReviveMaxFactor (4.0), the gold at most HeroMaxReviveCostGold (700) and the lumber at most HeroMaxReviveCostLumber; the time is
+  ReviveTimeFactor (0.65) of its build time, at most HeroMaxReviveTime (150). Pawning reaches PawnItemRange (300) from the shop's edge. These replace the guesses of D376 and D385.
+  Not read from the install: repair's two ratios, which it has no constant for (the unit data holds its repair time, `urtm`); a probe in the game would give them, and the game would
+  not log in for a probe from here. Blizzard does DataB damage in each of DataA waves, a second apart, to the ground units round the place; Animate Dead raises up to DataA
+  corpses of units that are not heroes or buildings near the place as units of the caster's owner for the ability's time. The melee corpus test takes maps that have the melee flag.
+
+- **D391 (Tile ids as the game gives them):** the ground of a map's file gave each tile's id as the four letters read as a number in the order the file has them, the reverse of FourCC; `GetTerrainType`
+  gives FourCC now, as the game does and as the scripts that look tiles up by `FourCC("Ldrt")` need. It was why SilverpineSprint's car physics found no terrain; that map now runs its 10
+  minutes without error. Left: ForgottenHollow's handle library, which indexes a table with nil at the start in a trigger of the map; the Lua here has no `debug` library to name the call
+  (the game's has none), and no native was found that answers nil here and a handle in the game.
+
+- **D392 (Lua tests from dotnet test):** `MirrorImaged.TestAdapter` is a test adapter of the test platform: a test project that references it and copies its `*.test.lua` files to its output folder
+  has them found (each `test(name, ...)` a test) and run by `dotnet test` and the editors, with the failure's message; checked end to end on a project made for it. It finds the tests without
+  running a map (the file is run only to the calls of `test`).
+
+- **D393 (What is still open after the first release):** (1) Repair's two ratios (D387) are unmeasured: `probes/pending/repair.lua` is the probe, which the game runner could not run from the agent's session (the
+  game stopped at its Battle.net login) and needs a run on Sven's side. (2) ForgottenHollow's handle library indexes a table with nil in a trigger at the start; no native was found to blame, as the
+  sandbox's Lua has no `debug` (D391). (3) Replays are read as the format is documented and checked on replays the tests make: no replay of this machine holds a player's orders. (4) Not modelled:
+  channelled spells other than Blizzard (Flame Strike, Starfall, Tranquility, Earthquake), the summons that need more than a type and a number (Carrion Beetles, Locust Swarm), transformations
+  (Metamorphosis, Hex, Avatar), Mirror Image, Wind Walk, and the passives of other names. (5) The AI natives that stay as they were (guard posts, zeppelins, merging units) change nothing a melee game reads.
+
+- **D394 (Hex, Metamorphosis, Avatar):** Hex turns the target into the ability's creature (its UnitID) and Metamorphosis the caster into its form, for the ability's time, then they are as they were with the mana they had;
+  a change of type keeps the abilities a script made permanent (UnitMakeAbilityPermanent) and drops the ones it gave otherwise, as the game does. Avatar gives DataA armour (a buff) and DataB life for
+  its time. Close: the form is the type only (a hero's hero-ness and the form's own attack changes are not carried), and the base armour `BlzGetUnitArmor` reads leaves the buff out as the probes measured.
+
+- **D395 (Auras that pulse; Resurrection, Inferno, Brilliance Aura):** the auras of D380 did nothing in a game whose units had nothing to do (the unit engine rests then, and the pulse was one of its steps, which the
+  first test did not check closely): the pulse is a timer of its own now, a second apart, kept going while any unit has an aura ability. Resurrection stands up to DataA corpses of friends
+  near the caster (not heroes), Inferno hurts the units round the place for DataA and lands an infernal (the ability's UnitID) for its time, and Brilliance Aura gives its allies near DataA
+  mana a second. Tests check the numbers (Endurance and Unholy together: 270 x 1.1 x 1.1 = 326.7 speed; Unholy 5 life a second).
+
+- **D396 (Flame Strike, Starfall):** Flame Strike hurts the ground units round the place for DataA and then DataB a second for the ability's time; Starfall hurts the units round the caster for DataA a second.
+  Both are from the data's names and not yet measured against the game, so their numbers are marked Close.
+
+- **D397 (Siphon Mana, Wind Walk, Carrion Beetles):** Siphon Mana moves DataA mana a second from the target to the caster, Wind Walk gives DataB more speed for its time, and Carrion Beetles summon DataA units. The data fields are read from the names and are Close, not measured.
+
+- **D398 (the game UI's named frames):** `BlzGetFrameByName` finds a list of the game's own UI frames (ConsoleUIBackdrop and the like) as it finds the origin frames, made on the first ask. ForgottenHollow parents its fade filter to ConsoleUIBackdrop and failed at the start without it.
+
+  (The frames of the map's FDF also bring the named frames nested in them, so `BlzGetFrameByName("MinimapTexture")` finds the child of a MinimapTextureFrame, as the game does.)
+  The named frames nested in an FDF frame are made along with it, so `BlzGetFrameByName("MinimapTexture")` finds the child of a MinimapTextureFrame, as the game does.
+  A button frame made by type (GLUETEXTBUTTON and the like) has three backdrop children (normal, pushed, disabled), as the game's buttons do: ForgottenHollow's level-up panel reads them with `BlzFrameGetChild(button, 0)` to 2 and, without them, fails at its start. Close, from the maps that use it.

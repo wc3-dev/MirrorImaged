@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageId>MirrorImaged.TestAdapter</PackageId>
+    <Description>Finds and runs MirrorImaged's Lua tests (*.test.lua) from dotnet test and the test explorers.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MirrorImaged\MirrorImaged.csproj" />
+  </ItemGroup>
+
+</Project>

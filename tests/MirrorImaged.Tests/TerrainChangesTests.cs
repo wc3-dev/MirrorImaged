@@ -136,4 +136,17 @@ public sealed class TerrainChangesTests : IDisposable
 
         Assert.Equal(["0.00", "0.00", "300.00	212.13	0.00	256.07", "300.00", "100.00"], lines);
     }
+
+    // The ground the map's file gives reads as the game reads it: the tile's four letters as a FourCC, not in the other order
+    [Fact]
+    public void The_ground_of_the_maps_file_is_read_as_a_fourcc()
+    {
+        var lines = Run("""
+            local t = GetTerrainType(0, 0)
+            local s = string.char((t >> 24) & 255, (t >> 16) & 255, (t >> 8) & 255, t & 255)
+            print(s:match("^L%a%a%a$") ~= nil, FourCC(s) == t)
+            """);
+
+        Assert.Equal(["true	true"], lines.Select(line => line.Replace(" ", "")).ToList());
+    }
 }

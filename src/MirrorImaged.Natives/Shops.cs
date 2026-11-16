@@ -58,7 +58,8 @@ public sealed partial class GameNatives
     // The unit near the shop sells the item to it for a share of its price (the constants' PawnItemRate, half), and the pawn events fire for its player
     bool Pawn(unit seller, item i, unit shop)
     {
-        if (Distance2(seller.X - shop.X, seller.Y - shop.Y) > ShopReach * ShopReach) return false;
+        var reach = Data.Constant("PawnItemRange", 300) + shop.Type.Real(Collision);
+        if (Distance2(seller.X - shop.X, seller.Y - shop.Y) > reach * reach) return false;
         var rate = Data.Constant("PawnItemRate", 0.5f);
         var (gold, lumber) = ((int)(i.Type.Integer(ItemGold) * rate), (int)(i.Type.Integer(ItemLumber) * rate));
         SetPlayerState(seller.Owner, Convert<playerstate>(Gold), seller.Owner.States[Gold] + gold);
