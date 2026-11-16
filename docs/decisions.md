@@ -2457,3 +2457,9 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   Both are from the data's names and not yet measured against the game, so their numbers are marked Close.
 
 - **D397 (Siphon Mana, Wind Walk, Carrion Beetles):** Siphon Mana moves DataA mana a second from the target to the caster, Wind Walk gives DataB more speed for its time, and Carrion Beetles summon DataA units. The data fields are read from the names and are Close, not measured.
+
+- **D398 (the game UI's named frames):** `BlzGetFrameByName` finds a list of the game's own UI frames (ConsoleUIBackdrop and the like) as it finds the origin frames, made on the first ask. ForgottenHollow parents its fade filter to ConsoleUIBackdrop and failed at the start without it.
+
+  (The frames of the map's FDF also bring the named frames nested in them, so `BlzGetFrameByName("MinimapTexture")` finds the child of a MinimapTextureFrame, as the game does.)
+  The named frames nested in an FDF frame are made along with it, so `BlzGetFrameByName("MinimapTexture")` finds the child of a MinimapTextureFrame, as the game does.
+  A button frame made by type (GLUETEXTBUTTON and the like) has three backdrop children (normal, pushed, disabled), as the game's buttons do: ForgottenHollow's level-up panel reads them with `BlzFrameGetChild(button, 0)` to 2 and, without them, fails at its start. Close, from the maps that use it.
