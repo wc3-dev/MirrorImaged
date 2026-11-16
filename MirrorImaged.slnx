@@ -4,6 +4,7 @@
     <Project Path="src/MirrorImaged.Data/MirrorImaged.Data.csproj" />
     <Project Path="src/MirrorImaged.Lua/MirrorImaged.Lua.csproj" />
     <Project Path="src/MirrorImaged.Natives/MirrorImaged.Natives.csproj" />
+    <Project Path="src/MirrorImaged.TestAdapter/MirrorImaged.TestAdapter.csproj" />
     <Project Path="src/MirrorImaged.World/MirrorImaged.World.csproj" />
     <Project Path="src/MirrorImaged/MirrorImaged.csproj" />
   </Folder>
