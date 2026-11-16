@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\MirrorImaged\MirrorImaged.csproj" />
     <ProjectReference Include="..\..\src\MirrorImaged.Cli\MirrorImaged.Cli.csproj" />
+    <ProjectReference Include="..\..\src\MirrorImaged.TestAdapter\MirrorImaged.TestAdapter.csproj" />
     <ProjectReference Include="..\..\src\MirrorImaged.Data\MirrorImaged.Data.csproj" />
     <ProjectReference Include="..\..\src\MirrorImaged.Natives\MirrorImaged.Natives.csproj" />
     <ProjectReference Include="..\..\tools\MirrorImaged.NativesGenerator\MirrorImaged.NativesGenerator.csproj" />

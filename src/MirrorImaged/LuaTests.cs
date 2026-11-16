@@ -98,6 +98,16 @@ public sealed class LuaTestHost : IDisposable
         return results;
     }
 
+    /// <summary>The names of the tests a Lua test file makes, in its order, without running them or any map.</summary>
+    public static IReadOnlyList<string> Names(string path)
+    {
+        using var host = new LuaTestHost();
+        try { host._lua.Run(File.ReadAllText(path), "@" + Path.GetFileName(path)); }
+        catch (LuaException) { return []; }
+        var count = Convert.ToInt32(host._lua.Call("__count")[0], CultureInfo.InvariantCulture);
+        return [.. Enumerable.Range(1, count).Select(i => (string)host._lua.Call("__name", i)[0]!)];
+    }
+
     /// <summary>The results as the XML that CI services and editors read (JUnit).</summary>
     public static string JUnit(IReadOnlyList<LuaTestResult> results)
     {

@@ -2433,3 +2433,7 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   gives FourCC now, as the game does and as the scripts that look tiles up by `FourCC("Ldrt")` need. It was why SilverpineSprint's car physics found no terrain; that map now runs its 10
   minutes without error. Left: ForgottenHollow's handle library, which indexes a table with nil at the start in a trigger of the map; the Lua here has no `debug` library to name the call
   (the game's has none), and no native was found that answers nil here and a handle in the game.
+
+- **D392 (Lua tests from dotnet test):** `MirrorImaged.TestAdapter` is a test adapter of the test platform: a test project that references it and copies its `*.test.lua` files to its output folder
+  has them found (each `test(name, ...)` a test) and run by `dotnet test` and the editors, with the failure's message; checked end to end on a project made for it. It finds the tests without
+  running a map (the file is run only to the calls of `test`).

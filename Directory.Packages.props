@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="17.14.1" />
     <PackageVersion Include="War3Net.Build.Core" Version="6.1.2" />
     <PackageVersion Include="War3Net.CodeAnalysis.Jass" Version="6.0.2" />
     <PackageVersion Include="War3Net.CodeAnalysis.Transpilers" Version="6.1.1" />
