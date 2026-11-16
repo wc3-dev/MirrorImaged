@@ -2437,3 +2437,9 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
 - **D392 (Lua tests from dotnet test):** `MirrorImaged.TestAdapter` is a test adapter of the test platform: a test project that references it and copies its `*.test.lua` files to its output folder
   has them found (each `test(name, ...)` a test) and run by `dotnet test` and the editors, with the failure's message; checked end to end on a project made for it. It finds the tests without
   running a map (the file is run only to the calls of `test`).
+
+- **D393 (What is still open after the first release):** (1) Repair's two ratios (D387) are unmeasured: `probes/pending/repair.lua` is the probe, which the game runner could not run from the agent's session (the
+  game stopped at its Battle.net login) and needs a run on Sven's side. (2) ForgottenHollow's handle library indexes a table with nil in a trigger at the start; no native was found to blame, as the
+  sandbox's Lua has no `debug` (D391). (3) Replays are read as the format is documented and checked on replays the tests make: no replay of this machine holds a player's orders. (4) Not modelled:
+  channelled spells other than Blizzard (Flame Strike, Starfall, Tranquility, Earthquake), the summons that need more than a type and a number (Carrion Beetles, Locust Swarm), transformations
+  (Metamorphosis, Hex, Avatar), Mirror Image, Wind Walk, and the passives of other names. (5) The AI natives that stay as they were (guard posts, zeppelins, merging units) change nothing a melee game reads.
