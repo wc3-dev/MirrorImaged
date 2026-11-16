@@ -42,6 +42,8 @@ public sealed class SpellEffectTests : IDisposable
         ("AHre", "resurrection", "A=2;area=900"),
         ("AUin", "inferno", "A=50;area=250;dur=20;unit=hfoo"),
         ("AHab", "", "A=5;area=900"),
+        ("AHfs", "flamestrike", "A=100;B=10;area=200;dur=2"),
+        ("AEsf", "starfall", "A=30;area=900;dur=2"),
         ("AHwe", "waterelemental", "A=2;dur=20;unit=hfoo"),
         ("AOsf", "spiritwolf", "B=3;dur=20;unit=hfoo"),
     ];
@@ -269,5 +271,25 @@ public sealed class SpellEffectTests : IDisposable
             """, 10);
 
         Assert.Equal(["raised	4", "inferno	50.0	50.0	5", "brilliance	true"], lines);
+    }
+
+    [Fact]
+    public void Flame_strike_burns_the_place_and_starfall_hits_foes_round_the_caster_each_second()
+    {
+        var strike = Run("""
+            local caster, foe, far = make(Player(0)), make(Player(1), 300, 0), make(Player(1), 700, 0)
+            UnitAddAbility(caster, FourCC("AHfs"))
+            IssuePointOrder(caster, "flamestrike", 300, 0)
+            TimerStart(CreateTimer(), 5, false, function() print("strike", f1(1000 - GetWidgetLife(foe)), f1(1000 - GetWidgetLife(far))) end)
+            """, 6);
+        var fall = Run("""
+            local caster, foe = make(Player(0)), make(Player(1), 300, 0)
+            UnitAddAbility(caster, FourCC("AEsf"))
+            IssueImmediateOrder(caster, "starfall")
+            TimerStart(CreateTimer(), 5, false, function() print("fall", f1(1000 - GetWidgetLife(foe))) end)
+            """, 6);
+
+        Assert.Equal(["strike	120.0	0.0"], strike);
+        Assert.Equal(["fall	60.0"], fall);
     }
 }

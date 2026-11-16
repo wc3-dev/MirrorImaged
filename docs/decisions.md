@@ -2452,3 +2452,6 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   first test did not check closely): the pulse is a timer of its own now, a second apart, kept going while any unit has an aura ability. Resurrection stands up to DataA corpses of friends
   near the caster (not heroes), Inferno hurts the units round the place for DataA and lands an infernal (the ability's UnitID) for its time, and Brilliance Aura gives its allies near DataA
   mana a second. Tests check the numbers (Endurance and Unholy together: 270 x 1.1 x 1.1 = 326.7 speed; Unholy 5 life a second).
+
+- **D396 (Flame Strike, Starfall):** Flame Strike hurts the ground units round the place for DataA and then DataB a second for the ability's time; Starfall hurts the units round the caster for DataA a second.
+  Both are from the data's names and not yet measured against the game, so their numbers are marked Close.

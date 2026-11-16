@@ -153,6 +153,19 @@ public sealed partial class GameNatives
                 foreach (var near in Foes(caster, ix, iy, area <= 0 ? 250 : area)) Spell(caster, near, Datum(a, 'A'));
                 Summon(caster, a, ix, iy, 1);
                 return true;
+            case var id when id == Code("AHfs"):
+                // Flame Strike: DataA at once to the units round the place, then DataB a second while it burns
+                var (fx, fy) = target is unit ft ? (ft.X, ft.Y) : x != 0 || y != 0 ? (x, y) : (caster.X, caster.Y);
+                var burn = (int)Lasts(a, caster);
+                foreach (var near in Foes(caster, fx, fy, area <= 0 ? 200 : area).Where(u => !Flies(u))) Spell(caster, near, Datum(a, 'A'));
+                for (var n = 1; n <= burn; n++)
+                    _game.At(_game.Step + Game.Steps(n), () => { if (!caster.Dead) foreach (var near in Foes(caster, fx, fy, area <= 0 ? 200 : area).Where(u => !Flies(u))) Spell(caster, near, Datum(a, 'B')); });
+                return true;
+            case var id when id == Code("AEsf"):
+                // Starfall: DataA to the units round the caster each second for the ability's time
+                for (var n = 1; n <= Math.Max((int)Lasts(a, caster), 1); n++)
+                    _game.At(_game.Step + Game.Steps(n), () => { if (!caster.Dead) foreach (var near in Foes(caster, caster.X, caster.Y, area <= 0 ? 800 : area)) Spell(caster, near, Datum(a, 'A')); });
+                return true;
             case var id when id == Code("AHds"):
                 Apply(caster, caster, InvulnerableBuff, Lasts(a, caster), true, b => b.Invulnerable = true);
                 return true;
