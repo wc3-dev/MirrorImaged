@@ -34,7 +34,7 @@ public sealed class Terrain
             for (var x = 0; x < _width; x++)
             {
                 var corner = tiles[y * _width + x];
-                _types[y * _width + x] = corner.Texture >= 0 && corner.Texture < environment.TerrainTypes.Count ? (int)environment.TerrainTypes[corner.Texture] : 0;
+                _types[y * _width + x] = corner.Texture >= 0 && corner.Texture < environment.TerrainTypes.Count ? System.Buffers.Binary.BinaryPrimitives.ReverseEndianness((int)environment.TerrainTypes[corner.Texture]) : 0; // the file's id read as a number is the id's letters in the other order from the game's (FourCC)
                 _variations[y * _width + x] = corner.Variation;
                 _cliffs[y * _width + x] = corner.CliffLevel;
                 var ground = (corner.Height + corner.CliffLevel - 2) * Tile;
