@@ -2428,3 +2428,8 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   Not read from the install: repair's two ratios, which it has no constant for (the unit data holds its repair time, `urtm`); a probe in the game would give them, and the game would
   not log in for a probe from here. Blizzard does DataB damage in each of DataA waves, a second apart, to the ground units round the place; Animate Dead raises up to DataA
   corpses of units that are not heroes or buildings near the place as units of the caster's owner for the ability's time. The melee corpus test takes maps that have the melee flag.
+
+- **D391 (Tile ids as the game gives them):** the ground of a map's file gave each tile's id as the four letters read as a number in the order the file has them, the reverse of FourCC; `GetTerrainType`
+  gives FourCC now, as the game does and as the scripts that look tiles up by `FourCC("Ldrt")` need. It was why SilverpineSprint's car physics found no terrain; that map now runs its 10
+  minutes without error. Left: ForgottenHollow's handle library, which indexes a table with nil at the start in a trigger of the map; the Lua here has no `debug` library to name the call
+  (the game's has none), and no native was found that answers nil here and a handle in the game.
