@@ -42,6 +42,9 @@ public sealed class SpellEffectTests : IDisposable
         ("AHre", "resurrection", "A=2;area=900"),
         ("AUin", "inferno", "A=50;area=250;dur=20;unit=hfoo"),
         ("AHab", "", "A=5;area=900"),
+        ("AEim", "immolation", "A=10;area=200;dur=3"),
+        ("AOmi", "mirrorimage", "A=2;dur=20"),
+        ("AEah", "", "A=0.5"),
         ("ANsi", "drain", "A=10;dur=3"),
         ("AOwk", "windwalk", "B=0.5;dur=3"),
         ("AUcb", "carrionscarabs", "A=2;dur=20;unit=hfoo"),
@@ -311,5 +314,28 @@ public sealed class SpellEffectTests : IDisposable
             """, 8);
 
         Assert.Equal(["siphon	120.0	470.0", "speed	405.0", "beetles	3"], lines);
+    }
+
+    [Fact]
+    public void Immolation_burns_mirror_image_copies_and_thorns_return_melee_damage()
+    {
+        var lines = Run("""
+            local caster, foe = make(Player(0)), make(Player(1), 100, 0)
+            UnitAddAbility(caster, FourCC("AEim")); UnitAddAbility(caster, FourCC("AOmi"))
+            IssueImmediateOrder(caster, "immolation")
+            TimerStart(CreateTimer(), 5, false, function() print("burn", f1(1000 - GetWidgetLife(foe))) IssueImmediateOrder(caster, "mirrorimage") end)
+            local function count() local g = CreateGroup() GroupEnumUnitsOfPlayer(g, Player(0), nil) local n = 0 ForGroup(g, function() n = n + 1 end) DestroyGroup(g) return n end
+            TimerStart(CreateTimer(), 7, false, function() print("images", count()) end)
+            """, 8);
+
+        Assert.Equal(["burn	40.0", "images	3"], lines);
+
+        var thorns = Run("""
+            local target, attacker = make(Player(0)), CreateUnit(Player(1), FourCC("hatk"), 40, 0, 0)
+            UnitAddAbility(target, FourCC("AEah"))
+            IssueTargetOrder(attacker, "attack", target)
+            TimerStart(CreateTimer(), 3, false, function() print("thorns", GetWidgetLife(attacker) < 1000) end)
+            """, 4);
+        Assert.Equal(["thorns	true"], thorns);
     }
 }
