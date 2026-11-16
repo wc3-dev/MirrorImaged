@@ -39,7 +39,6 @@ public sealed partial class GameNatives
     {
         _engine = false;
         _ticks++;
-        if (_ticks % 32 == 0) AuraPulse();
         var busy = false;
         foreach (var u in _units.Values.ToArray())
             if (!u.Dead && !u.Removed) busy |= Act(u);
