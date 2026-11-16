@@ -45,6 +45,7 @@ public sealed partial class GameNatives
     {
         var a = new ability { Type = type, Unit = u, Levels = type.Levels };
         u.Abilities.Insert(at, a);
+        if (AuraBases.Contains(type.BaseId)) EnsureAuras();
         if (type.Id == Locust || type.Text(AbilityCode) == "Aloc") u.Locust = true;
         if (Raises(u.Type).Any(raise => raise.Ability == type.Id))
         {

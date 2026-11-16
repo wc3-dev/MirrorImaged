@@ -11,7 +11,7 @@ namespace MirrorImaged.Natives;
 public sealed partial class GameNatives
 {
     static readonly int InvulnerableBuff = Code("BHds"), RootBuff = Code("BEer"), SleepBuff = Code("BUsl"), FrostArmorBuff = Code("BUfa"), FrostNovaBuff = Code("BUfn"),
-        DevotionBuff = Code("BHad"), EnduranceBuff = Code("BOae"), UnholyBuff = Code("BUau"), VampiricBuff = Code("BUav"), TrueshotBuff = Code("BEar");
+        AvatarBuff = Code("BHav"), DevotionBuff = Code("BHad"), EnduranceBuff = Code("BOae"), UnholyBuff = Code("BUau"), VampiricBuff = Code("BUav"), TrueshotBuff = Code("BEar");
 
     const float AuraPulseSeconds = 1, AuraBuffSeconds = 1.6f;
 
@@ -100,6 +100,72 @@ public sealed partial class GameNatives
             case var id when id == Code("AOsf"):
                 Summon(caster, a, caster.X, caster.Y, Math.Max((int)Datum(a, 'B'), 1));
                 return true;
+            case var id when id == Code("AHbz"):
+                // Blizzard: a wave of damage each second for DataA waves, to the ground units round the place
+                var (bx, by, bradius, waves, wave) = (target is unit bt ? bt.X : x, target is unit bu ? bu.Y : y, area <= 0 ? 200 : area, Math.Max((int)Datum(a, 'A'), 1), Datum(a, 'B'));
+                for (var n = 1; n <= waves; n++)
+                    _game.At(_game.Step + Game.Steps(n), () => { if (!caster.Dead) foreach (var near in Foes(caster, bx, by, bradius).Where(u => !Flies(u))) Spell(caster, near, wave); });
+                return true;
+            case var id when id == Code("AUan"):
+                // Animate Dead: up to DataA corpses near the place, not heroes, stand up for the caster's owner for the ability's time
+                var (ax, ay) = target is unit at ? (at.X, at.Y) : x != 0 || y != 0 ? (x, y) : (caster.X, caster.Y);
+                foreach (var corpse in _units.Values.Where(u => u.Dead && !u.Removed && !IsHero(u.Type.Id) && !IsBuildingNow(u) && Distance2(u.X - ax, u.Y - ay) <= (area <= 0 ? 900 : area) * (area <= 0 ? 900 : area)).OrderBy(u => u.Id).Take(Math.Max((int)Datum(a, 'A'), 1)).ToArray())
+                {
+                    var (cx, cy, type) = (corpse.X, corpse.Y, corpse.Type.Id);
+                    RemoveUnit(corpse);
+                    if (Create(caster.Owner, type, cx, cy, 270, type) is not { } risen) continue;
+                    UnitApplyTimedLife(risen, Code("BTLF"), Field(a, Code("adur")));
+                    FireUnit(new(caster, Other: risen, Skill: a.Type.Id), UnitSummon, PlayerUnitSummon);
+                }
+                return true;
+            case var id when (id == Code("AOhx") && target is unit hexed && !hexed.Dead) || id == Code("AEme"):
+                // Hex turns another unit into the ability's creature, Metamorphosis the caster into its form, for the ability's time, and they come back as they were
+                var changed = id == Code("AOhx") ? (unit)target! : caster;
+                if (SummonTypes(a).FirstOrDefault() is { } formId && formId != 0 && Data.Object(ObjectKind.Unit, formId) is { } form && !changed.Dead)
+                {
+                    var (original, mana) = (changed.Type, changed.Mana);
+                    var back = _game.Step + Game.Steps(Math.Max(Lasts(a, changed), 0.1));
+                    Transform(changed, form);
+                    _game.At(back, () => { if (!changed.Dead && !changed.Removed && changed.Type == form) { Transform(changed, original); SetMana(changed, Math.Min(Math.Max(mana, changed.Mana), changed.MaxMana)); } });
+                }
+                return true;
+            case var id when id == Code("AHav"):
+                // Avatar: more armour and life for its time
+                var (gain, lifeGain) = (Datum(a, 'A'), Datum(a, 'B'));
+                Apply(caster, caster, AvatarBuff, Lasts(a, caster), true, b => b.ArmorBonus = gain);
+                caster.MaxLife += lifeGain;
+                SetLife(caster, caster.Life + lifeGain);
+                _game.At(_game.Step + Game.Steps(Math.Max(Lasts(a, caster), 0.1)), () => { caster.MaxLife -= lifeGain; if (caster.Life > caster.MaxLife) SetLife(caster, caster.MaxLife); });
+                return true;
+            case var id when id == Code("AHre"):
+                // Resurrection: up to DataA corpses of the caster's friends near it, not heroes, get up again at full life as they were
+                foreach (var corpse in _units.Values.Where(u => u.Dead && !u.Removed && !IsHero(u.Type.Id) && !IsBuildingNow(u) && (u.Owner == caster.Owner || IsPlayerAlly(caster.Owner, u.Owner))
+                        && Distance2(u.X - caster.X, u.Y - caster.Y) <= (area <= 0 ? 900 : area) * (area <= 0 ? 900 : area)).OrderBy(u => u.Id).Take(Math.Max((int)Datum(a, 'A'), 1)).ToArray())
+                {
+                    var (cx, cy, type, owner) = (corpse.X, corpse.Y, corpse.Type.Id, corpse.Owner);
+                    RemoveUnit(corpse);
+                    Create(owner, type, cx, cy, 270, type);
+                }
+                return true;
+            case var id when id == Code("AUin"):
+                // Inferno: an infernal lands on the place, hurting the units round it for DataA, and stays for the ability's time
+                var (ix, iy) = target is unit it ? (it.X, it.Y) : x != 0 || y != 0 ? (x, y) : (caster.X, caster.Y);
+                foreach (var near in Foes(caster, ix, iy, area <= 0 ? 250 : area)) Spell(caster, near, Datum(a, 'A'));
+                Summon(caster, a, ix, iy, 1);
+                return true;
+            case var id when id == Code("AHfs"):
+                // Flame Strike: DataA at once to the units round the place, then DataB a second while it burns
+                var (fx, fy) = target is unit ft ? (ft.X, ft.Y) : x != 0 || y != 0 ? (x, y) : (caster.X, caster.Y);
+                var burn = (int)Lasts(a, caster);
+                foreach (var near in Foes(caster, fx, fy, area <= 0 ? 200 : area).Where(u => !Flies(u))) Spell(caster, near, Datum(a, 'A'));
+                for (var n = 1; n <= burn; n++)
+                    _game.At(_game.Step + Game.Steps(n), () => { if (!caster.Dead) foreach (var near in Foes(caster, fx, fy, area <= 0 ? 200 : area).Where(u => !Flies(u))) Spell(caster, near, Datum(a, 'B')); });
+                return true;
+            case var id when id == Code("AEsf"):
+                // Starfall: DataA to the units round the caster each second for the ability's time
+                for (var n = 1; n <= Math.Max((int)Lasts(a, caster), 1); n++)
+                    _game.At(_game.Step + Game.Steps(n), () => { if (!caster.Dead) foreach (var near in Foes(caster, caster.X, caster.Y, area <= 0 ? 800 : area)) Spell(caster, near, Datum(a, 'A')); });
+                return true;
             case var id when id == Code("AHds"):
                 Apply(caster, caster, InvulnerableBuff, Lasts(a, caster), true, b => b.Invulnerable = true);
                 return true;
@@ -143,27 +209,37 @@ public sealed partial class GameNatives
             if (!receiver.Dead) SetLife(receiver, Math.Min(receiver.Life + Datum(a, 'B') * AuraPulseSeconds, receiver.MaxLife));
         }
         else if (id == Code("AUav")) Apply(receiver, giver, VampiricBuff, AuraBuffSeconds, true, b => b.LifeSteal = Datum(a, 'A'));
+        else if (id == Code("AHab")) { if (!receiver.Dead) SetMana(receiver, Math.Min(receiver.Mana + Datum(a, 'A') * AuraPulseSeconds, receiver.MaxMana)); }
         else if (id == Code("AEar")) Apply(receiver, giver, TrueshotBuff, AuraBuffSeconds, true, b => b.DamageBonus = Datum(a, 'A'));
         else return false;
         return true;
     }
 
-    long _lastAuraPulse = -1;
+    bool _aurasScheduled;
+
+    // The pulse is a timer of its own, a second apart, for as long as some unit has an aura (the unit engine rests when no unit has anything to do)
+    void EnsureAuras()
+    {
+        if (_aurasScheduled) return;
+        _aurasScheduled = true;
+        _game.At(_game.Step + Game.Steps(AuraPulseSeconds), AuraPulse);
+    }
 
     void AuraPulse()
     {
-        var second = _ticks / 32;
-        if (second == _lastAuraPulse) return;
-        _lastAuraPulse = second;
+        _aurasScheduled = false;
+        var any = false;
         foreach (var giver in _units.Values.Where(u => !u.Dead && !u.Removed && !u.Constructing && u.Abilities.Count > 0).ToArray())
             foreach (var a in giver.Abilities.Where(a => !a.Disabled && a.Level > 0 && AuraBases.Contains(a.Type.BaseId)).ToArray())
             {
+                any = true;
                 var area = Field(a, CastArea);
                 foreach (var receiver in Friends(giver, giver.X, giver.Y, area <= 0 ? 900 : area)) AuraEffect(a, giver, receiver);
             }
+        if (any || _units.Values.Any(u => !u.Removed && u.Abilities.Any(a => AuraBases.Contains(a.Type.BaseId)))) EnsureAuras();
     }
 
-    static readonly HashSet<int> AuraBases = [Code("AHad"), Code("AOae"), Code("AUau"), Code("AUav"), Code("AEar")];
+    static readonly HashSet<int> AuraBases = [Code("AHab"), Code("AHad"), Code("AOae"), Code("AUau"), Code("AUav"), Code("AEar")];
 
     // What the buffs on a unit add to its attacks
     float LifeStealOf(unit u) => u.Buffs.Count == 0 ? 0 : u.Buffs.Max(b => b.LifeSteal);

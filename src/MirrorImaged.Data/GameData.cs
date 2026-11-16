@@ -90,6 +90,9 @@ public sealed class GameData
     GameObject? Absent(ObjectKind kind, int id) =>
         Standard.Absent.TryGetValue((kind, id), out var absent) ? new GameObject(this, kind, id, id, absent) : null;
 
+    /// <summary>The names of the standard data's constants.</summary>
+    public IEnumerable<string> ConstNames => _constants.Keys;
+
     /// <summary>A gameplay constant (<c>DayLength</c>) as written, the map's own over the game's; null when neither has it.</summary>
     public string? Constant(string key) => _constants.GetValueOrDefault(key);
 
