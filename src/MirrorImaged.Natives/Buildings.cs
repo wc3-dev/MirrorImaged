@@ -246,6 +246,7 @@ public sealed partial class GameNatives
     // The building is the other type from now on: its life and mana keep their share, its abilities are the new type's, the food it makes changes
     void Transform(unit building, GameObject type)
     {
+        var old = building.Type;
         var (lifeShare, manaShare) = (building.MaxLife > 0 ? building.Life / building.MaxLife : 1, building.MaxMana > 0 ? building.Mana / building.MaxMana : 0);
         building.Owner.States[FoodCap] += type.Integer(FoodMadeField) - building.Type.Integer(FoodMadeField);
         building.Type = type;
@@ -254,7 +255,11 @@ public sealed partial class GameNatives
         building.Life = building.MaxLife * lifeShare;
         building.Mana = Math.Min(building.MaxMana * manaShare, building.MaxMana);
         building.Scale = type.Real(ModelScale);
+        // What the old type gave goes and the new type's comes; what a script gave the unit stays only when it made it permanent (UnitMakeAbilityPermanent), as in the game
+        var given = (old == type ? "" : old.Text(AbilityList) ?? "").Split(',', StringSplitOptions.TrimEntries).Select(Code).ToHashSet();
+        var kept = building.Abilities.Where(a => !given.Contains(a.Type.Id) && a.Permanent).ToList();
         building.Abilities.Clear();
         GiveAbilities(building);
+        foreach (var a in kept) if (Find(building, a.Type.Id) is null) building.Abilities.Add(a);
     }
 }

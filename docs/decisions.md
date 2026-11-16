@@ -2443,3 +2443,7 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   sandbox's Lua has no `debug` (D391). (3) Replays are read as the format is documented and checked on replays the tests make: no replay of this machine holds a player's orders. (4) Not modelled:
   channelled spells other than Blizzard (Flame Strike, Starfall, Tranquility, Earthquake), the summons that need more than a type and a number (Carrion Beetles, Locust Swarm), transformations
   (Metamorphosis, Hex, Avatar), Mirror Image, Wind Walk, and the passives of other names. (5) The AI natives that stay as they were (guard posts, zeppelins, merging units) change nothing a melee game reads.
+
+- **D394 (Hex, Metamorphosis, Avatar):** Hex turns the target into the ability's creature (its UnitID) and Metamorphosis the caster into its form, for the ability's time, then they are as they were with the mana they had;
+  a change of type keeps the abilities a script made permanent (UnitMakeAbilityPermanent) and drops the ones it gave otherwise, as the game does. Avatar gives DataA armour (a buff) and DataB life for
+  its time. Close: the form is the type only (a hero's hero-ness and the form's own attack changes are not carried), and the base armour `BlzGetUnitArmor` reads leaves the buff out as the probes measured.
