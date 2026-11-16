@@ -34,6 +34,8 @@ public sealed class SpellEffectTests : IDisposable
         ("AHbh", "", "A=100;C=25;dur=2"),
         ("AOcr", "", "A=100;B=3"),
         ("AEev", "", "A=1"),
+        ("AHbz", "blizzard", "A=3;B=30;area=200"),
+        ("AUan", "animatedead", "A=2;area=900;dur=20"),
         ("AHwe", "waterelemental", "A=2;dur=20;unit=hfoo"),
         ("AOsf", "spiritwolf", "B=3;dur=20;unit=hfoo"),
     ];
@@ -58,7 +60,7 @@ public sealed class SpellEffectTests : IDisposable
             if (n.TryGetValue("unit", out var summoned)) own += $";uuid:1={summoned}";
             data.Add(ObjectKind.Ability, id, Values(own));
         }
-        return data.Add(ObjectKind.Unit, "hatk", Values("unam=Attacker;uhpm=1000;umpm=500;umpi=500;umvs=270;umvt=foot;uacq=500;uaen=1;ua1w=normal;ua1t=normal;ua1g=ground;ua1b=10;ua1d=1;ua1s=1;ua1c=1;ua1r=90;udp1=0.5;ucol=31;udef=0")).Add(ObjectKind.Unit, "hfoo", Values("unam=Footman;uhpm=1000;umpm=500;umpi=500;umvs=270;umvt=foot;uacq=500;uaen=0;ua1w=normal;ua1t=normal;ua1g=ground;ua1b=10;ua1d=1;ua1s=1;ua1c=1;ua1r=90;udp1=0.5;ucol=31;udef=0"));
+        return data.Add(ObjectKind.Unit, "hatk", Values("unam=Attacker;uhpm=1000;umpm=500;umpi=500;umvs=270;umvt=foot;uacq=500;uaen=1;ua1w=normal;ua1t=normal;ua1g=ground;ua1b=10;ua1d=1;ua1s=1;ua1c=1;ua1r=90;udp1=0.5;ucol=31;udef=0")).Add(ObjectKind.Unit, "hfoo", Values("unam=Footman;uhpm=1000;umpm=500;umpi=500;umvs=270;umvt=foot;uacq=500;udea=3;uaen=0;ua1w=normal;ua1t=normal;ua1g=ground;ua1b=10;ua1d=1;ua1s=1;ua1c=1;ua1r=90;udp1=0.5;ucol=31;udef=0"));
     }
 
     List<string> Run(string main, double seconds)
@@ -179,7 +181,7 @@ public sealed class SpellEffectTests : IDisposable
             TriggerAddAction(t, function() print("summon", GetUnitName(GetSummonedUnit()), GetSummoningUnit() == caster, IsUnitType(GetSummonedUnit(), UNIT_TYPE_SUMMONED)) end)
             IssueImmediateOrder(caster, "waterelemental")
             TimerStart(CreateTimer(), 2, false, function() IssueImmediateOrder(caster, "spiritwolf") end)
-            local function count() local g = CreateGroup() GroupEnumUnitsOfPlayer(g, Player(0), nil) local n = BlzGroupGetSize(g) DestroyGroup(g) return n end
+            local function count() local g = CreateGroup() GroupEnumUnitsOfPlayer(g, Player(0), nil) local n = 0 ForGroup(g, function() if UnitAlive(GetEnumUnit()) then n = n + 1 end end) DestroyGroup(g) return n end
             TimerStart(CreateTimer(), 4, false, function() print("count", count()) end)
             TimerStart(CreateTimer(), 30, false, function() print("later", count()) end)
             """, 31);
@@ -203,5 +205,26 @@ public sealed class SpellEffectTests : IDisposable
             """, 2);
 
         Assert.Equal(["crit	33.0	bash	36.0	plain	11.0	evaded	1000.0"], lines);
+    }
+
+    [Fact]
+    public void Blizzard_hits_the_ground_units_in_its_area_once_a_second_and_animate_dead_raises_corpses()
+    {
+        var lines = Run("""
+            local caster = make(Player(0))
+            UnitAddAbility(caster, FourCC("AHbz")); UnitAddAbility(caster, FourCC("AUan"))
+            local a, b = make(Player(1), 400, 0), make(Player(1), 400, 100)
+            local far = make(Player(1), 1400, 0)
+            IssuePointOrder(caster, "blizzard", 400, 50)
+            TimerStart(CreateTimer(), 5, false, function() print("blizzard", f1(1000 - GetWidgetLife(a)), f1(1000 - GetWidgetLife(b)), f1(1000 - GetWidgetLife(far))) end)
+            local d1, d2, d3 = make(Player(1), 1000, 1000), make(Player(1), 1050, 1000), make(Player(1), 1100, 1000)
+            SetUnitPosition(caster, 900, 900)
+            TimerStart(CreateTimer(), 6, false, function() KillUnit(d1); KillUnit(d2); KillUnit(d3); IssuePointOrder(caster, "animatedead", 1050, 1000) end)
+            local function mine() local g = CreateGroup() GroupEnumUnitsOfPlayer(g, Player(0), nil) local n = 0 ForGroup(g, function() if UnitAlive(GetEnumUnit()) then n = n + 1 end end) DestroyGroup(g) return n end
+            TimerStart(CreateTimer(), 9, false, function() print("raised", mine()) end)
+            TimerStart(CreateTimer(), 40, false, function() print("later", mine()) end)
+            """, 41);
+
+        Assert.Equal(["blizzard	90.0	90.0	0.0", "raised	3", "later	1"], lines);
     }
 }

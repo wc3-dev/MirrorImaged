@@ -117,8 +117,13 @@ public sealed partial class GameNatives
         {
             // A dead hero the building revives: it costs a share of the hero's own price, more for each level it had
             var type = dead.Type;
-            var share = Data.Constant("ReviveBaseFactor", 0.4f) + Data.Constant("ReviveLevelFactor", 0.1f) * (Math.Max(dead.HeroLevel, 1) - 1);
-            item = new Training(false, order, (int)(type.Integer(Cost) * share), (int)(type.Integer(LumberCost) * share), 0, Math.Max(type.Real(BuildTime) * (Data.Constant("ReviveTimeFactor", 0.65f)), 0.1), revive: true);
+            // The constants of the game: the share of the price (a base and a part for each level above the first, at most ReviveMaxFactor), the most it costs in gold and lumber,
+            // and the share of the build time (at most HeroMaxReviveTime)
+            var share = Math.Min(Data.Constant("ReviveBaseFactor", 0.4f) + Data.Constant("ReviveLevelFactor", 0.1f) * (Math.Max(dead.HeroLevel, 1) - 1), Data.Constant("ReviveMaxFactor", 4f));
+            var gold = Math.Min((int)(type.Integer(Cost) * share), (int)Data.Constant("HeroMaxReviveCostGold", 700));
+            var lumber = Math.Min((int)(type.Integer(LumberCost) * (Data.Constant("ReviveBaseLumberFactor", 0) + Data.Constant("ReviveLumberLevelFactor", 0) * (Math.Max(dead.HeroLevel, 1) - 1))), (int)Data.Constant("HeroMaxReviveCostLumber", 0));
+            var seconds = Math.Min(type.Real(BuildTime) * Data.Constant("ReviveTimeFactor", 0.65f), Data.Constant("HeroMaxReviveTime", 150));
+            item = new Training(false, order, gold, lumber, 0, Math.Max(seconds, 0.1), revive: true);
             if (!CanPay(building.Owner, item.Gold, item.Lumber)) return false;
         }
         else if (Listed(building, Trains, order) && Data.Object(ObjectKind.Unit, order) is { } unitType)

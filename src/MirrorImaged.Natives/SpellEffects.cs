@@ -100,6 +100,24 @@ public sealed partial class GameNatives
             case var id when id == Code("AOsf"):
                 Summon(caster, a, caster.X, caster.Y, Math.Max((int)Datum(a, 'B'), 1));
                 return true;
+            case var id when id == Code("AHbz"):
+                // Blizzard: a wave of damage each second for DataA waves, to the ground units round the place
+                var (bx, by, bradius, waves, wave) = (target is unit bt ? bt.X : x, target is unit bu ? bu.Y : y, area <= 0 ? 200 : area, Math.Max((int)Datum(a, 'A'), 1), Datum(a, 'B'));
+                for (var n = 1; n <= waves; n++)
+                    _game.At(_game.Step + Game.Steps(n), () => { if (!caster.Dead) foreach (var near in Foes(caster, bx, by, bradius).Where(u => !Flies(u))) Spell(caster, near, wave); });
+                return true;
+            case var id when id == Code("AUan"):
+                // Animate Dead: up to DataA corpses near the place, not heroes, stand up for the caster's owner for the ability's time
+                var (ax, ay) = target is unit at ? (at.X, at.Y) : x != 0 || y != 0 ? (x, y) : (caster.X, caster.Y);
+                foreach (var corpse in _units.Values.Where(u => u.Dead && !u.Removed && !IsHero(u.Type.Id) && !IsBuildingNow(u) && Distance2(u.X - ax, u.Y - ay) <= (area <= 0 ? 900 : area) * (area <= 0 ? 900 : area)).OrderBy(u => u.Id).Take(Math.Max((int)Datum(a, 'A'), 1)).ToArray())
+                {
+                    var (cx, cy, type) = (corpse.X, corpse.Y, corpse.Type.Id);
+                    RemoveUnit(corpse);
+                    if (Create(caster.Owner, type, cx, cy, 270, type) is not { } risen) continue;
+                    UnitApplyTimedLife(risen, Code("BTLF"), Field(a, Code("adur")));
+                    FireUnit(new(caster, Other: risen, Skill: a.Type.Id), UnitSummon, PlayerUnitSummon);
+                }
+                return true;
             case var id when id == Code("AHds"):
                 Apply(caster, caster, InvulnerableBuff, Lasts(a, caster), true, b => b.Invulnerable = true);
                 return true;
