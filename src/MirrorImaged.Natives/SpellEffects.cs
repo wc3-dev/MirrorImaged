@@ -166,6 +166,24 @@ public sealed partial class GameNatives
                 for (var n = 1; n <= Math.Max((int)Lasts(a, caster), 1); n++)
                     _game.At(_game.Step + Game.Steps(n), () => { if (!caster.Dead) foreach (var near in Foes(caster, caster.X, caster.Y, area <= 0 ? 800 : area)) Spell(caster, near, Datum(a, 'A')); });
                 return true;
+            case var id when id == Code("ANsi") && target is unit drained && !drained.Dead:
+                // Siphon Mana: DataA mana a second from the target to the caster for the ability's time
+                for (var n = 1; n <= Math.Max((int)Lasts(a, drained), 1); n++)
+                    _game.At(_game.Step + Game.Steps(n), () =>
+                    {
+                        if (caster.Dead || drained.Dead) return;
+                        var moved = Math.Min(drained.Mana, Datum(a, 'A'));
+                        SetMana(drained, drained.Mana - moved);
+                        SetMana(caster, Math.Min(caster.Mana + moved, caster.MaxMana));
+                    });
+                return true;
+            case var id when id == Code("AOwk"):
+                // Wind Walk: faster for its time (DataB more speed)
+                Apply(caster, caster, WindWalkBuff, Lasts(a, caster), true, b => b.SpeedFactor = 1 + Datum(a, 'B'));
+                return true;
+            case var id when id == Code("AUcb"):
+                Summon(caster, a, target is unit bt2 ? bt2.X : x != 0 || y != 0 ? x : caster.X, target is unit bu2 ? bu2.Y : x != 0 || y != 0 ? y : caster.Y, Math.Max((int)Datum(a, 'A'), 1));
+                return true;
             case var id when id == Code("AHds"):
                 Apply(caster, caster, InvulnerableBuff, Lasts(a, caster), true, b => b.Invulnerable = true);
                 return true;
@@ -214,6 +232,8 @@ public sealed partial class GameNatives
         else return false;
         return true;
     }
+
+    static readonly int WindWalkBuff = Code("BOwk");
 
     bool _aurasScheduled;
 

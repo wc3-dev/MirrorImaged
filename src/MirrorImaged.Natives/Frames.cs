@@ -47,9 +47,37 @@ public sealed partial class GameNatives
         if (TOCFile is null || Data.Map?.File(TOCFile) is not { } toc) return false;
         foreach (var line in System.Text.Encoding.UTF8.GetString(toc).Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
             if (Data.Map?.File(line) is { } fdf)
-                foreach (Match frame in Regex.Matches(System.Text.Encoding.UTF8.GetString(fdf), "(?m)^\\s*(?:Frame|Texture|String|Layer)\\s+\"[A-Z_]+\"\\s+\"([^\"]+)\""))
-                    _fdfNames.Add(frame.Groups[1].Value);
+                ReadFdf(System.Text.Encoding.UTF8.GetString(fdf));
         return true;
+    }
+
+    // The named frames nested in each top-level frame of an FDF (Frame, Texture, String), made along with it (decisions D398)
+    readonly Dictionary<string, List<(string Type, string Name)>> _fdfChildren = new(StringComparer.Ordinal);
+
+    void ReadFdf(string text)
+    {
+        var (depth, top) = (0, "");
+        foreach (var line in text.Split('\n'))
+        {
+            var trimmed = line.Trim();
+            // `Frame "TYPE" "Name"`, and in a simple frame `Texture "Name"` and `String "Name" "Font"`
+            if (Regex.Match(trimmed, "^(?:Frame\\s+\"(?<type>[A-Z_]+)\"\\s+\"(?<name>[^\"]+)\"|(?<type>Texture|String)\\s+\"(?<name>[^\"]+)\")") is { Success: true } m)
+            {
+                var name = m.Groups["name"].Value;
+                _fdfNames.Add(name);
+                if (depth == 0) { top = name; _fdfChildren[top] = []; }
+                else if (top != "") _fdfChildren[top].Add((m.Groups["type"].Value, name));
+            }
+            depth = Math.Max(depth + trimmed.Count(c => c == '{') - trimmed.Count(c => c == '}'), 0);
+        }
+    }
+
+    framehandle? NewTemplateFrame(string name, string type, framehandle? owner)
+    {
+        var frame = NewFrame(name, type, owner);
+        if (frame is not null && _fdfChildren.TryGetValue(name, out var children))
+            foreach (var (childType, childName) in children) NewFrame(childName, childType, frame);
+        return frame;
     }
 
     // The game's own templates the facts saw create without a TOC; any other name is the map's FDF's or nil
@@ -58,20 +86,40 @@ public sealed partial class GameNatives
     /// <summary>A frame made from an FDF name the map defined (or a game template); nil for an unknown name, and for the Esc menu's text templates without a TOC (facts).</summary>
     [Native(Level.Close, Fact = FrameFacts)]
     public framehandle? BlzCreateFrame(string? name, framehandle? owner, int priority, int createContext) =>
-        name is not null && (_fdfNames.Contains(name) || GameTemplates.Contains(name)) ? NewFrame(name, "FRAME", owner) : null;
+        name is not null && (_fdfNames.Contains(name) || GameTemplates.Contains(name)) ? NewTemplateFrame(name, "FRAME", owner) : null;
 
     [Native(Level.Close, Fact = FrameFacts)]
     public framehandle? BlzCreateSimpleFrame(string? name, framehandle? owner, int createContext) =>
-        name is not null && _fdfNames.Contains(name) ? NewFrame(name, "SIMPLEFRAME", owner) : null;
+        name is not null && _fdfNames.Contains(name) ? NewTemplateFrame(name, "SIMPLEFRAME", owner) : null;
 
     /// <summary>A frame of the type, also with an unknown template to inherit (facts, 10-14).</summary>
     [Native(Level.Close, Fact = FrameFacts)]
     public framehandle? BlzCreateFrameByType(string? typeName, string? name, framehandle? owner, string? inherits, int createContext) =>
-        typeName is null ? null : NewFrame(name ?? "", typeName, owner);
+        typeName is null ? null : NewButtonParts(NewFrame(name ?? "", typeName, owner)!);
+
+    // A button frame has its backdrops as children, the normal, pushed and disabled one (what a map's BlzFrameGetChild(button, 0) to 2 reaches; decisions D398)
+    static readonly HashSet<string> ButtonTypes = ["GLUEBUTTON", "GLUETEXTBUTTON", "BUTTON", "TEXTBUTTON", "SCRIPT_DIALOG_BUTTON", "BROWSER_BUTTON", "INVIS_BUTTON"];
+
+    framehandle NewButtonParts(framehandle frame)
+    {
+        if (ButtonTypes.Contains(frame.Type))
+            for (var n = 0; n < 3; n++) NewFrame("", "BACKDROP", frame);
+        return frame;
+    }
 
     /// <summary>A frame by its FDF name; the nearest made one, nil for none.</summary>
     [Native(Level.Close, Fact = FrameFacts)]
-    public framehandle? BlzGetFrameByName(string? name, int createContext) => _frames.LastOrDefault(frame => !frame.Destroyed && frame.Name == name);
+    public framehandle? BlzGetFrameByName(string? name, int createContext)
+    {
+        if (_frames.LastOrDefault(frame => !frame.Destroyed && frame.Name == name) is { } made) return made;
+        if (name is null || !(GameFrameNames.Contains(name) || _fdfNames.Contains(name))) return null;
+        var frame = Make(new framehandle { Name = name, Type = "FRAME" });
+        _frames.Add(frame);
+        return frame;
+    }
+
+    // Frames of the game's own UI that exist from the start, found by name (decisions D398); the list is the common ones maps parent their own frames to
+    static readonly HashSet<string> GameFrameNames = ["ConsoleUI", "ConsoleUIBackdrop", "UpperButtonBarFrame", "ResourceBarFrame", "InfoPanelIconBackdrop", "MiniMapFrame", "SimpleInventoryCover", "ChatFrame", "UnitMessageFrame", "TimeOfDayIndicator", "MinimapButtonBar", "ConsoleBottomBar", "ConsoleTopBar", "ConsoleUIBackdropGlue", "Leaderboard", "LeaderboardBackdrop", "LeaderboardTitle", "Multiboard", "MultiboardBackdrop", "MultiboardTitle"];
 
     /// <summary>A frame of the game's own UI, one for each type and index; it exists from the first ask (the facts: origin frames exist in main).</summary>
     [Native(Level.Close, Fact = FrameFacts)]
