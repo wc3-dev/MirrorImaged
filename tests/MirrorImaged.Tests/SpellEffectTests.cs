@@ -42,6 +42,9 @@ public sealed class SpellEffectTests : IDisposable
         ("AHre", "resurrection", "A=2;area=900"),
         ("AUin", "inferno", "A=50;area=250;dur=20;unit=hfoo"),
         ("AHab", "", "A=5;area=900"),
+        ("ANsi", "drain", "A=10;dur=3"),
+        ("AOwk", "windwalk", "B=0.5;dur=3"),
+        ("AUcb", "carrionscarabs", "A=2;dur=20;unit=hfoo"),
         ("AHfs", "flamestrike", "A=100;B=10;area=200;dur=2"),
         ("AEsf", "starfall", "A=30;area=900;dur=2"),
         ("AHwe", "waterelemental", "A=2;dur=20;unit=hfoo"),
@@ -291,5 +294,22 @@ public sealed class SpellEffectTests : IDisposable
 
         Assert.Equal(["strike	120.0	0.0"], strike);
         Assert.Equal(["fall	60.0"], fall);
+    }
+
+    [Fact]
+    public void Siphon_mana_moves_mana_wind_walk_speeds_up_and_carrion_beetles_summon()
+    {
+        var lines = Run("""
+            local caster, foe = make(Player(0)), make(Player(1), 300, 0)
+            SetUnitState(caster, UNIT_STATE_MANA, 100)
+            UnitAddAbility(caster, FourCC("ANsi")); UnitAddAbility(caster, FourCC("AOwk")); UnitAddAbility(caster, FourCC("AUcb"))
+            IssueTargetOrder(caster, "drain", foe)
+            TimerStart(CreateTimer(), 5, false, function() print("siphon", f1(GetUnitState(caster, UNIT_STATE_MANA)), f1(GetUnitState(foe, UNIT_STATE_MANA))) IssueImmediateOrder(caster, "windwalk") end)
+            TimerStart(CreateTimer(), 5.5, false, function() print("speed", f1(GetUnitMoveSpeed(caster))) IssuePointOrder(caster, "carrionscarabs", 0, 100) end)
+            local function count() local g = CreateGroup() GroupEnumUnitsOfPlayer(g, Player(0), nil) local n = 0 ForGroup(g, function() n = n + 1 end) DestroyGroup(g) return n end
+            TimerStart(CreateTimer(), 7, false, function() print("beetles", count()) end)
+            """, 8);
+
+        Assert.Equal(["siphon	120.0	470.0", "speed	405.0", "beetles	3"], lines);
     }
 }

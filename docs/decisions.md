@@ -2455,3 +2455,5 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
 
 - **D396 (Flame Strike, Starfall):** Flame Strike hurts the ground units round the place for DataA and then DataB a second for the ability's time; Starfall hurts the units round the caster for DataA a second.
   Both are from the data's names and not yet measured against the game, so their numbers are marked Close.
+
+- **D397 (Siphon Mana, Wind Walk, Carrion Beetles):** Siphon Mana moves DataA mana a second from the target to the caster, Wind Walk gives DataB more speed for its time, and Carrion Beetles summon DataA units. The data fields are read from the names and are Close, not measured.
