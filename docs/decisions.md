@@ -2421,3 +2421,10 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
 - **D389 (The melee corpus, A4):** the install's classic melee maps ((2) to (12) players: 42 maps) each run 30 game minutes with a person in the first slot and computers in the rest, with
   no script error, and the computers' units grow (a 2-player map from 6 to about 18 units, a 4-player from 18 to about 75, an 8-player from 42 to about 160): 9 to 230 s a map
   with eight runs at once, a 4-player map alone 23 s (A10). The test counts a melee map as one with two or more user slots, and the computers' own units only.
+
+- **D390 (The game's own constants, Blizzard and Animate Dead):** a hero's revival at an altar uses the install's constants: the share of its price is ReviveBaseFactor (.40) plus ReviveLevelFactor
+  (.10) for each level above the first, at most ReviveMaxFactor (4.0), the gold at most HeroMaxReviveCostGold (700) and the lumber at most HeroMaxReviveCostLumber; the time is
+  ReviveTimeFactor (0.65) of its build time, at most HeroMaxReviveTime (150). Pawning reaches PawnItemRange (300) from the shop's edge. These replace the guesses of D376 and D385.
+  Not read from the install: repair's two ratios, which it has no constant for (the unit data holds its repair time, `urtm`); a probe in the game would give them, and the game would
+  not log in for a probe from here. Blizzard does DataB damage in each of DataA waves, a second apart, to the ground units round the place; Animate Dead raises up to DataA
+  corpses of units that are not heroes or buildings near the place as units of the caster's owner for the ability's time. The melee corpus test takes maps that have the melee flag.
