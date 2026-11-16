@@ -11,7 +11,7 @@ namespace MirrorImaged.Natives;
 public sealed partial class GameNatives
 {
     static readonly int InvulnerableBuff = Code("BHds"), RootBuff = Code("BEer"), SleepBuff = Code("BUsl"), FrostArmorBuff = Code("BUfa"), FrostNovaBuff = Code("BUfn"),
-        DevotionBuff = Code("BHad"), EnduranceBuff = Code("BOae"), UnholyBuff = Code("BUau"), VampiricBuff = Code("BUav"), TrueshotBuff = Code("BEar");
+        AvatarBuff = Code("BHav"), DevotionBuff = Code("BHad"), EnduranceBuff = Code("BOae"), UnholyBuff = Code("BUau"), VampiricBuff = Code("BUav"), TrueshotBuff = Code("BEar");
 
     const float AuraPulseSeconds = 1, AuraBuffSeconds = 1.6f;
 
@@ -117,6 +117,25 @@ public sealed partial class GameNatives
                     UnitApplyTimedLife(risen, Code("BTLF"), Field(a, Code("adur")));
                     FireUnit(new(caster, Other: risen, Skill: a.Type.Id), UnitSummon, PlayerUnitSummon);
                 }
+                return true;
+            case var id when (id == Code("AOhx") && target is unit hexed && !hexed.Dead) || id == Code("AEme"):
+                // Hex turns another unit into the ability's creature, Metamorphosis the caster into its form, for the ability's time, and they come back as they were
+                var changed = id == Code("AOhx") ? (unit)target! : caster;
+                if (SummonTypes(a).FirstOrDefault() is { } formId && formId != 0 && Data.Object(ObjectKind.Unit, formId) is { } form && !changed.Dead)
+                {
+                    var (original, mana) = (changed.Type, changed.Mana);
+                    var back = _game.Step + Game.Steps(Math.Max(Lasts(a, changed), 0.1));
+                    Transform(changed, form);
+                    _game.At(back, () => { if (!changed.Dead && !changed.Removed && changed.Type == form) { Transform(changed, original); SetMana(changed, Math.Min(Math.Max(mana, changed.Mana), changed.MaxMana)); } });
+                }
+                return true;
+            case var id when id == Code("AHav"):
+                // Avatar: more armour and life for its time
+                var (gain, lifeGain) = (Datum(a, 'A'), Datum(a, 'B'));
+                Apply(caster, caster, AvatarBuff, Lasts(a, caster), true, b => b.ArmorBonus = gain);
+                caster.MaxLife += lifeGain;
+                SetLife(caster, caster.Life + lifeGain);
+                _game.At(_game.Step + Game.Steps(Math.Max(Lasts(a, caster), 0.1)), () => { caster.MaxLife -= lifeGain; if (caster.Life > caster.MaxLife) SetLife(caster, caster.MaxLife); });
                 return true;
             case var id when id == Code("AHds"):
                 Apply(caster, caster, InvulnerableBuff, Lasts(a, caster), true, b => b.Invulnerable = true);

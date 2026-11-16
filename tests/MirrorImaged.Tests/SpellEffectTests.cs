@@ -36,6 +36,9 @@ public sealed class SpellEffectTests : IDisposable
         ("AEev", "", "A=1"),
         ("AHbz", "blizzard", "A=3;B=30;area=200"),
         ("AUan", "animatedead", "A=2;area=900;dur=20"),
+        ("AOhx", "hex", "A=99;dur=3;unit=nfro"),
+        ("AEme", "metamorphosis", "dur=3;unit=hbig"),
+        ("AHav", "avatar", "A=5;B=500;dur=3"),
         ("AHwe", "waterelemental", "A=2;dur=20;unit=hfoo"),
         ("AOsf", "spiritwolf", "B=3;dur=20;unit=hfoo"),
     ];
@@ -47,7 +50,7 @@ public sealed class SpellEffectTests : IDisposable
         {
             ("alev", new("levels", PerLevel.None, -1, "int")), ("code", new("code", PerLevel.None, -1)), ("aord", new("Order", PerLevel.None, -1, "string")),
             ("acas", Column("Cast", "unreal")), ("aran", Column("Rng", "unreal")), ("aare", Column("Area", "unreal")), ("acdn", Column("Cool", "unreal")), ("amcs", Column("Cost", "int")),
-            ("adur", Column("Dur", "unreal")), ("ahdu", Column("HeroDur", "unreal")), ("uuid", Column("UnitID", "string", "AHwe", "AOsf")),
+            ("adur", Column("Dur", "unreal")), ("ahdu", Column("HeroDur", "unreal")), ("uuid", Column("UnitID", "string", "AHwe", "AOsf", "AOhx", "AEme")),
         })
             data.Add(ObjectKind.Ability, id, field);
         foreach (var letter in "ABCDE")
@@ -60,7 +63,7 @@ public sealed class SpellEffectTests : IDisposable
             if (n.TryGetValue("unit", out var summoned)) own += $";uuid:1={summoned}";
             data.Add(ObjectKind.Ability, id, Values(own));
         }
-        return data.Add(ObjectKind.Unit, "hatk", Values("unam=Attacker;uhpm=1000;umpm=500;umpi=500;umvs=270;umvt=foot;uacq=500;uaen=1;ua1w=normal;ua1t=normal;ua1g=ground;ua1b=10;ua1d=1;ua1s=1;ua1c=1;ua1r=90;udp1=0.5;ucol=31;udef=0")).Add(ObjectKind.Unit, "hfoo", Values("unam=Footman;uhpm=1000;umpm=500;umpi=500;umvs=270;umvt=foot;uacq=500;udea=3;uaen=0;ua1w=normal;ua1t=normal;ua1g=ground;ua1b=10;ua1d=1;ua1s=1;ua1c=1;ua1r=90;udp1=0.5;ucol=31;udef=0"));
+        return data.Add(ObjectKind.Unit, "nfro", Values("unam=Frog;uhpm=50;umvs=100;umvt=foot;uaen=0;ucol=31")).Add(ObjectKind.Unit, "hbig", Values("unam=Big;uhpm=2000;umvs=300;umvt=foot;uaen=0;ucol=31")).Add(ObjectKind.Unit, "hatk", Values("unam=Attacker;uhpm=1000;umpm=500;umpi=500;umvs=270;umvt=foot;uacq=500;uaen=1;ua1w=normal;ua1t=normal;ua1g=ground;ua1b=10;ua1d=1;ua1s=1;ua1c=1;ua1r=90;udp1=0.5;ucol=31;udef=0")).Add(ObjectKind.Unit, "hfoo", Values("unam=Footman;uhpm=1000;umpm=500;umpi=500;umvs=270;umvt=foot;uacq=500;udea=3;uaen=0;ua1w=normal;ua1t=normal;ua1g=ground;ua1b=10;ua1d=1;ua1s=1;ua1c=1;ua1r=90;udp1=0.5;ucol=31;udef=0"));
     }
 
     List<string> Run(string main, double seconds)
@@ -226,5 +229,23 @@ public sealed class SpellEffectTests : IDisposable
             """, 41);
 
         Assert.Equal(["blizzard	90.0	90.0	0.0", "raised	3", "later	1"], lines);
+    }
+
+    [Fact]
+    public void Hex_and_metamorphosis_change_a_unit_for_a_time_and_avatar_gives_armour_and_life()
+    {
+        var lines = Run("""
+            local caster, victim = make(Player(0)), make(Player(1), 300, 0)
+            for _, a in ipairs({"AOhx", "AEme", "AHav"}) do UnitAddAbility(caster, FourCC(a)); UnitMakeAbilityPermanent(caster, true, FourCC(a)) end
+            IssueTargetOrder(caster, "hex", victim)
+            TimerStart(CreateTimer(), 1, false, function() print("hexed", GetUnitName(victim), f1(GetUnitMoveSpeed(victim)), f1(GetUnitState(victim, UNIT_STATE_MAX_LIFE))) end)
+            TimerStart(CreateTimer(), 5, false, function() print("back", GetUnitName(victim), f1(GetUnitMoveSpeed(victim))) IssueImmediateOrder(caster, "metamorphosis") end)
+            TimerStart(CreateTimer(), 6, false, function() print("morphed", GetUnitName(caster), f1(GetUnitState(caster, UNIT_STATE_MAX_LIFE))) end)
+            TimerStart(CreateTimer(), 10, false, function() print("normal", GetUnitName(caster)) IssueImmediateOrder(caster, "avatar") end)
+            TimerStart(CreateTimer(), 11, false, function() print("avatar", UnitCountBuffsEx(caster, true, false, true, true, true, true, true) > 0, f1(GetUnitState(caster, UNIT_STATE_MAX_LIFE))) end)
+            TimerStart(CreateTimer(), 16, false, function() print("over", UnitCountBuffsEx(caster, true, false, true, true, true, true, true) > 0, f1(GetUnitState(caster, UNIT_STATE_MAX_LIFE))) end)
+            """, 17);
+
+        Assert.Equal(["hexed	Frog	100.0	50.0", "back	Footman	270.0", "morphed	Big	2000.0", "normal	Footman", "avatar	true	1500.0", "over	false	1000.0"], lines);
     }
 }
