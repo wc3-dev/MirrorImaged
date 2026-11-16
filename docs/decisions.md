@@ -2447,3 +2447,8 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
 - **D394 (Hex, Metamorphosis, Avatar):** Hex turns the target into the ability's creature (its UnitID) and Metamorphosis the caster into its form, for the ability's time, then they are as they were with the mana they had;
   a change of type keeps the abilities a script made permanent (UnitMakeAbilityPermanent) and drops the ones it gave otherwise, as the game does. Avatar gives DataA armour (a buff) and DataB life for
   its time. Close: the form is the type only (a hero's hero-ness and the form's own attack changes are not carried), and the base armour `BlzGetUnitArmor` reads leaves the buff out as the probes measured.
+
+- **D395 (Auras that pulse; Resurrection, Inferno, Brilliance Aura):** the auras of D380 did nothing in a game whose units had nothing to do (the unit engine rests then, and the pulse was one of its steps, which the
+  first test did not check closely): the pulse is a timer of its own now, a second apart, kept going while any unit has an aura ability. Resurrection stands up to DataA corpses of friends
+  near the caster (not heroes), Inferno hurts the units round the place for DataA and lands an infernal (the ability's UnitID) for its time, and Brilliance Aura gives its allies near DataA
+  mana a second. Tests check the numbers (Endurance and Unholy together: 270 x 1.1 x 1.1 = 326.7 speed; Unholy 5 life a second).

@@ -39,6 +39,9 @@ public sealed class SpellEffectTests : IDisposable
         ("AOhx", "hex", "A=99;dur=3;unit=nfro"),
         ("AEme", "metamorphosis", "dur=3;unit=hbig"),
         ("AHav", "avatar", "A=5;B=500;dur=3"),
+        ("AHre", "resurrection", "A=2;area=900"),
+        ("AUin", "inferno", "A=50;area=250;dur=20;unit=hfoo"),
+        ("AHab", "", "A=5;area=900"),
         ("AHwe", "waterelemental", "A=2;dur=20;unit=hfoo"),
         ("AOsf", "spiritwolf", "B=3;dur=20;unit=hfoo"),
     ];
@@ -50,7 +53,7 @@ public sealed class SpellEffectTests : IDisposable
         {
             ("alev", new("levels", PerLevel.None, -1, "int")), ("code", new("code", PerLevel.None, -1)), ("aord", new("Order", PerLevel.None, -1, "string")),
             ("acas", Column("Cast", "unreal")), ("aran", Column("Rng", "unreal")), ("aare", Column("Area", "unreal")), ("acdn", Column("Cool", "unreal")), ("amcs", Column("Cost", "int")),
-            ("adur", Column("Dur", "unreal")), ("ahdu", Column("HeroDur", "unreal")), ("uuid", Column("UnitID", "string", "AHwe", "AOsf", "AOhx", "AEme")),
+            ("adur", Column("Dur", "unreal")), ("ahdu", Column("HeroDur", "unreal")), ("uuid", Column("UnitID", "string", "AHwe", "AOsf", "AOhx", "AEme", "AUin")),
         })
             data.Add(ObjectKind.Ability, id, field);
         foreach (var letter in "ABCDE")
@@ -168,9 +171,7 @@ public sealed class SpellEffectTests : IDisposable
             TimerStart(CreateTimer(), 8, false, function() print("after death", f1(GetUnitMoveSpeed(ally))) end)
             """, 9);
 
-        Assert.Equal(4, lines.Count);
-        Assert.Contains("far\t270.0\tfoe\t270.0", lines[1]);
-        Assert.Equal("after death\t270.0", lines[^1]);
+        Assert.Equal(["armour\t0.0\tspeed\t326.7\tlife\t510.0", "far\t270.0\tfoe\t270.0", "gone\t270.0", "after death\t270.0"], lines);
     }
 
     [Fact]
@@ -247,5 +248,26 @@ public sealed class SpellEffectTests : IDisposable
             """, 17);
 
         Assert.Equal(["hexed	Frog	100.0	50.0", "back	Footman	270.0", "morphed	Big	2000.0", "normal	Footman", "avatar	true	1500.0", "over	false	1000.0"], lines);
+    }
+
+    [Fact]
+    public void Resurrection_raises_friends_corpses_inferno_lands_with_damage_and_brilliance_gives_mana()
+    {
+        var lines = Run("""
+            local caster = make(Player(0))
+            UnitAddAbility(caster, FourCC("AHre")); UnitAddAbility(caster, FourCC("AUin")); UnitAddAbility(caster, FourCC("AHab"))
+            local friend1, friend2, foe = make(Player(0), 200, 0), make(Player(0), 250, 0), make(Player(1), 1000, 0)
+            local near = make(Player(1), 1100, 0)
+            local low = make(Player(0), 0, 300)
+            SetUnitState(low, UNIT_STATE_MANA, 0)
+            TimerStart(CreateTimer(), 2, false, function() KillUnit(friend1); KillUnit(friend2) end)
+            TimerStart(CreateTimer(), 3, false, function() IssueImmediateOrder(caster, "resurrection") end)
+            local function alive(p) local g = CreateGroup() GroupEnumUnitsOfPlayer(g, p, nil) local n = 0 ForGroup(g, function() if UnitAlive(GetEnumUnit()) then n = n + 1 end end) DestroyGroup(g) return n end
+            TimerStart(CreateTimer(), 4, false, function() print("raised", alive(Player(0))) IssuePointOrder(caster, "inferno", 1050, 0) end)
+            TimerStart(CreateTimer(), 8, false, function() print("inferno", f1(1000 - GetWidgetLife(foe)), f1(1000 - GetWidgetLife(near)), alive(Player(0))) end)
+            TimerStart(CreateTimer(), 9, false, function() print("brilliance", GetUnitState(low, UNIT_STATE_MANA) > 20) end)
+            """, 10);
+
+        Assert.Equal(["raised	4", "inferno	50.0	50.0	5", "brilliance	true"], lines);
     }
 }
