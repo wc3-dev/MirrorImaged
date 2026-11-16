@@ -233,6 +233,7 @@ public sealed partial class GameNatives
         PassivesOfAttack(u, t, ranged, ref damage, ref stun);
         Strike(new Hit(u, t, damage, true, ranged, Convert<attacktype>(attackType), Convert<damagetype>(NormalDamage), Convert<weapontype>(sound)) { Real = true }, t);
         if (stun && !t.Dead) Apply(t, u, StunBuff, StunSeconds(u, t), false, b => b.Stun = true);
+        if (!ranged && !u.Dead && t.Abilities.Find(x => x.Type.BaseId == Code("AEah")) is { } thorns) Strike(new Hit(t, u, damage * Datum(thorns, 'A'), false, false, Convert<attacktype>(0), Convert<damagetype>(14), Convert<weapontype>(0)) { Real = true }, u);
         if (!t.Dead) HitBack(t, u);
     }
 
