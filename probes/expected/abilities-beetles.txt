@@ -1,0 +1,76 @@
+# 3.0.1.24371, 11-18 (spell gaps): the probe's lines as the game gave them, the same in two runs
+data: mana 30 cooldown 6.0 duration 0.0 hero 0.0 area 900 range 900
+fresh target order: carrionscarabs f carrionscarabsinstant f
+fresh untargeted order: carrionscarabs f carrionscarabsinstant f
+made target order: carrionscarabs t
+made untargeted order: carrionscarabs f carrionscarabsinstant t
+none order: carrionscarabs f carrionscarabsinstant f
+limit cast 1: t
+made target effect: mana 255, target hfoo
+made target summons ucs1 in second 1: life 140
+made untargeted effect: mana 255, target hfoo
+made untargeted summons ucs1 in second 1: life 140
+limit effect: mana 255, target hfoo
+limit summons ucs1 in second 1: life 140
+cooling order: carrionscarabs f carrionscarabsinstant f, 4 s of the cooldown left
+fresh target +2: beetles none, corpse hfoo
+fresh untargeted +2: beetles none, corpse hfoo
+made target +2: beetles ucs1 1, corpse none
+made untargeted +2: beetles ucs1 1, corpse none
+none +2: beetles none, corpse none
+limit after cast 1: beetles ucs1 1, corpses left 7, alive of those summoned: 1
+fresh target: taken 3.05 s after the kill
+fresh target effect: mana 255, target hfoo
+fresh target summons ucs1 in second 3: life 140
+own untargeted order: carrionscarabs f carrionscarabsinstant t
+none effect: mana 255, target hfoo
+none summons ucs1 in second 6: life 140
+limit cast 2: t
+limit effect: mana 255, target hfoo
+limit summons ucs1 in second 7: life 140
+aged target order: carrionscarabs t
+aged untargeted order: carrionscarabs f carrionscarabsinstant t
+autocast on: t
+own untargeted +2: beetles ucs1 1, corpse none
+aged target effect: mana 255, target hfoo
+aged target summons ucs1 in second 8: life 140
+aged untargeted effect: mana 255, target hfoo
+aged untargeted summons ucs1 in second 8: life 140
+autocast effect: mana 255, target hfoo
+autocast summons ucs1 in second 8: life 140
+cooled order: carrionscarabs f carrionscarabsinstant t
+own target order: carrionscarabs t
+made target effect: mana 255, target hfoo
+made target summons ucs1 in second 9: life 140
+made untargeted effect: mana 255, target hfoo
+made untargeted summons ucs1 in second 9: life 140
+limit after cast 2: beetles ucs1 2, corpses left 6, alive of those summoned: 1 2
+aged target +2: beetles ucs1 1, corpse none
+aged untargeted +2: beetles ucs1 1, corpse none
+own target +2: beetles ucs1 2, corpse none
+limit cast 3: t
+limit effect: mana 255, target hfoo
+limit summons ucs1 in second 14: life 140
+autocast effect: mana 255, target hfoo
+autocast summons ucs1 in second 14: life 140
+limit after cast 3: beetles ucs1 3, corpses left 5, alive of those summoned: 1 2 3
+fresh untargeted at 20: beetles none
+autocast at 20: beetles ucs1 2, corpse none
+limit cast 4: t
+limit effect: mana 255, target hfoo
+limit summons ucs1 in second 20: life 140
+limit after cast 4: beetles ucs1 4, corpses left 4, alive of those summoned: 1 2 3 4
+limit cast 5: t
+limit effect: mana 255, target hfoo
+limit summons ucs1 in second 27: life 140
+limit after cast 5: beetles ucs1 5, corpses left 3, alive of those summoned: 1 2 3 4 5
+limit cast 6: t
+limit effect: mana 255, target hfoo
+limit summons ucs1 in second 33: life 140
+limit's beetle 6 dies in second 33
+limit after cast 6: beetles ucs1 5, corpses left 2, alive of those summoned: 1 2 3 4 5
+limit cast 7: t
+limit effect: mana 255, target hfoo
+limit summons ucs1 in second 40: life 140
+limit's beetle 7 dies in second 40
+limit after cast 7: beetles ucs1 5, corpses left 1, alive of those summoned: 1 2 3 4 5
