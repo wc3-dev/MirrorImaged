@@ -61,7 +61,8 @@ public sealed partial class GameNatives
         if (Find(target, MagicImmunity) is not null && (StoppedBySpellImmunity.Contains(hit.DamageType?.Id ?? 0) || hit.AttackType?.Id == MagicAttack))
             return true;
         if (IsEthereal(target) && EtherealBonus(hit) == 0) return true;
-        hit.Amount = Reduced(hit, target);
+        // An illusion's hit takes what its spell lets it, and a hit takes more from one (probe abilities-spells: Mirror Image, 0 and twice)
+        hit.Amount = Reduced(hit, target) * hit.Source.Deals * target.Takes;
         FireUnit(new(target, Hit: hit), UnitDamaged, PlayerUnitDamaged);
         if (!target.Dead) SetLife(target, target.Life - hit.Amount, hit.Source);
         // An attack in melee gives its unit back a share of the damage

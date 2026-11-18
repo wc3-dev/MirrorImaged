@@ -6,7 +6,7 @@ namespace MirrorImaged.Natives;
 public partial class unit
 {
     internal ability? Casting;      // the ability its current order casts
-    internal double CastEffectAt;   // when the cast point is over, 0 before the unit is in range
+    internal double CastEffectAt;   // when the cast point is over, 0 before the unit is in range, -1 for a spell cast at once
 }
 
 // The cast flow (game-facts, "Spells and abilities"): an order whose name is the Order of an ability the unit has is a spell order, taken
@@ -18,7 +18,10 @@ public sealed partial class GameNatives
 {
     const int UnitSpellChannel = 289, UnitSpellCast = 290, UnitSpellEffect = 291, UnitSpellFinish = 292, UnitSpellEndCast = 293;
     const int PlayerSpellChannel = 272, PlayerSpellCast = 273, PlayerSpellEffect = 274, PlayerSpellFinish = 275, PlayerSpellEndCast = 276;
-    static readonly int CastTime = Code("acas"), CastRange = Code("aran"), CastArea = Code("aare");
+    static readonly int CastTime = Code("acas"), CastRange = Code("aran"), CastArea = Code("aare"), MirrorImage = Code("AOmi");
+
+    // The spells cast inside their order's call, every event of the cast with it (probe abilities-spells: Wind Walk, Immolation)
+    static readonly HashSet<int> Instant = [Code("AOwk"), Code("AEim")];
 
     // The commands of the command card that are abilities with an order but no cast: they are the unit's own orders, not spells
     static readonly HashSet<string> Commands = ["smart", "stop", "move", "attack", "patrol", "holdposition", "setrally", "getitem", "harvest", "returnresources", "repair", "load", "unload",
@@ -63,7 +66,7 @@ public sealed partial class GameNatives
             FireUnit(happening, UnitSpellChannel, PlayerSpellChannel);
             if (u.Casting != ability) return true;
             FireUnit(happening, UnitSpellCast, PlayerSpellCast);
-            u.CastEffectAt = Seconds + Math.Max(Field(ability, CastTime), 0.001);
+            u.CastEffectAt = Instant.Contains(ability.Type.BaseId) ? -1 : Seconds + Math.Max(Field(ability, CastTime), 0.001);
             return true;
         }
         if (Seconds < u.CastEffectAt) return true;
@@ -76,7 +79,10 @@ public sealed partial class GameNatives
             (ability.Cooldown, ability.CooldownEnd) = (cooldown, Seconds + cooldown);
             FireUnit(effect, UnitSpellEffect, PlayerSpellEffect);
             Effect(u, ability, x, y, target);
-            FireUnit(effect, UnitSpellFinish, PlayerSpellFinish);
+            // A channelled spell keeps its order, and its end fires the last events (SpellEffects: Channelled)
+            if (u.Channel is not null) { u.Casting = null; return true; }
+            // Mirror Image's cast has no finish event (probe abilities-spells)
+            if (ability.Type.BaseId != MirrorImage) FireUnit(effect, UnitSpellFinish, PlayerSpellFinish);
         }
         FireUnit(effect, UnitSpellEndCast, PlayerSpellEndCast);
         u.Casting = null;

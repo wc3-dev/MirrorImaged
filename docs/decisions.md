@@ -2503,3 +2503,43 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   whom, and when) the expected lines hold `{t}` and `{w}`, so MirrorImaged is compared there only in form. The casters' mana is filled before each order and the damage tables are read inside one
   instant, as a caster's mana does not come back in MirrorImaged as it does in the game. Probe abilities-spells's differences file changed with the three models and is recorded again; its casters outside the map
   (docs/facts.md) are left as they are.
+
+- **D408 (probe abilities-spells, written again):** every caster and foe is inside the map: nine places 1300 apart, a spell each, cast at once, and Starfall alone afterwards from the middle of the map, as it
+  reaches 1000 and left foes alone when cast near the map's edge. The foes are not paused, as a paused unit takes a spell's first hit only and its buffs never end, and each is held by `SetUnitPropWindow(u, 0)`,
+  as a unit that is hurt runs; one paused foe by each spell keeps that on record. Each foe's hits are printed as runs of one amount with the first and the last time, the buffs by when they came (to 0.1 s) and
+  how long they were on, as the probe looks every 0.05 s and MirrorImaged's cast comes a moment later than the game's; the orders come at 1.02 s, off the looks' instants. What changes from run to run is `{t}`
+  or `{w}`: where Mirror Image puts the caster and its image and which summon event has the image, when the image and the Wind Walk hero hit, and Starfall's hits. The mana a caster has spent is counted against
+  a hero that casts nothing, and the hero that runs out of mana has intelligence 0, as mana comes back to a hero in the game and not in MirrorImaged. Banish, Locust Swarm and Carrion Beetles are no longer in
+  it: they have probes of their own (D407).
+
+- **D409 (a spell's area counts the foe's edge):** the foes a spell finds round a place are those whose collision circle reaches into the area (`Foes`), for every spell that looks for them this way. Measured
+  for Flame Strike, Immolation, Silence and Starfall; for the others (Frost Nova, War Stomp, Fan of Knives, Blizzard, Inferno, the lines of Carrion Swarm and Shockwave, Earthquake, the jumps of the chains)
+  it is taken to be the same. Thunder Clap, which has its own search, is left as it was.
+
+- **D410 (Flame Strike, measured):** from the ability's casting time after the effect, DataA every DataB seconds for the hero duration, then DataC every DataD seconds until the duration is over, of damage type
+  fire, to the ground foes at the place; a paused foe takes the first hit alone. MirrorImaged gives the probe's hit lines with no difference. Left as it was, not measured: friends, the caster and buildings,
+  which the ability's targets name, are not burned, and a dead caster's fire stops.
+
+- **D411 (channelled spells: Starfall and Earthquake):** a spell that channels keeps its order after the effect and its caster does nothing else (`unit.Channel`); another order, or the caster's death, ends it,
+  and so does its time, taken as before from the hero duration for a hero. The end-cast event fires then, and the finish event only when the time ran out, which is the game-facts line that finish fires only
+  for a spell that ran to its end; the probe's stop order gave end cast and no finish. Starfall: DataA of universal damage to the foes in the area every DataB seconds. The game drops each foe's star at a
+  time of its own (4 to 7 hits in 10 s), which is not modelled: the waves here are a model, Close. Earthquake: from DataA seconds in and every second, the buildings at the place take DataB of universal damage
+  and the other foes there get `BOeq` for 2 s, slower by DataC; the 2 s is the measured time and is in no field. That it slows friends too is not measured and not done.
+
+- **D412 (Silence takes only what has mana):** the game gave a Paladin and Priests the buff and a footman among them none. Silence here silences the foes whose mana maximum is above 0. That mana is what
+  decides it is this lane's reading: the footman also has no spell to cast, and the ability's targets (air, ground, enemy, organic, neutral) don't tell them apart.
+
+- **D413 (Wind Walk, measured; cast at once):** the buff makes the unit DataB faster, hides it from foes from DataA seconds in (`IsUnitInvisible` true and `IsUnitVisible` false for a player that is neither its
+  owner nor an ally), keeps it from taking a target by itself, and ends as its next attack lands: a hit of 0 of attack and damage type 0, then the attack with DataC more. Wind Walk and Immolation are cast
+  inside the order's call, all five cast events with it, as the game gave them; the other spells keep MirrorImaged's cast flow. Not modelled: detection, and the attack the game's hero made in the 0.6 s
+  before it was hidden, in two runs of three.
+
+- **D414 (Immolation is a switch):** the `immolation` order puts `BEim` on the caster until `unimmolation`, which answers true and takes it off, or until the mana is out. DataA of fire comes 0.01 s after the
+  effect and every duration (1 s) after, to the ground foes in the area, a paused one only the first time. The mana goes DataB a second in 128 steps a second, as the game's went evenly (35.64 at 1.52 s), and it
+  goes off when two steps can't be paid, which puts the end where the game's was (2.85 s on 20 mana, 0.10 left). This lane's choices, not measured: `unimmolation` on a unit that isn't burning answers
+  false, and an `immolation` order while it burns starts it again.
+
+- **D415 (Mirror Image, measured):** DataD seconds after the effect DataA images come: units of the caster's type with its life and mana and the type's own attack, `IsUnitIllusion` true, whose hits take
+  DataB of their damage (the damage events still fire, with 0) and that lose DataC times a hit (`unit.Deals`, `unit.Takes`), dying when the ability's time is over. The cast fires no finish event. Left as a
+  difference: the game fires a second summon event 0.18 s after the first, one of the two without a unit, and moves the caster and the image to two places near (which of them where changes from run to
+  run); here one summon event fires, with the image, and the caster stays.

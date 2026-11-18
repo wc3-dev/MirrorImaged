@@ -92,7 +92,7 @@ public sealed partial class GameNatives
     /// <summary>A unit is visible where its place is; its own player always sees it (a hidden or removed unit is never visible).</summary>
     [Native(Level.Close, Fact = VisionFacts)]
     public bool IsUnitVisible(unit? whichUnit, player? whichPlayer) =>
-        whichUnit is { Hidden: false, Removed: false } u && whichPlayer is not null && (u.Owner == whichPlayer || FogAt(u.X, u.Y, whichPlayer) == FogVisible);
+        whichUnit is { Hidden: false, Removed: false } u && whichPlayer is not null && (u.Owner == whichPlayer || FogAt(u.X, u.Y, whichPlayer) == FogVisible && !IsUnitInvisible(u, whichPlayer));
 
     [Native(Level.Close, Fact = VisionFacts)]
     public bool IsUnitFogged(unit? whichUnit, player? whichPlayer) => whichUnit is not null && whichPlayer is not null && FogAt(whichUnit.X, whichUnit.Y, whichPlayer) == FogFogged;
@@ -100,8 +100,13 @@ public sealed partial class GameNatives
     [Native(Level.Close, Fact = VisionFacts)]
     public bool IsUnitMasked(unit? whichUnit, player? whichPlayer) => whichUnit is not null && whichPlayer is not null && FogAt(whichUnit.X, whichUnit.Y, whichPlayer) == FogMasked;
 
-    /// <summary>False: invisibility and detection come with abilities (wave 4).</summary>
-    [Native(Level.Close)] public bool IsUnitInvisible(unit? whichUnit, player? whichPlayer) => false;
+    /// <summary>
+    /// Whether a buff hides the unit from the player: Wind Walk's, from a foe (probe abilities-spells). Close: detection, and the other
+    /// abilities that hide a unit, are not here.
+    /// </summary>
+    [Native(Level.Close)]
+    public bool IsUnitInvisible(unit? whichUnit, player? whichPlayer) =>
+        whichUnit is not null && whichPlayer is not null && whichUnit.Owner != whichPlayer && !IsPlayerAlly(whichUnit.Owner, whichPlayer) && whichUnit.Buffs.Any(b => b.Invisible);
     [Native(Level.Close)] public bool IsUnitDetected(unit? whichUnit, player? whichPlayer) => IsUnitVisible(whichUnit, whichPlayer);
     [Native(Level.Close)] public unit? GetDetectedUnit() => null;
     [Native(Level.Close)] public player? GetEventDetectingPlayer() => null;

@@ -52,11 +52,11 @@ public sealed partial class GameNatives
     }
 
     /// <summary>
-    /// False, as for every unit the probe made (probe units-more). Close: the abilities and items that make illusions,
-    /// which read true (game-facts, Units), come with wave 4.
+    /// True for an image of Mirror Image (probe abilities-spells), false for every unit the probe made (probe units-more).
+    /// Close: the other abilities and items that make illusions (game-facts, Units) are not here.
     /// </summary>
     [Native(Level.Close)]
-    public bool IsUnitIllusion(unit? whichUnit) => false;
+    public bool IsUnitIllusion(unit? whichUnit) => whichUnit?.Illusion ?? false;
 
     /// <summary>
     /// Whether it can be selected: alive, shown and not removed, a paused unit, a hero and a building too (probe

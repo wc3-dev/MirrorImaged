@@ -17,6 +17,8 @@ sealed class ActiveBuff(int id, unit? source, bool positive, bool magic)
     public bool Ethereal;               // Banish: the unit can't attack, and only magic reaches it
     public Action? Ended;               // what happens when its time is over, not when it is taken off before
     public float LifeSteal, DamageBonus; // the share of an attack's damage the attacker gets back; added to the damage of ranged attacks
+    public bool Sneaks, Invisible;      // Wind Walk: the unit attacks nothing by itself; its foes don't see it
+    public float Backstab;              // added to its next attack, which ends the buff
 }
 
 public partial class unit
@@ -52,6 +54,7 @@ public sealed partial class GameNatives
     float ArmorBonus(unit u) => u.Buffs.Sum(buff => buff.ArmorBonus);
     bool IsStunned(unit u) => u.Buffs.Any(buff => buff.Stun);
     bool IsEthereal(unit u) => u.Buffs.Any(buff => buff.Ethereal);
+    bool Sneaks(unit u) => u.Buffs.Any(buff => buff.Sneaks);
 
     // The buffs the flags pick: the positive or negative ones, magic or not (no buff here is physical, timed life, an aura or auto-dispelled)
     IEnumerable<ActiveBuff> Picked(unit? u, bool positive, bool negative, bool magic) =>
