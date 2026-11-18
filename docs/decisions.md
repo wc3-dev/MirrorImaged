@@ -2467,3 +2467,7 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
 - **D399 (Immolation, Mirror Image, Thorns):** Immolation hurts the foes round the caster for DataA a second for the ability's time (ten seconds when it has none, the toggle off is not modelled), Mirror Image stands DataA timed copies of the caster beside it, and Thorns returns DataA of a melee hit's damage to the attacker. Close.
 
 - **D400 (Earthquake):** Earthquake hurts the buildings round the place for DataA a second for the ability's time; units are left alone. Close.
+
+- **D401 (Styled output on a terminal):** on a terminal `mirror` writes through Spectre.Console: colour, a spinner while a map loads or runs, `coverage` as a bar chart, `check` as a table and the usage as a list.
+  Piped or redirected, every command writes the plain text it wrote before, to the byte, as scripts, CI and the tests read it: Spectre.Console wraps redirected output at 80 columns and ends lines as the
+  platform does. The usage is the exception: its plain form is now a command a line with what it does under it.

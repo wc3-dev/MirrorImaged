@@ -8,7 +8,7 @@ const double StepsPerSecond = 1024;
 
 if (args is ["coverage"])
 {
-    Console.Write(Coverage.Of(typeof(GameNatives)));
+    Ui.Coverage(Coverage.Of(typeof(GameNatives)));
     return 0;
 }
 
@@ -24,13 +24,15 @@ if (args is ["check", var mapPath])
         var used = System.Text.RegularExpressions.Regex.Matches(text, @"[A-Za-z_][A-Za-z0-9_]*").Select(match => match.Value)
             .Where(levels.ContainsKey).GroupBy(name => name).Select(group => (Name: group.Key, Count: group.Count(), Level: levels[group.Key]))
             .OrderByDescending(native => native.Level).ThenBy(native => native.Name, StringComparer.Ordinal).ToList();
-        foreach (var native in used) Console.Write($"{native.Level,-9}{native.Name} x{native.Count}\n");
-        Console.Write($"{used.Count} natives called, {used.Count(native => native.Level == Level.Missing)} Missing\n");
-        return used.Any(native => native.Level == Level.Missing) ? 1 : 0;
+        Ui.Natives(used);
+        var missing = used.Count(native => native.Level == Level.Missing);
+        if (missing > 0) Ui.Line($"{used.Count} natives called, [red]{missing} Missing[/]");
+        else Ui.Line($"{used.Count} natives called, [green]{missing} Missing[/]");
+        return missing > 0 ? 1 : 0;
     }
     catch (Exception e)
     {
-        Console.Error.Write(e.Message + "\n");
+        Ui.Error(e.Message);
         return 1;
     }
 }
@@ -38,7 +40,7 @@ if (args is ["check", var mapPath])
 // The commands that take a map or a recording, then --name value pairs
 if (args is [var command and ("run" or "replay" or "desync" or "bench" or "fuzz" or "test" or "snapshot" or "compare" or "view"), var file, .. var rest])
 {
-    if (Flags(rest) is not { } flags) return Usage();
+    if (Flags(rest) is not { } flags) return Ui.Usage();
     double Number(string name, double fallback) => flags.TryGetValue(name, out var v) && double.TryParse(v, NumberStyles.Float, CultureInfo.InvariantCulture, out var n) ? n : fallback;
     var (seconds, seed) = (Number("--seconds", command == "bench" ? 600 : 60), (int)Number("--seed", 0));
     Seats.Users = flags.TryGetValue("--users", out var users) ? [.. users.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)] : null;
@@ -61,12 +63,12 @@ if (args is [var command and ("run" or "replay" or "desync" or "bench" or "fuzz"
     }
     catch (Exception e)
     {
-        Console.Error.Write(e.Message + "\n");
+        Ui.Error(e.Message);
         return 1;
     }
 }
 
-return Usage();
+return Ui.Usage();
 
 static Dictionary<string, string>? Flags(string[] options)
 {
@@ -92,32 +94,39 @@ static Dictionary<string, string>? Flags(string[] options)
 
 static int Finish(Simulation simulation)
 {
-    foreach (var line in simulation.Log) Console.Write(line + "\n");
+    foreach (var line in simulation.Log)
+        if (IsError(line)) Ui.Line($"[red]{line}[/]");
+        else Ui.Line($"{line}");
     if (simulation.Stopped is null) return 0;
-    Console.Error.Write(simulation.Stopped.Message + "\n");
+    Ui.Error(simulation.Stopped.Message);
     return 1;
 }
+
+static bool IsError(string line) => line.Split(' ').ElementAtOrDefault(1) == "error:";
 
 static int Run(string map, Dictionary<string, string> flags, double seconds, int seed)
 {
     using var simulation = Seats.Open(map, seed);
     try
     {
-        if (flags.TryGetValue("--input", out var inputFile))
+        Ui.Work($"Running {map}", () =>
         {
-            // The inputs of a recording, or a list of them, at their steps; the run goes on to the time asked
-            var text = File.ReadAllText(inputFile);
-            var recording = text.TrimStart().StartsWith('[') ? new Recording { Inputs = System.Text.Json.JsonSerializer.Deserialize<List<Input>>(text)! } : Recording.FromJson(text);
-            recording.Steps = Math.Max(recording.Steps, (long)(seconds * StepsPerSecond));
-            simulation.Follow(recording);
-        }
-        else if (flags.TryGetValue("--hash", out var every) && double.TryParse(every, NumberStyles.Float, CultureInfo.InvariantCulture, out var period) && period > 0)
-            for (double at = period; at <= seconds + 1e-9 && simulation.Stopped is null; at += period)
+            if (flags.TryGetValue("--input", out var inputFile))
             {
-                simulation.Advance(TimeSpan.FromSeconds(period));
-                Console.Write($"hash {at.ToString("0.###", CultureInfo.InvariantCulture)} {simulation.StateHash()}\n");
+                // The inputs of a recording, or a list of them, at their steps; the run goes on to the time asked
+                var text = File.ReadAllText(inputFile);
+                var recording = text.TrimStart().StartsWith('[') ? new Recording { Inputs = System.Text.Json.JsonSerializer.Deserialize<List<Input>>(text)! } : Recording.FromJson(text);
+                recording.Steps = Math.Max(recording.Steps, (long)(seconds * StepsPerSecond));
+                simulation.Follow(recording);
             }
-        else simulation.Advance(TimeSpan.FromSeconds(seconds));
+            else if (flags.TryGetValue("--hash", out var every) && double.TryParse(every, NumberStyles.Float, CultureInfo.InvariantCulture, out var period) && period > 0)
+                for (double at = period; at <= seconds + 1e-9 && simulation.Stopped is null; at += period)
+                {
+                    simulation.Advance(TimeSpan.FromSeconds(period));
+                    Ui.Line($"hash {at.ToString("0.###", CultureInfo.InvariantCulture)} {simulation.StateHash()}");
+                }
+            else simulation.Advance(TimeSpan.FromSeconds(seconds));
+        });
     }
     catch (LuaException) when (simulation.Stopped is not null) { }
     if (flags.TryGetValue("--record", out var recorded)) File.WriteAllText(recorded, simulation.Recording.ToJson());
@@ -134,29 +143,32 @@ static int PlayRecording(string recordingFile, Dictionary<string, string> flags,
     using var simulation = Simulation.Load(flags.GetValueOrDefault("--map") ?? recording.Map, new SimulationOptions { Seed = recording.Seed, Users = recording.Users, Computers = recording.Computers });
     try
     {
-        if (hashEvery > 0)
+        Ui.Work($"Replaying {recordingFile}", () =>
         {
-            // Stepping through the recording, the hash after each period
-            var period = (long)(hashEvery * StepsPerSecond);
-            var inputs = recording.Inputs.OrderBy(i => i.Step).ToList();
-            var next = 0;
-            for (var at = period; at <= steps && simulation.Stopped is null; at += period)
+            if (hashEvery > 0)
             {
-                while (next < inputs.Count && inputs[next].Step <= at)
+                // Stepping through the recording, the hash after each period
+                var period = (long)(hashEvery * StepsPerSecond);
+                var inputs = recording.Inputs.OrderBy(i => i.Step).ToList();
+                var next = 0;
+                for (var at = period; at <= steps && simulation.Stopped is null; at += period)
                 {
-                    if (inputs[next].Step > simulation.Step) simulation.AdvanceSteps(inputs[next].Step - simulation.Step);
-                    simulation.Give(inputs[next++]);
+                    while (next < inputs.Count && inputs[next].Step <= at)
+                    {
+                        if (inputs[next].Step > simulation.Step) simulation.AdvanceSteps(inputs[next].Step - simulation.Step);
+                        simulation.Give(inputs[next++]);
+                    }
+                    simulation.AdvanceSteps(at - simulation.Step);
+                    Ui.Line($"hash {(double)at / StepsPerSecond:0.###} {simulation.StateHash()}");
                 }
-                simulation.AdvanceSteps(at - simulation.Step);
-                Console.Write($"hash {(double)at / StepsPerSecond:0.###} {simulation.StateHash()}\n");
             }
-        }
-        else
-        {
-            recording.Steps = steps;
-            simulation.Follow(recording);
-            Console.Write($"hash {(double)simulation.Step / StepsPerSecond:0.###} {simulation.StateHash()}\n");
-        }
+            else
+            {
+                recording.Steps = steps;
+                simulation.Follow(recording);
+                Ui.Line($"hash {(double)simulation.Step / StepsPerSecond:0.###} {simulation.StateHash()}");
+            }
+        });
     }
     catch (LuaException) when (simulation.Stopped is not null) { }
     return Finish(simulation);
@@ -167,30 +179,38 @@ static int DesyncCheck(string map, double seconds, int seed)
     var slots = Desync.UserSlots(map);
     if (slots.Count < 2)
     {
-        Console.Write($"{map} has {slots.Count} user slot(s): there is no second player's game to compare with\n");
+        Ui.Line($"[yellow]{map} has {slots.Count} user slot(s): there is no second player's game to compare with[/]");
         return 0;
     }
-    var report = Desync.Check(map, TimeSpan.FromSeconds(seconds), seed);
+    var report = Ui.Work($"Comparing the games of players {string.Join(", ", slots)}", () => Desync.Check(map, TimeSpan.FromSeconds(seconds), seed));
     if (report is null)
     {
-        Console.Write($"No desync in {seconds.ToString("0.###", CultureInfo.InvariantCulture)} s between the games of players {string.Join(", ", slots)}\n");
+        Ui.Line($"[green]No desync in {seconds.ToString("0.###", CultureInfo.InvariantCulture)} s between the games of players {string.Join(", ", slots)}[/]");
         return 0;
     }
-    Console.Write($"Desync at step {report.Step} ({(double)report.Step / StepsPerSecond:0.###} s): {report.Part} differs\n");
-    foreach (var (slot, hash) in report.Players.Zip(report.Hashes)) Console.Write($"  player {slot}'s game: {hash}\n");
-    if (report.LogLine is not null) Console.Write($"  first differing log line: {report.LogLine}\n");
+    Ui.Line($"[red]Desync at step {report.Step} ({(double)report.Step / StepsPerSecond:0.###} s): {report.Part} differs[/]");
+    foreach (var (slot, hash) in report.Players.Zip(report.Hashes)) Ui.Line($"  player {slot}'s game: {hash}");
+    if (report.LogLine is not null) Ui.Line($"  first differing log line: {report.LogLine}");
     return 1;
 }
 
 static int Bench(string map, double seconds, int seed)
 {
     using var simulation = Seats.Open(map, seed);
-    var clock = Stopwatch.StartNew();
-    try { simulation.Advance(TimeSpan.FromSeconds(seconds)); }
+    var clock = new Stopwatch();
+    try
+    {
+        Ui.Work($"Timing {map}", () =>
+        {
+            clock.Start();
+            try { simulation.Advance(TimeSpan.FromSeconds(seconds)); }
+            finally { clock.Stop(); }
+        });
+    }
     catch (LuaException) when (simulation.Stopped is not null) { }
     var took = clock.Elapsed.TotalSeconds;
     var played = (double)simulation.Step / StepsPerSecond;
-    Console.Write($"{played.ToString("0.###", CultureInfo.InvariantCulture)} s of game in {took.ToString("0.###", CultureInfo.InvariantCulture)} s: {(played / Math.Max(took, 1e-9)).ToString("0.#", CultureInfo.InvariantCulture)}x real time\n");
+    Ui.Line($"{played.ToString("0.###", CultureInfo.InvariantCulture)} s of game in {took.ToString("0.###", CultureInfo.InvariantCulture)} s: [bold]{(played / Math.Max(took, 1e-9)).ToString("0.#", CultureInfo.InvariantCulture)}x real time[/]");
     return simulation.Stopped is null ? 0 : 1;
 }
 
@@ -203,26 +223,30 @@ static int Fuzz(string map, double seconds, int seed, int orders)
     var players = Enumerable.Range(0, 24).ToList();
     try
     {
-        for (var second = 0; second < seconds && simulation.Stopped is null; second++)
+        Ui.Work($"Giving random orders in {map}", () =>
         {
-            foreach (var player in players)
+            for (var second = 0; second < seconds && simulation.Stopped is null; second++)
             {
-                var units = simulation.Units(player);
-                for (var n = 0; n < orders && units.Count > 0; n++)
+                foreach (var player in players)
                 {
-                    var unit = units[random.Next(units.Count)];
-                    var command = commands[random.Next(commands.Length)];
-                    if (command is "move" or "attack" or "smart") simulation.Order(player, unit.Id, command, unit.X + random.Next(-1500, 1500), unit.Y + random.Next(-1500, 1500));
-                    else simulation.Order(player, unit.Id, command);
+                    var units = simulation.Units(player);
+                    for (var n = 0; n < orders && units.Count > 0; n++)
+                    {
+                        var unit = units[random.Next(units.Count)];
+                        var command = commands[random.Next(commands.Length)];
+                        if (command is "move" or "attack" or "smart") simulation.Order(player, unit.Id, command, unit.X + random.Next(-1500, 1500), unit.Y + random.Next(-1500, 1500));
+                        else simulation.Order(player, unit.Id, command);
+                    }
                 }
+                simulation.Advance(TimeSpan.FromSeconds(1));
             }
-            simulation.Advance(TimeSpan.FromSeconds(1));
-        }
+        });
     }
     catch (LuaException) when (simulation.Stopped is not null) { }
-    var errors = simulation.Log.Where(line => line.Split(' ').ElementAtOrDefault(1) == "error:").ToList();
-    foreach (var error in errors) Console.Write(error + "\n");
-    Console.Write($"{simulation.Units().Count} units alive after {(double)simulation.Step / StepsPerSecond:0.###} s, {errors.Count} script error(s)\n");
+    var errors = simulation.Log.Where(IsError).ToList();
+    foreach (var error in errors) Ui.Line($"[red]{error}[/]");
+    if (errors.Count == 0) Ui.Line($"{simulation.Units().Count} units alive after {(double)simulation.Step / StepsPerSecond:0.###} s, [green]{errors.Count} script error(s)[/]");
+    else Ui.Line($"{simulation.Units().Count} units alive after {(double)simulation.Step / StepsPerSecond:0.###} s, [red]{errors.Count} script error(s)[/]");
     return errors.Count == 0 && simulation.Stopped is null ? 0 : 1;
 }
 
@@ -231,21 +255,30 @@ static int Tests(string path, string? junit)
     var files = Directory.Exists(path) ? Directory.GetFiles(path, "*.test.lua", SearchOption.AllDirectories).Order(StringComparer.Ordinal).ToList() : [path];
     if (files.Count == 0)
     {
-        Console.Error.Write($"No *.test.lua files in {path}\n");
+        Ui.Error($"No *.test.lua files in {path}");
         return 1;
     }
     var results = new List<LuaTestResult>();
-    foreach (var file in files)
+    Ui.Work("Running the tests", () =>
     {
-        using var host = new LuaTestHost();
-        foreach (var result in host.Run(file))
+        foreach (var file in files)
         {
-            results.Add(result);
-            Console.Write($"{(result.Passed ? "PASS" : "FAIL")} {result.File}: {result.Name}\n");
-            if (!result.Passed) Console.Write($"     {result.Message}\n");
+            using var host = new LuaTestHost();
+            foreach (var result in host.Run(file))
+            {
+                results.Add(result);
+                if (result.Passed) Ui.Line($"[green]PASS[/] {result.File}: {result.Name}");
+                else
+                {
+                    Ui.Line($"[red]FAIL[/] {result.File}: {result.Name}");
+                    Ui.Line($"     [grey]{result.Message}[/]");
+                }
+            }
         }
-    }
-    Console.Write($"{results.Count(r => r.Passed)} passed, {results.Count(r => !r.Passed)} failed\n");
+    });
+    var (passed, failed) = (results.Count(r => r.Passed), results.Count(r => !r.Passed));
+    if (failed == 0) Ui.Line($"[green]{passed} passed[/], {failed} failed");
+    else Ui.Line($"{passed} passed, [red]{failed} failed[/]");
     if (junit is not null) File.WriteAllText(junit, LuaTestHost.JUnit(results));
     return results.All(r => r.Passed) ? 0 : 1;
 }
@@ -257,19 +290,19 @@ static int Save(string file, double at, int seed, string output)
     {
         var recording = Recording.FromJson(File.ReadAllText(file));
         recording.Steps = (long)(at * StepsPerSecond);
-        simulation = Simulation.Replay(recording);
+        simulation = Ui.Work($"Replaying {file}", () => Simulation.Replay(recording));
     }
     else
     {
         simulation = Seats.Open(file, seed);
-        try { simulation.Advance(TimeSpan.FromSeconds(at)); }
+        try { Ui.Work($"Running {file}", () => simulation.Advance(TimeSpan.FromSeconds(at))); }
         catch (LuaException) when (simulation.Stopped is not null) { }
     }
     using (simulation)
     {
         var snapshot = simulation.Snapshot();
         File.WriteAllText(output, snapshot.ToJson());
-        Console.Write($"Snapshot at step {snapshot.Step} ({(double)snapshot.Step / StepsPerSecond:0.###} s): {snapshot.Hash}, {snapshot.Parts.Count} parts, saved to {output}\n");
+        Ui.Line($"Snapshot at step {snapshot.Step} ({(double)snapshot.Step / StepsPerSecond:0.###} s): {snapshot.Hash}, {snapshot.Parts.Count} parts, saved to [bold]{output}[/]");
         return 0;
     }
 }
@@ -277,15 +310,15 @@ static int Save(string file, double at, int seed, string output)
 static int Compare(string file, string? map)
 {
     var snapshot = Snapshot.FromJson(File.ReadAllText(file));
-    using var simulation = Simulation.Restore(snapshot, map);
+    using var simulation = Ui.Work($"Running to step {snapshot.Step} again", () => Simulation.Restore(snapshot, map));
     var differences = snapshot.Differences(simulation);
     if (differences.Count == 0)
     {
-        Console.Write($"Same world at step {snapshot.Step}: {snapshot.Hash}\n");
+        Ui.Line($"[green]Same world at step {snapshot.Step}: {snapshot.Hash}[/]");
         return 0;
     }
-    Console.Write($"The world at step {snapshot.Step} differs from the snapshot ({snapshot.Hash}, now {simulation.StateHash()}):\n");
-    foreach (var difference in differences.Take(20)) Console.Write($"  {difference}\n");
+    Ui.Line($"[red]The world at step {snapshot.Step} differs from the snapshot ({snapshot.Hash}, now {simulation.StateHash()}):[/]");
+    foreach (var difference in differences.Take(20)) Ui.Line($"  {difference}");
     return 1;
 }
 
@@ -302,49 +335,12 @@ static int View(string file, double seconds, int seed, double every, string? out
     else simulation = Seats.Open(file, seed);
     using (simulation)
     {
-        var trace = Viewer.Record(simulation, TimeSpan.FromSeconds(seconds), TimeSpan.FromSeconds(Math.Max(every, 0.05)));
+        var trace = Ui.Work($"Recording {file}", () => Viewer.Record(simulation, TimeSpan.FromSeconds(seconds), TimeSpan.FromSeconds(Math.Max(every, 0.05))));
         output ??= Path.ChangeExtension(Path.GetFileName(file), ".view.html");
         File.WriteAllText(output, Viewer.Page(trace));
-        Console.Write($"{trace.Frames.Count} frames of {seconds:0.###} s and {trace.Log.Count} log lines saved to {Path.GetFullPath(output)}\n");
+        Ui.Line($"{trace.Frames.Count} frames of {seconds:0.###} s and {trace.Log.Count} log lines saved to [bold]{Path.GetFullPath(output)}[/]");
         return trace.Stopped is null ? 0 : 1;
     }
-}
-
-static int Usage()
-{
-    Console.Error.Write("""
-        usage:
-          mirror coverage                                  How many natives are at each trust level, and which are Missing
-          mirror check <map>                               Lists the natives a map's script calls with their trust levels
-          Any command that takes a map also takes --users <slots> and --computers <slots> (comma separated), or --melee true to seat the first user
-          slot with a person and the others with computers, and a map named War3.w3mod:Maps/... is read from the installed game.
-          mirror run <map> [--seconds <n>] [--seed <n>] [--hash <n>] [--record <file>] [--input <file>]
-                                                           Runs a Lua or JASS map for n simulated seconds (60) with a
-                                                           seed (0), then prints its log; with --hash, the state hash
-                                                           every n seconds; with --input, the inputs of a recording
-                                                           (or a list of them) at their steps; with --record, saves
-                                                           the run as a recording
-          mirror replay <recording or .w3g> [--map <map>] [--hash <n>]
-                                                           Runs a recording again, exactly, and prints the state hash at
-                                                           its end (or every n seconds); a game replay (.w3g) needs its --map
-          mirror desync <map> [--seconds <n>] [--seed <n>] Runs the map for each person's slot as that player's own game
-                                                           and reports where the runs first differ
-          mirror snapshot <map or recording> [--at <n>] [--seed <n>] [--out <file>]
-                                                           Saves the world after n simulated seconds with what it takes to run
-                                                           to it again
-          mirror view <map or recording> [--seconds <n>] [--every <n>] [--out <file>]
-                                                           Runs it and saves a page that opens in a browser: the map from
-                                                           above, the units, a timeline to scrub and the log
-          mirror compare <snapshot> [--map <map>]         Runs the snapshot's run again to its step and lists what differs
-          mirror test <file or folder> [--junit <file>]    Runs the Lua tests (*.test.lua) with the Lua test API, prints each result and
-                                                           writes JUnit XML to the file
-          mirror bench <map> [--seconds <n>] [--seed <n>]  Times a run: how many times faster than real time it goes
-          mirror fuzz <map> [--seconds <n>] [--seed <n>] [--orders <n>]
-                                                           Gives every player's units random legal orders each second
-                                                           and reports script errors
-
-        """);
-    return 2;
 }
 
 // Who plays: the slots given by --users and --computers, or with --melee true the map's first user slot a person and every other slot of a user or
@@ -373,6 +369,6 @@ static class Seats
             var players = MirrorImaged.Data.MapArchive.Read(path).Files.Info?.Players.Where(p => p.Controller is War3Net.Build.Info.PlayerController.User or War3Net.Build.Info.PlayerController.Computer).Select(p => p.Id).ToList() ?? [];
             if (players.Count > 0) (users, computers) = ([players[0]], [.. players.Skip(1)]);
         }
-        return Simulation.Load(path, new SimulationOptions { Seed = seed, Users = users, Computers = computers });
+        return Ui.Work($"Loading {file}", () => Simulation.Load(path, new SimulationOptions { Seed = seed, Users = users, Computers = computers }));
     }
 }
