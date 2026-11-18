@@ -2473,3 +2473,5 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   platform does. The usage is the exception: its plain form is now a command a line with what it does under it.
 
 - **D401 (repair price, measured):** the game repaired a Barracks from 300 to 1500 life in 74 seconds, 33.3 life every 2 seconds (build time x 1.5), for 45 gold and 17 lumber (35% of 160 and 60 for 80% of its life, rounded up), so D387's ratios are right and the price is now taken a point ahead (rounded up). The game starts about 0.4 s later than MirrorImaged (probes/differences/abilities-repair.txt).
+
+- **D402 (the spells corrected by the game's numbers):** with the probe cleaned (foes paused, the caster's attack at 0, Starfall run apart because its stars reach 2000 away or more) the game gave: Starfall about 50 a wave, a wave about every 1.5 s; Mirror Image one image more than the caster (DataA); Silence is ANsi (not Siphon Mana); Carrion Beetles needs a corpse as target (refused on a probe corpse); and an immediate order must not walk the caster to the point 0, 0 (it did, for any spell with a range). All fixed in the models; they stay Close.

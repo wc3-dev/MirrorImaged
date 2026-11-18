@@ -1,24 +1,44 @@
 control level 0 order true id 0 cost 285
-siphon level 1 order false id 852487 cost 285
+flamestrike level 1 order true id 852488 cost 285
+silence level 1 order true id 852592 cost 285
+windwalk level 1 order true id 852129 cost 285
 carrion level 1 order false id 852551 cost 285
+immolation level 1 order true id 852177 cost 285
 mirror level 1 order true id 852123 cost 285
+earthquake level 1 order true id 852121 cost 285
 banish level 1 order true id 852486 cost 285
 locust level 1 order true id 852556 cost 285
 control +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 1 foes 2
-siphon +1 near -30.0 far 0.0 foe mana 285.0,0.0 caster mana 285.0 speed 320.0 own 0 foes 0
+flamestrike +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 150.7 speed 320.0 own 1 foes 2
+silence +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 0 foes 0
+windwalk +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 210.9 speed 352.0 own 0 foes 0
 carrion +1 near 420.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 2 foes 4
-mirror +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 160.2 speed 320.0 own 3 foes 4
+immolation +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 253.9 speed 320.0 own 1 foes 2
+mirror +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 160.0 speed 320.0 own 2 foes 4
+earthquake +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 0 foes 0
 banish +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 210.7 speed 320.0 own 0 foes 0
 locust +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 135.7 speed 320.0 own 0 foes 0
 control +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 1 foes 2
-siphon +3 near -30.0 far 0.0 foe mana 285.0,0.0 caster mana 285.0 speed 320.0 own 0 foes 0
+flamestrike +3 near 14.7 far 14.7 foe mana 0.0,0.0 caster mana 152.6 speed 320.0 own 1 foes 2
+silence +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 0 foes 0
+windwalk +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 212.8 speed 352.0 own 0 foes 0
 carrion +3 near 420.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 2 foes 4
-mirror +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 162.1 speed 320.0 own 3 foes 4
+immolation +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 241.9 speed 320.0 own 1 foes 2
+mirror +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 161.9 speed 320.0 own 2 foes 4
+earthquake +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 0 foes 0
 banish +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 212.6 speed 320.0 own 0 foes 0
 locust +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 137.6 speed 320.0 own 0 foes 0
 control +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 1 foes 2
-siphon +8 near 118.8 far 198.8 foe mana 285.0,0.0 caster mana 285.0 speed 320.0 own 0 foes 0
+flamestrike +8 near 13.4 far 13.4 foe mana 0.0,0.0 caster mana 157.3 speed 320.0 own 1 foes 2
+silence +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 0 foes 0
+windwalk +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 217.6 speed 352.0 own 0 foes 0
 carrion +8 near 420.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 2 foes 4
-mirror +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 166.8 speed 320.0 own 3 foes 4
+immolation +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 211.6 speed 320.0 own 1 foes 2
+mirror +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 166.7 speed 320.0 own 2 foes 4
+earthquake +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 0 foes 0
 banish +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 217.3 speed 320.0 own 0 foes 0
 locust +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 142.3 speed 320.0 own 0 foes 0
+starfall level 1 order true id 852183 cost 285
+starfall +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 85.7 speed 320.0 own 2 foes 4
+starfall +3 near 99.8 far 49.7 foe mana 0.0,0.0 caster mana 87.6 speed 320.0 own 2 foes 4
+starfall +8 near 248.5 far 198.5 foe mana 0.0,0.0 caster mana 92.3 speed 320.0 own 2 foes 4

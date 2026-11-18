@@ -13,7 +13,7 @@ sealed class ActiveBuff(int id, unit? source, bool positive, bool magic)
     public float AttackSpeedBonus;      // added to 1 for the attack rate
     public float ArmorBonus;            // added to the armour
     public bool Stun;                   // the unit does nothing
-    public bool Invulnerable, Root;     // nothing hurts the unit; the unit can't move
+    public bool Invulnerable, Root, Silence;     // nothing hurts the unit; the unit can't move
     public float LifeSteal, DamageBonus; // the share of an attack's damage the attacker gets back; added to the damage of ranged attacks
 }
 
