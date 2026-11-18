@@ -37,6 +37,9 @@ public sealed partial class GameNatives
 
     static readonly int Cost = Code("ugol"), LumberCost = Code("ulum"), BuildTime = Code("ubld"), Trains = Code("utra"), Researches = Code("ures"), FoodMadeField = Code("ufma"), Revives = Code("urev");
 
+    // Whether the building revives the hero: the game's data marks a building that revives heroes (an altar) with 1, a map's may list them
+    bool Revive(unit building, int id) => Listed(building, Revives, id) || building.Type.Text(Revives) == "1" && IsHero(id);
+
     bool Listed(unit u, int field, int id) => (u.Type.Text(field) ?? "").Split(',', StringSplitOptions.TrimEntries).Contains(Name(id));
 
     int Spend(player p, int state) => p.States[state];
@@ -113,7 +116,7 @@ public sealed partial class GameNatives
     {
         if (building.Constructing || building.Dead || building.Train.Count >= QueueLength) return false;
         Training item;
-        if (Listed(building, Revives, order) && ReviveCandidate(building.Owner, order) is { } dead && !building.Train.Any(t => t.Revive))
+        if (Revive(building, order) && ReviveCandidate(building.Owner, order) is { } dead && !building.Train.Any(t => t.Revive))
         {
             // A dead hero the building revives: it costs a share of the hero's own price, more for each level it had
             var type = dead.Type;
@@ -218,7 +221,7 @@ public sealed partial class GameNatives
             answer = u.Constructing ? Cancelled(u) : CancelQueue(u);
             return true;
         }
-        if (kind == 0 && (u.Type.Integer(IsBuilding) != 0 || IsBuildingNow(u)) && (Listed(u, Trains, order) || Listed(u, Researches, order) || Listed(u, UpgradesTo, order) || Listed(u, Revives, order)))
+        if (kind == 0 && (u.Type.Integer(IsBuilding) != 0 || IsBuildingNow(u)) && (Listed(u, Trains, order) || Listed(u, Researches, order) || Listed(u, UpgradesTo, order) || Revive(u, order)))
         {
             answer = QueueOrder(u, order);
             return true;

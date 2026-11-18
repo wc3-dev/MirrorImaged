@@ -26,7 +26,8 @@ public class GoldTests
 
 `Simulation.Load(path, options)` reads a `.w3x` or `.w3m` whose script is `war3map.lua` or `war3map.j` (JASS is turned into Lua first) and runs its
 `config` and `main`. `SimulationOptions` takes the `Seed`, the `Users` (the slots people play, the first being the local player) and `Computers`
-(the slots computers play), and the `Documents` folder the map's preload files go to. A run needs a person playing, as the game does.
+(the slots computers play), the `Difficulty` the computers play at (Normal unless given) and the `Documents` folder the map's preload files go
+to. With `Users` empty and computers seated, the computers play each other and the run is seen from the first computer's slot.
 
 ## Time
 

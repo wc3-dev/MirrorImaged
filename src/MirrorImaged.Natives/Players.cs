@@ -79,24 +79,24 @@ public sealed partial class GameNatives
             p.States[Placed] = playing ? 1 : 0;
             if (p.Name == "")
                 p.Name = user && users.Count == 1 ? "Local Player"
-                    : computer ? fixedRaces ? names?.GetValueOrDefault(p.Number) ?? $"Player {p.Number + 1}" : "Computer (Normal)"
+                    : computer ? fixedRaces ? names?.GetValueOrDefault(p.Number) ?? $"Player {p.Number + 1}" : $"Computer ({(Difficulty == 0 ? "Easy" : Difficulty == 2 ? "Insane" : "Normal")})"
                     : $"Player {p.Number + 1}";
             if (!playing) p.Team = -1;
             if (playing && p.Selectable && !fixedRaces) p.RacePreference = RandomRace;
             var drawn = races.RandomInt(1, 4);
             p.Race = FixedRace(p.RacePreference) ?? drawn;
         }
-        _local = _players[users[0]];
+        _local = _players[users.Concat(computers).Concat(others).First()];
         if (fixedRaces) _mapFlags |= 1024 | 1 << 20; // MAP_LOCK_ALLIANCE_CHANGES
     }
 
-    /// <summary>Refuses a lineup with no user, a slot outside 0 to 23, or a slot given twice.</summary>
+    /// <summary>Refuses a lineup with nobody playing, a slot outside 0 to 23, or a slot given twice.</summary>
     /// <param name="users">The slots people play.</param>
     /// <param name="others">The other slots that play.</param>
     /// <exception cref="ArgumentException">The lineup can't be seated; the message says why.</exception>
     public static void CheckSeats(IReadOnlyList<int> users, IReadOnlyList<int> others)
     {
-        if (users.Count == 0) throw new ArgumentException("A run needs a person playing, and no user slot is given");
+        if (users.Count == 0 && others.Count == 0) throw new ArgumentException("A run needs someone playing, and no slot is given");
         var seated = users.Concat(others).ToList();
         foreach (var slot in seated)
             if ((uint)slot >= 24) throw new ArgumentException($"Slot {slot} can't be played: people and computers play slots 0 to 23");

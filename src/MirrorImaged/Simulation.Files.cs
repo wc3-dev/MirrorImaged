@@ -22,10 +22,20 @@ public sealed partial class Simulation
     int _aiScripts;
     bool _aiRules;
 
-    string? LoadAi(string script)
+    // Where the AI script is read from: the map, else the balance set the map's values come from (Reign of Chaos's sets have race scripts of
+    // their own), else the game's own
+    internal (string From, byte[] Bytes)? AiScript(string script)
     {
         var file = script.Replace('\\', '/');
-        var bytes = _natives.Data.Map?.File(script) ?? _natives.Data.Map?.File("Scripts" + '\\' + script) ?? _natives.Data.InstallFile("War3.w3mod:Scripts/" + file);
+        if ((_natives.Data.Map?.File(script) ?? _natives.Data.Map?.File("Scripts" + '\\' + script)) is { } own) return ("map:" + script, own);
+        if (Data.StandardData.Sets(_natives.Data.Map?.Files.Info).Values is { } set && _natives.Data.InstallFile($"War3.w3mod:_balance/{set}.w3mod:Scripts/{file}") is { } balanced)
+            return ($"_balance/{set}.w3mod:Scripts/{file}", balanced);
+        return _natives.Data.InstallFile("War3.w3mod:Scripts/" + file) is { } found ? ("Scripts/" + file, found) : null;
+    }
+
+    string? LoadAi(string script)
+    {
+        var bytes = AiScript(script)?.Bytes;
         var common = _natives.Data.InstallFile("War3.w3mod:Scripts/common.ai");
         if (bytes is null || common is null) return null;
         var jass = System.Text.Encoding.UTF8.GetString(common) + "\n" + System.Text.Encoding.UTF8.GetString(bytes);

@@ -105,6 +105,25 @@ public sealed class LuaTestApiTests : IDisposable
     }
 
     [InstallFact]
+    public void Mirror_load_takes_the_difficulty_of_the_computers()
+    {
+        var path = Map("""print("difficulty", MeleeDifficulty())""").Replace('\\', '/');
+        var test = Path.Combine(_folder, "difficulty.test.lua");
+        File.WriteAllText(test, $$"""
+            test("insane when said", function()
+              assert_contains(mirror.load([[{{path}}]], {difficulty = "insane"}):log(), "difficulty\t2")
+            end)
+            test("normal unless said", function()
+              assert_contains(mirror.load([[{{path}}]]):log(), "difficulty\t1")
+            end)
+            """);
+
+        var (exit, output, error) = CoverageTests.Mirror("test", test);
+
+        Assert.True(exit == 0, output + error);
+    }
+
+    [InstallFact]
     public void Mirror_test_prints_each_result_and_writes_junit()
     {
         var path = Map("""TimerStart(CreateTimer(), 2, false, function() print("done") end)""").Replace('\\', '/');

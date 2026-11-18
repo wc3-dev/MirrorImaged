@@ -199,6 +199,7 @@ public sealed partial class GameNatives
     public bool SetExpansion(unit? peon, int id)
     {
         if (peon is null || FreeMine() is not { } mine || Data.Object(ObjectKind.Unit, id) is not { } type) return false;
+        if (Mine(Ai).Any(w => w.Order == id)) return true; // a worker is on its way to build it
         var from = Towns() is [var hall, ..] ? (hall.X, hall.Y) : WarOf(Ai).Home;
         var (dx, dy) = (from.Item1 - mine.X, from.Item2 - mine.Y);
         var length = MathF.Max(MathF.Sqrt(dx * dx + dy * dy), 1);

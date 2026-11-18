@@ -2543,3 +2543,50 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   DataB of their damage (the damage events still fire, with 0) and that lose DataC times a hit (`unit.Deals`, `unit.Takes`), dying when the ability's time is over. The cast fires no finish event. Left as a
   difference: the game fires a second summon event 0.18 s after the first, one of the two without a unit, and moves the caster and the image to two places near (which of them where changes from run to
   run); here one summon event fires, with the image, and the caster stays.
+
+- **D430 (A game of computers only, and their difficulty):** `SimulationOptions.Users` may be empty when a computer is seated: the run is then seen from
+  the first computer's slot (`GetLocalPlayer`), and a lineup with nobody is still refused. The game itself needs a person, as a player or an observer;
+  observers are not modelled, so this is a test's way to let computers play each other, not something measured. `SimulationOptions.Difficulty` (Easy, Normal,
+  Insane; `mirror.load(map, {difficulty = "easy"})` in a Lua test) is what `GetAIDifficulty` and `MeleeDifficulty` answer for every computer, and names them
+  ("Computer (Easy)"); Normal stays the default (D141). One difficulty for all computers: no test needs them to differ yet. A recording keeps it.
+
+- **D431 (The AI natives that stay shells):** counted over `common.ai` and the four race scripts, by what `main` of each race script can reach. On the melee
+  path and modelled: D432, D433. On the melee path and left as they are: `GetMegaTarget` (nil: the game's rule for a player weak enough for an all-out
+  attack is not known), `CommandsWaiting` (0: no melee map sends its computers commands; the order `CommandAI`'s commands come out in is not measured, so
+  the queue waits for a probe), `StartGetEnemyBase` and `WaitGetEnemyBase` (the search is done at once), `PurchaseZeppelin` (only on a map the script
+  finds no way across), `RemoveInjuries` and `RemoveSiege` (the wave is the units the script asked for). The settings of how the AI fights and works
+  (`SetTargetHeroes`, `SetUnitsFlee`, `SetGroupsFlee`, `SetHeroesFlee`, `SetPeonsRepair`, `SetHeroesBuyItems`, `SetHeroesTakeItems`, `SetIgnoreInjured`,
+  `SetSmartArtillery`, `SetDefendPlayer`, `SetWatchMegaTargets` and the campaign's like them) and the texts for the script's developer (`DisplayText*`,
+  `Debug*`) are Recorded: nothing reads them back, and what they would change (fleeing, repairing, shopping) is not simulated. The campaign's natives
+  (guard posts, defenders, suicide waves, `IgnoredUnits`, `Unsummon`, zeppelin loading) stay Close shells, off the melee path.
+
+- **D432 (What the melee script asks before it attacks; none measured):** `TownThreatened` is true while an armed unit of an enemy player (not a creep,
+  not a building) stands within 1,000 of one of the AI player's town halls; the script then keeps its wave home. Nothing more is done about the threat:
+  the units at home fight what comes in range, and a wave that is out is not called back. `IsTowered` is true while a finished enemy building with an
+  attack stands within 900 of the target. `UnitInvis` is whether a buff hides the unit (as `IsUnitInvisible`, without the viewer). `CreepsOnMap` is
+  whether a creep lives. `SetAllianceTarget` keeps the unit for the AI player and `GetAllianceTarget` gives what an allied AI player set, while it
+  lives, the lowest slot's first, never its own: the script joins an ally's attack and goes on with its own choice otherwise.
+
+- **D433 (What kept the melee AI from playing on, found on Echo Isles):** (1) `SetProduce` of a building another turns into (Keep, Stronghold) queues
+  the upgrade there; it used to send a worker to build one, which no worker can, and the script's build list stops at the first request that fails.
+  (2) `SetProduce` of what nothing of the player's trains answers true: `common.ai`'s `StartUnit` says the native "may not be able to right now but
+  that doesn't stop us from trying other units", having set the price aside itself. What the game's `SetProduce` answers false for is not measured.
+  (3) A building whose data says `urev=1` (every altar of the game) revives its owner's dead heroes; the check read the field as a list of heroes, which
+  only a test's data had, so a computer never revived its hero and its build list stopped at it. (4) The AI leaves 96 between its buildings (it left
+  24, less than a worker is wide, and walled its own workers in). (5) `SetExpansion` sends no second worker while one is on its way to build the hall.
+  (6) `MergeUnits` and `ConvertUnits` make the unit at once where the mount or the statue stands, for the price of the type made (the game's takes the
+  ability's time; its price is not measured); the other form is the ability's `Emeu`.
+
+- **D434 (The AI scripts of the balance set):** a race script is read from the map, else from the balance set the map's values come from
+  (`_balance/<set>.w3mod:Scripts/`, which Reign of Chaos's `melee_v0` and `custom_v0` have), else from the game's `Scripts`. `common.ai` is always the
+  game's: no set has one. That the game reads them this way is taken from where the files are, not measured.
+
+- **D435 (Creeps guard their post; not measured):** a unit of the neutral aggressive player has a post, the place it stands the first step it is idle.
+  Idle and more than 64 off it with nothing to fight, it walks back; fighting further than the game's `GuardReturnDistance` (1,000 where the data has
+  none) from it, it lets its target go and walks back, fighting again only once it is home. `SetUnitCreepGuard(unit, false)` and `RemoveGuardPosition`
+  stop that, `SetUnitCreepGuard(unit, true)` on another player's unit and `RecycleGuardPosition` make where the unit stands its post, and
+  `RemoveAllGuardPositions` does it for a player's units. `GuardDistance` and `GuardReturnTime` are not used. The AI players' own units have no posts.
+
+- **D436 (A step that clips what the way goes round):** a unit on a found way whose next step is stopped takes the part of the step along one axis
+  (x first) when that is free. The way is found over the centres of 32 cells and buildings stop a unit as circles, so a unit at a circle's edge could
+  have a way and no first step, and searched again for good: five workers of a computer stood so with a town hall to build.
