@@ -7,7 +7,7 @@ public partial class unit
 {
     internal GameObject Type = null!;
     internal player Owner = null!;
-    internal float X, Y, Life, MaxLife, Mana, MaxMana;
+    internal float X, Y, Life, MaxLife;
     internal bool Dead, Removed, Hidden, Invulnerable, Exploded, Paused, GivenWhilePaused, UsesFood = true;
     internal Action? Unpausing; // the order a frame after PauseUnit(false) gives back, until it comes
     internal int UserData, Skin, HeroLevel, Color, Pauses;
@@ -72,6 +72,7 @@ public sealed partial class GameNatives
             Type = type, Owner = owner, X = x, Y = y, Skin = skin, HeroLevel = hero ? 1 : 0, Color = owner.Color, Scale = type.Real(ModelScale),
             Facing = new(Angle(face)), FlyHeight = type.Real(Code("umvh")),
         });
+        (u.Regenerate, u.ManaTick) = (Regenerate, _game.Step / Game.Steps(TickSeconds));
         Arrived(u);
         // A hero's most life and mana count its strength and intelligence (facts, Units: StrHitPointBonus, IntManaBonus)
         u.MaxLife = type.Integer(HitPoints) + (hero ? Data.Constant("StrHitPointBonus", 25) * type.Integer(Strength) : 0);
@@ -159,6 +160,7 @@ public sealed partial class GameNatives
     void Die(unit u)
     {
         Asleep(u);
+        Regenerate(u);
         u.Dead = true;
         u.Life = 0;
         u.Paused = false;

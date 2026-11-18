@@ -29,8 +29,9 @@ public sealed partial class GameNatives
         if (whichUnit is null || order == 0 || !Takes(whichUnit, order)) return false;
         if (BeetlesOrder(whichUnit, ref order, ref x, ref y, ref target, ref kind) is { } answer) return answer;
         if (ImmolationOff(whichUnit, order) is { } off) return off;
-        whichUnit.Casting = null;
-        if (Spell(whichUnit, order, out var castable) && !castable) return false;
+        if (Spell(whichUnit, order, out var spell) && spell is null) return false;
+        BreakCast(whichUnit);
+        whichUnit.Casting = spell;
         EndChannel(whichUnit, false);
         if (CargoOrder(whichUnit, order, x, y, target, out var carried)) return carried;
         if (Economy(whichUnit, order, kind, out var taken))
@@ -45,7 +46,8 @@ public sealed partial class GameNatives
         if (order == SetRally) (whichUnit.RallyX, whichUnit.RallyY, whichUnit.RallyTarget) = (x, y, target);
         var (unitKind, playerKind) = kind switch { 0 => (UnitIssuedOrder, PlayerUnitIssuedOrder), 1 => (UnitIssuedPointOrder, PlayerUnitIssuedPointOrder), _ => (UnitIssuedTargetOrder, PlayerUnitIssuedTargetOrder) };
         FireUnit(new(whichUnit, Order: order, PointX: x, PointY: y, Target: target), unitKind, playerKind);
-        if (whichUnit.Casting is { } spell && Instant.Contains(spell.Type.BaseId) && !whichUnit.Paused && Cast(whichUnit) && whichUnit.Casting == spell) Cast(whichUnit);
+        // A cast begins inside the order's call when the unit is in range (probe abilities-cast-timing: the channel and cast events fired in it)
+        if (whichUnit.Casting == spell && spell is not null && !whichUnit.Paused) Cast(whichUnit, walk: false);
         return true;
     }
 

@@ -7,6 +7,7 @@ public partial class unit
 {
     internal unit? AttackTarget;          // the unit it is fighting, by order or by acquiring it
     internal double NextAttack, SwingEnds; // when it may start another attack, and when the one under way lets it move again
+    internal long SwingDue;               // the step its next swing is looked at, when one is waited for
     internal int Weapon;                  // the weapon (0 or 1) the target is attacked with
     internal float PatrolX, PatrolY;      // where a patrol turns back to
     internal float OrderX, OrderY;        // the place of the current order
@@ -16,9 +17,9 @@ public partial class unit
 // Movement and combat for units with orders and for idle ones that acquire enemies: a 1/32 s step in which a unit walks toward the
 // place or target of its order at its speed, attacks in range with its weapon (a swing, the damage at the damage point, then the cooldown)
 // and acquires the nearest enemy it may attack in its acquisition range when it has no order, holds position or attack-moves. Close:
-// units walk straight lines (no pathfinding or collision, only the unwalkable cells and the world's edge stop them), the damage
-// reaches a target at its damage point without a missile's flight, and the facts' orders and events of waves 3 are the ones kept
-// (docs/decisions.md, D352).
+// units walk straight lines (no pathfinding or collision, only the unwalkable cells and the world's edge stop them), a missile's flight
+// is worked out as it leaves, and the facts' orders and events of waves 3 are the ones kept (docs/decisions.md, D352). Attacks come a
+// cooldown apart to the clock's step, and a hero's agility quickens them (probe units-attack-timing, D452 to D454).
 public sealed partial class GameNatives
 {
     const double TickSeconds = 1.0 / 32;
@@ -211,13 +212,46 @@ public sealed partial class GameNatives
             Walk(u, t.X, t.Y, follow: true);
             return;
         }
-        if (Seconds < u.NextAttack || u.SwingEnds > Seconds) return;
+        var ready = Math.Max(u.NextAttack, u.SwingEnds);
+        if (Seconds < ready - HalfStep) { SwingWhenReady(u, ready); return; }
         u.Facing.Go(MathF.Atan2(t.Y - u.Y, t.X - u.X), Seconds, 0);
-        var point = BlzGetUnitWeaponRealField(u, Convert<unitweaponrealfield>(Code("udp1")), weapon);
-        var cooldown = Math.Max(BlzGetUnitAttackCooldown(u, weapon) / AttackRate(u), 0.1f);
-        (u.NextAttack, u.SwingEnds) = (Seconds + cooldown, Seconds + point);
+        // The cooldown and the damage point are both divided by the attack rate (a Paladin of agility 50 hit 0.22 s after its swing began, of 0 0.43)
+        var rate = AttackRate(u);
+        var point = BlzGetUnitWeaponRealField(u, Convert<unitweaponrealfield>(Code("udp1")), weapon) / rate;
+        var cooldown = Math.Max(BlzGetUnitAttackCooldown(u, weapon) / rate, 0.1f);
+        // A swing that was waited for starts from when it was due, so that the steps' rounding doesn't add up
+        var from = Seconds - ready < 2 * HalfStep ? ready : Seconds;
+        (u.NextAttack, u.SwingEnds) = (from + cooldown, Seconds + point);
         FireUnit(new(t, Other: u), UnitAttacked, PlayerUnitAttacked);
-        _game.At(_game.Step + Math.Max(1, Game.Steps(point)), () => Hit(u, t, weapon));
+        _game.At(_game.Step + Math.Max(1, Game.Steps(point)), () => Launch(u, t, weapon));
+    }
+
+    const double HalfStep = 0.5 / Game.StepsPerSecond;
+
+    // The unit acts again the step its cooldown is over, not at the engine's next step: the game's hits came exactly a cooldown apart
+    void SwingWhenReady(unit u, double ready)
+    {
+        var due = Math.Max(_game.Step + 1, Game.Steps(ready));
+        if (u.SwingDue == due) return;
+        u.SwingDue = due;
+        _game.At(due, () => { if (u.SwingDue == due && !u.Dead && !u.Removed) Act(u); });
+    }
+
+    static readonly int LaunchAhead = Code("ulpy");
+
+    // How long a missile flies from the unit to the target (probe units-attack-timing): the way between them, less how far ahead of the unit
+    // its missiles start (launchY: an archer's 62, an Archmage's 0), at the missile's speed. A short way lands at once: an archer's 88 did and
+    // an Archmage's 100 flew, and the middle is taken here
+    // shortcut: worked out as the missile leaves, so a target that walks is hit as if it stood; upgrade by flying the missile step by step
+    double Flight(unit from, unit to, float speed) => Distance(from, to) - from.Type.Real(LaunchAhead) is >= 94 and var way && speed > 0 ? way / speed : 0;
+
+    // The damage point: a missile leaves and lands after its flight, any other attack lands now
+    void Launch(unit u, unit t, int weapon)
+    {
+        var flight = u.Type.Text(Code($"ua{weapon + 1}w")) is "missile" or "mbounce" or "mline" or "msplash" or "artillery" or "aline" or "alsplash"
+            ? Game.Steps(Flight(u, t, BlzGetUnitWeaponRealField(u, Convert<unitweaponrealfield>(Code("ua1z")), weapon))) : 0;
+        if (flight > 0) _game.At(_game.Step + flight, () => Hit(u, t, weapon));
+        else Hit(u, t, weapon);
     }
 
     // The attack lands: base damage and the dice, as the weapon's type and sound give them, through the damage events of a real attack

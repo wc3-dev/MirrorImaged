@@ -1,0 +1,43 @@
+# 3.0.1.24371, 11-19 (lane engine-timing): the probe's lines as the game gave them, the same in two runs; {t} is when Mirror Image's last summon event came, 0.61 to 0.68 s after the effect over five runs.
+silence, move 1 s after the order: move t, 0.5 s later it is 134 from its place
+silence, stop 0.15 s after the order: stop t, cooldown left 5 s in 0.0
+silence, stop 1 s after the order: stop t, cooldown left 5 s in 10.3
+storm bolt at 200, missile speed 1000: order t: channel in the call +0.00, cast in the call +0.00, effect +0.40, finish +0.90, end cast +0.90; mana spent 75; hits after the effect 3: 0.0 +0.20, 100.0 +0.20, 0.0 +5.22
+storm bolt at 400, missile speed 1000: order t: channel in the call +0.00, cast in the call +0.00, effect +0.40, finish +0.90, end cast +0.90; mana spent 75; hits after the effect 3: 0.0 +0.40, 100.0 +0.40, 0.0 +5.42
+storm bolt at 600, missile speed 1000: order t: channel in the call +0.00, cast in the call +0.00, effect +0.40, finish +0.90, end cast +0.90; mana spent 75; hits after the effect 3: 0.0 +0.58, 100.0 +0.58, 0.0 +5.60
+storm bolt at 400, missile speed 500: order t: channel in the call +0.00, cast in the call +0.00, effect +0.40, finish +0.90, end cast +0.90; mana spent 75; hits after the effect 3: 0.0 +0.80, 100.0 +0.80, 0.0 +5.82
+storm bolt at 400, missile speed 2000: order t: channel in the call +0.00, cast in the call +0.00, effect +0.40, finish +0.90, end cast +0.90; mana spent 75; hits after the effect 3: 0.0 +0.20, 100.0 +0.20, 0.0 +5.22
+silence, an Archmage, cast point 0.30 backswing 2.40: order t: channel in the call +0.00, cast in the call +0.00, effect +0.30, finish +2.70, end cast +2.70; mana spent 75
+silence, cast point set to 0, cast point 0.00 backswing 2.40: order t: channel in the call +0.00, cast in the call +0.00, effect in the call +0.00, finish +2.40, end cast +2.40; mana spent 75
+silence, cast point set to 0.1, cast point 0.10 backswing 2.40: order t: channel in the call +0.00, cast in the call +0.00, effect +0.10, finish +2.50, end cast +2.50; mana spent 75
+silence, cast point set to 0.75, cast point 0.75 backswing 2.40: order t: channel in the call +0.00, cast in the call +0.00, effect +0.75, finish +3.15, end cast +3.15; mana spent 75
+silence, backswing set to 0, cast point 0.30 backswing 0.00: order t: channel in the call +0.00, cast in the call +0.00, effect +0.30, finish +0.30, end cast +0.30; mana spent 75
+silence, backswing set to 0.5, cast point 0.30 backswing 0.50: order t: channel in the call +0.00, cast in the call +0.00, effect +0.30, finish +0.80, end cast +0.80; mana spent 75
+silence, backswing set to 1, cast point 0.30 backswing 1.00: order t: channel in the call +0.00, cast in the call +0.00, effect +0.30, finish +1.30, end cast +1.30; mana spent 75
+silence, a Hpal, cast point 0.50 backswing 1.67: order t: channel in the call +0.00, cast in the call +0.00, effect +0.50, finish +2.17, end cast +2.17; mana spent 75
+silence, a Hmkg, cast point 0.40 backswing 0.50: order t: channel in the call +0.00, cast in the call +0.00, effect +0.40, finish +0.90, end cast +0.90; mana spent 75
+silence, a Hblm, cast point 0.30 backswing 2.40: order t: channel in the call +0.00, cast in the call +0.00, effect +0.30, finish +2.70, end cast +2.70; mana spent 75
+silence, a Udea, cast point 0.45 backswing 1.01: order t: channel in the call +0.00, cast in the call +0.00, effect +0.45, finish +1.46, end cast +1.46; mana spent 75
+silence, a Ofar, cast point 0.30 backswing 1.07: order t: channel in the call +0.00, cast in the call +0.00, effect +0.30, finish +1.37, end cast +1.37; mana spent 75
+silence, a Edem, cast point 0.30 backswing 0.47: order t: channel in the call +0.00, cast in the call +0.00, effect +0.30, finish +0.77, end cast +0.77; mana spent 75
+silence, a hmpr, cast point 0.50 backswing 0.67: order t: channel in the call +0.00, cast in the call +0.00, effect +0.50, finish +1.17, end cast +1.17; mana spent 68
+silence, a hsor, cast point 0.45 backswing 1.08: order t: channel in the call +0.00, cast in the call +0.00, effect +0.45, finish +1.53, end cast +1.53; mana spent 68
+silence, a ushd, cast point 0.50 backswing 0.51: order t: channel in the call +0.00, cast in the call +0.00, effect +0.50, finish +1.01, end cast +1.01; mana spent 75
+silence, the place behind it, cast point 0.30 backswing 2.40: order t: channel +0.21, cast +0.21, effect +0.51, finish +2.91, end cast +2.91; mana spent 75
+silence, stop 0.15 s after the order, cast point 0.30 backswing 2.40: order t: channel in the call +0.00, cast in the call +0.00, end cast +0.15; mana spent 0
+silence, stop 1 s after the order, cast point 0.30 backswing 2.40: order t: channel in the call +0.00, cast in the call +0.00, effect +0.30, end cast +1.00; mana spent 75
+silence, move 1 s after the order, cast point 0.30 backswing 2.40: order t: channel in the call +0.00, cast in the call +0.00, effect +0.30, end cast +1.00; mana spent 75
+flamestrike, an Archmage, cast point 0.30 backswing 2.40: order t: channel in the call +0.00, cast in the call +0.00, effect +0.30, finish +1.63, end cast +1.63; mana spent 135; first hit +1.63
+flamestrike, backswing set to 0.5, cast point 0.30 backswing 0.50: order t: channel in the call +0.00, cast in the call +0.00, effect +0.30, finish +1.63, end cast +1.63; mana spent 135; first hit +1.63
+flamestrike, backswing set to 3, cast point 0.30 backswing 3.00: order t: channel in the call +0.00, cast in the call +0.00, effect +0.30, finish +1.63, end cast +1.63; mana spent 135; first hit +1.63
+flamestrike, cast point set to 0.75, cast point 0.75 backswing 2.40: order t: channel in the call +0.00, cast in the call +0.00, effect +0.75, finish +2.08, end cast +2.08; mana spent 135; first hit +2.08
+flamestrike, stop 1 s after the order, cast point 0.30 backswing 2.40: order t: channel in the call +0.00, cast in the call +0.00, effect +0.30, end cast +1.00; mana spent 135; first hit none
+holy light, a Paladin, cast point 0.50 backswing 1.67: order t: channel in the call +0.00, cast in the call +0.00, effect +0.50, finish +2.17, end cast +2.17; mana spent 65
+thunder clap, a Mountain King, cast point 0.40 backswing 0.50: order t: channel in the call +0.00, cast in the call +0.00, effect +0.40, finish +0.90, end cast +0.90; mana spent 90
+mirror image, level 1: order t: channel in the call +0.00, cast in the call +0.00, effect +0.30, end cast +0.30; mana spent 125; summon events 2, the first +0.50 after the effect and the last +{t}; of illusions 1, without a unit 1
+mirror image, level 2: order t: channel in the call +0.00, cast in the call +0.00, effect +0.30, end cast +0.30; mana spent 125; summon events 3, the first +0.50 after the effect and the last +{t}; of illusions 2, without a unit 1
+mirror image, level 3: order t: channel in the call +0.00, cast in the call +0.00, effect +0.30, end cast +0.30; mana spent 125; summon events 4, the first +0.50 after the effect and the last +{t}; of illusions 3, without a unit 1
+silence on a Priest, free: buff until +16.0
+silence on a Priest, paused before, freed at +20: buff until +36.0
+silence on a Priest, paused at +4, freed at +20: buff until +32.0
+silence on a Priest, paused before, never freed: buff still on at +44.7

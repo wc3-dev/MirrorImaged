@@ -218,10 +218,11 @@ public sealed partial class GameNatives
                 Summon(caster, a, ix, iy, 1);
                 return true;
             case var id when id == Code("AHfs"):
-                // Flame Strike (probe abilities-spells): from its casting time on, DataA every DataB seconds for the hero duration, then DataC every
-                // DataD seconds until the duration is over, of fire, to the ground foes at the place; a paused one takes the first hit alone
+                // Flame Strike (probe abilities-spells): from its casting time on, which the cast waits before this (Spells: Effected), DataA every
+                // DataB seconds for the hero duration, then DataC every DataD seconds until the duration is over, of fire, to the ground foes at
+                // the place; a paused one takes the first hit alone
                 var (fx, fy) = target is unit ft ? (ft.X, ft.Y) : x != 0 || y != 0 ? (x, y) : (caster.X, caster.Y);
-                var (begins, full, whole) = (Field(a, CastTime), Field(a, Code("ahdu")), Field(a, Code("adur")));
+                var (begins, full, whole) = (0d, Field(a, Code("ahdu")), Field(a, Code("adur")));
                 void Burn(double at, float amount, bool first) => _game.At(_game.Step + Game.Steps(at), () =>
                 {
                     if (!caster.Dead) foreach (var near in Foes(caster, fx, fy, area <= 0 ? 200 : area).Where(u => !Flies(u) && (first || !u.Paused))) Spell(caster, near, amount, 8);
@@ -267,7 +268,9 @@ public sealed partial class GameNatives
             case var id when id == Code("AOmi"):
                 // Mirror Image (probe abilities-spells): DataD seconds in, DataA images of the caster stand by it for the ability's time, illusions
                 // of its type with its life and mana, whose hits take DataB of their damage and that lose DataC times a hit. In the game the caster
-                // and its image go to two places near, which of them where changing from run to run; here the caster stays
+                // and its image go to two places near, which of them where changing from run to run; here the caster stays. A summon event fires
+                // for each image and one more with no summoned unit (probe abilities-cast-timing: 2, 3 and 4 events at levels 1 to 3), the first
+                // DataD in and the last 0.11 to 0.18 s later, which of them is the one without changing; here the images' come first and it last
                 _game.At(_game.Step + Game.Steps(Datum(a, 'D')), () =>
                 {
                     for (var n = 0; n < Math.Max((int)Datum(a, 'A'), 1) && !caster.Dead && !caster.Removed; n++)
@@ -281,6 +284,7 @@ public sealed partial class GameNatives
                         FireUnit(new(caster, Other: image, Skill: a.Type.Id), UnitSummon, PlayerUnitSummon);
                     }
                 });
+                _game.At(_game.Step + Game.Steps(Datum(a, 'D') + 0.18), () => { if (!caster.Dead && !caster.Removed) FireUnit(new(caster, Skill: a.Type.Id), UnitSummon, PlayerUnitSummon); });
                 return true;
             case var id when id == Code("AOeq"):
                 // Earthquake (probe abilities-spells): channelled; from DataA seconds in and every second, the buildings at the place take DataB

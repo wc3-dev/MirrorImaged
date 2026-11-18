@@ -1,0 +1,21 @@
+# 3.0.1.24371, 11-19 (lane engine-timing): the probe's lines as the game gave them, the same in two runs.
+an Archmage of intelligence 0: regeneration 0.01, intelligence 0; mana back 0.00, 0.00, 0.00
+an Archmage of intelligence 1: regeneration 0.01, intelligence 1; mana back 0.50, 1.00, 1.50
+an Archmage of intelligence 10: regeneration 0.01, intelligence 10; mana back 5.00, 10.00, 15.00
+an Archmage of intelligence 19: regeneration 0.01, intelligence 19; mana back 9.50, 19.00, 28.50
+an Archmage of intelligence 40: regeneration 0.01, intelligence 40; mana back 20.00, 39.99, 59.99
+an Archmage of intelligence 100: regeneration 0.01, intelligence 100; mana back 50.00, 99.99, 149.98
+an Archmage of intelligence 300: regeneration 0.01, intelligence 300; mana back 149.99, 299.96, 449.94
+a Hpal: regeneration 0.01, intelligence 17; mana back 8.50, 17.00, 25.50
+a Hblm: regeneration 0.01, intelligence 19; mana back 9.50, 19.00, 28.50
+a Udea: regeneration 0.01, intelligence 17; mana back 8.50, 17.00, 25.50
+a Ulic: regeneration 0.01, intelligence 20; mana back 10.00, 20.00, 30.00
+a Ofar: regeneration 0.01, intelligence 19; mana back 9.50, 19.00, 28.50
+a Edem: regeneration 0.01, intelligence 16; mana back 8.00, 16.00, 24.00
+a hmpr: regeneration 0.67, intelligence 0; mana back 6.67, 13.33, 20.00
+a hsor: regeneration 0.67, intelligence 0; mana back 6.67, 13.33, 20.00
+a uobs: regeneration 1.50, intelligence 0; mana back 15.00, 30.00, 44.99
+a nmed: regeneration 0.50, intelligence 0; mana back 5.00, 10.00, 15.00
+an Archmage, paused: regeneration 0.01, intelligence 19; mana back 0.00, 0.00, 0.00
+an Archmage, full: regeneration 0.01, intelligence 19; mana back 0.00, 0.00, 0.00
+an Archmage, hidden: regeneration 0.01, intelligence 19; mana back 9.50, 19.00, 28.50

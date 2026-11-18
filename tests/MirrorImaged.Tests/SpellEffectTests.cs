@@ -426,7 +426,7 @@ public sealed class SpellEffectTests : IDisposable
             at(20.8, function() print("ended", #images()) end)
             """, 21);
 
-        Assert.Equal(["before\t0\t0", "images\t2\t2\ttrue\tfalse\t800.0\t290.0", "hits\t600.0\t700.0\t1000.0", "near the end\t2", "ended\t0"], lines);
+        Assert.Equal(["before\t0\t0", "images\t2\t3\ttrue\tfalse\t800.0\t290.0", "hits\t600.0\t700.0\t1000.0", "near the end\t2", "ended\t0"], lines);
     }
 
     [Fact]
@@ -606,7 +606,7 @@ public sealed class SpellEffectTests : IDisposable
             at(60, function() print(beetles()) end)
             """, 61);
 
-        Assert.Equal(["fresh\tfalse false false", "fresh\tfalse false false", "corpse\ttrue false true", "effect\ttrue\t490.0", "summon\ttrue\ttrue", "1\t0\tnone\tfalse false false",
+        Assert.Equal(["fresh\tfalse false false", "fresh\tfalse false false", "effect\ttrue\t490.0", "corpse\ttrue false false", "summon\ttrue\ttrue", "1\t0\tnone\tfalse false false",
             "made\ttrue", "effect\tfalse\t480.0", "summon\ttrue\ttrue", "cooling\tfalse", "2"], lines);
     }
 
