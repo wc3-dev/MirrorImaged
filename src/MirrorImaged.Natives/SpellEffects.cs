@@ -175,11 +175,18 @@ public sealed partial class GameNatives
                 // Wind Walk: faster for its time (DataB more speed)
                 Apply(caster, caster, WindWalkBuff, Lasts(a, caster), true, b => b.SpeedFactor = 1 + Datum(a, 'B'));
                 return true;
-            case var id when id == Code("AUcb") && target is unit body && body.Dead && !body.Removed:
-                // Carrion Beetles: DataA beetles rise from the corpse (measured: the order needs a corpse)
-                var (bx0, by0) = (body.X, body.Y);
-                RemoveUnit(body);
-                Summon(caster, a, bx0, by0, Math.Max((int)Datum(a, 'A'), 1));
+            case var id when id == BeetlesBase && target is unit body && IsCorpse(body):
+                Beetles(caster, a, body);
+                return true;
+            case var id when id == Code("AUls"):
+                LocustSwarm(caster, a);
+                return true;
+            case var id when id == Code("AHbn") && target is unit banished && !banished.Dead:
+                // Banish (probe abilities-banish): the unit is ethereal and slower by DataA for the ability's time, a hero's own for a hero,
+                // and takes a hit of 0 as the buff comes and as its time ends
+                void Nothing() => UnitDamageTarget(caster, banished, 0, false, false, Convert<attacktype>(0), Convert<damagetype>(0), Convert<weapontype>(0));
+                Nothing();
+                Apply(banished, caster, BanishBuff, Lasts(a, banished), false, b => (b.SpeedFactor, b.Ethereal, b.Ended) = (1 - Datum(a, 'A'), true, Nothing));
                 return true;
             case var id when id == Code("AEim"):
                 // Immolation: DataA a second to the foes round the caster for the ability's time (ten seconds without one)
@@ -250,7 +257,7 @@ public sealed partial class GameNatives
         return true;
     }
 
-    static readonly int WindWalkBuff = Code("BOwk"), SilenceBuff = Code("BNsi");
+    static readonly int WindWalkBuff = Code("BOwk"), SilenceBuff = Code("BNsi"), BanishBuff = Code("BHbn");
 
     bool _aurasScheduled;
 

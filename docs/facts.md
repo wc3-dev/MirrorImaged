@@ -1664,3 +1664,56 @@ one of Player 1 placed 100 apart (so none is moved aside).
 - Spells measured in the game (3.0.1.24371, probe abilities-spells, 11-18, Seen): a hero with attack damage 0 and paused foes loses nothing in a control; Flame Strike hits about 15 once and then 13 to 15 over the next seconds, Starfall hits the foes about 50 a second after a delay (near foe 49.8 at 3 s, 198.6 at 8 s; the far one 248.6), Wind Walk gives speed 352 from 320, Immolation, Earthquake, Banish and Locust Swarm leave a calm foe 300 away untouched, Mirror Image adds two units to the caster's side, and the game refuses Siphon Mana on a paused hero and Carrion Beetles on a corpse the probe made. MirrorImaged's models differ (probes/differences/abilities-spells.txt); they stay Close.
 - Repair measured in the game (3.0.1.24371, probe abilities-repair, 11-18, Seen): a Barracks (1500 life, 160 gold, 60 lumber, build time 60) repaired from 300 life takes 74 s at 33.3 life per 2 s (build time x 1.5) and costs 45 gold and 17 lumber (35% of the price for the life repaired, rounded up), the price taken as it goes.
 - Spells re-measured (3.0.1.24371, probe abilities-spells, 11-18, Seen): with foes paused and the caster's attack at 0, a control loses nothing; Starfall hits the foes in 2000 or more, 50 a wave about every 1.5 s (near foe 99.8 at 3 s, 248.5 at 8 s); Mirror Image leaves the caster and one image; ANsi is Silence and does no damage; a Carrion Beetles order on a corpse the probe made is refused.
+
+### Banish, Locust Swarm and Carrion Beetles (probes `abilities-banish`, `abilities-locust`, `abilities-beetles`)
+
+3.0.1.24371, 11-18, single player, standard data, each spell at level 1 on an Archmage it was added to; six runs as the
+probes grew, the numbers the same from the second on but where a line says they vary. The units that only stand have
+their Attack taken off (`UnitRemoveAbility` of `Aatk`): in the first run heroes of attack damage 0 hit foes 300 and 400
+away unordered, `SetUnitAcquireRange(u, 0)` not being taken (probe `units`), and after it none did.
+
+- **Banish** (`AHbn`, 75 mana): the buff `BHbn` is on a footman within 0.05 s of the effect and stays 12.00 s, 4.00 s
+  on a Paladin, and 12.00 s on the caster's own footman. While it is on, `IsUnitType` ethereal is true and
+  `GetUnitMoveSpeed` reads half, not under `MinUnitSpeed` (150 for 270, 200 for a unit set to 400). The target takes a
+  hit of 0 (attack type 0, damage type 0, from the caster) with the effect and another as the buff ends.
+- 100 from `UnitDamageTarget` at the banished footman, by attack type 0 to 6: damage type normal (4) takes 0, 0, 0, 0,
+  296.4, 0, 0, the same with the attack flag; fire (8), magic (14) and universal (26) each 166, 0, 0, 0, 332, 0, 0. A
+  footman not banished (large armour, 2): normal 89.3 each but magic's 178.6, the others 100 each but magic's 200. A
+  Paladin not banished: normal 60.8, 81.0, 40.5, 40.5, 40.5, 81.0, 81.0, the others 75, 100, 50, 50, 50, 100, 100. So
+  the attack type's row of the damage table cuts every damage type and the armour only normal, and an ethereal unit
+  takes 1.66 times that from attack type magic and, for any damage type but normal, from attack type spells, and
+  nothing from the rest (`EtherealDamageBonus` is `0,0,0,1.66,0,1.66,0`).
+- A footman ordered to attack the banished one (the order true) never hit in 3.5 s; a Priest set to 50 a hit took 148.2
+  from it and 89.3 from the footman not banished; Storm Bolt took 0, then 166.0 (damage type 15). A footman that was
+  attacking had no order 2 s after it was banished, hit nothing from 1 s after the effect to the buff's end, and hit
+  again when ordered after. Not measured: a swing under way as the buff comes.
+- **Carrion Beetles** (`AUcb`; the natives read mana 30, cooldown 6, duration 0, area 900, range 900):
+  `carrionscarabs` (852551) is true as a target order on a corpse and false with no target; `carrionscarabsinstant`
+  (852554) with no target is true with a corpse 200 away and false with none, and the effect's `GetSpellTargetUnit`
+  is the corpse; both are false while the cooldown runs. A footman killed with `KillUnit` is refused by both a second
+  after the kill and, ordered every 0.1 s from 1.15 s, first taken at 3.05 s (its death time is 3); one killed 8 s
+  before and one made by `CreateCorpse` a second before are taken, an enemy's and the caster's own side's alike.
+  That is why probe `abilities-spells` was refused: its corpse was a second old.
+- A cast takes the mana and the corpse (its type id reads 0 two seconds later) and summons one `ucs1` (140 life), with
+  the summon event. `carrionscarabson` answers true and the caster casts at once on a corpse in reach, and again when
+  a new one is there and the cooldown is over; a caster whose autocast was never switched on left a corpse alone for
+  17 s. With five beetles alive, a sixth and a seventh cast still took the corpse and the mana and fired the summon
+  event, and the new beetle died in the same second, the first five alive. Not measured: which of several corpses
+  the untargeted order takes, where its reach ends, a hero's or a building's body.
+- **Locust Swarm** (`AUls`; 150 mana, duration 30, area 800, cooldown 180), with footmen of 5000 life round the caster:
+  20 `uloc` come out (65 life, speed 400, damage 12 + 1d2, cooldown 1.00, with Locust), the first within 0.02 s of the
+  effect and one every 0.20 s, the 20th 3.80 s after the first. Only `GroupEnumUnitsOfPlayer` finds them, no summon
+  event fires, and all 20 are there until the end: gone 31.5 to 32.0 s after the effect.
+- A locust's hit is a real attack (`BlzGetEventIsAttack` true), attack type 0 (spells), damage type normal: 11.61 or
+  12.50 on a footman of armour 2, 8.78 or 9.46 at armour 8. A swarm made 165 to 200 hits in its 30 s; one locust's hits
+  were 2.8 to 3.3 s apart on average, 0.86 to 1.02 at least. Foes 300, 500, 600 and 750 from the caster were hit, the
+  nearest most (105 of 162 in one run, then 44, 3 and 10); foes 1000 and 1980 away never.
+- Nothing came back for 10 s. Then the caster's life went up a locust at a time, each time by 0.750 of what that
+  locust had dealt since it was last back: after four hits for 120 of the 124 counted, three for 1 and five for 3
+  (46.43 to 50.00 carried at armour 2, from 35.81 at armour 8, so it is not a set amount of damage). What decides
+  it was not found; `DataE` (20) and `DataC` (7) were not seen to do anything. By the end the caster had gained 0.750
+  of all its swarm dealt (1492.0 of 1989.3, 1514.7 of 2019.6, 1694.2 of 2258.9, 1280.6 of 1707.4, each over a hero
+  that cast nothing), so what the locusts carry at the end comes back too.
+- Probe `abilities-spells` (above) put six of its eleven casters at x 2000 or 4000 either way, or y 3500, on the probe
+  map, whose world ends at 2048: there its counts of units within 700 read "own 0 foes 0". What it gave for Silence,
+  Earthquake, Banish and Locust Swarm was not of units where it looked. Not rerun.

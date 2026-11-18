@@ -11,6 +11,7 @@ public partial class ability
     internal readonly Dictionary<(int Field, int Level), object> Sets = []; // the field natives' sets, by the field keeping the column (GameData.Own); level -1 for a field without levels
     internal readonly Dictionary<int, int> Researched = []; // the upgrade levels its level counts, by upgrade
     internal double CooldownEnd, Cooldown; // a cooldown started without a cast: when it ends, and how long it is
+    internal bool Autocast; // Carrion Beetles' autocast is on
 }
 
 public partial class unit
@@ -18,6 +19,7 @@ public partial class unit
     /// <summary>The unit's abilities in the order BlzGetUnitAbilityByIndex gives them: one added goes first.</summary>
     internal readonly List<ability> Abilities = [];
     internal bool Locust; // had Locust once: the game lets it go from enumerations and selection only with the unit (probe units-locust)
+    internal bool Disarmed; // its Attack (Aatk) was taken off
 }
 
 public partial class player
@@ -31,7 +33,7 @@ public partial class player
 public sealed partial class GameNatives
 {
     const string AbilitiesProbe = "facts.md, Abilities: probe abilities (11-08)";
-    static readonly int Invulnerable = Code("Avul"), AbilityList = Code("uabi"), Locust = Code("Aloc"), UpgradesUsed = Code("upgr"), AbilityCode = Code("code");
+    static readonly int Invulnerable = Code("Avul"), AbilityList = Code("uabi"), Locust = Code("Aloc"), AttackAbility = Code("Aatk"), UpgradesUsed = Code("upgr"), AbilityCode = Code("code");
 
     // The abilities an upgrade raises may change level when the owner's research does (probe abilities-upgrades)
     readonly List<ability> _raised = [];
@@ -154,18 +156,21 @@ public sealed partial class GameNatives
     {
         if (whichUnit is null || Find(whichUnit, abilityId) is not null || Data.Object(ObjectKind.Ability, abilityId) is not { Levels: > 0 } type) return false;
         Give(whichUnit, type, 0);
+        if (abilityId == AttackAbility) whichUnit.Disarmed = false;
         return true;
     }
 
     /// <summary>
     /// Takes the ability off and answers true, its handle gone with it; false when the unit lacks it. An ability of the
-    /// unit's type goes too (Defend, Attack, Move), and one made permanent (probe abilities; game-facts).
+    /// unit's type goes too (Defend, Attack, Move), and one made permanent (probe abilities; game-facts). A unit without
+    /// its Attack attacks nothing (probe abilities-banish: heroes that attacked unordered stood still without it).
     /// </summary>
     [Native(Level.Exact, Fact = AbilitiesProbe + "; game-facts.md, Spells and abilities: UnitRemoveAbility (11-02)")]
     public bool UnitRemoveAbility(unit? whichUnit, int abilityId)
     {
         if (Find(whichUnit, abilityId) is not { } a) return false;
         Take(a);
+        if (abilityId == AttackAbility) whichUnit!.Disarmed = true;
         return true;
     }
 

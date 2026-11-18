@@ -1,0 +1,17 @@
+# 3.0.1.24371, 11-18 (spell gaps): the probe's lines as the game gave them. Which locust hits whom and when moves from run to run, so those numbers are {t} and two of the foes' answers {w}; the last run's were: gone at +32.0; armour 2: 187 hits, total 2256.2, gained 1692.2, hits 1.02 s apart at least and 2.94 on average, 38 back with 4 hits and 1 with 3, carrying 36.61 to 50.00; armour 8: 187 hits, total 1707.4, gained 1280.6, 0.86 and 2.89, 34 back with 4 hits and 3 with 5, carrying 35.81 to 44.59
+orders tt
+effect: caster mana 135, duration 30.0 hero 30.0 area 800 range 0 cooldown 180
+a locust: uloc life 65 speed 400 damage 12 + 1d2 cooldown 1.00 locust 1
+first hit: attack type 0 damage type 4 attack t
+locusts 2 to 5 came 0.20 0.20 0.20 0.20 after the one before, the 20th 3.80 after the first
+locusts out after 0.9, 1.9, 2.9, 4.9, 10, 20 and 29 s: 5 10 15 20 20 20 20
+the swarm of 20 is gone at +{t}
+armour 2: {t} hits of 11.61 to 12.50, total {t}; the caster gained {t} more than the control, 0.750 of the total
+armour 2: a locust's hits were {t} s apart at least, {t} on average
+armour 2: of the locusts back before 29.5 s, {t} had 4 hits, {t} more and {t} fewer, carrying {t} to {t}, the heal 0.750 to 0.750 of it; {t} heals not told apart
+armour 2: hit at300 t at500 t free600 {w} at750 {w} at1000 f
+armour 8: {t} hits of 8.78 to 9.46, total {t}; the caster gained {t} more than the control, 0.750 of the total
+armour 8: a locust's hits were {t} s apart at least, {t} on average
+armour 8: of the locusts back before 29.5 s, {t} had 4 hits, {t} more and {t} fewer, carrying {t} to {t}, the heal 0.750 to 0.750 of it; {t} heals not told apart
+armour 8: hit at300 t at500 t free600 {w} at750 {w} at1000 f
+summon events 0

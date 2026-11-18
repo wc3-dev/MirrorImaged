@@ -10,12 +10,18 @@ public sealed partial class GameNatives
 
     static readonly Dictionary<string, int> Races = Words("human 1 orc 2 undead 3 nightelf 4 demon 5 other 7 creeps 8 commoner 9 critters 10 naga 11");
 
-    /// <summary>The unit's move speed: its type's, or what a set left (probe units).</summary>
+    /// <summary>
+    /// The unit's move speed: its type's, or what a set left (probe units); a buff that slows it leaves the constants'
+    /// MinUnitSpeed at least (probe abilities-banish: half of 270 reads 150, half of 400 200).
+    /// </summary>
     [Native(Level.Exact, Fact = UnitsProbe)]
-    public float GetUnitMoveSpeed(unit? whichUnit) =>
-        whichUnit is null ? 0 : SpeedFactor(whichUnit) is var factor && factor != 1
-            ? Math.Min(Own(whichUnit, SpeedNow, whichUnit.Type.Real(MoveSpeed)) * factor, factor > 1 ? Data.Constant("MaxUnitSpeed", 522) : float.MaxValue)
-            : Own(whichUnit, SpeedNow, whichUnit.Type.Real(MoveSpeed));
+    public float GetUnitMoveSpeed(unit? whichUnit)
+    {
+        if (whichUnit is null) return 0;
+        var (speed, factor) = (Own(whichUnit, SpeedNow, whichUnit.Type.Real(MoveSpeed)), SpeedFactor(whichUnit));
+        if (factor == 1 || speed <= 0) return speed;
+        return Math.Clamp(speed * factor, factor < 1 ? Data.Constant("MinUnitSpeed", 0) : 0, factor > 1 ? Data.Constant("MaxUnitSpeed", 522) : float.MaxValue);
+    }
 
     [Native(Level.Exact, Fact = UnitsProbe)]
     public float GetUnitDefaultMoveSpeed(unit? whichUnit) => whichUnit?.Type.Real(MoveSpeed) ?? 0;
@@ -255,8 +261,8 @@ public sealed partial class GameNatives
     /// The unit's kinds (probes units, units-more): hero, dead, structure, flying and ground (neither flying nor a
     /// structure), from its enabled weapons attacks ground, attacks flying, melee (a weapon of type normal) and ranged,
     /// its classification (its type's, with UnitAddType's and timed life's changes), and sleeping (UnitIsSleeping).
-    /// Close: stunned, plagued, snared, poisoned, polymorphed, resistant, ethereal and magic immune need buffs and
-    /// abilities (wave 4) and read false.
+    /// Ethereal is a banished unit (probe abilities-banish). Close: stunned, plagued, snared, poisoned, polymorphed,
+    /// resistant and magic immune need buffs and abilities (wave 4) and read false.
     /// </summary>
     [Native(Level.Close)]
     public bool IsUnitType(unit? whichUnit, unittype? whichUnitType) =>
@@ -289,6 +295,7 @@ public sealed partial class GameNatives
             7 => Weapons().FirstOrDefault().Kind is "normal",
             8 => Weapons().FirstOrDefault().Kind is { } weapon && weapon != "normal",
             23 => u is not null && Asleep(u),
+            25 => u is not null && IsEthereal(u),
             _ => Classes.TryGetValue(kind, out var name) && (Classification() & Categories[name]) != 0,
         };
     }

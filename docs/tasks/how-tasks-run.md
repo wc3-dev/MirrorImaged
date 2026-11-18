@@ -19,7 +19,7 @@ Every subagent that works on MirrorImaged reads this first. The plan is
 
 1. Make the worktree:
    `git -C C:\Users\mdlsvensson\Repo\wc3-cs\wc3-dev\mirror-imaged fetch origin` then
-   `git -C C:\Users\mdlsvensson\Repo\wc3-cs\wc3-dev\mirror-imaged worktree add ..\mirror-imaged-<task-id> -b task/<task-id> origin/release/1.0.0`.
+   `git -C C:\Users\mdlsvensson\Repo\wc3-cs\wc3-dev\mirror-imaged worktree add ..\mirror-imaged-<task-id> -b task/<task-id> origin/main`.
    Work only there.
 2. Write the tests first, from the task, the plan and the facts, not from the code. Then the code.
 3. The smallest code that does the whole task. No options, layers or "for later" code the task doesn't need.
@@ -30,10 +30,10 @@ Every subagent that works on MirrorImaged reads this first. The plan is
    so CI passes without it. Use it only when a test really reads the install (a BJ function, `blizzard.j`, the
    standard data): tests of the runtime itself load their maps through the internal seam that runs without
    `blizzard.j` (and, from wave 2, with data the test supplies), so CI runs them on all three platforms.
-6. Before the pull request: `git fetch origin`, `git merge origin/release/1.0.0`, resolve any conflict, build, and run
+6. Before the pull request: `git fetch origin`, `git merge origin/main`, resolve any conflict, build, and run
    the tests for the part you changed. All must pass.
 7. Commit in plain imperative lines ("Add the timer natives"). Push, then open the pull request, ready, not a draft:
-   `gh pr create --repo wc3-dev/mirror-imaged --base release/1.0.0 --head task/<task-id> --title "<line>" --body "<what it does; how it was tested>"`.
+   `gh pr create --repo wc3-dev/mirror-imaged --base main --head task/<task-id> --title "<line>" --body "<what it does; how it was tested>"`.
 8. Leave the worktree in place; the coordinator removes it after the merge.
 9. Report back: the pull request's URL, what was done, the tests run and their result, anything not done and why,
    and the decisions you recorded.
@@ -59,7 +59,7 @@ commit, push. Report what you changed.
 
 ## Rules for every subagent
 
-- Never commit or push to `main` or `release/1.0.0`; only to your task's branch.
+- Never commit or push to `main`; only to your task's branch.
 - Use absolute paths for every file you write, in every tool, .NET's file APIs inside PowerShell included: a
   relative path has twice landed in the main clone instead of the worktree.
 - No `README.md`, ever. No agent attribution in commits or pull requests (no `Co-Authored-By`, no "Generated with").

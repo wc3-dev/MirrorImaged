@@ -1,0 +1,40 @@
+# 3.0.1.24371, 11-18 (spell gaps): the probe's lines as the game gave them, the same in three runs but for the place of the control's first hit, which the probe then fixed
+unit order t
+hero order t
+friend order t
+unit effect: caster mana 210
+unit hit 0.0 from caster attack type 0 damage type 0
+hero effect: caster mana 210
+friend effect: caster mana 210
+unit buff on: speed 150.0 of 270.0 ethereal t
+hero buff on: speed 150.0 of 270.0 ethereal t
+friend buff on: speed 200.0 of 270.0 ethereal t
+unit attack orders tt
+unit hit 148.2 from priest attack type 4 damage type 4
+control attack order t
+control hit 89.3 from priest attack type 4 damage type 4
+unit hit by the footman f by the priest t
+hero buff off after 4.00: speed 270.0 ethereal f
+unit loses to 100 of damage type 4 by attack type 0 to 6: 0.0 0.0 0.0 0.0 296.4 0.0 0.0
+unit loses to 100 of damage type 8 by attack type 0 to 6: 166.0 0.0 0.0 0.0 332.0 0.0 0.0
+unit loses to 100 of damage type 14 by attack type 0 to 6: 166.0 0.0 0.0 0.0 332.0 0.0 0.0
+unit loses to 100 of damage type 26 by attack type 0 to 6: 166.0 0.0 0.0 0.0 332.0 0.0 0.0
+unit loses to 100 of damage type 4 as an attack by attack type 0 to 6: 0.0 0.0 0.0 0.0 296.4 0.0 0.0
+control loses to 100 of damage type 4 by attack type 0 to 6: 89.3 89.3 89.3 89.3 178.6 89.3 89.3
+control loses to 100 of damage type 8 by attack type 0 to 6: 100.0 100.0 100.0 100.0 200.0 100.0 100.0
+control loses to 100 of damage type 14 by attack type 0 to 6: 100.0 100.0 100.0 100.0 200.0 100.0 100.0
+control loses to 100 of damage type 26 by attack type 0 to 6: 100.0 100.0 100.0 100.0 200.0 100.0 100.0
+control loses to 100 of damage type 4 as an attack by attack type 0 to 6: 89.3 89.3 89.3 89.3 178.6 89.3 89.3
+attacker banished: order 0 speed 150.0
+unit bolt order t
+hero loses to 100 of damage type 4 by attack type 0 to 6: 60.8 81.0 40.5 40.5 40.5 81.0 81.0
+hero loses to 100 of damage type 8 by attack type 0 to 6: 75.0 100.0 50.0 50.0 50.0 100.0 100.0
+hero loses to 100 of damage type 14 by attack type 0 to 6: 75.0 100.0 50.0 50.0 50.0 100.0 100.0
+hero loses to 100 of damage type 26 by attack type 0 to 6: 75.0 100.0 50.0 50.0 50.0 100.0 100.0
+hero loses to 100 of damage type 4 as an attack by attack type 0 to 6: 60.8 81.0 40.5 40.5 40.5 81.0 81.0
+unit hit 0.0 from bolt attack type 0 damage type 0
+unit hit 166.0 from bolt attack type 0 damage type 15
+unit hit 0.0 from caster attack type 0 damage type 0
+unit buff off after 12.00: speed 270.0 ethereal f
+friend buff off after 12.00: speed 400.0 ethereal f
+attacker hit before t, while banished 0, ordered again after t

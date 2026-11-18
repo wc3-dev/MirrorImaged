@@ -63,7 +63,9 @@ public sealed partial class GameNatives
         t != u && !t.Dead && !t.Hidden && !t.Removed && !t.Locust && t.Owner != u.Owner && GetPlayerId(u.Owner) != GetPlayerNeutralPassive()
         && GetPlayerId(t.Owner) != GetPlayerNeutralPassive() && IsPlayerEnemy(u.Owner, t.Owner) && Find(t, Invulnerable) is null && !IsInvulnerableByBuff(t);
 
-    bool Armed(unit u, unit t) => WeaponFor(u, t) >= 0;
+    // A unit without its Attack and an ethereal one attack nothing, and only a weapon of attack type magic reaches an ethereal unit (probe abilities-banish)
+    bool Armed(unit u, unit t) => WeaponFor(u, t) is >= 0 and var weapon && !u.Disarmed && !IsEthereal(u)
+        && (!IsEthereal(t) || BlzGetUnitWeaponIntegerField(u, Convert<unitweaponintegerfield>(Code("ua1t")), weapon) == MagicAttack);
 
     float Reach(unit u, int weapon) => BlzGetUnitWeaponRealField(u, Convert<unitweaponrealfield>(Code("ua1r")), weapon);
 
@@ -86,12 +88,12 @@ public sealed partial class GameNatives
     // One step of a unit; true while it could still do something next step
     bool Act(unit u)
     {
-        if (u.Constructing) return false;
+        if (u.Constructing || u.Swarming) return false;
         if (u.Casting is not null && u.Order != 0 && !u.Paused) return Cast(u);
         var armed = u.Type.Integer(WeaponsOn) != 0;
         var mobile = GetUnitMoveSpeed(u) > 0;
         if (u.Paused || u.Hidden || IsStunned(u) || Asleep(u)) return armed || mobile;
-        if (u.AttackTarget is { } stale && (stale.Dead || stale.Removed || stale.Hidden)) u.AttackTarget = null;
+        if (u.AttackTarget is { } stale && (stale.Dead || stale.Removed || stale.Hidden || !Armed(u, stale))) u.AttackTarget = null;
         var scan = _ticks % ScanEvery == 0;
         var order = u.Order;
         if (order == OrderHarvest) return Harvest(u);

@@ -27,6 +27,7 @@ public sealed partial class GameNatives
     bool Give(unit? whichUnit, int order, float x, float y, widget? target, int kind)
     {
         if (whichUnit is null || order == 0 || !Takes(whichUnit, order)) return false;
+        if (BeetlesOrder(whichUnit, ref order, ref x, ref y, ref target, ref kind) is { } answer) return answer;
         whichUnit.Casting = null;
         if (Spell(whichUnit, order, out var castable) && !castable) return false;
         if (CargoOrder(whichUnit, order, x, y, target, out var carried)) return carried;
