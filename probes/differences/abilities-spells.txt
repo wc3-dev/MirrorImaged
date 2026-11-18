@@ -1,0 +1,53 @@
+# The ten spells of decisions D395 to D400, from the standard data: the game's numbers against the models, which are Close. Known: the game spends the mana and starts Starfall (50 a second from the third second, more for the far foe), Banish, Locust Swarm and Mirror Image (two copies, not one) differently, takes the Siphon Mana and Carrion Beetles orders only on other targets, and gives Flame Strike's first hit and then 13 to 15 a second round it.
+- siphon level 1 order false id 852487 cost 285
++ flamestrike level 1 order true id 852488 cost 285
+- carrion level 1 order false id 852551 cost 285
++ starfall level 1 order true id 852183 cost 285
++ siphon level 1 order true id 852487 cost 285
++ windwalk level 1 order true id 852129 cost 285
++ carrion level 1 order true id 852551 cost 285
++ immolation level 1 order true id 852177 cost 285
++ earthquake level 1 order true id 852121 cost 285
++ flamestrike +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 1 foes 2
++ starfall +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 85.0 speed 320.0 own 2 foes 4
+- carrion +1 near 420.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 2 foes 4
++ windwalk +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 210.0 speed 352.0 own 0 foes 0
+- mirror +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 160.2 speed 320.0 own 3 foes 4
++ carrion +1 near 420.0 far 0.0 foe mana 0.0,0.0 caster mana 255.0 speed 320.0 own 2 foes 4
+- banish +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 210.7 speed 320.0 own 0 foes 0
++ immolation +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 260.0 speed 320.0 own 1 foes 2
+- locust +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 135.7 speed 320.0 own 0 foes 0
++ mirror +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 2 foes 4
++ earthquake +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 0 foes 0
++ banish +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 210.0 speed 320.0 own 0 foes 0
++ locust +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 135.0 speed 320.0 own 0 foes 0
+- siphon +3 near -30.0 far 0.0 foe mana 285.0,0.0 caster mana 285.0 speed 320.0 own 0 foes 0
++ flamestrike +3 near 15.3 far 15.3 foe mana 0.0,0.0 caster mana 150.0 speed 320.0 own 1 foes 2
+- carrion +3 near 420.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 2 foes 4
++ starfall +3 near 100.0 far 100.0 foe mana 0.0,0.0 caster mana 85.0 speed 320.0 own 2 foes 4
+- mirror +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 162.1 speed 320.0 own 3 foes 4
++ siphon +3 near 70.0 far 100.0 foe mana 285.0,0.0 caster mana 285.0 speed 320.0 own 0 foes 0
+- banish +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 212.6 speed 320.0 own 0 foes 0
++ windwalk +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 210.0 speed 352.0 own 0 foes 0
+- locust +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 137.6 speed 320.0 own 0 foes 0
++ carrion +3 near 420.0 far 0.0 foe mana 0.0,0.0 caster mana 255.0 speed 320.0 own 2 foes 4
++ immolation +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 260.0 speed 320.0 own 1 foes 2
++ mirror +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 1 foes 4
++ earthquake +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 0 foes 0
++ banish +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 210.0 speed 320.0 own 0 foes 0
++ locust +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 135.0 speed 320.0 own 0 foes 0
+- siphon +8 near 118.8 far 198.8 foe mana 285.0,0.0 caster mana 285.0 speed 320.0 own 0 foes 0
++ flamestrike +8 near 15.7 far 15.7 foe mana 0.0,0.0 caster mana 150.0 speed 320.0 own 1 foes 2
+- carrion +8 near 420.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 2 foes 4
++ starfall +8 near 350.0 far 350.0 foe mana 0.0,0.0 caster mana 85.0 speed 320.0 own 2 foes 4
+- mirror +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 166.8 speed 320.0 own 3 foes 4
++ siphon +8 near 320.0 far 350.0 foe mana 285.0,0.0 caster mana 285.0 speed 320.0 own 0 foes 0
+- banish +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 217.3 speed 320.0 own 0 foes 0
++ windwalk +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 210.0 speed 352.0 own 0 foes 0
+- locust +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 142.3 speed 320.0 own 0 foes 0
++ carrion +8 near 420.0 far 0.0 foe mana 0.0,0.0 caster mana 255.0 speed 320.0 own 2 foes 4
++ immolation +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 260.0 speed 320.0 own 1 foes 2
++ mirror +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 160.0 speed 320.0 own 1 foes 4
++ earthquake +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 0 foes 0
++ banish +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 210.0 speed 320.0 own 0 foes 0
++ locust +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 135.0 speed 320.0 own 0 foes 0
