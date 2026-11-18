@@ -48,7 +48,9 @@ public sealed class SpellEffectTests : IDisposable
         ("AEah", "", "A=0.5"),
         ("ANsi", "silence", "dur=3;area=300"),
         ("AOwk", "windwalk", "B=0.5;dur=3"),
-        ("AUcb", "carrionscarabs", "A=2;dur=20;unit=hfoo"),
+        ("AUcb", "carrionscarabs", "A=1;C=hbet;E=3;area=900"),
+        ("AHbn", "banish", "A=0.5;dur=12;hdur=4"),
+        ("AUls", "locustswarm", "A=5;B=0.2;C=2;D=0.75;area=800;dur=12.5;unit=uloc"),
         ("AHfs", "flamestrike", "A=100;B=10;area=200;dur=2"),
         ("AEsf", "starfall", "A=30;area=900;dur=2"),
         ("AHwe", "waterelemental", "A=2;dur=20;unit=hfoo"),
@@ -62,7 +64,7 @@ public sealed class SpellEffectTests : IDisposable
         {
             ("alev", new("levels", PerLevel.None, -1, "int")), ("code", new("code", PerLevel.None, -1)), ("aord", new("Order", PerLevel.None, -1, "string")),
             ("acas", Column("Cast", "unreal")), ("aran", Column("Rng", "unreal")), ("aare", Column("Area", "unreal")), ("acdn", Column("Cool", "unreal")), ("amcs", Column("Cost", "int")),
-            ("adur", Column("Dur", "unreal")), ("ahdu", Column("HeroDur", "unreal")), ("uuid", Column("UnitID", "string", "AHwe", "AOsf", "AOhx", "AEme", "AUin")),
+            ("adur", Column("Dur", "unreal")), ("ahdu", Column("HeroDur", "unreal")), ("uuid", Column("UnitID", "string", "AHwe", "AOsf", "AOhx", "AEme", "AUin", "AUls")),
         })
             data.Add(ObjectKind.Ability, id, field);
         foreach (var letter in "ABCDE")
@@ -70,16 +72,18 @@ public sealed class SpellEffectTests : IDisposable
         foreach (var (id, order, numbers) in Abilities)
         {
             var n = Values(numbers + ";x=0");
-            var own = $"code={id};alev=1;aord={order};acas:1=0.1;aran:1=900;aare:1={n.GetValueOrDefault("area", "0")};acdn:1=1;amcs:1=10;adur:1={n.GetValueOrDefault("dur", "0")};ahdu:1={n.GetValueOrDefault("dur", "0")}";
+            var own = $"code={id};alev=1;aord={order};acas:1=0.1;aran:1=900;aare:1={n.GetValueOrDefault("area", "0")};acdn:1=1;amcs:1=10;adur:1={n.GetValueOrDefault("dur", "0")};ahdu:1={n.GetValueOrDefault("hdur", n.GetValueOrDefault("dur", "0"))}";
             foreach (var letter in "ABCDE") if (n.TryGetValue(letter.ToString(), out var value)) own += $";Z{letter}01:1={value}";
             if (n.TryGetValue("unit", out var summoned)) own += $";uuid:1={summoned}";
             data.Add(ObjectKind.Ability, id, Values(own));
         }
-        return data.Add(ObjectKind.Unit, "hbld", Values("unam=Hall;uhpm=1000;ubdg=1;umvt=;uaen=0;ucol=31")).Add(ObjectKind.Unit, "nfro", Values("unam=Frog;uhpm=50;umvs=100;umvt=foot;uaen=0;ucol=31")).Add(ObjectKind.Unit, "hbig", Values("unam=Big;uhpm=2000;umvs=300;umvt=foot;uaen=0;ucol=31")).Add(ObjectKind.Unit, "hatk", Values("unam=Attacker;uhpm=1000;umpm=500;umpi=500;umvs=270;umvt=foot;uacq=500;uaen=1;ua1w=normal;ua1t=normal;ua1g=ground;ua1b=10;ua1d=1;ua1s=1;ua1c=1;ua1r=90;udp1=0.5;ucol=31;udef=0")).Add(ObjectKind.Unit, "hfoo", Values("unam=Footman;uhpm=1000;umpm=500;umpi=500;umvs=270;umvt=foot;uacq=500;udea=3;uaen=0;ua1w=normal;ua1t=normal;ua1g=ground;ua1b=10;ua1d=1;ua1s=1;ua1c=1;ua1r=90;udp1=0.5;ucol=31;udef=0"));
+        return data.Add(ObjectKind.Unit, "hbld", Values("unam=Hall;uhpm=1000;ubdg=1;umvt=;uaen=0;ucol=31")).Add(ObjectKind.Unit, "nfro", Values("unam=Frog;uhpm=50;umvs=100;umvt=foot;uaen=0;ucol=31")).Add(ObjectKind.Unit, "hbig", Values("unam=Big;uhpm=2000;umvs=300;umvt=foot;uaen=0;ucol=31")).Add(ObjectKind.Unit, "Hfoo", Values("unam=Hero;uhpm=1000;umvs=270;umvt=foot;uaen=0;ucol=31")).Add(ObjectKind.Unit, "hbet", Values("unam=Beetle;uhpm=140;umvs=270;umvt=foot;uaen=0;ucol=16")).Add(ObjectKind.Unit, "uloc", Values("unam=Locust;uhpm=65;umvs=400;umvt=fly;uacq=900;uaen=1;ua1w=missile;ua1t=spells;ua1g=ground,air;ua1b=12;ua1d=1;ua1s=1;ua1c=1;ua1r=10;udp1=0;uabi=Aloc;ucol=0")).Add(ObjectKind.Unit, "hmag", Values("unam=Mage;uhpm=300;umvs=270;umvt=foot;uacq=600;uaen=1;ua1w=missile;ua1t=magic;ua1g=ground;ua1b=10;ua1d=1;ua1s=1;ua1c=2;ua1r=600;udp1=0.5;ucol=16;udef=0")).Add(ObjectKind.Ability, "Aloc", Values("code=Aloc;alev=1")).Add(ObjectKind.Ability, "Aatk", Values("code=Aatk;alev=1")).Add(ObjectKind.Unit, "hatk", Values("unam=Attacker;uhpm=1000;umpm=500;umpi=500;umvs=270;umvt=foot;uacq=500;uaen=1;ua1w=normal;ua1t=normal;ua1g=ground;ua1b=10;ua1d=1;ua1s=1;ua1c=1;ua1r=90;udp1=0.5;ucol=31;udef=0")).Add(ObjectKind.Unit, "hfoo", Values("unam=Footman;uhpm=1000;umpm=500;umpi=500;umvs=270;umvt=foot;uacq=500;udea=3;udtm=3;uaen=0;ua1w=normal;ua1t=normal;ua1g=ground;ua1b=10;ua1d=1;ua1s=1;ua1c=1;ua1r=90;udp1=0.5;ucol=31;udef=0"));
     }
 
-    List<string> Run(string main, double seconds)
+    List<string> Run(string main, double seconds, string constants = "")
     {
+        var data = Standard();
+        if (constants.Length > 0) foreach (var (key, value) in Values(constants)) data.Constants[key] = value;
         using var simulation = Simulation.Load(_maps.Build($$"""
             local function f1(x) return string.format("%.1f", x) end
             local function make(p, x, y) return CreateUnit(p or Player(0), FourCC("hfoo"), x or 0, y or 0, 0) end
@@ -87,7 +91,7 @@ public sealed class SpellEffectTests : IDisposable
             function main()
             {{main}}
             end
-            """), "", data: Standard());
+            """), "", data: data);
         simulation.Advance(TimeSpan.FromSeconds(seconds));
         return [.. simulation.Log.Select(line => line[(line.IndexOf(": ", StringComparison.Ordinal) + 2)..])];
     }
@@ -301,7 +305,7 @@ public sealed class SpellEffectTests : IDisposable
     }
 
     [Fact]
-    public void Silence_stops_casting_wind_walk_speeds_up_and_carrion_beetles_rise_from_a_corpse()
+    public void Silence_stops_casting_and_wind_walk_speeds_up()
     {
         var lines = Run("""
             local caster, foe, ally = make(Player(0)), make(Player(1), 300, 0), make(Player(1), 300, 100)
@@ -309,15 +313,12 @@ public sealed class SpellEffectTests : IDisposable
             IssuePointOrder(caster, "silence", 300, 0)
             TimerStart(CreateTimer(), 1, false, function() print("silenced", tostring(IssueImmediateOrder(foe, "resurrection"))) end)
             TimerStart(CreateTimer(), 5, false, function() print("free", tostring(IssueImmediateOrder(foe, "resurrection"))) end)
-            UnitAddAbility(caster, FourCC("AOwk")); UnitAddAbility(caster, FourCC("AUcb"))
+            UnitAddAbility(caster, FourCC("AOwk"))
             TimerStart(CreateTimer(), 5.5, false, function() IssueImmediateOrder(caster, "windwalk") end)
-            TimerStart(CreateTimer(), 6, false, function() print("speed", f1(GetUnitMoveSpeed(caster))) KillUnit(ally) end)
-            TimerStart(CreateTimer(), 6.5, false, function() IssueTargetOrder(caster, "carrionscarabs", ally) end)
-            local function count() local g = CreateGroup() GroupEnumUnitsOfPlayer(g, Player(0), nil) local n = 0 ForGroup(g, function() n = n + 1 end) DestroyGroup(g) return n end
-            TimerStart(CreateTimer(), 8, false, function() print("beetles", count()) end)
-            """, 9);
+            TimerStart(CreateTimer(), 6, false, function() print("speed", f1(GetUnitMoveSpeed(caster))) end)
+            """, 7);
 
-        Assert.Equal(["silenced	false", "free	true", "speed	405.0", "beetles	3"], lines);
+        Assert.Equal(["silenced	false", "free	true", "speed	405.0"], lines);
     }
 
     [Fact]
@@ -354,5 +355,229 @@ public sealed class SpellEffectTests : IDisposable
             """, 7);
 
         Assert.Equal(["quake	0.0	60.0"], lines);
+    }
+
+    // The constants the game's data has (probe abilities-banish): a slowed unit keeps MinUnitSpeed, magic and spells reach an ethereal unit for 1.66
+    // times, and here every attack type's row but magic's leaves a hit as it is
+    const string Ethereal = "MinUnitSpeed=150;EtherealDamageBonus=0,0,0,1.66,0,1.66,0;DamageBonusMagic=2,2,2,2,2,2,2,2";
+
+    [Fact]
+    public void Banish_makes_a_unit_ethereal_and_half_as_fast_for_its_time_and_a_hero_for_its_own()
+    {
+        var lines = Run("""
+            local caster, foe, hero, fast = make(Player(0)), make(Player(1), 300, 0), CreateUnit(Player(1), FourCC("Hfoo"), 300, 200, 0), make(Player(0), 300, -200)
+            SetUnitMoveSpeed(fast, 400)
+            UnitAddAbility(caster, FourCC("AHbn"))
+            local function state(u) return f1(GetUnitMoveSpeed(u)) .. " " .. tostring(IsUnitType(u, UNIT_TYPE_ETHEREAL)) .. " " .. GetUnitAbilityLevel(u, FourCC("BHbn")) end
+            local function at(s, f) TimerStart(CreateTimer(), s, false, f) end
+            IssueTargetOrder(caster, "banish", foe)
+            at(1, function() print(state(foe)) end)
+            at(1.5, function() IssueTargetOrder(caster, "banish", hero) end)
+            at(3, function() IssueTargetOrder(caster, "banish", fast) end)
+            at(3.5, function() print(state(fast)) end)
+            at(5.5, function() print(state(hero)) end)
+            at(5.9, function() print(state(hero)) end)
+            at(12, function() print(state(foe)) end)
+            at(12.4, function() print(state(foe)) end)
+            """, 13, Ethereal);
+
+        Assert.Equal(["150.0 true 1", "200.0 true 1", "150.0 true 1", "270.0 false 0", "150.0 true 1", "270.0 false 0"], lines);
+    }
+
+    [Fact]
+    public void Only_magic_and_spells_reach_an_ethereal_unit_and_an_attack_types_row_cuts_every_damage_type()
+    {
+        var lines = Run("""
+            local caster, foe, other = make(Player(0)), make(Player(1), 300, 0), make(Player(1), 300, 300)
+            UnitAddAbility(caster, FourCC("AHbn"))
+            IssueTargetOrder(caster, "banish", foe)
+            TimerStart(CreateTimer(), 1, false, function()
+                local events = 0
+                local t = CreateTrigger()
+                TriggerRegisterUnitEvent(t, foe, EVENT_UNIT_DAMAGED)
+                TriggerAddAction(t, function() events = events + 1 end)
+                local function lose(u, attack, damage)
+                    SetWidgetLife(u, 900)
+                    UnitDamageTarget(caster, u, 100, false, false, ConvertAttackType(attack), ConvertDamageType(damage), WEAPON_TYPE_WHOKNOWS)
+                    return f1(900 - GetWidgetLife(u))
+                end
+                print(lose(foe, 0, 14), lose(foe, 0, 4), lose(foe, 1, 14), lose(foe, 4, 4), lose(foe, 4, 26), lose(foe, 6, 14), events)
+                print(lose(other, 0, 14), lose(other, 4, 14), lose(other, 4, 4))
+            end)
+            """, 2, Ethereal);
+
+        Assert.Equal(["166.0\t0.0\t0.0\t332.0\t332.0\t0.0\t3", "100.0\t200.0\t200.0"], lines);
+    }
+
+    [Fact]
+    public void A_banished_unit_takes_a_hit_of_nothing_as_the_buff_comes_and_goes_and_no_attack_but_a_magic_one()
+    {
+        var lines = Run("""
+            local caster, foe = make(Player(0)), make(Player(1), 300, 0)
+            UnitAddAbility(caster, FourCC("AHbn"))
+            local t = CreateTrigger()
+            TriggerRegisterUnitEvent(t, foe, EVENT_UNIT_DAMAGED)
+            TriggerAddAction(t, function() print("hit", f1(GetEventDamage())) end)
+            IssueTargetOrder(caster, "banish", foe)
+            TimerStart(CreateTimer(), 1, false, function()
+                print("melee", IssueTargetOrder(CreateUnit(Player(0), FourCC("hatk"), 340, 0, 0), "attack", foe))
+                print("magic", IssueTargetOrder(CreateUnit(Player(0), FourCC("hmag"), 260, 0, 0), "attack", foe))
+            end)
+            """, 2.4, Ethereal);
+
+        // 11 of attack type magic: twice by its row, 1.66 times for the ethereal unit
+        Assert.Equal(["hit\t0.0", "melee\ttrue", "magic\ttrue", "hit\t36.5"], lines);
+
+        var after = Run("""
+            local caster, foe = make(Player(0)), make(Player(1), 300, 0)
+            UnitAddAbility(caster, FourCC("AHbn"))
+            IssueTargetOrder(caster, "banish", foe)
+            TimerStart(CreateTimer(), 12, false, function()
+                local t = CreateTrigger()
+                TriggerRegisterUnitEvent(t, foe, EVENT_UNIT_DAMAGED)
+                TriggerAddAction(t, function() print("hit", f1(GetEventDamage())) end)
+            end)
+            """, 12.4, Ethereal);
+
+        Assert.Equal(["hit\t0.0"], after);
+    }
+
+    [Fact]
+    public void A_banished_unit_attacks_nothing_and_neither_does_a_unit_without_its_attack()
+    {
+        var lines = Run("""
+            local caster, victim, attacker = make(Player(0)), make(Player(0), 300, 40), CreateUnit(Player(1), FourCC("hatk"), 300, 0, 0)
+            UnitAddAbility(caster, FourCC("AHbn"))
+            local hits = 0
+            local t = CreateTrigger()
+            TriggerRegisterUnitEvent(t, victim, EVENT_UNIT_DAMAGED)
+            TriggerAddAction(t, function() hits = hits + 1 end)
+            IssueTargetOrder(attacker, "attack", victim)
+            local function at(s, f) TimerStart(CreateTimer(), s, false, f) end
+            at(2, function() print("before", hits > 0) IssueTargetOrder(caster, "banish", attacker) end)
+            at(3.2, function() print("order", GetUnitCurrentOrder(attacker)) hits = 0 end)
+            at(14, function() print("banished", hits) end)
+            at(14.5, function() IssueTargetOrder(attacker, "attack", victim) end)
+            at(16, function() print("after", hits > 0, UnitRemoveAbility(attacker, FourCC("Aatk"))) end)
+            at(17, function() hits = 0 IssueTargetOrder(attacker, "attack", victim) end)
+            at(19, function() print("disarmed", hits, GetUnitCurrentOrder(attacker)) end)
+            """, 20, Ethereal);
+
+        Assert.Equal(["before\ttrue", "order\t0", "banished\t0", "after\ttrue\ttrue", "disarmed\t0\t0"], lines);
+    }
+
+    [Fact]
+    public void Carrion_beetles_take_a_corpse_as_target_or_one_near_by_the_instant_order_once_its_death_time_is_over()
+    {
+        var lines = Run("""
+            local caster, body = make(Player(0)), make(Player(1), 200, 0)
+            UnitAddAbility(caster, FourCC("AUcb"))
+            KillUnit(body)
+            local function orders(target)
+                return tostring(IssueTargetOrder(caster, "carrionscarabs", target)) .. " " .. tostring(IssueImmediateOrder(caster, "carrionscarabs")) .. " " .. tostring(IssueImmediateOrder(caster, "carrionscarabsinstant"))
+            end
+            local function beetles()
+                local g, n = CreateGroup(), 0
+                GroupEnumUnitsOfPlayer(g, Player(0), nil)
+                ForGroup(g, function() if GetUnitTypeId(GetEnumUnit()) == FourCC("hbet") and UnitAlive(GetEnumUnit()) then n = n + 1 end end)
+                DestroyGroup(g)
+                return n
+            end
+            local t = CreateTrigger()
+            TriggerRegisterPlayerUnitEvent(t, Player(0), EVENT_PLAYER_UNIT_SUMMON, nil)
+            TriggerAddAction(t, function() print("summon", GetUnitTypeId(GetSummonedUnit()) == FourCC("hbet"), GetSummoningUnit() == caster) end)
+            local e = CreateTrigger()
+            TriggerRegisterUnitEvent(e, caster, EVENT_UNIT_SPELL_EFFECT)
+            TriggerAddAction(e, function() print("effect", GetSpellTargetUnit() == body, GetUnitState(caster, UNIT_STATE_MANA)) end)
+            local function at(s, f) TimerStart(CreateTimer(), s, false, f) end
+            print("fresh", orders(body))
+            at(2.9, function() print("fresh", orders(body)) end)
+            at(3.1, function() print("corpse", orders(body)) end)
+            at(4, function() print(beetles(), GetUnitTypeId(body), "none", orders(body)) end)
+            at(5, function()
+                local own = CreateCorpse(Player(0), FourCC("hfoo"), 0, 200, 0)
+                print("made", IssueTargetOrder(caster, "carrionscarabs", own))
+            end)
+            at(5.3, function() CreateCorpse(Player(1), FourCC("hfoo"), 0, 300, 0) print("cooling", IssueImmediateOrder(caster, "carrionscarabsinstant")) end)
+            at(60, function() print(beetles()) end)
+            """, 61);
+
+        Assert.Equal(["fresh\tfalse false false", "fresh\tfalse false false", "corpse\ttrue false true", "effect\ttrue\t490.0", "summon\ttrue\ttrue", "1\t0\tnone\tfalse false false",
+            "made\ttrue", "effect\tfalse\t480.0", "summon\ttrue\ttrue", "cooling\tfalse", "2"], lines);
+    }
+
+    [Fact]
+    public void A_beetle_over_the_casters_most_dies_as_it_comes_and_autocast_takes_each_corpse_when_the_cooldown_is_over()
+    {
+        var lines = Run("""
+            local caster = make(Player(0))
+            UnitAddAbility(caster, FourCC("AUcb"))
+            for i = 1, 5 do CreateCorpse(Player(1), FourCC("hfoo"), 100 * i, 0, 0) end
+            local summons, deaths = 0, 0
+            local t = CreateTrigger()
+            TriggerRegisterPlayerUnitEvent(t, Player(0), EVENT_PLAYER_UNIT_SUMMON, nil)
+            TriggerAddAction(t, function() summons = summons + 1 end)
+            local d = CreateTrigger()
+            TriggerRegisterPlayerUnitEvent(d, Player(0), EVENT_PLAYER_UNIT_DEATH, nil)
+            TriggerAddAction(d, function() deaths = deaths + 1 end)
+            for n = 0, 4 do
+                TimerStart(CreateTimer(), 1.5 * n, false, function() IssueImmediateOrder(caster, "carrionscarabsinstant") end)
+                TimerStart(CreateTimer(), 1.5 * n + 1, false, function() print(GetPlayerUnitTypeCount(Player(0), FourCC("hbet")), summons, deaths) end)
+            end
+            """, 8);
+
+        Assert.Equal(["1\t1\t0", "2\t2\t0", "3\t3\t0", "3\t4\t1", "3\t5\t2"], lines);
+
+        var auto = Run("""
+            local caster = make(Player(0))
+            UnitAddAbility(caster, FourCC("AUcb"))
+            for i = 1, 2 do CreateCorpse(Player(1), FourCC("hfoo"), 100 * i, 0, 0) end
+            local function beetles() return GetPlayerUnitTypeCount(Player(0), FourCC("hbet")) end
+            TimerStart(CreateTimer(), 1, false, function() print(beetles(), "on", IssueImmediateOrder(caster, "carrionscarabson")) end)
+            TimerStart(CreateTimer(), 1.5, false, function() print(beetles()) end)
+            TimerStart(CreateTimer(), 4, false, function() print(beetles(), "off", IssueImmediateOrder(caster, "carrionscarabsoff")) CreateCorpse(Player(1), FourCC("hfoo"), 300, 0, 0) end)
+            TimerStart(CreateTimer(), 7, false, function() print(beetles()) end)
+            """, 8);
+
+        Assert.Equal(["0\ton\ttrue", "1", "2\toff\ttrue", "2"], auto);
+    }
+
+    [Fact]
+    public void Locust_swarm_sends_its_locusts_out_one_by_one_and_gives_the_caster_its_share_of_what_each_four_hits_took()
+    {
+        var lines = Run("""
+            local caster, near, mid, far = make(Player(0)), make(Player(1), 300, 0), make(Player(1), 500, 0), make(Player(1), 1000, 0)
+            UnitAddAbility(caster, FourCC("AUls"))
+            SetWidgetLife(caster, 100)
+            local t = CreateTrigger()
+            TriggerRegisterPlayerUnitEvent(t, Player(0), EVENT_PLAYER_UNIT_SUMMON, nil)
+            TriggerAddAction(t, function() print("summon") end)
+            local d = CreateTrigger()
+            TriggerRegisterUnitEvent(d, near, EVENT_UNIT_DAMAGED)
+            TriggerAddAction(d, function()
+                if d then print("hit", f1(GetEventDamage()), GetUnitTypeId(GetEventDamageSource()) == FourCC("uloc"), BlzGetEventIsAttack(), GetHandleId(BlzGetEventAttackType())) end
+                d = nil
+            end)
+            local function locusts()
+                local g, n = CreateGroup(), 0
+                GroupEnumUnitsOfPlayer(g, Player(0), nil)
+                ForGroup(g, function() if GetUnitTypeId(GetEnumUnit()) == FourCC("uloc") and UnitAlive(GetEnumUnit()) then n = n + 1 end end)
+                DestroyGroup(g)
+                return n
+            end
+            local function at(s, f) TimerStart(CreateTimer(), s, false, f) end
+            IssueImmediateOrder(caster, "locustswarm")
+            at(0.25, function() print(locusts()) end)
+            at(0.65, function() print(locusts()) end)
+            at(1.2, function() print(locusts()) end)
+            at(11, function() print(f1(1000 - GetWidgetLife(near)), f1(1000 - GetWidgetLife(mid)), f1(1000 - GetWidgetLife(far)), f1(GetWidgetLife(caster))) end)
+            at(12.5, function() print(f1(GetWidgetLife(caster))) end)
+            at(12.7, function() print(f1(GetWidgetLife(caster)), f1(2000 - GetWidgetLife(near) - GetWidgetLife(mid)), locusts()) end)
+            at(14.5, function() print(locusts()) end)
+            """, 15);
+
+        // Five locusts 0.2 s apart; two take the nearest foe and the rest the next (DataC 2), 13 a hit; the first two are back by 12.5 with 52 each, and
+        // as the swarm ends the caster has 0.75 of all 260
+        Assert.Equal(["1", "3", "5", "hit\t13.0\ttrue\ttrue\t0", "78.0\t117.0\t0.0\t100.0", "178.0", "295.0\t260.0\t5", "0"], lines);
     }
 }

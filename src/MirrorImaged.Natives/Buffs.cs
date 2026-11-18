@@ -14,6 +14,8 @@ sealed class ActiveBuff(int id, unit? source, bool positive, bool magic)
     public float ArmorBonus;            // added to the armour
     public bool Stun;                   // the unit does nothing
     public bool Invulnerable, Root, Silence;     // nothing hurts the unit; the unit can't move
+    public bool Ethereal;               // Banish: the unit can't attack, and only magic reaches it
+    public Action? Ended;               // what happens when its time is over, not when it is taken off before
     public float LifeSteal, DamageBonus; // the share of an attack's damage the attacker gets back; added to the damage of ranged attacks
 }
 
@@ -40,7 +42,7 @@ public sealed partial class GameNatives
         if (seconds > 0)
         {
             buff.EndsAt = _game.Step + Math.Max(1, Game.Steps(seconds));
-            _game.At(buff.EndsAt, () => target.Buffs.Remove(buff));
+            _game.At(buff.EndsAt, () => { if (target.Buffs.Remove(buff)) buff.Ended?.Invoke(); });
         }
         return buff;
     }
@@ -49,6 +51,7 @@ public sealed partial class GameNatives
     float AttackRate(unit u) => Math.Max(1 + u.Buffs.Sum(buff => buff.AttackSpeedBonus), 0.2f);
     float ArmorBonus(unit u) => u.Buffs.Sum(buff => buff.ArmorBonus);
     bool IsStunned(unit u) => u.Buffs.Any(buff => buff.Stun);
+    bool IsEthereal(unit u) => u.Buffs.Any(buff => buff.Ethereal);
 
     // The buffs the flags pick: the positive or negative ones, magic or not (no buff here is physical, timed life, an aura or auto-dispelled)
     IEnumerable<ActiveBuff> Picked(unit? u, bool positive, bool negative, bool magic) =>

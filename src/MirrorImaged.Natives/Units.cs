@@ -206,6 +206,7 @@ public sealed partial class GameNatives
         }
         if (IsHero(u.Type.Id)) return;
         var decay = Seconds + Math.Max(0, BlzGetUnitRealField(u, Convert<unitrealfield>(DeathTime)));
+        u.CorpseAt = decay;
         if (IsBuildingNow(u)) Rot(u, decay + Data.Constant("StructureDecayTime", 30));
         else if (!BlzGetUnitBooleanField(u, Convert<unitbooleanfield>(Decayable))) Rot(u, decay);
         else

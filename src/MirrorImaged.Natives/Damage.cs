@@ -38,8 +38,9 @@ public sealed partial class GameNatives
     /// type normal only) and the target's defence type cut it, then DAMAGED reads what the life loses and the life drops
     /// after its actions, a killing blow's death inside the call. A dead target answers true with no events, an
     /// invulnerable one reads 0 in DAMAGED, and a spell-immune one gets no DAMAGED and loses nothing for the damage and
-    /// attack types facts name. A destructable loses the amount from its life. Close: a nil source here deals nothing
-    /// and answers false (the game's answer is not measured), and the abilities that change a hit are wave 4's.
+    /// attack types facts name, and an ethereal one for all but magic (<see cref="EtherealBonus"/>). A destructable loses
+    /// the amount from its life. Close: a nil source here deals nothing and answers false (the game's answer is not
+    /// measured), and the abilities that change a hit are wave 4's.
     /// </summary>
     [Native(Level.Close, Fact = DamageFacts)]
     public bool UnitDamageTarget(unit? whichUnit, widget? target, float amount, bool attack, bool ranged, attacktype? attackType, damagetype? damageType, weapontype? weaponType)
@@ -59,6 +60,7 @@ public sealed partial class GameNatives
         if (target.Dead) return true;
         if (Find(target, MagicImmunity) is not null && (StoppedBySpellImmunity.Contains(hit.DamageType?.Id ?? 0) || hit.AttackType?.Id == MagicAttack))
             return true;
+        if (IsEthereal(target) && EtherealBonus(hit) == 0) return true;
         hit.Amount = Reduced(hit, target);
         FireUnit(new(target, Hit: hit), UnitDamaged, PlayerUnitDamaged);
         if (!target.Dead) SetLife(target, target.Life - hit.Amount, hit.Source);
@@ -67,20 +69,33 @@ public sealed partial class GameNatives
         return true;
     }
 
-    // What the target's armour and defence type leave of a hit before DAMAGED: only damage type normal is cut, by the
-    // attack type's row of the constants for the defence type, then by the armour; a negative armour adds
-    // 2 - 0.94^n (n its whole part, to -20)
+    // What the target's armour and defence type leave of a hit before DAMAGED: every damage type is cut by the attack
+    // type's row of the constants for the defence type (probe abilities-banish: 100 of fire, magic and universal take 200
+    // from a footman by attack type magic and 75 from a hero by spells), and an ethereal target's bonus is added; then
+    // damage type normal alone is cut by the armour; a negative armour adds 2 - 0.94^n (n its whole part, to -20)
     float Reduced(Hit hit, unit target)
     {
         if (Find(target, Invulnerable) is not null || IsInvulnerableByBuff(target)) return 0;
-        if (hit.DamageType?.Id != NormalDamage) return hit.Amount;
         var row = Data.Constant("DamageBonus" + AttackRows[Math.Clamp(hit.AttackType?.Id ?? 0, 0, AttackRows.Length - 1)])?.Split(',');
         var defence = BlzGetUnitIntegerField(target, Convert<unitintegerfield>(DefenseType));
         var bonus = row is not null && defence < row.Length && float.TryParse(row[defence], System.Globalization.CultureInfo.InvariantCulture, out var factor) ? factor : 1;
+        if (IsEthereal(target)) bonus *= EtherealBonus(hit);
+        if (hit.DamageType?.Id != NormalDamage) return hit.Amount * bonus;
         var armor = BlzGetUnitArmor(target) + ArmorBonus(target);
         var step = Data.Constant("DefenseArmor", 0.06f);
         var cut = armor >= 0 ? 1 / (1 + step * armor) : 2 - MathF.Pow(1 - step, Math.Min(MathF.Truncate(-armor), 20));
         return hit.Amount * bonus * cut;
+    }
+
+    // What reaches an ethereal unit (probe abilities-banish): attack type magic with any damage type, and attack type
+    // spells with any but normal, each times the constants' EtherealDamageBonus (1.66 for both, the fourth and sixth of
+    // its seven entries); every other hit takes nothing and has no DAMAGED
+    float EtherealBonus(Hit hit)
+    {
+        var attack = hit.AttackType?.Id ?? 0;
+        if (attack != MagicAttack && (attack != 0 || hit.DamageType?.Id == NormalDamage)) return 0;
+        return Data.Constant("EtherealDamageBonus")?.Split(',') is { Length: > 5 } row
+            && float.TryParse(row[attack == 0 ? 3 : 5], System.Globalization.CultureInfo.InvariantCulture, out var bonus) ? bonus : 1.66f;
     }
 
     /// <summary>
