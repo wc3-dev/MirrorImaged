@@ -2471,3 +2471,5 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
 - **D401 (Styled output on a terminal):** on a terminal `mirror` writes through Spectre.Console: colour, a spinner while a map loads or runs, `coverage` as a bar chart, `check` as a table and the usage as a list.
   Piped or redirected, every command writes the plain text it wrote before, to the byte, as scripts, CI and the tests read it: Spectre.Console wraps redirected output at 80 columns and ends lines as the
   platform does. The usage is the exception: its plain form is now a command a line with what it does under it.
+
+- **D401 (repair price, measured):** the game repaired a Barracks from 300 to 1500 life in 74 seconds, 33.3 life every 2 seconds (build time x 1.5), for 45 gold and 17 lumber (35% of 160 and 60 for 80% of its life, rounded up), so D387's ratios are right and the price is now taken a point ahead (rounded up). The game starts about 0.4 s later than MirrorImaged (probes/differences/abilities-repair.txt).

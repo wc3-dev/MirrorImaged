@@ -44,7 +44,7 @@ public sealed class RepairTests : IDisposable
             end)
             """, 31);
 
-        Assert.Equal(["true", "half\ttrue", "whole\t1000\t472\t490\t0"], lines);
+        Assert.Equal(["true", "half\ttrue", "whole\t1000\t471\t489\t0"], lines);
     }
 
     [Fact]

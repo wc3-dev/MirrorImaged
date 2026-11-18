@@ -21,9 +21,9 @@ public sealed partial class GameNatives
         var heal = Math.Min(target.MaxLife / seconds * (float)TickSeconds, target.MaxLife - target.Life);
         var share = heal / target.MaxLife * Data.Constant("RepairCostRatio", 0.35f);
         var (gold, lumber) = (target.Type.Integer(Cost) * share, target.Type.Integer(LumberCost) * share);
-        // The price is taken in whole points, as the game's, once a point has built up
+        // The price is taken in whole points, a point at a time as soon as one is owed (the game charged 45 gold and 17 lumber for 44.8 and 16.8)
         worker.RepairOwed = (worker.RepairOwed.Gold + gold, worker.RepairOwed.Lumber + lumber);
-        var (wholeGold, wholeLumber) = ((int)worker.RepairOwed.Gold, (int)worker.RepairOwed.Lumber);
+        var (wholeGold, wholeLumber) = ((int)Math.Ceiling(worker.RepairOwed.Gold), (int)Math.Ceiling(worker.RepairOwed.Lumber));
         if (!CanPay(worker.Owner, wholeGold, wholeLumber)) return Finish(worker);
         if (wholeGold > 0 || wholeLumber > 0)
         {
