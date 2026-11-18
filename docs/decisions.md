@@ -2475,3 +2475,31 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
 - **D401 (repair price, measured):** the game repaired a Barracks from 300 to 1500 life in 74 seconds, 33.3 life every 2 seconds (build time x 1.5), for 45 gold and 17 lumber (35% of 160 and 60 for 80% of its life, rounded up), so D387's ratios are right and the price is now taken a point ahead (rounded up). The game starts about 0.4 s later than MirrorImaged (probes/differences/abilities-repair.txt).
 
 - **D402 (the spells corrected by the game's numbers):** with the probe cleaned (foes paused, the caster's attack at 0, Starfall run apart because its stars reach 2000 away or more) the game gave: Starfall about 50 a wave, a wave about every 1.5 s; Mirror Image one image more than the caster (DataA); Silence is ANsi (not Siphon Mana); Carrion Beetles needs a corpse as target (refused on a probe corpse); and an immediate order must not walk the caster to the point 0, 0 (it did, for any spell with a range). All fixed in the models; they stay Close.
+
+- **D403 (Banish, measured):** Banish puts `BHbn` on its target, a foe or a friend, for the ability's time (a hero's own on a hero): the unit is ethereal (`IsUnitType`) and slower by DataA, and takes a
+  hit of 0 as the buff comes and as its time ends (a buff has an `Ended` action for that, which a dispel does not run). An ethereal unit attacks nothing and its order to attack ends; a unit's attack
+  reaches one only with a weapon of attack type magic; a hit reaches one by attack type magic, or by spells with a damage type other than normal, times the constants' `EtherealDamageBonus`, and every
+  other hit fires DAMAGING alone. The bonus is read from the fourth and sixth of the constant's seven entries (spells and magic), which is this lane's reading of `0,0,0,1.66,0,1.66,0`, both being
+  1.66; without the constant it is 1.66. MirrorImaged gives probe abilities-banish's lines with no difference. Not measured, and left as it was: a swing under way when the buff comes still lands.
+
+- **D404 (three corrections the Banish probe measured):** (1) the attack type's row of the damage table now cuts every damage type, where it cut only normal: 100 of magic at a hero by attack type
+  spells takes 75, and by attack type magic at a footman 200; the armour still cuts normal alone. (2) A unit a buff slows keeps the constants' `MinUnitSpeed` (half of 270 reads 150). (3) A unit whose
+  Attack (`Aatk`) `UnitRemoveAbility` took off attacks nothing, and `UnitAddAbility` gives it back.
+
+- **D405 (Carrion Beetles, measured):** the four orders are handled before the spell's own: `carrionscarabs` goes on only as a target order on a corpse, `carrionscarabsinstant` with no target becomes
+  that order on the nearest corpse within the ability's area, and the autocast orders set a flag on the ability that casts on the nearest corpse whenever it is ready, looked at every 0.25 s (the game
+  cast at once, and in the second its cooldown ended). A body is a corpse once its death time is over, or at once when `CreateCorpse` made it. The beetle's type is DataC's (the game's data has no
+  UnitID for it), DataA of them, with no timed life, and one that would be over DataE of its caster's dies as it comes. MirrorImaged gives probe abilities-beetles's lines with no difference. This
+  lane's choices, not measured: the nearest corpse, and that a hero's or a building's body is no corpse.
+
+- **D406 (Locust Swarm, Close):** DataA locusts of the ability's unit, one every DataB seconds from the effect, hit foes within the ability's area of the caster with their own attack, bring DataD of
+  what four hits took back to the caster, bring what they carry as the ability's time ends, and are removed 1.6 s after it (the game: 1.5 to 2.0). All of that is measured. The rest is a model, as
+  the game's locusts fly about: a locust hits every 3 s (the game's average was 2.8 to 3.3), the first 2 s after it comes out, and is back 1 s after its fourth hit; the foes are taken nearest the
+  caster first, DataC locusts each and the rest of the swarm on the last, which uses DataC by its name (the most swarm units a target has) and was not measured; the locusts stand at their foe or at
+  the caster, and the swarm ends when its caster dies. Four hits is what 120 of 124 of the game's locusts came back with; the 3 with five and the 1 with three are not modelled, and DataE does
+  nothing here. The unit engine leaves a locust alone (`Swarming`).
+
+- **D407 (the three probes):** each runs every case in one map, the cases far enough apart, and prints numbers the game gives the same every run; where the game's own numbers vary (which locust hits
+  whom, and when) the expected lines hold `{t}` and `{w}`, so MirrorImaged is compared there only in form. The casters' mana is filled before each order and the damage tables are read inside one
+  instant, as a caster's mana does not come back in MirrorImaged as it does in the game. Probe abilities-spells's differences file changed with the three models and is recorded again; its casters outside the map
+  (docs/facts.md) are left as they are.
