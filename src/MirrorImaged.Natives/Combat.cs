@@ -89,6 +89,7 @@ public sealed partial class GameNatives
     bool Act(unit u)
     {
         if (u.Constructing || u.Swarming) return false;
+        if (u.Channel is not null) return true;
         if (u.Casting is not null && u.Order != 0 && !u.Paused) return Cast(u);
         var armed = u.Type.Integer(WeaponsOn) != 0;
         var mobile = GetUnitMoveSpeed(u) > 0;
@@ -108,7 +109,7 @@ public sealed partial class GameNatives
         }
         if (order == 0 || order == OrderHold)
         {
-            if (u.AttackTarget is null && armed && scan && Nearest(u, order == OrderHold ? HoldRange(u) : GetUnitAcquireRange(u)) is { } found) Acquired(u, found);
+            if (u.AttackTarget is null && armed && scan && !Sneaks(u) && Nearest(u, order == OrderHold ? HoldRange(u) : GetUnitAcquireRange(u)) is { } found) Acquired(u, found);
             if (u.AttackTarget is { } t) Engage(u, t, chase: order == 0);
             return armed;
         }
@@ -230,6 +231,13 @@ public sealed partial class GameNatives
         var kind = u.Type.Text(Code($"ua{weapon + 1}w")) ?? "normal";
         var ranged = kind is "missile" or "mbounce" or "mline" or "msplash" or "artillery" or "aline" or "alsplash";
         if (ranged && DamageBonusOf(u) is > 0 and var bonus) damage *= 1 + bonus;
+        if (u.Buffs.Find(b => b.Sneaks) is { } wind)
+        {
+            // Wind Walk ends as the attack lands: a hit of 0, then the attack with the buff's damage more (probe abilities-spells)
+            u.Buffs.Remove(wind);
+            UnitDamageTarget(u, t, 0, false, false, Convert<attacktype>(0), Convert<damagetype>(0), Convert<weapontype>(0));
+            damage += wind.Backstab;
+        }
         if (Evades(t, u)) return;
         var stun = false;
         PassivesOfAttack(u, t, ranged, ref damage, ref stun);

@@ -1,44 +1,87 @@
-control level 0 order true id 0 cost 285
-flamestrike level 1 order true id 852488 cost 285
-silence level 1 order true id 852592 cost 285
-windwalk level 1 order true id 852129 cost 285
-carrion level 1 order false id 852551 cost 285
-immolation level 1 order true id 852177 cost 285
-mirror level 1 order true id 852123 cost 285
-earthquake level 1 order true id 852121 cost 285
-banish level 1 order true id 852486 cost 285
-locust level 1 order true id 852556 cost 285
-control +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 1 foes 2
-flamestrike +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 150.7 speed 320.0 own 1 foes 2
-silence +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 0 foes 0
-windwalk +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 210.9 speed 352.0 own 0 foes 0
-carrion +1 near 420.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 2 foes 4
-immolation +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 253.9 speed 320.0 own 1 foes 2
-mirror +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 160.0 speed 320.0 own 2 foes 4
-earthquake +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 0 foes 0
-banish +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 210.7 speed 320.0 own 0 foes 0
-locust +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 135.7 speed 320.0 own 0 foes 0
-control +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 1 foes 2
-flamestrike +3 near 14.7 far 14.7 foe mana 0.0,0.0 caster mana 152.6 speed 320.0 own 1 foes 2
-silence +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 0 foes 0
-windwalk +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 212.8 speed 352.0 own 0 foes 0
-carrion +3 near 420.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 2 foes 4
-immolation +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 241.9 speed 320.0 own 1 foes 2
-mirror +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 161.9 speed 320.0 own 2 foes 4
-earthquake +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 0 foes 0
-banish +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 212.6 speed 320.0 own 0 foes 0
-locust +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 137.6 speed 320.0 own 0 foes 0
-control +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 1 foes 2
-flamestrike +8 near 13.4 far 13.4 foe mana 0.0,0.0 caster mana 157.3 speed 320.0 own 1 foes 2
-silence +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 0 foes 0
-windwalk +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 217.6 speed 352.0 own 0 foes 0
-carrion +8 near 420.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 2 foes 4
-immolation +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 211.6 speed 320.0 own 1 foes 2
-mirror +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 166.7 speed 320.0 own 2 foes 4
-earthquake +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 0 foes 0
-banish +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 217.3 speed 320.0 own 0 foes 0
-locust +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 142.3 speed 320.0 own 0 foes 0
-starfall level 1 order true id 852183 cost 285
-starfall +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 85.7 speed 320.0 own 2 foes 4
-starfall +3 near 99.8 far 49.7 foe mana 0.0,0.0 caster mana 87.6 speed 320.0 own 2 foes 4
-starfall +8 near 248.5 far 198.5 foe mana 0.0,0.0 caster mana 92.3 speed 320.0 own 2 foes 4
+# 3.0.1.24371, 11-18 (spells rerun): the probe's lines as the game gave them, the same in the last two runs but for what is {t} or {w}: which of Mirror Image's two summon events has the image and which of the two places the caster and the image take, when the image and the Wind Walk hero hit, and Starfall's hits. The last run's were: the summon event at +0.68 had the image, the caster at -16, 60 and the image at -16, -196; the image's hits 3 from +2.52 to +5.70; the Wind Walk hero's buff 3.55 s, its hits at +3.75 and from +5.34 to +8.52; Starfall 6, 7, 5, 6 and 6 hits, the first at +0.83 to +2.74.
+flamestrike order t
+silence order t
+windwalk order t
+windwalk effect 0.00 after the order: mana spent 75, duration 20.0 hero 20.0 area 0 range 0 cooldown 5
+windwalk finish +0.00
+windwalk end cast +0.00
+windwalk attacker order t
+windwalk attacker effect 0.00 after the order: mana spent 75, duration 20.0 hero 20.0 area 0 range 0 cooldown 5
+windwalk attacker finish +0.00
+windwalk attacker end cast +0.00
+immolation order t
+immolation effect 0.00 after the order: mana spent 25, duration 1.0 hero 1.0 area 160 range 0 cooldown 0
+immolation finish +0.00
+immolation end cast +0.00
+immolation on little mana order t
+immolation on little mana effect 0.00 after the order: mana spent 25, duration 1.0 hero 1.0 area 160 range 0 cooldown 0
+immolation on little mana finish +0.00
+immolation on little mana end cast +0.00
+mirror order t
+earthquake order t
+flamestrike effect 0.30 after the order: mana spent 135, duration 9.0 hero 2.7 area 200 range 800 cooldown 10
+silence effect 0.30 after the order: mana spent 75, duration 16.0 hero 8.0 area 200 range 900 cooldown 15
+mirror effect 0.30 after the order: mana spent 125, duration 60.0 hero 60.0 area 1000 range 128 cooldown 3
+mirror end cast +0.00
+earthquake effect 0.30 after the order: mana spent 150, duration 25.0 hero 20.0 area 250 range 1000 cooldown 90
+mirror: summon event +0.50 of {w}, illusion {w}, by the caster t, the unit of the event {w}
+mirror: summon event +0.68 of {w}, illusion {w}, by the caster t, the unit of the event {w}
+windwalk +1: speed 352.0 of 320.0, visible to the foe f
+earthquake +1.2: the footman 140 away has speed 150.0 of 270.0 and buff t, the one 330 away 270.0
+flamestrike finish +1.33
+flamestrike end cast +1.33
+mirror +1.5: own units 2, the caster {t}, {t} from its place
+mirror image: Hamg {t}, {t} from the caster's place, illusion t, life 450 of 450, mana as the caster's t, attack ability 1, damage 19 + 2d4
+mirror: 100 of chaos and universal takes 100.0 from the caster and 200.0 from the image
+mirror image: attack order t
+silence finish +2.40
+silence end cast +2.40
+windwalk attacker: hits before it is ordered: no hit; order 0, attack order t
+silence: the Paladin's Divine Shield order under it f, its shield a second later f
+mirror image: its hits {t} of 0.0 from +{t} to +{t} (attack type 6 damage type 4)
+windwalk attacker: buff +0.0 for {t} s
+windwalk attacker: hits 0.0 at +{t} (attack type 0 damage type 0), 90.0 at +{t} (attack type 6 damage type 4), 3 of 50.0 from +{t} to +{t}
+silence: the Paladin's Divine Shield order after its buff t, its shield a second later t
+immolation: mana spent +1.52 35.6 +3.52 49.6 +8.52 84.6
+immolation: off order +9.52 t
+earthquake end cast +9.70
+earthquake: stop order +9.70 t
+immolation at 100: 10 of 10.0 from +0.01 to +9.01 (attack type 0 damage type 8)
+immolation at 160: 10 of 10.0 from +0.01 to +9.01 (attack type 0 damage type 8)
+immolation at 185: 10 of 10.0 from +0.01 to +9.01 (attack type 0 damage type 8)
+immolation at 220: no hit
+immolation at 100, paused: 10.0 at +0.01 (attack type 0 damage type 8)
+immolation: buff +0.0 for 9.50 s, hits after the off order 0, mana spent 91.6
+immolation on little mana: cost 25, buff +0.0 for 2.85 s, under 1 mana left as it went t; at 100: 3 of 10.0 from +0.01 to +2.01 (attack type 0 damage type 8)
+earthquake at 0: 10 of 50.0 from +0.50 to +9.50 (attack type 0 damage type 26)
+earthquake at 448: no hit
+earthquake: hits after the stop 0, the footmen's hits 0, slow +0.5 for 11.00 s
+flamestrike at 0: 9 of 15.0 from +1.33 to +3.97 (attack type 0 damage type 8), 6 of 4.0 from +5.00 to +10.00
+flamestrike at 200: 9 of 15.0 from +1.33 to +3.97 (attack type 0 damage type 8), 6 of 4.0 from +5.00 to +10.00
+flamestrike at 225: 9 of 15.0 from +1.33 to +3.97 (attack type 0 damage type 8), 6 of 4.0 from +5.00 to +10.00
+flamestrike at 260: no hit
+flamestrike at 100, paused: 15.0 at +1.33 (attack type 0 damage type 8)
+control: lost 0.0 and 0.0, hits 0
+control: mana back in 25 s 23.7; foes not where they were made 0
+silence at 0 (the Paladin): buff +0.0 for 8.00 s
+silence at 100: buff +0.0 for 16.00 s
+silence at 200: buff +0.0 for 16.00 s
+silence at 225: buff never
+silence at 260: buff never
+silence at 100, paused: buff +0.0 on
+silence at 100, a footman: buff never
+windwalk: buff +0.0 for 20.00 s, invisible +0.6 for 19.40 s, speed 320.0
+starfall order t
+starfall effect 0.30 after the order: mana spent 200, duration 45.0 hero 30.0 area 1000 range 0 cooldown 180
+starfall end cast +10.20
+starfall: stop order +10.20 t
+starfall at 300: {t} of 50.0 from +{t} to +{t} (attack type 0 damage type 26)
+starfall at 500, paused: {t} of 50.0 from +{t} to +{t} (attack type 0 damage type 26)
+starfall at 800: {t} of 50.0 from +{t} to +{t} (attack type 0 damage type 26)
+starfall at 990: {t} of 50.0 from +{t} to +{t} (attack type 0 damage type 26)
+starfall at 1030: {t} of 50.0 from +{t} to +{t} (attack type 0 damage type 26)
+starfall at 1040: no hit
+starfall at 1200: no hit
+starfall at 2000: no hit
+starfall: hits after the stop 0, foes not where they were made 0
+mirror image: gone +60.55, death events 1

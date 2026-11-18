@@ -3,11 +3,19 @@ using MirrorImaged.World;
 
 namespace MirrorImaged.Natives;
 
+public partial class unit
+{
+    internal bool Illusion;               // an image of Mirror Image
+    internal float Deals = 1, Takes = 1;  // what its hits take and what a hit takes from it, times these (an illusion's)
+    internal Action<bool>? Channel;       // ends the spell it channels: true when its time is over, false when an order broke it
+}
+
 // More abilities (wave 4): the spells of the melee heroes that damage, heal, slow, root, shield or stun, and the auras of the heroes that change armour,
 // speed, attack rate, regeneration, life steal and damage for the allies near. Each reads its numbers from the ability's own data (DataA..DataE by
 // level, its duration, area and range), as the game's tooltips name them. Close: the numbers' meanings are from the tooltips of the game's data and
 // the abilities of channels, summons, passives of an attack's chance (bash, critical strike, evasion), and the transformations are not here
-// (docs/decisions.md, D380).
+// (docs/decisions.md, D380). Flame Strike, Silence, Wind Walk, Immolation, Mirror Image, Earthquake and Starfall are as probe abilities-spells
+// measured them (D408 to D415).
 public sealed partial class GameNatives
 {
     static readonly int InvulnerableBuff = Code("BHds"), RootBuff = Code("BEer"), SleepBuff = Code("BUsl"), FrostArmorBuff = Code("BUfa"), FrostNovaBuff = Code("BUfn"),
@@ -21,8 +29,64 @@ public sealed partial class GameNatives
     void Spell(unit caster, unit target, float amount, int damageType = 14) =>
         UnitDamageTarget(caster, target, amount, false, false, Convert<attacktype>(0), Convert<damagetype>(damageType), Convert<weapontype>(0));
 
+    // The foes in an area: those whose edge is, so a foe's collision size counts (probe abilities-spells: a footman 225 from a Flame Strike of 200
+    // and 185 from an Immolation of 160 burns, a Priest 225 from a Silence of 200 isn't silenced, a footman 1030 from a Starfall of 1000 is hit)
     IEnumerable<unit> Foes(unit caster, float x, float y, float area) =>
-        _units.Values.Where(u => Hostile(caster, u) && Distance2(u.X - x, u.Y - y) <= area * area).ToArray();
+        _units.Values.Where(u => Hostile(caster, u) && MathF.Sqrt(Distance2(u.X - x, u.Y - y)) <= area + u.Type.Real(Collision)).ToArray();
+
+    // A channelled spell (probe abilities-spells: Starfall, Earthquake): its wave comes after the first seconds and then every so many, until the
+    // ability's time is over, the caster dies or it is given another order. The end-cast event fires then, and the finish one only at the time's end
+    void Channelled(unit caster, ability a, double first, double every, Action wave)
+    {
+        var (cast, start, lasts) = (new Happening(caster, Skill: a.Type.Id), _game.Step, Math.Max(Lasts(a, caster), 0.001));
+        Action<bool> end = finished =>
+        {
+            if (finished) FireUnit(cast, UnitSpellFinish, PlayerSpellFinish);
+            FireUnit(cast, UnitSpellEndCast, PlayerSpellEndCast);
+        };
+        caster.Channel = end;
+        for (var n = 0; first + n * every <= lasts; n++)
+            _game.At(start + Game.Steps(first + n * every), () => { if (caster.Channel == end && !caster.Dead) wave(); });
+        _game.At(start + Game.Steps(lasts), () => { if (caster.Channel == end) { EndChannel(caster, true); Finish(caster); } });
+    }
+
+    void EndChannel(unit u, bool finished)
+    {
+        if (u.Channel is not { } end) return;
+        u.Channel = null;
+        end(finished);
+    }
+
+    const float ImmolationSteps = 128;
+
+    // Immolation (probe abilities-spells): on until it is ordered off or the mana is out. DataA to the ground foes in the area the moment it comes
+    // on (0.01 s in) and every duration (a second) after, a paused foe only the first; DataB mana a second, taken evenly (here 128 times a second),
+    // and it goes off when two of those steps can't be paid (the game's went off with 0.10 mana left)
+    void Immolate(unit caster, ability a)
+    {
+        var on = Apply(caster, caster, ImmolationBuff, 0, true, _ => { });
+        var (start, gap, bit, area) = (_game.Step, Field(a, Code("adur")) is > 0 and var seconds ? seconds : 1, Datum(a, 'B') / ImmolationSteps, Field(a, CastArea));
+        bool Burning() => !caster.Dead && caster.Buffs.Contains(on);
+        void Burn(int n) => _game.At(start + Game.Steps(0.01 + n * gap), () =>
+        {
+            if (!Burning()) return;
+            foreach (var near in Foes(caster, caster.X, caster.Y, area <= 0 ? 160 : area).Where(u => !Flies(u) && (n == 0 || !u.Paused))) Spell(caster, near, Datum(a, 'A'), 8);
+            Burn(n + 1);
+        });
+        void Drain(int n) => _game.At(start + Game.Steps(n / ImmolationSteps), () =>
+        {
+            if (!Burning()) return;
+            SetMana(caster, caster.Mana - bit);
+            if (caster.Mana < 2 * bit) caster.Buffs.Remove(on);
+            else Drain(n + 1);
+        });
+        Burn(0);
+        if (bit > 0) Drain(1);
+    }
+
+    // Immolation's off order (probe abilities-spells): true, and it burns no more; false for a unit that isn't burning, which is not measured
+    bool? ImmolationOff(unit u, int order) =>
+        OrderNames.GetValueOrDefault(order) == "unimmolation" ? u.Buffs.RemoveAll(b => b.Id == ImmolationBuff) > 0 : null;
 
     IEnumerable<unit> Friends(unit caster, float x, float y, float area) =>
         _units.Values.Where(u => !u.Dead && !u.Removed && !u.Hidden && !u.Locust && (u.Owner == caster.Owner || IsPlayerAlly(caster.Owner, u.Owner)) && Distance2(u.X - x, u.Y - y) <= area * area).ToArray();
@@ -154,26 +218,35 @@ public sealed partial class GameNatives
                 Summon(caster, a, ix, iy, 1);
                 return true;
             case var id when id == Code("AHfs"):
-                // Flame Strike: DataA at once to the units round the place, then DataB a second while it burns
+                // Flame Strike (probe abilities-spells): from its casting time on, DataA every DataB seconds for the hero duration, then DataC every
+                // DataD seconds until the duration is over, of fire, to the ground foes at the place; a paused one takes the first hit alone
                 var (fx, fy) = target is unit ft ? (ft.X, ft.Y) : x != 0 || y != 0 ? (x, y) : (caster.X, caster.Y);
-                var burn = (int)Lasts(a, caster);
-                foreach (var near in Foes(caster, fx, fy, area <= 0 ? 200 : area).Where(u => !Flies(u))) Spell(caster, near, Datum(a, 'A'));
-                for (var n = 1; n <= burn; n++)
-                    _game.At(_game.Step + Game.Steps(n), () => { if (!caster.Dead) foreach (var near in Foes(caster, fx, fy, area <= 0 ? 200 : area).Where(u => !Flies(u))) Spell(caster, near, Datum(a, 'B')); });
+                var (begins, full, whole) = (Field(a, CastTime), Field(a, Code("ahdu")), Field(a, Code("adur")));
+                void Burn(double at, float amount, bool first) => _game.At(_game.Step + Game.Steps(at), () =>
+                {
+                    if (!caster.Dead) foreach (var near in Foes(caster, fx, fy, area <= 0 ? 200 : area).Where(u => !Flies(u) && (first || !u.Paused))) Spell(caster, near, amount, 8);
+                });
+                var (strong, weak) = (Datum(a, 'B') is > 0 and var b ? b : 1, Datum(a, 'D') is > 0 and var d ? d : 1);
+                for (var n = 0; n * strong <= full; n++) Burn(begins + n * strong, Datum(a, 'A'), n == 0);
+                for (var n = 1; full + n * weak <= whole; n++) Burn(begins + full + n * weak, Datum(a, 'C'), false);
                 return true;
             case var id when id == Code("AEsf"):
-                // Starfall: DataA to the units round the caster every 1.5 seconds for the ability's time (measured: 100 by the third second, about 250 by the eighth)
-                for (var n = 1; n <= Math.Max((int)(Lasts(a, caster) / 1.5), 1); n++)
-                    _game.At(_game.Step + Game.Steps(1.5 * n), () => { if (!caster.Dead) foreach (var near in Foes(caster, caster.X, caster.Y, area <= 0 ? 800 : area)) Spell(caster, near, Datum(a, 'A')); });
+                // Starfall (probe abilities-spells): channelled; DataA to the foes round the caster every DataB seconds. In the game each foe's star
+                // lands at a time of its own, 4 to 7 in 10 s
+                var stars = Datum(a, 'B') is > 0 and var apart ? apart : 1.5f;
+                Channelled(caster, a, stars, stars, () => { foreach (var near in Foes(caster, caster.X, caster.Y, area <= 0 ? 800 : area)) Spell(caster, near, Datum(a, 'A'), 26); });
                 return true;
             case var id when id == Code("ANsi"):
-                // Silence: the enemies round the place can't cast for the ability's time
+                // Silence (probe abilities-spells): the foes at the place that have mana can't cast for the ability's time, a hero for its own. A
+                // footman got no buff; that mana is what decides it is this model's reading
                 var (sx, sy) = target is unit st ? (st.X, st.Y) : x != 0 || y != 0 ? (x, y) : (caster.X, caster.Y);
-                foreach (var near in Foes(caster, sx, sy, area <= 0 ? 300 : area)) Apply(near, caster, SilenceBuff, Lasts(a, near), false, b => b.Silence = true);
+                foreach (var near in Foes(caster, sx, sy, area <= 0 ? 300 : area).Where(u => u.MaxMana > 0)) Apply(near, caster, SilenceBuff, Lasts(a, near), false, b => b.Silence = true);
                 return true;
             case var id when id == Code("AOwk"):
-                // Wind Walk: faster for its time (DataB more speed)
-                Apply(caster, caster, WindWalkBuff, Lasts(a, caster), true, b => b.SpeedFactor = 1 + Datum(a, 'B'));
+                // Wind Walk (probe abilities-spells): DataB faster for its time and unseen by foes from DataA seconds in; the unit attacks nothing by
+                // itself, and the buff ends as its next attack lands, which takes DataC more
+                var wind = Apply(caster, caster, WindWalkBuff, Lasts(a, caster), true, b => (b.SpeedFactor, b.Sneaks, b.Backstab) = (1 + Datum(a, 'B'), true, Datum(a, 'C')));
+                _game.At(_game.Step + Game.Steps(Datum(a, 'A')), () => wind.Invisible = true);
                 return true;
             case var id when id == BeetlesBase && target is unit body && IsCorpse(body):
                 Beetles(caster, a, body);
@@ -189,24 +262,36 @@ public sealed partial class GameNatives
                 Apply(banished, caster, BanishBuff, Lasts(a, banished), false, b => (b.SpeedFactor, b.Ethereal, b.Ended) = (1 - Datum(a, 'A'), true, Nothing));
                 return true;
             case var id when id == Code("AEim"):
-                // Immolation: DataA a second to the foes round the caster for the ability's time (ten seconds without one)
-                for (var n = 1; n <= Math.Max((int)Lasts(a, caster), 10); n++)
-                    _game.At(_game.Step + Game.Steps(n), () => { if (!caster.Dead) foreach (var near in Foes(caster, caster.X, caster.Y, area <= 0 ? 160 : area)) Spell(caster, near, Datum(a, 'A')); });
+                Immolate(caster, a);
                 return true;
             case var id when id == Code("AOmi"):
-                // Mirror Image: DataA copies of the caster stand by it for the ability's time
-                for (var n = 0; n < Math.Max((int)Datum(a, 'A'), 1); n++)
-                    if (Create(caster.Owner, caster.Type.Id, caster.X + 60 * (n + 1), caster.Y, 270, caster.Type.Id) is { } image)
+                // Mirror Image (probe abilities-spells): DataD seconds in, DataA images of the caster stand by it for the ability's time, illusions
+                // of its type with its life and mana, whose hits take DataB of their damage and that lose DataC times a hit. In the game the caster
+                // and its image go to two places near, which of them where changing from run to run; here the caster stays
+                _game.At(_game.Step + Game.Steps(Datum(a, 'D')), () =>
+                {
+                    for (var n = 0; n < Math.Max((int)Datum(a, 'A'), 1) && !caster.Dead && !caster.Removed; n++)
                     {
+                        if (Create(caster.Owner, caster.Type.Id, caster.X + 60 * (n + 1), caster.Y, 270, caster.Type.Id) is not { } image) continue;
+                        (image.Illusion, image.Deals, image.Takes) = (true, Datum(a, 'B'), Datum(a, 'C') is > 0 and var times ? times : 1);
+                        (image.MaxLife, image.MaxMana) = (caster.MaxLife, caster.MaxMana);
+                        SetLife(image, caster.Life);
+                        SetMana(image, caster.Mana);
                         UnitApplyTimedLife(image, Code("BTLF"), Field(a, Code("adur")));
                         FireUnit(new(caster, Other: image, Skill: a.Type.Id), UnitSummon, PlayerUnitSummon);
                     }
+                });
                 return true;
             case var id when id == Code("AOeq"):
-                // Earthquake: DataA a second to the buildings round the place for the ability's time
+                // Earthquake (probe abilities-spells): channelled; from DataA seconds in and every second, the buildings at the place take DataB
+                // and the other foes there are slowed by DataC for two seconds
                 var (qx, qy) = target is unit qt ? (qt.X, qt.Y) : x != 0 || y != 0 ? (x, y) : (caster.X, caster.Y);
-                for (var n = 1; n <= Math.Max((int)Lasts(a, caster), 1); n++)
-                    _game.At(_game.Step + Game.Steps(n), () => { if (!caster.Dead) foreach (var near in Foes(caster, qx, qy, area <= 0 ? 300 : area).Where(IsBuildingNow)) Spell(caster, near, Datum(a, 'A')); });
+                Channelled(caster, a, Datum(a, 'A'), 1, () =>
+                {
+                    foreach (var near in Foes(caster, qx, qy, area <= 0 ? 300 : area))
+                        if (IsBuildingNow(near)) Spell(caster, near, Datum(a, 'B'), 26);
+                        else Apply(near, caster, QuakeBuff, 2, false, slow => slow.SpeedFactor = 1 - Datum(a, 'C'));
+                });
                 return true;
             case var id when id == Code("AHds"):
                 Apply(caster, caster, InvulnerableBuff, Lasts(a, caster), true, b => b.Invulnerable = true);
@@ -257,7 +342,7 @@ public sealed partial class GameNatives
         return true;
     }
 
-    static readonly int WindWalkBuff = Code("BOwk"), SilenceBuff = Code("BNsi"), BanishBuff = Code("BHbn");
+    static readonly int WindWalkBuff = Code("BOwk"), SilenceBuff = Code("BNsi"), BanishBuff = Code("BHbn"), ImmolationBuff = Code("BEim"), QuakeBuff = Code("BOeq");
 
     bool _aurasScheduled;
 

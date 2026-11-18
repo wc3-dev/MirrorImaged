@@ -42,17 +42,17 @@ public sealed class SpellEffectTests : IDisposable
         ("AHre", "resurrection", "A=2;area=900"),
         ("AUin", "inferno", "A=50;area=250;dur=20;unit=hfoo"),
         ("AHab", "", "A=5;area=900"),
-        ("AOeq", "earthquake", "A=20;area=300;dur=3"),
-        ("AEim", "immolation", "A=10;area=200;dur=3"),
-        ("AOmi", "mirrorimage", "A=2;dur=20"),
+        ("AOeq", "earthquake", "A=0.5;B=20;C=0.75;area=300;dur=10"),
+        ("AEim", "immolation", "A=10;B=7;area=200;dur=1"),
+        ("AOmi", "mirrorimage", "A=2;B=0;C=2;D=0.5;dur=20"),
         ("AEah", "", "A=0.5"),
         ("ANsi", "silence", "dur=3;area=300"),
-        ("AOwk", "windwalk", "B=0.5;dur=3"),
+        ("AOwk", "windwalk", "A=0.6;B=0.5;C=40;dur=10"),
         ("AUcb", "carrionscarabs", "A=1;C=hbet;E=3;area=900"),
         ("AHbn", "banish", "A=0.5;dur=12;hdur=4"),
         ("AUls", "locustswarm", "A=5;B=0.2;C=2;D=0.75;area=800;dur=12.5;unit=uloc"),
-        ("AHfs", "flamestrike", "A=100;B=10;area=200;dur=2"),
-        ("AEsf", "starfall", "A=30;area=900;dur=2"),
+        ("AHfs", "flamestrike", "A=15;B=0.33;C=4;D=1;area=200;dur=9;hdur=2.67"),
+        ("AEsf", "starfall", "A=30;B=1.5;area=900;dur=10"),
         ("AHwe", "waterelemental", "A=2;dur=20;unit=hfoo"),
         ("AOsf", "spiritwolf", "B=3;dur=20;unit=hfoo"),
     ];
@@ -284,57 +284,154 @@ public sealed class SpellEffectTests : IDisposable
         Assert.Equal(["raised	4", "inferno	50.0	50.0	5", "brilliance	true"], lines);
     }
 
+    // Probe abilities-spells: 15 every 0.33 s from the casting time on for the hero duration (9 hits), then 4 a second to the duration's end (6), to
+    // the foes whose edge is in the area; a paused foe takes the first hit alone
     [Fact]
-    public void Flame_strike_burns_the_place_and_starfall_hits_foes_round_the_caster_each_second()
+    public void Flame_strike_burns_hard_then_low_the_foes_whose_edge_is_at_the_place()
     {
-        var strike = Run("""
-            local caster, foe, far = make(Player(0)), make(Player(1), 300, 0), make(Player(1), 700, 0)
+        var lines = Run("""
+            local caster, foe, edge, far, paused = make(Player(0)), make(Player(1), 300, 0), make(Player(1), 525, 0), make(Player(1), 300, 260), make(Player(1), 300, -100)
+            PauseUnit(paused, true)
             UnitAddAbility(caster, FourCC("AHfs"))
             IssuePointOrder(caster, "flamestrike", 300, 0)
-            TimerStart(CreateTimer(), 5, false, function() print("strike", f1(1000 - GetWidgetLife(foe)), f1(1000 - GetWidgetLife(far))) end)
-            """, 6);
-        var fall = Run("""
-            local caster, foe = make(Player(0)), make(Player(1), 300, 0)
-            UnitAddAbility(caster, FourCC("AEsf"))
-            IssueImmediateOrder(caster, "starfall")
-            TimerStart(CreateTimer(), 5, false, function() print("fall", f1(1000 - GetWidgetLife(foe))) end)
-            """, 6);
+            local function lost(u) return f1(1000 - GetWidgetLife(u)) end
+            TimerStart(CreateTimer(), 1, false, function() print("at 1", lost(foe)) end)
+            TimerStart(CreateTimer(), 3.5, false, function() print("at 3.5", lost(foe), lost(edge), lost(far), lost(paused)) end)
+            TimerStart(CreateTimer(), 12, false, function() print("at 12", lost(foe), lost(edge), lost(far), lost(paused)) end)
+            """, 13);
 
-        Assert.Equal(["strike	120.0	0.0"], strike);
-        Assert.Equal(["fall	30.0"], fall);
+        Assert.Equal(["at 1\t45.0", "at 3.5\t135.0\t135.0\t0.0\t15.0", "at 12\t159.0\t159.0\t0.0\t15.0"], lines);
     }
 
+    // Probe abilities-spells: a wave every DataB seconds while the caster channels; another order ends it, with the end-cast event
     [Fact]
-    public void Silence_stops_casting_and_wind_walk_speeds_up()
+    public void Starfall_hits_the_foes_round_the_caster_every_wave_until_another_order_ends_it()
     {
         var lines = Run("""
-            local caster, foe, ally = make(Player(0)), make(Player(1), 300, 0), make(Player(1), 300, 100)
+            local caster, foe, edge, far = make(Player(0)), make(Player(1), 300, 0), make(Player(1), 930, 0), make(Player(1), 0, 940)
+            UnitAddAbility(caster, FourCC("AEsf"))
+            local ends, t = 0, CreateTrigger()
+            TriggerRegisterUnitEvent(t, caster, EVENT_UNIT_SPELL_ENDCAST)
+            TriggerAddAction(t, function() ends = ends + 1 end)
+            IssueImmediateOrder(caster, "starfall")
+            local function lost(u) return f1(1000 - GetWidgetLife(u)) end
+            TimerStart(CreateTimer(), 5, false, function()
+                print("channelling", lost(foe), lost(edge), lost(far), ends, GetUnitCurrentOrder(caster) ~= 0)
+                IssueImmediateOrder(caster, "stop")
+            end)
+            TimerStart(CreateTimer(), 9, false, function() print("stopped", lost(foe), ends, GetUnitCurrentOrder(caster)) end)
+            """, 10);
+
+        Assert.Equal(["channelling\t90.0\t90.0\t0.0\t0\ttrue", "stopped\t90.0\t1\t0"], lines);
+    }
+
+    // Probe abilities-spells: only what has mana is silenced (a footman 100 away got no buff), by its edge
+    [Fact]
+    public void Silence_stops_the_foes_with_mana_at_the_place_from_casting()
+    {
+        var lines = Run("""
+            local caster, foe, drained, far = make(Player(0)), make(Player(1), 300, 0), make(Player(1), 300, 100), make(Player(1), 300, -340)
+            BlzSetUnitMaxMana(drained, 0)
             UnitAddAbility(caster, FourCC("ANsi")); UnitAddAbility(foe, FourCC("AHre"))
             IssuePointOrder(caster, "silence", 300, 0)
-            TimerStart(CreateTimer(), 1, false, function() print("silenced", tostring(IssueImmediateOrder(foe, "resurrection"))) end)
-            TimerStart(CreateTimer(), 5, false, function() print("free", tostring(IssueImmediateOrder(foe, "resurrection"))) end)
-            UnitAddAbility(caster, FourCC("AOwk"))
-            TimerStart(CreateTimer(), 5.5, false, function() IssueImmediateOrder(caster, "windwalk") end)
-            TimerStart(CreateTimer(), 6, false, function() print("speed", f1(GetUnitMoveSpeed(caster))) end)
-            """, 7);
+            local function has(u) return GetUnitAbilityLevel(u, FourCC("BNsi")) end
+            TimerStart(CreateTimer(), 1, false, function() print("silenced", tostring(IssueImmediateOrder(foe, "resurrection")), has(foe), has(drained), has(far)) end)
+            TimerStart(CreateTimer(), 5, false, function() print("free", tostring(IssueImmediateOrder(foe, "resurrection")), has(foe)) end)
+            """, 6);
 
-        Assert.Equal(["silenced	false", "free	true", "speed	405.0"], lines);
+        Assert.Equal(["silenced\tfalse\t1\t0\t0", "free\ttrue\t0"], lines);
+    }
+
+    // Probe abilities-spells: faster at once, unseen by a foe from DataA seconds in, no attack of its own, and the buff ends as its ordered attack
+    // lands, which takes a hit of 0 and then DataC more than the weapon's 11
+    [Fact]
+    public void Wind_walk_hides_and_speeds_the_unit_which_attacks_nothing_by_itself_and_ends_it_with_a_harder_hit()
+    {
+        var lines = Run("""
+            local caster, foe = CreateUnit(Player(0), FourCC("hatk"), 0, 0, 0), make(Player(1), 60, 0)
+            PauseUnit(caster, true)
+            UnitAddAbility(caster, FourCC("AOwk"))
+            local hits, t = "", CreateTrigger()
+            TriggerRegisterUnitEvent(t, foe, EVENT_UNIT_DAMAGED)
+            TriggerAddAction(t, function() hits = hits .. " " .. f1(GetEventDamage()) end)
+            local function state() return f1(GetUnitMoveSpeed(caster)) .. " " .. tostring(IsUnitInvisible(caster, Player(1))) .. " " .. tostring(IsUnitInvisible(caster, Player(0))) .. " " .. GetUnitAbilityLevel(caster, FourCC("BOwk")) .. hits end
+            local function at(s, f) TimerStart(CreateTimer(), s, false, f) end
+            at(1, function() PauseUnit(caster, false) IssueImmediateOrder(caster, "windwalk") end)
+            at(1.5, function() print("fading", state()) end)
+            at(2, function() print("unseen", state()) end)
+            at(4, function() print("still", state()) IssueTargetOrder(caster, "attack", foe) end)
+            at(5, function() print("struck", state()) end)
+            """, 6);
+
+        Assert.Equal(["fading\t405.0 false false 1", "unseen\t405.0 true false 1", "still\t405.0 true false 1", "struck\t270.0 false false 0 0.0 51.0"], lines);
+    }
+
+    // Probe abilities-spells: 10 the moment it is on and every second after, 7 mana a second taken evenly, until it is ordered off or the mana is out;
+    // a paused foe takes the first hit alone, and a foe is in reach by its edge. It is cast inside the order's call: 10 and 4.6 s of 7 are gone at 4.6
+    [Fact]
+    public void Immolation_burns_and_takes_mana_until_it_is_ordered_off_or_the_mana_is_out()
+    {
+        var lines = Run("""
+            local caster, foe, edge, far, paused = make(Player(0)), make(Player(1), 100, 0), make(Player(1), 0, 230), make(Player(1), 0, -240), make(Player(1), -100, 0)
+            PauseUnit(paused, true)
+            UnitAddAbility(caster, FourCC("AEim"))
+            local function lost(u) return f1(1000 - GetWidgetLife(u)) end
+            local function state() return lost(foe) .. " " .. lost(edge) .. " " .. lost(far) .. " " .. lost(paused) .. " " .. f1(GetUnitState(caster, UNIT_STATE_MANA)) .. " " .. GetUnitAbilityLevel(caster, FourCC("BEim")) end
+            local function at(s, f) TimerStart(CreateTimer(), s, false, f) end
+            print("off before", tostring(IssueImmediateOrder(caster, "unimmolation")))
+            IssueImmediateOrder(caster, "immolation")
+            at(4.6, function() print("on", state()) print("off", tostring(IssueImmediateOrder(caster, "unimmolation"))) end)
+            at(7, function()
+                print("after", state())
+                SetUnitState(caster, UNIT_STATE_MANA, 24)
+                IssueImmediateOrder(caster, "immolation")
+            end)
+            at(10, function() print("out", state()) end)
+            """, 11);
+
+        Assert.Equal(["off before\tfalse", "on\t50.0 50.0 0.0 10.0 457.8 1", "off\ttrue", "after\t50.0 50.0 0.0 10.0 457.8 0", "out\t70.0 70.0 0.0 20.0 0.1 0"], lines);
+    }
+
+    // Probe abilities-spells: the images come DataD seconds in, illusions with the caster's life and mana that deal DataB of their damage and take
+    // DataC times a hit, and die when the ability's time is over
+    [Fact]
+    public void Mirror_image_makes_illusions_that_deal_nothing_take_double_and_end_with_the_abilitys_time()
+    {
+        var lines = Run("""
+            local caster, foe = CreateUnit(Player(0), FourCC("hatk"), 0, 0, 0), make(Player(1), 2000, 0)
+            SetWidgetLife(caster, 800) SetUnitState(caster, UNIT_STATE_MANA, 300)
+            UnitAddAbility(caster, FourCC("AOmi"))
+            local summons, t = 0, CreateTrigger()
+            TriggerRegisterPlayerUnitEvent(t, Player(0), EVENT_PLAYER_UNIT_SUMMON, nil)
+            TriggerAddAction(t, function() summons = summons + 1 end)
+            local function images()
+                local g, found = CreateGroup(), {}
+                GroupEnumUnitsOfPlayer(g, Player(0), nil)
+                ForGroup(g, function() if GetEnumUnit() ~= caster and UnitAlive(GetEnumUnit()) then found[#found + 1] = GetEnumUnit() end end)
+                DestroyGroup(g)
+                return found
+            end
+            local function at(s, f) TimerStart(CreateTimer(), s, false, f) end
+            IssueImmediateOrder(caster, "mirrorimage")
+            at(0.4, function() print("before", #images(), summons) end)
+            at(1, function()
+                local image = images()[1]
+                print("images", #images(), summons, tostring(IsUnitIllusion(image)), tostring(IsUnitIllusion(caster)), f1(GetWidgetLife(image)), f1(GetUnitState(image, UNIT_STATE_MANA)))
+                UnitDamageTarget(foe, image, 100, false, false, ATTACK_TYPE_CHAOS, DAMAGE_TYPE_UNIVERSAL, WEAPON_TYPE_WHOKNOWS)
+                UnitDamageTarget(foe, caster, 100, false, false, ATTACK_TYPE_CHAOS, DAMAGE_TYPE_UNIVERSAL, WEAPON_TYPE_WHOKNOWS)
+                UnitDamageTarget(image, foe, 100, false, false, ATTACK_TYPE_CHAOS, DAMAGE_TYPE_UNIVERSAL, WEAPON_TYPE_WHOKNOWS)
+                print("hits", f1(GetWidgetLife(image)), f1(GetWidgetLife(caster)), f1(GetWidgetLife(foe)))
+            end)
+            at(20.4, function() print("near the end", #images()) end)
+            at(20.8, function() print("ended", #images()) end)
+            """, 21);
+
+        Assert.Equal(["before\t0\t0", "images\t2\t2\ttrue\tfalse\t800.0\t290.0", "hits\t600.0\t700.0\t1000.0", "near the end\t2", "ended\t0"], lines);
     }
 
     [Fact]
-    public void Immolation_burns_mirror_image_copies_and_thorns_return_melee_damage()
+    public void Thorns_return_melee_damage()
     {
-        var lines = Run("""
-            local caster, foe = make(Player(0)), make(Player(1), 100, 0)
-            UnitAddAbility(caster, FourCC("AEim")); UnitAddAbility(caster, FourCC("AOmi"))
-            IssueImmediateOrder(caster, "immolation")
-            TimerStart(CreateTimer(), 5, false, function() print("burn", f1(1000 - GetWidgetLife(foe))) IssueImmediateOrder(caster, "mirrorimage") end)
-            local function count() local g = CreateGroup() GroupEnumUnitsOfPlayer(g, Player(0), nil) local n = 0 ForGroup(g, function() n = n + 1 end) DestroyGroup(g) return n end
-            TimerStart(CreateTimer(), 7, false, function() print("images", count()) end)
-            """, 8);
-
-        Assert.Equal(["burn	40.0", "images	3"], lines);
-
         var thorns = Run("""
             local target, attacker = make(Player(0)), CreateUnit(Player(1), FourCC("hatk"), 40, 0, 0)
             UnitAddAbility(target, FourCC("AEah"))
@@ -344,17 +441,24 @@ public sealed class SpellEffectTests : IDisposable
         Assert.Equal(["thorns	true"], thorns);
     }
 
+    // Probe abilities-spells: channelled; from DataA seconds in and every second the buildings at the place take DataB and the other foes there are
+    // slowed by DataC for two seconds, and nothing more comes once the caster is ordered to stop
     [Fact]
-    public void Earthquake_hurts_buildings_only()
+    public void Earthquake_hurts_buildings_and_slows_units_at_the_place_while_it_is_channelled()
     {
         var lines = Run("""
-            local caster, foe, hall = make(Player(0)), make(Player(1), 300, 0), CreateUnit(Player(1), FourCC("hbld"), 300, 50, 0)
+            local caster, foe, hall, far = make(Player(0)), make(Player(1), 300, 100), CreateUnit(Player(1), FourCC("hbld"), 300, 0, 0), make(Player(1), 300, 400)
             UnitAddAbility(caster, FourCC("AOeq"))
             IssuePointOrder(caster, "earthquake", 300, 0)
-            TimerStart(CreateTimer(), 6, false, function() print("quake", f1(1000 - GetWidgetLife(foe)), f1(1000 - GetWidgetLife(hall))) end)
-            """, 7);
+            local function state() return f1(1000 - GetWidgetLife(foe)) .. " " .. f1(1000 - GetWidgetLife(hall)) .. " " .. f1(GetUnitMoveSpeed(foe)) .. " " .. GetUnitAbilityLevel(foe, FourCC("BOeq")) .. " " .. f1(GetUnitMoveSpeed(far)) end
+            local function at(s, f) TimerStart(CreateTimer(), s, false, f) end
+            at(0.4, function() print("before", state()) end)
+            at(3.3, function() print("shaking", state()) IssueImmediateOrder(caster, "stop") end)
+            at(4.4, function() print("still slow", state()) end)
+            at(6, function() print("over", state()) end)
+            """, 7, "MinUnitSpeed=150");
 
-        Assert.Equal(["quake	0.0	60.0"], lines);
+        Assert.Equal(["before\t0.0 0.0 270.0 0 270.0", "shaking\t0.0 60.0 150.0 1 270.0", "still slow\t0.0 60.0 150.0 1 270.0", "over\t0.0 60.0 270.0 0 270.0"], lines);
     }
 
     // The constants the game's data has (probe abilities-banish): a slowed unit keeps MinUnitSpeed, magic and spells reach an ethereal unit for 1.66

@@ -1716,4 +1716,74 @@ away unordered, `SetUnitAcquireRange(u, 0)` not being taken (probe `units`), and
   that cast nothing), so what the locusts carry at the end comes back too.
 - Probe `abilities-spells` (above) put six of its eleven casters at x 2000 or 4000 either way, or y 3500, on the probe
   map, whose world ends at 2048: there its counts of units within 700 read "own 0 foes 0". What it gave for Silence,
-  Earthquake, Banish and Locust Swarm was not of units where it looked. Not rerun.
+  Earthquake, Banish and Locust Swarm was not of units where it looked. Rerun as the next section.
+
+### Seven spells with their foes inside the map (probe `abilities-spells`, run again)
+
+3.0.1.24371, 11-18, single player, standard data, each spell at level 1 on an Archmage it was added to (cast point 0.3,
+backswing 2.4, collision 32); ten runs as the probe grew, the last four giving the same lines but where a line says they
+vary. Every caster and foe is inside the map now, nine places 1300 apart and Starfall alone afterwards. The lines the
+probe's first form gave (above) for these spells are replaced by these.
+
+- **A paused unit** takes a spell's first hit and no later one: of Flame Strike's fifteen hits and Immolation's ten a
+  paused footman took one. A buff still comes to it and then stays: a Priest silenced while paused had `BNsi` 25 s
+  later, where a free one lost it after 16.00 s. Starfall's stars hit a paused footman like any other.
+- **A unit that is hurt runs**: free footmen with their Attack taken off (`Aatk`) left their places once Flame Strike,
+  Immolation or Starfall hit them (8 foes of one run strayed; one ran 1100 into another spell's fire).
+  `SetUnitPropWindow(u, 0)` holds a unit where it stands: none strayed after it, and it takes hits and buffs as before.
+- **A spell's area reaches a unit whose edge is in it**: the unit's collision size counts. Flame Strike (area 200)
+  burned footmen (collision 31) 200 and 225 from its place and not one 260 from it; Immolation (160) burned at 160 and
+  185 and not at 220; Silence (200) took Priests (collision 16) at 100 and 200 and not at 225; Starfall (1000), from
+  the middle of the map, hit at 990 and 1030 and not at 1040.
+- **The cast**: the effect event came 0.30 s after the order for Flame Strike, Silence, Mirror Image, Earthquake and
+  Starfall, and inside the order's call for Wind Walk and Immolation, their finish and end-cast events with it. In the
+  effect event the mana was already spent, for all seven (135, 75, 125, 150, 200, 75 and 25), against game-facts' line
+  of 10-14. Finish and end cast came together 1.33 s after the effect for Flame Strike (its `Cast`) and 2.40 s after
+  it for Silence (the Archmage's backswing); Mirror Image had its end cast with the effect and no finish; Earthquake
+  and Starfall had their end cast at the stop order and no finish.
+- **Flame Strike** (`AHfs`; `Cast` 1.33, `Dur` 9, `HeroDur` 2.67, `DataA` 15, `DataB` 0.33, `DataC` 4, `DataD` 1): a
+  footman at the place took 9 hits of 15.0 from 1.33 to 3.97 s after the effect, 0.33 s apart, then 6 of 4.0 from 5.00
+  to 10.00 s, a second apart; attack type 0, damage type fire (8). So the strong hits start at the casting time and go
+  on for the hero duration, and the weak ones follow every `DataD` until the duration is over.
+- **Silence** (`ANsi`; 75 mana, area 200, `Dur` 16, `HeroDur` 8): `BNsi` was on a Paladin at the place for 8.00 s and
+  on Priests for 16.00 s, from the effect. A footman 100 from the place never had it. The Paladin's `divineshield`
+  order answered false under it, with no shield a second later, and true once it was over.
+- **Wind Walk** (`AOwk`; 75 mana, `Dur` 20, `DataA` 0.6, `DataB` 0.1, `DataC` 40): `BOwk` is on for 20.00 s and the
+  speed reads 352 of 320 at once. `IsUnitInvisible` for the foe's player is true from 0.6 s in until the buff ends,
+  and `IsUnitVisible` false a second in, with a foe 300 away. A hero with its attack, and a foe 200 away from 1 s in,
+  did not attack in the next 2 s (its order read 0). Ordered to attack, it lost the buff as the attack went off (0.45
+  to 0.65 s after the order, looked at every 0.05 s; its damage point is 0.55), and the foe (armour 0) took a hit of 0.0 (attack type 0,
+  damage type 0) and one of 90.0 (attack type hero, normal) in the same instant, the hero's own hit being 50, then
+  50.0 every 1.59 s (cooldown 2.13, agility 17, `AgiAttackSpeedBonus` 0.02). In the 0.6 s before it is invisible the
+  hero hit a foe that stood there from the start in two runs of three (50.0 at 0.67 s in one).
+- **Immolation** (`AEim`; 25 mana, `Dur` 1, area 160, `DataA` 10, `DataB` 7): `BEim` is on the caster from the effect.
+  Foes took 10.0 (attack type 0, fire) 0.01 s after the effect and every 1.00 s after. The mana went evenly, 7 a
+  second: 35.64, 49.64 and 84.64 spent at 1.52, 3.52 and 8.52 s, and 91.6 by an off order at 9.52 s. `unimmolation`
+  answered true, the buff was off within 0.05 s and no hit came after. A hero with 45 mana and intelligence 0 burned
+  for 2.85 s, three hits, and went off with 0.10 mana left; one with intelligence 19 for 3.40 s, four hits.
+- **Mirror Image** (`AOmi`; 125 mana, `Dur` 60, `Rng` 128, `DataA` 1, `DataB` 0, `DataC` 2, `DataD` 0.5): two summon
+  events, 0.50 and 0.68 s after the effect: one with the image (`GetSummonedUnit` an illusion of the caster's type)
+  and one whose summoned unit and trigger unit read as none; which came first changed from run to run. 1.5 s in, the
+  caster and its image stood at (-16, 60) and (-16, -196) from where the caster was, which of them where changing too.
+  The image: `IsUnitIllusion` true, the caster's life and mana, an Attack though the caster's was taken off, and its
+  type's damage (19 + 2d4) where the caster's was set to 49 + 1d1. 100 of chaos and universal took 100.0 from the
+  caster and 200.0 from the image; the image's attacks gave damage events of 0.0 (attack type hero, normal). The image
+  was gone 60.0 s after the first summon event, with a death event. The caster's mana read 125 spent where the image's
+  event came second and 126 where it came first, so no mana seems to come back to it while it is away (inferred).
+- **Earthquake** (`AOeq`; 150 mana, `Dur` 25, `HeroDur` 20, area 250, `DataA` 0.5, `DataB` 50, `DataC` 0.75): a Farm at
+  the place took 50.0 (attack type 0, universal) 0.50 s after the effect and every second, ten times before a stop
+  order at 9.70 s and none after; a Farm 448 away none. A footman 140 from the place read speed 150 of 270
+  (`MinUnitSpeed`) with `BOeq`, one 330 away 270; neither was hit. The slow ended 2.00 s after the last wave: 11.50 s
+  in when stopped at 9.70, and 10.50 s in when stopped at 9.30 (its last wave at 8.50).
+- **Starfall** (`AEsf`; 200 mana, `Dur` 45, `HeroDur` 30, area 1000, `DataA` 50, `DataB` 1.5): each foe took 4 to 7
+  hits of 50.0 (attack type 0, universal) in 10.2 s, the first 0.83 to 3.46 s after the effect, at times of its own
+  that change from run to run (one foe: 2.61, 3.34, 4.95, 6.67, 7.91, 9.98). None came after the stop order. Cast 250
+  from the map's west edge it left foes 990, 1000 and 1030 straight east of it alone (three runs) while it hit foes
+  975 to 1000 away at an angle; from the middle of the map it hit foes 990 away on all four sides. Why was not found.
+  The earlier line that it hits foes 2000 or more away is wrong: the probe's units were not where it looked.
+- A hero at 500 mana of 1000 that cast nothing had 23.7 more after 25 s (the Archmage: `umpr` 0.01, intelligence 19,
+  `IntRegenBonus` 0.05).
+- Not measured: which of its two durations ends Earthquake or Starfall by itself (the probe stops both after 10 s);
+  Flame Strike on friends, the caster and buildings, which its targets name; what keeps Silence off a footman (it has
+  no mana, and no spell to cast); what ends Wind Walk but an attack and its time; an `immolation` order while it
+  burns, and `unimmolation` when it doesn't; Mirror Image with more images, and the image of a hurt caster.

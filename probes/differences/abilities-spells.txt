@@ -1,43 +1,26 @@
-# The spells of decisions D395 to D400 and D402, from the standard data, with the game's own numbers (2026-11-18): the models are Close. What differs: the game's caster mana runs a little ahead of the model's (its regeneration and its cast point), Mirror Image's copy hits a foe in the model, and, since D406, the model's Locust Swarm bites foes where the game's did nothing: six of this probe's casters are beyond the map's edge and not where the probe looks (docs/facts.md), so those lines say little.
-- flamestrike +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 150.7 speed 320.0 own 1 foes 2
-+ flamestrike +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 285.0 speed 320.0 own 1 foes 2
-- windwalk +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 210.9 speed 352.0 own 0 foes 0
-+ windwalk +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 210.0 speed 352.0 own 0 foes 0
-- immolation +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 253.9 speed 320.0 own 1 foes 2
-+ immolation +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 260.0 speed 320.0 own 1 foes 2
-- mirror +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 160.0 speed 320.0 own 2 foes 4
-+ mirror +1 near 19.6 far 0.0 foe mana 0.0,0.0 caster mana 160.0 speed 320.0 own 3 foes 4
-- banish +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 210.7 speed 320.0 own 0 foes 0
-+ banish +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 210.0 speed 320.0 own 0 foes 0
-- locust +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 135.7 speed 320.0 own 0 foes 0
-+ locust +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 135.0 speed 320.0 own 0 foes 0
-- flamestrike +3 near 14.7 far 14.7 foe mana 0.0,0.0 caster mana 152.6 speed 320.0 own 1 foes 2
-+ flamestrike +3 near 15.3 far 15.3 foe mana 0.0,0.0 caster mana 150.0 speed 320.0 own 1 foes 2
-- windwalk +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 212.8 speed 352.0 own 0 foes 0
-+ windwalk +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 210.0 speed 352.0 own 0 foes 0
-- immolation +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 241.9 speed 320.0 own 1 foes 2
-+ immolation +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 260.0 speed 320.0 own 1 foes 2
-- mirror +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 161.9 speed 320.0 own 2 foes 4
-+ mirror +3 near 42.0 far 0.0 foe mana 0.0,0.0 caster mana 160.0 speed 320.0 own 3 foes 4
-- banish +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 212.6 speed 320.0 own 0 foes 0
-+ banish +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 210.0 speed 320.0 own 0 foes 0
-- locust +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 137.6 speed 320.0 own 0 foes 0
-+ locust +3 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 135.0 speed 320.0 own 0 foes 0
-- flamestrike +8 near 13.4 far 13.4 foe mana 0.0,0.0 caster mana 157.3 speed 320.0 own 1 foes 2
-+ flamestrike +8 near 15.7 far 15.7 foe mana 0.0,0.0 caster mana 150.0 speed 320.0 own 1 foes 2
-- windwalk +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 217.6 speed 352.0 own 0 foes 0
-+ windwalk +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 210.0 speed 352.0 own 0 foes 0
-- immolation +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 211.6 speed 320.0 own 1 foes 2
-+ immolation +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 260.0 speed 320.0 own 1 foes 2
-- mirror +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 166.7 speed 320.0 own 2 foes 4
-+ mirror +8 near 83.0 far 0.0 foe mana 0.0,0.0 caster mana 160.0 speed 320.0 own 3 foes 4
-- banish +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 217.3 speed 320.0 own 0 foes 0
-+ banish +8 near 0.0 far 168.8 foe mana 0.0,0.0 caster mana 210.0 speed 320.0 own 0 foes 0
-- locust +8 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 142.3 speed 320.0 own 0 foes 0
-+ locust +8 near 83.9 far 0.0 foe mana 0.0,0.0 caster mana 135.0 speed 320.0 own 0 foes 0
-- starfall +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 85.7 speed 320.0 own 2 foes 4
-+ starfall +1 near 0.0 far 0.0 foe mana 0.0,0.0 caster mana 85.0 speed 320.0 own 2 foes 4
-- starfall +3 near 99.8 far 49.7 foe mana 0.0,0.0 caster mana 87.6 speed 320.0 own 2 foes 4
-+ starfall +3 near 50.0 far 50.0 foe mana 0.0,0.0 caster mana 85.0 speed 320.0 own 2 foes 4
-- starfall +8 near 248.5 far 198.5 foe mana 0.0,0.0 caster mana 92.3 speed 320.0 own 2 foes 4
-+ starfall +8 near 250.0 far 250.0 foe mana 0.0,0.0 caster mana 85.0 speed 320.0 own 2 foes 4
+# The seven spells of probe abilities-spells (decisions D408 to D415), from the standard data, with the game's own numbers (2026-11-18). What differs is not in the spells' models: MirrorImaged's cast comes a tick or two after the order, or after the ability's casting time (Flame Strike's 1.33 s), where the game's comes at the caster's cast point (0.30 s), and its finish and end cast come with the effect, where the game's come after the casting time (Flame Strike) or the caster's backswing (Silence, 2.40 s); the game fires a second summon event for Mirror Image; a hero's agility doesn't quicken its attacks and a missile takes no time to fly, so the Wind Walk hero's hits come at other times and one fewer; no mana comes back to a hero; and a paused unit's buff ends.
+- flamestrike effect 0.30 after the order: mana spent 135, duration 9.0 hero 2.7 area 200 range 800 cooldown 10
++ silence effect 0.04 after the order: mana spent 75, duration 16.0 hero 8.0 area 200 range 900 cooldown 15
+- silence effect 0.30 after the order: mana spent 75, duration 16.0 hero 8.0 area 200 range 900 cooldown 15
++ silence finish +0.00
+- mirror effect 0.30 after the order: mana spent 125, duration 60.0 hero 60.0 area 1000 range 128 cooldown 3
++ silence end cast +0.00
++ mirror effect 0.04 after the order: mana spent 125, duration 60.0 hero 60.0 area 1000 range 128 cooldown 3
+- earthquake effect 0.30 after the order: mana spent 150, duration 25.0 hero 20.0 area 250 range 1000 cooldown 90
++ earthquake effect 0.04 after the order: mana spent 150, duration 25.0 hero 20.0 area 250 range 1000 cooldown 90
+- mirror: summon event +0.68 of {w}, illusion {w}, by the caster t, the unit of the event {w}
+- flamestrike finish +1.33
++ flamestrike effect 1.36 after the order: mana spent 135, duration 9.0 hero 2.7 area 200 range 800 cooldown 10
+- flamestrike end cast +1.33
++ flamestrike finish +0.00
++ flamestrike end cast +0.00
+- silence finish +2.40
+- silence end cast +2.40
+- windwalk attacker: hits 0.0 at +{t} (attack type 0 damage type 0), 90.0 at +{t} (attack type 6 damage type 4), 3 of 50.0 from +{t} to +{t}
++ windwalk attacker: hits 0.0 at +3.56 (attack type 0 damage type 0), 90.0 at +3.56 (attack type 6 damage type 4), 2 of 50.0 from +5.72 to +7.87
+- control: mana back in 25 s 23.7; foes not where they were made 0
++ control: mana back in 25 s 0.0; foes not where they were made 0
+- silence at 100, paused: buff +0.0 on
++ silence at 100, paused: buff +0.0 for 16.00 s
+- starfall effect 0.30 after the order: mana spent 200, duration 45.0 hero 30.0 area 1000 range 0 cooldown 180
++ starfall effect 0.04 after the order: mana spent 200, duration 45.0 hero 30.0 area 1000 range 0 cooldown 180
