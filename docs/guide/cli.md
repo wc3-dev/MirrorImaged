@@ -2,6 +2,9 @@
 
 `mirror <command> ...` exits 0 when it did what it was asked, 1 when a run failed or a test failed, and 2 with the usage when its arguments are wrong.
 
+On a terminal the output is coloured, a spinner turns while a map loads or runs, `mirror coverage` draws a bar chart and `mirror check` a table. Piped or redirected,
+the output is plain text with no colour, for scripts and CI to read.
+
 | Command | What it does |
 | ------- | ------------ |
 | `mirror coverage` | How many natives are at each trust level, and which are Missing |
