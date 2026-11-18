@@ -1,4 +1,4 @@
-# 3.0.1.24371, 11-19 (lane engine-timing): the probe's lines as the game gave them, the same in two runs; {t} is when Mirror Image's last summon event came, 0.61 to 0.68 s after the effect over five runs.
+# 3.0.1.24371, 11-19 (lane engine-timing): the probe's lines as the game gave them, the same in two runs; {t} is when Mirror Image's last summon event came, 0.66 to 0.68 s after the effect over seven runs.
 silence, move 1 s after the order: move t, 0.5 s later it is 134 from its place
 silence, stop 0.15 s after the order: stop t, cooldown left 5 s in 0.0
 silence, stop 1 s after the order: stop t, cooldown left 5 s in 10.3

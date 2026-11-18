@@ -30,6 +30,7 @@ public sealed partial class GameNatives
         if (BeetlesOrder(whichUnit, ref order, ref x, ref y, ref target, ref kind) is { } answer) return answer;
         if (ImmolationOff(whichUnit, order) is { } off) return off;
         if (Spell(whichUnit, order, out var spell) && spell is null) return false;
+        whichUnit.Given++;
         BreakCast(whichUnit);
         whichUnit.Casting = spell;
         EndChannel(whichUnit, false);

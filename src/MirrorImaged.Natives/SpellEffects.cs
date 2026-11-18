@@ -270,7 +270,7 @@ public sealed partial class GameNatives
                 // of its type with its life and mana, whose hits take DataB of their damage and that lose DataC times a hit. In the game the caster
                 // and its image go to two places near, which of them where changing from run to run; here the caster stays. A summon event fires
                 // for each image and one more with no summoned unit (probe abilities-cast-timing: 2, 3 and 4 events at levels 1 to 3), the first
-                // DataD in and the last 0.11 to 0.18 s later, which of them is the one without changing; here the images' come first and it last
+                // DataD in and the last 0.16 to 0.18 s later, which of them is the one without changing; here the images' come first and it last
                 _game.At(_game.Step + Game.Steps(Datum(a, 'D')), () =>
                 {
                     for (var n = 0; n < Math.Max((int)Datum(a, 'A'), 1) && !caster.Dead && !caster.Removed; n++)

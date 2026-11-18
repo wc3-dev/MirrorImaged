@@ -62,7 +62,7 @@ public sealed partial class GameNatives
     /// one that passes it, and the unit's mana again a frame later if it still passes and didn't at the last frame (here
     /// the next step); never for EQUAL, NOT_EQUAL or the most life and mana, nor for a unit that already passes when
     /// registered (probes units-more and units-more-2). Close: the game's frame comes 0.005 s later, and its
-    /// regeneration, which can pass a limit, comes with combat (wave 3).
+    /// regeneration can pass a limit, which the mana that comes back here doesn't fire (Regeneration.cs).
     /// </summary>
     [Native(Level.Close)]
     public @event? TriggerRegisterUnitStateEvent(trigger? whichTrigger, unit? whichUnit, unitstate? whichState, limitop? opcode, float limitval)

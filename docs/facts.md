@@ -1787,3 +1787,76 @@ probe's first form gave (above) for these spells are replaced by these.
   Flame Strike on friends, the caster and buildings, which its targets name; what keeps Silence off a footman (it has
   no mana, and no spell to cast); what ends Wind Walk but an attack and its time; an `immolation` order while it
   burns, and `unimmolation` when it doesn't; Mirror Image with more images, and the image of a hurt caster.
+
+### Engine timing: casts, attacks, missiles, mana and paused buffs (probes `abilities-cast-timing`, `units-attack-timing`, `heroes-mana-regeneration`)
+
+3.0.1.24371, 11-19, single player, standard data, level 1; the cast probe seven runs, the attack probe four, the mana
+probe two, the last two of each giving the same lines but where a line says they vary. Every case stands at a place of
+its own 450 apart. Times are to 0.01 s.
+
+- **A cast's events.** With the caster in range and facing its target, the channel and cast events fire inside the
+  order's call. The effect event comes the caster's cast point later, with the mana spent, and the finish and end-cast
+  events together the caster's backswing after the effect. Silence from an Archmage (cast point 0.30, backswing 2.40):
+  effect +0.30, finish and end cast +2.70. With `BlzSetUnitRealField(u, UNIT_RF_CAST_POINT, v)`: 0 gave the effect
+  inside the call and finish +2.40, 0.1 gave +0.10 and +2.50, 0.75 gave +0.75 and +3.15. With
+  `UNIT_RF_CAST_BACK_SWING` set to 0, 0.5 and 1: finish +0.30, +0.80 and +1.30. Other types by their own numbers: a
+  Paladin (0.50, 1.67) +0.50 and +2.17, a Mountain King (0.40, 0.50) +0.40 and +0.90, a Blood Mage (0.30, 2.40) +0.30
+  and +2.70, a Death Knight (0.45, 1.01) +0.45 and +1.46, a Far Seer (0.30, 1.07) +0.30 and +1.37, a Demon Hunter
+  (0.30, 0.47) +0.30 and +0.77, a Priest (0.50, 0.67) +0.50 and +1.17, a Sorceress (0.45, 1.08) +0.45 and +1.53, a
+  Shade (0.50, 0.51) +0.50 and +1.01. Holy Light on a unit and Thunder Clap with no target went the same way.
+- **A casting time** takes the backswing's place: Flame Strike (`Cast` 1.33) had its effect event +0.30 and its
+  finish, end cast and first fire +1.63, the same with the backswing set to 0.5 and to 3; with the cast point 0.75,
+  +0.75 and +2.08.
+- **Another order ends a cast.** A `stop` 0.15 s after the order, before the cast point: the end-cast event at +0.15,
+  no effect, no mana spent, no cooldown 5 s later. A `stop` or a `move` 1 s in, in the backswing: the effect at +0.30,
+  end cast at +1.00, no finish, the mana spent and the cooldown running; the unit that was told to move was 134 away
+  half a second later. Flame Strike stopped 1 s in, inside its casting time: end cast at +1.00, no finish, 135 mana
+  spent and no fire at all.
+- **Turning.** An Archmage told to cast on a place straight behind it had its channel and cast events 0.21 s after
+  the order, not in the call, and everything else that much later.
+- **Storm Bolt's missile** (`AHtb`, missile speed 1000, from a Mountain King): its hit of 0 and its 100 came 0.20, 0.40
+  and 0.58 s after the effect on foes 200, 400 and 600 away; at 400 with `ABILITY_IF_MISSILE_SPEED` set to 500, 0.80,
+  and to 2000, 0.20. A third hit of 0 came 5.02 s after the first two on each (its stun is 5 s on a unit); its types
+  were not read.
+- **Mirror Image's summon events.** At levels 1, 2 and 3 (`SetUnitAbilityLevel`): 2, 3 and 4 player summon events
+  with the caster as the summoning unit, one for each image and one whose summoned unit is none. The first came 0.50 s
+  after the effect each time and the last 0.66 to 0.68 s after it, the others between, from 0.61. The cast had its end cast with the effect and no
+  finish at every level. An image attacks a foe within reach by itself, for 0.
+- **A paused unit's buff** stands still. Silence, 16 s on a Priest: on a free one it ended 16.0 s after the effect; on
+  one paused before the cast and freed 20 s after the effect, 36.0 s after; on one paused 4 s after the effect and
+  freed at 20 s, 32.0 s after; on one never freed it was still on 44.7 s after.
+- **Agility and the attack rate.** A Paladin (cooldown 2.20, damage point 0.433) hit every 2.200 s at agility 0,
+  1.833 at 10, 1.746 at 13, 1.467 at 25, 1.100 at 50, 0.733 at 100, 0.550 at 150, and 0.440 at 200, 250 and 400: the
+  cooldown over 1 + 0.02 x agility (`AgiAttackSpeedBonus`), five times at most. A Blademaster (1.77): 1.770, 1.106 and
+  0.590 at 0, 30 and 100. The damage point is divided the same way: the Paladin's hit came 0.43 s after the attacked
+  event at agility 0, 0.36 at 10, 0.22 at 50, 0.14 at 100 and 0.09 from 200 up. `BlzGetUnitAttackCooldown` and the
+  damage point field read the type's numbers at every agility. A footman hit every 1.350 s, an archer every 1.500,
+  with no step of the engine in them: the gaps were the same to 0.01 s over 24 s.
+- **The first swing** after an attack order on a foe in range began 0.03 to 0.27 s later, in steps of 0.03,
+  differently for each unit and each run.
+- **A missile's flight.** The time from the attacked event to the hit is the damage point and a flight of the way
+  between the two units, less the attacker's `launchY`, over the missile's speed. An archer (damage point 0.72, speed
+  900, `launchY` 62): 0.72 at 100 and 150, 0.87 at 200, 0.93 at 250, 0.98 at 300, 1.04 at 350, 1.10 at 400, 1.15 at 450,
+  1.21 at 500; at 400 with `UNIT_WEAPON_RF_ATTACK_PROJECTILE_SPEED` set to 300, 450 and 1800: 1.85, 1.47 and 0.91; the
+  arc set to 0 or 0.5 changed nothing (1.10). An Archmage (0.55, 900, `launchY` 0): 0.66, 0.77, 0.88, 0.99, 1.11 and
+  1.22 at 100 to 600. A headhunter (0.31, 1200, `launchY` -34): 0.50 at 200 and 0.67 at 400. So a way of 88 or less
+  (the archer at 150) lands with the damage point, and one of 100 (the Archmage at 100) flies. A Priest (0.59, 900,
+  `launchY` 0) took 0.84 and 1.06 at 200 and 400, and a Sorceress (0.75) 1.00 and 1.22: 0.03 s more than that
+  gives, for which no reason was found. A rifleman (weapon type instant) hit 0.17 s after the attacked event at 400,
+  its damage point.
+- **A unit made on another unit's place** is put beside it: in the attack probe's first form a foe made 450 from its
+  attacker, where the next attacker stood, was 406 from it, and others 532, 462, 374 and 366 for 500, 500, 400 and 400.
+- **Mana that comes back.** Archmages (the type's `umpr` 0.01) with `SetHeroInt`: at intelligence 0, 0.00 in 10, 20
+  and 30 s; at 1, 0.50, 1.00 and 1.50; at 10, 5.00, 10.00 and 15.00; at 19, 9.50, 19.00 and 28.50; at 40, 20.00, 39.99
+  and 59.99; at 100, 50.00, 99.99 and 149.98; at 300, 149.99, 299.96 and 449.94. So 0.05 a second for each point
+  (`IntRegenBonus`), the type's own regeneration not counting, and about 0.013% less than that over time. A Paladin and
+  a Death Knight (17) 8.50 every 10 s, a Blood Mage and a Far Seer (19) 9.50, a Lich (20) 10.00, a Demon Hunter (16)
+  8.00. Units that are not heroes regain their type's regeneration: a Priest and a Sorceress (0.67) 6.67, 13.33 and
+  20.00; an Obsidian Statue (1.50) 15.00, 30.00 and 44.99; a medicine man (`nmed`, 0.50) 5.00, 10.00 and 15.00. A
+  paused Archmage got none back, a hidden one 9.50 every 10 s as a shown one, and one at its most stayed there.
+- A Priest of the caster's player healed a hero that a neighbour's Flame Strike had burned (its Heal casts by
+  itself), so Flame Strike seems to burn its caster's own units; inferred, the probe did not look.
+- Not measured: what decides the first swing's delay; the 0.03 s of the Priest's and the Sorceress's missiles; a
+  missile to or from a flier or over a cliff, and one whose target walks; whether a buff's attack speed adds to
+  agility's before the cap of five; the turn's time by its angle; why the mana falls 0.013% short; life that comes
+  back; the types of Storm Bolt's third hit.

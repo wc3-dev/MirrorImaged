@@ -7,6 +7,7 @@ public partial class unit
 {
     internal ability? Casting;      // the ability its current order casts
     internal Happening? Cast;       // the cast under way, from its channel event until its end cast; null while the unit walks into range
+    internal int Given;             // how many orders it has been given, so that a cast's end tells an order given inside its last event
 }
 
 // The cast flow (probe abilities-cast-timing; decisions D450, D451): an order whose name is the Order of an ability the unit has is a spell order,
@@ -61,11 +62,16 @@ public sealed partial class GameNatives
         if (cast is not null && !u.Removed) FireUnit(cast, UnitSpellEndCast, PlayerSpellEndCast);
     }
 
-    // The next part of a cast, the seconds later, unless the cast was ended before; a paused caster's waits until it is free, and a dead one's is over
+    // Where the casts' steps come among what is due in one instant: after the rest, in the order the units were made
+    const long CastPlace = 1L << 60;
+
+    // The next part of a cast, the seconds later, unless the cast was ended before; a paused caster's waits until it is free, and a dead one's is over.
+    // Casts due in the same instant go on in the order their units were made, not the order of their orders (probe abilities-beetles: of two heroes
+    // ordered in one instant, the one made first had its effect first, though it was ordered second)
     void Later(unit u, Happening cast, double seconds, Action next)
     {
         if (Game.Steps(seconds) <= 0) { next(); return; }
-        _game.At(_game.Step + Game.Steps(seconds), () =>
+        _game.At(_game.Step + Game.Steps(seconds), CastPlace + u.Id, () =>
         {
             if (u.Cast != cast) return;
             if (u.Dead || u.Removed) BreakCast(u);
@@ -99,8 +105,9 @@ public sealed partial class GameNatives
         var cooldown = Field(ability, Cooldown);
         if (u.Mana < cost || u.Dead)
         {
+            var given = u.Given;
             BreakCast(u);
-            Finish(u);
+            if (u.Given == given) Finish(u);
             return;
         }
         SetMana(u, u.Mana - cost);
@@ -115,23 +122,23 @@ public sealed partial class GameNatives
             return;
         }
         Effect(u, ability, cast.PointX, cast.PointY, cast.Target);
+        // A channelled spell keeps its order, and its own end fires the last events (SpellEffects: Channelled)
+        if (u.Cast == cast && u.Channel is not null) (u.Casting, u.Cast) = (null, null);
         // Mirror Image's cast ends with its effect (probe abilities-cast-timing)
         if (u.Cast == cast) Later(u, cast, instant || ability.Type.BaseId == MirrorImage ? 0 : Own(u, CastBackswing, u.Type.Real(CastBackswing)), () => Done(u, ability, cast));
     }
 
-    // The cast's end: the finish and end-cast events, and the unit is idle. A channelled spell keeps its order, and its own end fires them
-    // (SpellEffects: Channelled); Mirror Image's cast has no finish event (probe abilities-spells)
+    // The cast's end: the finish and end-cast events, and the unit is idle unless one of them gave it an order. A spell that began to channel
+    // after its casting time keeps its order; Mirror Image's cast has no finish event (probe abilities-spells)
     void Done(unit u, ability ability, Happening cast)
     {
         if (u.Cast != cast) return;
         if (u.Channel is not null) { (u.Casting, u.Cast) = (null, null); return; }
         if (ability.Type.BaseId != MirrorImage) FireUnit(cast, UnitSpellFinish, PlayerSpellFinish);
         if (u.Cast != cast) return;
-        u.Cast = null;
-        FireUnit(cast, UnitSpellEndCast, PlayerSpellEndCast);
-        if (u.Cast is not null || u.Casting != ability) return;
-        u.Casting = null;
-        if (Finish(u)) Wake();
+        var given = u.Given;
+        BreakCast(u);
+        if (u.Given == given && Finish(u)) Wake();
     }
 
     // How long a buff of the ability lasts on the unit: its duration, a hero's own where it has one

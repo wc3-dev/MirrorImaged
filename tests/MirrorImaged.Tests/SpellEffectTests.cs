@@ -310,6 +310,7 @@ public sealed class SpellEffectTests : IDisposable
         var lines = Run("""
             local caster, foe, edge, far = make(Player(0)), make(Player(1), 300, 0), make(Player(1), 930, 0), make(Player(1), 0, 940)
             UnitAddAbility(caster, FourCC("AEsf"))
+            BlzSetUnitRealField(caster, UNIT_RF_CAST_BACK_SWING, 8)
             local ends, t = 0, CreateTrigger()
             TriggerRegisterUnitEvent(t, caster, EVENT_UNIT_SPELL_ENDCAST)
             TriggerAddAction(t, function() ends = ends + 1 end)
@@ -393,7 +394,7 @@ public sealed class SpellEffectTests : IDisposable
     }
 
     // Probe abilities-spells: the images come DataD seconds in, illusions with the caster's life and mana that deal DataB of their damage and take
-    // DataC times a hit, and die when the ability's time is over
+    // DataC times a hit, and die when the ability's time is over. Probe abilities-cast-timing: a summon event for each image and one with no unit
     [Fact]
     public void Mirror_image_makes_illusions_that_deal_nothing_take_double_and_end_with_the_abilitys_time()
     {
@@ -401,9 +402,9 @@ public sealed class SpellEffectTests : IDisposable
             local caster, foe = CreateUnit(Player(0), FourCC("hatk"), 0, 0, 0), make(Player(1), 2000, 0)
             SetWidgetLife(caster, 800) SetUnitState(caster, UNIT_STATE_MANA, 300)
             UnitAddAbility(caster, FourCC("AOmi"))
-            local summons, t = 0, CreateTrigger()
+            local summons, unitless, t = 0, 0, CreateTrigger()
             TriggerRegisterPlayerUnitEvent(t, Player(0), EVENT_PLAYER_UNIT_SUMMON, nil)
-            TriggerAddAction(t, function() summons = summons + 1 end)
+            TriggerAddAction(t, function() summons = summons + 1 if GetSummonedUnit() == nil and GetSummoningUnit() == caster then unitless = unitless + 1 end end)
             local function images()
                 local g, found = CreateGroup(), {}
                 GroupEnumUnitsOfPlayer(g, Player(0), nil)
@@ -422,11 +423,11 @@ public sealed class SpellEffectTests : IDisposable
                 UnitDamageTarget(image, foe, 100, false, false, ATTACK_TYPE_CHAOS, DAMAGE_TYPE_UNIVERSAL, WEAPON_TYPE_WHOKNOWS)
                 print("hits", f1(GetWidgetLife(image)), f1(GetWidgetLife(caster)), f1(GetWidgetLife(foe)))
             end)
-            at(20.4, function() print("near the end", #images()) end)
+            at(20.4, function() print("near the end", #images(), unitless) end)
             at(20.8, function() print("ended", #images()) end)
             """, 21);
 
-        Assert.Equal(["before\t0\t0", "images\t2\t3\ttrue\tfalse\t800.0\t290.0", "hits\t600.0\t700.0\t1000.0", "near the end\t2", "ended\t0"], lines);
+        Assert.Equal(["before\t0\t0", "images\t2\t3\ttrue\tfalse\t800.0\t290.0", "hits\t600.0\t700.0\t1000.0", "near the end\t2\t1", "ended\t0"], lines);
     }
 
     [Fact]
@@ -607,7 +608,7 @@ public sealed class SpellEffectTests : IDisposable
             """, 61);
 
         Assert.Equal(["fresh\tfalse false false", "fresh\tfalse false false", "effect\ttrue\t490.0", "corpse\ttrue false false", "summon\ttrue\ttrue", "1\t0\tnone\tfalse false false",
-            "made\ttrue", "effect\tfalse\t480.0", "summon\ttrue\ttrue", "cooling\tfalse", "2"], lines);
+            "effect\tfalse\t480.0", "made\ttrue", "summon\ttrue\ttrue", "cooling\tfalse", "2"], lines);
     }
 
     [Fact]
