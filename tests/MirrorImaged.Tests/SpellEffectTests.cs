@@ -46,7 +46,7 @@ public sealed class SpellEffectTests : IDisposable
         ("AEim", "immolation", "A=10;area=200;dur=3"),
         ("AOmi", "mirrorimage", "A=2;dur=20"),
         ("AEah", "", "A=0.5"),
-        ("ANsi", "drain", "A=10;dur=3"),
+        ("ANsi", "silence", "dur=3;area=300"),
         ("AOwk", "windwalk", "B=0.5;dur=3"),
         ("AUcb", "carrionscarabs", "A=2;dur=20;unit=hfoo"),
         ("AHfs", "flamestrike", "A=100;B=10;area=200;dur=2"),
@@ -297,24 +297,27 @@ public sealed class SpellEffectTests : IDisposable
             """, 6);
 
         Assert.Equal(["strike	120.0	0.0"], strike);
-        Assert.Equal(["fall	60.0"], fall);
+        Assert.Equal(["fall	30.0"], fall);
     }
 
     [Fact]
-    public void Siphon_mana_moves_mana_wind_walk_speeds_up_and_carrion_beetles_summon()
+    public void Silence_stops_casting_wind_walk_speeds_up_and_carrion_beetles_rise_from_a_corpse()
     {
         var lines = Run("""
-            local caster, foe = make(Player(0)), make(Player(1), 300, 0)
-            SetUnitState(caster, UNIT_STATE_MANA, 100)
-            UnitAddAbility(caster, FourCC("ANsi")); UnitAddAbility(caster, FourCC("AOwk")); UnitAddAbility(caster, FourCC("AUcb"))
-            IssueTargetOrder(caster, "drain", foe)
-            TimerStart(CreateTimer(), 5, false, function() print("siphon", f1(GetUnitState(caster, UNIT_STATE_MANA)), f1(GetUnitState(foe, UNIT_STATE_MANA))) IssueImmediateOrder(caster, "windwalk") end)
-            TimerStart(CreateTimer(), 5.5, false, function() print("speed", f1(GetUnitMoveSpeed(caster))) IssuePointOrder(caster, "carrionscarabs", 0, 100) end)
+            local caster, foe, ally = make(Player(0)), make(Player(1), 300, 0), make(Player(1), 300, 100)
+            UnitAddAbility(caster, FourCC("ANsi")); UnitAddAbility(foe, FourCC("AHre"))
+            IssuePointOrder(caster, "silence", 300, 0)
+            TimerStart(CreateTimer(), 1, false, function() print("silenced", tostring(IssueImmediateOrder(foe, "resurrection"))) end)
+            TimerStart(CreateTimer(), 5, false, function() print("free", tostring(IssueImmediateOrder(foe, "resurrection"))) end)
+            UnitAddAbility(caster, FourCC("AOwk")); UnitAddAbility(caster, FourCC("AUcb"))
+            TimerStart(CreateTimer(), 5.5, false, function() IssueImmediateOrder(caster, "windwalk") end)
+            TimerStart(CreateTimer(), 6, false, function() print("speed", f1(GetUnitMoveSpeed(caster))) KillUnit(ally) end)
+            TimerStart(CreateTimer(), 6.5, false, function() IssueTargetOrder(caster, "carrionscarabs", ally) end)
             local function count() local g = CreateGroup() GroupEnumUnitsOfPlayer(g, Player(0), nil) local n = 0 ForGroup(g, function() n = n + 1 end) DestroyGroup(g) return n end
-            TimerStart(CreateTimer(), 7, false, function() print("beetles", count()) end)
-            """, 8);
+            TimerStart(CreateTimer(), 8, false, function() print("beetles", count()) end)
+            """, 9);
 
-        Assert.Equal(["siphon	120.0	470.0", "speed	405.0", "beetles	3"], lines);
+        Assert.Equal(["silenced	false", "free	true", "speed	405.0", "beetles	3"], lines);
     }
 
     [Fact]

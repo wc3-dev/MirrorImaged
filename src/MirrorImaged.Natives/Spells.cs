@@ -36,7 +36,7 @@ public sealed partial class GameNatives
     float Field(ability a, int field) => BlzGetAbilityRealLevelField(a, Convert<abilityreallevelfield>(field), a.Level - 1);
 
     // Whether the unit can start the spell: alive, the mana, no cooldown running
-    bool Ready(unit u, ability a) => !u.Dead && CooldownLeft(a) <= 0 && u.Mana >= BlzGetAbilityIntegerLevelField(a, Convert<abilityintegerlevelfield>(ManaCost), a.Level - 1);
+    bool Ready(unit u, ability a) => !u.Dead && !u.Buffs.Any(b => b.Silence) && CooldownLeft(a) <= 0 && u.Mana >= BlzGetAbilityIntegerLevelField(a, Convert<abilityintegerlevelfield>(ManaCost), a.Level - 1);
 
     // A spell order taken before the order itself is given; false from here when the unit can't cast it
     bool Spell(unit u, int order, out bool taken)
@@ -53,6 +53,8 @@ public sealed partial class GameNatives
     {
         if (u.Casting is not { } ability) return Finish(u);
         var (x, y, target) = (u.OrderX, u.OrderY, u.OrderTarget);
+        // shortcut: an immediate order has no place and stores 0, 0, so it is told from a point order by that place; a point order at exactly 0, 0 then casts where the caster stands
+        if (target is null && x == 0 && y == 0) (x, y) = (u.X, u.Y);
         var range = Field(ability, CastRange) + (target is unit t ? t.Type.Real(Collision) : 0);
         if (u.CastEffectAt == 0)
         {

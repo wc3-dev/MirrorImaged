@@ -12,7 +12,7 @@ local function count(p, x, y)
   DestroyGroup(g)
   return n
 end
-local function run(label, id, order, kind, foeType)
+local function run(label, id, order, kind, foeType, startAt)
   slot = slot + 1
   local x, y = (slot % 5) * 2000 - 4000, (slot // 5) * 2500 - 1500
   local c = calm(CreateUnit(Player(0), FourCC("Hamg"), x, y, 0))
@@ -24,7 +24,7 @@ local function run(label, id, order, kind, foeType)
   if kind == "corpse" then local d = CreateUnit(Player(1), FourCC("hfoo"), x + 300, y + 100, 0) KillUnit(d) t = d end
   PauseUnit(t, true) PauseUnit(t2, true)
   local m0, l0 = GetUnitState(c, UNIT_STATE_MANA), GetWidgetLife(t2)
-  after(1, function()
+  after(startAt or 1, function()
     local ok = false
     if kind == "none" then ok = true elseif kind == "point" then ok = IssuePointOrder(c, order, x + 300, y)
     elseif kind == "target" or kind == "corpse" then ok = IssueTargetOrder(c, order, t)
@@ -40,8 +40,8 @@ local function run(label, id, order, kind, foeType)
 end
 run("control", nil, nil, "none")
 run("flamestrike", "AHfs", "flamestrike", "point")
-run("starfall", "AEsf", "starfall", "immediate")
-run("siphon", "ANsi", "drain", "target", "Hamg")
+run("starfall", "AEsf", "starfall", "immediate", nil, 14)
+run("silence", "ANsi", "silence", "point")
 run("windwalk", "AOwk", "windwalk", "immediate")
 run("carrion", "AUcb", "carrionscarabs", "corpse")
 run("immolation", "AEim", "immolation", "immediate")
@@ -49,4 +49,4 @@ run("mirror", "AOmi", "mirrorimage", "immediate")
 run("earthquake", "AOeq", "earthquake", "point")
 run("banish", "AHbn", "banish", "target")
 run("locust", "AUls", "locustswarm", "immediate")
-after(14, function() done() end)
+after(26, function() done() end)

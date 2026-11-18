@@ -162,27 +162,24 @@ public sealed partial class GameNatives
                     _game.At(_game.Step + Game.Steps(n), () => { if (!caster.Dead) foreach (var near in Foes(caster, fx, fy, area <= 0 ? 200 : area).Where(u => !Flies(u))) Spell(caster, near, Datum(a, 'B')); });
                 return true;
             case var id when id == Code("AEsf"):
-                // Starfall: DataA to the units round the caster each second for the ability's time
-                for (var n = 1; n <= Math.Max((int)Lasts(a, caster), 1); n++)
-                    _game.At(_game.Step + Game.Steps(n), () => { if (!caster.Dead) foreach (var near in Foes(caster, caster.X, caster.Y, area <= 0 ? 800 : area)) Spell(caster, near, Datum(a, 'A')); });
+                // Starfall: DataA to the units round the caster every 1.5 seconds for the ability's time (measured: 100 by the third second, about 250 by the eighth)
+                for (var n = 1; n <= Math.Max((int)(Lasts(a, caster) / 1.5), 1); n++)
+                    _game.At(_game.Step + Game.Steps(1.5 * n), () => { if (!caster.Dead) foreach (var near in Foes(caster, caster.X, caster.Y, area <= 0 ? 800 : area)) Spell(caster, near, Datum(a, 'A')); });
                 return true;
-            case var id when id == Code("ANsi") && target is unit drained && !drained.Dead:
-                // Siphon Mana: DataA mana a second from the target to the caster for the ability's time
-                for (var n = 1; n <= Math.Max((int)Lasts(a, drained), 1); n++)
-                    _game.At(_game.Step + Game.Steps(n), () =>
-                    {
-                        if (caster.Dead || drained.Dead) return;
-                        var moved = Math.Min(drained.Mana, Datum(a, 'A'));
-                        SetMana(drained, drained.Mana - moved);
-                        SetMana(caster, Math.Min(caster.Mana + moved, caster.MaxMana));
-                    });
+            case var id when id == Code("ANsi"):
+                // Silence: the enemies round the place can't cast for the ability's time
+                var (sx, sy) = target is unit st ? (st.X, st.Y) : x != 0 || y != 0 ? (x, y) : (caster.X, caster.Y);
+                foreach (var near in Foes(caster, sx, sy, area <= 0 ? 300 : area)) Apply(near, caster, SilenceBuff, Lasts(a, near), false, b => b.Silence = true);
                 return true;
             case var id when id == Code("AOwk"):
                 // Wind Walk: faster for its time (DataB more speed)
                 Apply(caster, caster, WindWalkBuff, Lasts(a, caster), true, b => b.SpeedFactor = 1 + Datum(a, 'B'));
                 return true;
-            case var id when id == Code("AUcb"):
-                Summon(caster, a, target is unit bt2 ? bt2.X : x != 0 || y != 0 ? x : caster.X, target is unit bu2 ? bu2.Y : x != 0 || y != 0 ? y : caster.Y, Math.Max((int)Datum(a, 'A'), 1));
+            case var id when id == Code("AUcb") && target is unit body && body.Dead && !body.Removed:
+                // Carrion Beetles: DataA beetles rise from the corpse (measured: the order needs a corpse)
+                var (bx0, by0) = (body.X, body.Y);
+                RemoveUnit(body);
+                Summon(caster, a, bx0, by0, Math.Max((int)Datum(a, 'A'), 1));
                 return true;
             case var id when id == Code("AEim"):
                 // Immolation: DataA a second to the foes round the caster for the ability's time (ten seconds without one)
@@ -253,7 +250,7 @@ public sealed partial class GameNatives
         return true;
     }
 
-    static readonly int WindWalkBuff = Code("BOwk");
+    static readonly int WindWalkBuff = Code("BOwk"), SilenceBuff = Code("BNsi");
 
     bool _aurasScheduled;
 
