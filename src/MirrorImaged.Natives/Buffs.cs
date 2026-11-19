@@ -8,7 +8,8 @@ sealed class ActiveBuff(int id, unit? source, bool positive, bool magic)
     public readonly int Id = id;
     public readonly unit? Source = source;
     public readonly bool Positive = positive, Magic = magic;
-    public long EndsAt;                 // the step it ends at, 0 for one that lasts
+    public long EndsAt;                 // the step it ends at, 0 for one that lasts or whose unit is paused
+    public long Left;                   // the steps it has left, while its unit is paused
     public float SpeedFactor = 1;       // times the unit's move speed
     public float AttackSpeedBonus;      // added to 1 for the attack rate
     public float ArmorBonus;            // added to the armour
@@ -43,14 +44,34 @@ public sealed partial class GameNatives
         target.Buffs.Add(buff);
         if (seconds > 0)
         {
-            buff.EndsAt = _game.Step + Math.Max(1, Game.Steps(seconds));
-            _game.At(buff.EndsAt, () => { if (target.Buffs.Remove(buff)) buff.Ended?.Invoke(); });
+            buff.Left = Math.Max(1, Game.Steps(seconds));
+            if (!target.Paused) Run(target, buff);
         }
         return buff;
     }
 
+    // The buff's time runs from now for what it has left
+    void Run(unit target, ActiveBuff buff)
+    {
+        var ends = buff.EndsAt = _game.Step + buff.Left;
+        buff.Left = 0;
+        _game.At(ends, () => { if (buff.EndsAt == ends && target.Buffs.Remove(buff)) buff.Ended?.Invoke(); });
+    }
+
+    // A buff's time stands still while its unit is paused (probe abilities-cast-timing: 16 s of Silence on a Priest paused for 20 s of them
+    // ended 36 s in, and on one paused 4 s in and freed at 20 s, 32 s in)
+    void HoldBuffs(unit u)
+    {
+        foreach (var buff in u.Buffs.ToArray())
+            if (u.Paused && buff.EndsAt > 0) (buff.Left, buff.EndsAt) = (Math.Max(1, buff.EndsAt - _game.Step), 0);
+            else if (!u.Paused && buff.Left > 0) Run(u, buff);
+    }
+
     float SpeedFactor(unit u) => u.Buffs.Aggregate(1f, (factor, buff) => factor * buff.SpeedFactor);
-    float AttackRate(unit u) => Math.Max(1 + u.Buffs.Sum(buff => buff.AttackSpeedBonus), 0.2f);
+    // How many times faster the unit attacks: a hero's agility adds AgiAttackSpeedBonus (0.02) a point, and the rate is 5 at most (probe
+    // units-attack-timing: a Paladin's 2.20 s a hit is 1.10 at agility 50 and 0.44 from 200 up). That the buffs' share adds to the agility's is not measured
+    float AttackRate(unit u) =>
+        Math.Clamp(1 + (IsHero(u.Type.Id) ? WithBonus(u, 1) * Data.Constant("AgiAttackSpeedBonus", 0.02f) : 0) + u.Buffs.Sum(buff => buff.AttackSpeedBonus), 0.2f, 5);
     float ArmorBonus(unit u) => u.Buffs.Sum(buff => buff.ArmorBonus);
     bool IsStunned(unit u) => u.Buffs.Any(buff => buff.Stun);
     bool IsEthereal(unit u) => u.Buffs.Any(buff => buff.Ethereal);

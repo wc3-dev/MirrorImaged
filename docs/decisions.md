@@ -2602,3 +2602,52 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
 
 - **D445 (what is left, not done here):** the nearest enemy is looked for among every unit by every unit (`Nearest` in `Combat.cs`, 41% of `Orc01`'s 877 units), and the path search keeps its cells in
   dictionaries (`FindPath`, 35% of `ExtremeCandyWar2004`, the longest shipped map at 94 s). Both want a grid, which is more than a small change in another lane's file.
+
+## Engine timing (lane engine-timing, 2026-11-19)
+
+Probes `abilities-cast-timing`, `units-attack-timing` and `heroes-mana-regeneration`, each run in the game (3.0.1.24371); what they gave is in `docs/facts.md`, "Engine timing". The numbers D450 to D469
+are this lane's; D458 to D469 are not used.
+
+- **D450 (the cast's timing, measured):** a spell order's channel and cast events fire inside the order's call when the unit is in range, as the game's did. The effect event, with the mana and the
+  cooldown spent, comes the caster's cast point later (the unit's own `ucpt`, which `BlzSetUnitRealField` sets; inside the call when it is 0), and the finish and end-cast events the caster's backswing
+  (`ucbs`) after that, the order staying the unit's until then. Another order ends a cast that has begun with its end-cast event and no finish; before the cast point nothing is spent and no cooldown
+  starts. Wind Walk and Immolation stay cast whole inside the call and Mirror Image's cast ends with its effect, as measured (D413, D415). The steps are scheduled on the clock (1/1024 s), not looked
+  at each engine step, so the times are the game's to 0.01 s. Casts whose steps fall due in one instant go on in the order their units were made, as probe `abilities-beetles` has it (of two heroes
+  ordered in one instant, the one made first had its effect first, though ordered second), and after whatever else is due then, which is not measured. This lane's choices, not measured: a spell order the unit can't take (no mana, a cooldown) leaves a cast under way as it is, where it
+  silently ended one before; a caster that dies in its cast gets the end-cast event; a paused caster's cast waits until it is free. Left as a difference: a unit turns at once, where the game's Archmage
+  took 0.21 s to turn round before its cast began.
+
+- **D451 (a casting time comes after the effect event):** for an ability with a casting time, what the spell does comes that long after the effect event, with the finish and end-cast events, and the
+  backswing doesn't count; an order before then ends the cast and the spell does nothing, the mana staying spent. Measured for Flame Strike (effect +0.30, finish and first fire +1.63 with a backswing
+  of 0.5, 2.4 and 3; no fire when stopped 1 s in). That every ability with a casting time goes so is this lane's reading, as only Flame Strike was measured; before, the casting time was waited before
+  the effect event. Flame Strike's model no longer waits its casting time itself.
+
+- **D452 (a hero's agility and the attack rate, measured):** the attack rate is 1 + the hero's agility (with its bonuses) x `AgiAttackSpeedBonus` (0.02) + the buffs' share, kept between 0.2 and 5,
+  and both the cooldown and the damage point are divided by it: a Paladin's 2.20 s between hits was 1.833, 1.746, 1.467, 1.100, 0.733, 0.550 at agility 10, 13, 25, 50, 100, 150, and 0.440 at 200, 250
+  and 400, and its hit came 0.43 s after its swing began at agility 0, 0.22 at 50, 0.09 at 200. The 5 is the measured cap, in no constant that was found. Not measured, this lane's reading: that
+  the buffs' share adds to the agility's before the cap, and that agility from items counts.
+
+- **D453 (a missile's flight, measured):** a weapon of type missile, mbounce, msplash, mline, artillery, aline or alsplash lands its hit a flight after the damage point: the way between the two units,
+  less the attacker's `launchY` (`ulpy`: how far ahead of it its missiles start; an archer's 62, a headhunter's -34, an Archmage's 0), over the weapon's missile speed (`ua1z`). The game's archer, at
+  200 to 500, and its Archmage, at 100 to 600, landed within 0.01 s of that, with the speed set to 300, 450 and 1800 too, and the arc changed nothing. A way under 94 lands at once: an archer's 88
+  did and an Archmage's 100 flew, and 94 is the middle, this lane's choice. Storm Bolt's hits land the same flight after its effect, at the ability's missile speed (`amsp`). The flight is worked out
+  as the missile leaves, so a target that walks is hit as if it stood (a shortcut, named in the code). Not modelled: heights (a flier, a cliff), the other spells' missiles, which were not measured,
+  and the 0.03 s more that a Priest's and a Sorceress's missiles took, for which no reason was found.
+
+- **D454 (attacks come a cooldown apart to the clock's step):** a unit whose cooldown is running is looked at again the step the cooldown ends, not at the engine's next 1/32 s step, and a swing
+  that was waited for counts its cooldown from when it was due: the game's hits came exactly a cooldown apart (1.350, 2.200, 1.500 s over 24 s), where the engine's step gave 1.375 for 1.35. The
+  first swing after an order still starts on the engine's step; the game's started 0.03 to 0.27 s after the order, differently each run, which is not modelled.
+
+- **D455 (mana comes back, measured):** a hero regains `IntRegenBonus` (0.05) a second for each point of intelligence (with its bonuses, which is this lane's reading), and its type's own
+  regeneration doesn't count (an Archmage of intelligence 0 got none in 30 s; of 1, 0.50 every 10 s); any other unit regains its type's regeneration (`umpr`, or what `BlzSetUnitRealField` set). A
+  paused or dead unit regains none, a hidden one does, and none goes past the most. It is worked out when the mana is read or set and before what decides it changes (`unit.Mana` is a property
+  now), in the engine's steps of 1/32 s, so an idle game runs nothing for it and the mana doesn't move inside a step: the second look of a mana state event a frame after a set (probe
+  units-more) still sees the set value. Not done: a unit state event doesn't fire as regeneration passes its limit (a shortcut, named in the code); life doesn't come back; the game's amounts fall
+  about 0.013% short of rate x time (449.94 of 450), which is left as a difference.
+
+- **D456 (a paused unit's buff, measured):** a buff's time stands still while its unit is paused and goes on when it is free: 16 s of Silence ended 36 s in on a Priest paused for the first 20, and
+  32 s in on one paused from 4 to 20. `PauseUnit` keeps each timed buff's steps left and starts them again. What a buff's model schedules beside its end (a root's damage each second) still runs.
+
+- **D457 (Mirror Image's summon events, measured):** the game fires a summon event for each image and one more whose summoned unit is none: 2, 3 and 4 events at levels 1 to 3, the first DataD (0.5 s)
+  after the effect and the last 0.16 to 0.18 s later, which of them is the one without a unit changing from run to run. Here the images' events come at DataD and the one without a unit 0.18 s later,
+  `GetSummoningUnit` the caster in each; the order and the 0.18 are this lane's choice, so the times are Close. This closes the difference D415 left.

@@ -73,7 +73,7 @@ public sealed class SpellTests : IDisposable
 
         Assert.Equal("true\ttrue", lines[0]);
         Assert.Equal(["channel\tFootman\ttrue\ttrue", "cast\tFootman\ttrue\ttrue", "effect\tFootman\ttrue\ttrue", "finish\tFootman\ttrue\ttrue", "endcast\tFootman\ttrue\ttrue"], lines.Skip(1).Take(5).ToList());
-        Assert.Equal("after\t300.0\t35.0\t0\t0.7", lines[6]);
+        Assert.Equal("after\t300.0\t35.0\t0\t0.4", lines[6]);
     }
 
     [Fact]
