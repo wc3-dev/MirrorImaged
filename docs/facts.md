@@ -822,6 +822,8 @@ player, 11-08 (W1-10), their lines in `probes/expected`. Floats are given by the
   game's arithmetic gives (`1000^10` `7149f2c9`, `(-8)^3` -512, `(-2)^3` -8, `25^10` `56ad78ea`); any other goes through
   exp and log, the sign dropped (`(-8)^-1` 0.125000045, `(-8)^0.5` 2.82842636, `(-8)^(1/3)` 1.99999964, `2^-1`
   0.500000119, `0.25^-2` 15.9999933); 0 to any power but 0 is 0, `x^0` 1.
+- Found since, on 11-19 (the second round below): the reciprocal's rule between its knots, the root's six odd cases,
+  the sine's three, and how exp is built.
 - `pairs` (`string-order`): 24 keys of 8, 14, 22, 30, 38 and 60 letters, set in order, came in an order that, with
   `lua-config`'s 20 keys, only Lua 5.3.6's string hash and table code with the seed `0x1c46318e` give, of all 2^32.
 - Timers (`timers-2`): read in the instant they were started, a 2 s timer's elapsed time is 2^-23 and its remaining
@@ -838,6 +840,46 @@ player, 11-08 (W1-10), their lines in `probes/expected`. Floats are given by the
   failed), the next condition c4 took it (all three ran c4), destroying the stale c2 freed it again and c5 took it.
   `And(nil, nil)`, `Or(nil, nil)`, `Not(nil)`, `Condition(nil)` and `Filter(nil)` made after a destroy took no place;
   the next `Condition` did.
+
+## The number model's probes, second round
+
+Seven probes run twice each by the game runner from the PowerShell tool, with the same lines, 3.0.1.24371, single
+player, 11-19 (L-mirror-number-model), their lines in `probes/expected`. Floats are given by their bits.
+
+- Division (`numbers-div-2`): between two of the reciprocal's 1024 table values lo and hi, the f-th mantissa after lo
+  has the reciprocal `lo - ((lo - hi) * f - 1) // 8191`. The probe works this out in its own integers from the game's
+  1024 values and compares it with the game's 1 / d for every mantissa between them: 8,387,584 checked, 0 differ. The
+  last mantissa before each table value is one above that value (1,024 given by their bits). 100,000 quotients n / d
+  of random mantissas against n times the game's 1 / d, cut: 0 differ.
+- `math.sqrt` (`numbers-sqrt-2`): for each s from 46341 to 65535, the roots of the mantissa m = floor(s * s / 256) and
+  of m - 1 and m + 1. At m - 1 and m + 1 every root is one more than the integer root of the mantissa times 2^8; at m
+  it is two more for 9,568 of the 19,195, those where s * s is no more than the mantissa's top 8 fraction bits above m
+  * 2^8. So the game takes the integer root of `m << 8 | (m >> 15 & 0xff)`. The roots in [2, 4) are those of [1, 2)
+  times `3fb504f3`, and in [4, 8) twice them, at all 19,195.
+- `math.sin` and `math.cos` (`numbers-sin-2`), at every 2^-20 turn within 1024 of each zero, the angle the step and a
+  half times `36c90fdb`: 9,216 values, where a float holds the table's 2^-31. The last step before a table value is
+  one 2^-31 short of it, rising or falling (step 255 is 3294196, the table's sin(pi / 2048) 3294197), and so is any
+  step whose share of the rise is a whole number; the step before the half turn is 2^-31 and the table's ends are 0.
+- `math.exp` (`numbers-exp`), over j * 2^-12 (j 0 to 4095), 1 + j * 2^-18, 5 + j * 2^-16, n from -104 to 89 and
+  +-2^-k: `exp(0.25)` is `3fa45af2`, the float nearest e^(1/4) (a truncation would be `3fa45af1`); `exp(0.5)` is its
+  square, `exp(0.75)` that times it, `exp(1)` `402df853`; every `exp(n)` for n 0 to 88 is `3fa45af2` to the power 4n,
+  squaring as it goes, and so is every k/16 of `numbers-functions` with its rest's exp multiplied on. Below 1/4 the
+  result is 1 + r + ... + r^6/720 cut, less up to a quarter of a float step lost in its arithmetic (`exp(2^-5)` is
+  `3f84102a`, where the sum is a hair over `3f84102b`). `exp(2^-k)` from k 12 is 1 + 2^-k.
+- `math.asin` and `math.acos` (`numbers-asin`), over j * 2^-12 (j 0 to 4095), 0.5 + j * 2^-20 and 1 - j * 2^-24:
+  straight lines between knots at k/1024 (over a 2^-10 the values lie within 0.8 float steps of a line, divided into
+  1024); near 0 the values are whole numbers of 2^-29 (`asin(2^-12)` is 2^-12 + 2^-29, `asin(k / 1024)` 524289,
+  1048578, 1572867, 2097158 for k 1 to 4, the true ones 524288.08, 1048576.67, 1572866.25, 2097157.33); asin + acos in
+  the game's addition is `3fc90fda` at 3,147 of the 4,096 inputs, `3fc90fd9` at 948 and `3fc90fdb` at one; between the
+  last knots the line is hundreds of float steps under the curve,
+  and `asin(1 - j * 2^-24)` is `3fc90fdb` for j 0 to 3, then `3fc8f68e`.
+- `math.log` (`numbers-log`), over 1 + j * 2^-12 (j 0 to 4095), 1.5 + j * 2^-20, 1.75 * 2^k and the whole numbers to
+  96: smooth, no knots; short of the true log by 5.2e-7 at 1.5, 1.9e-6 at 1.625, 5.3e-6 at 1.75, 1.2e-5 at 1.875 and
+  2.4e-5 just under 2, moving by no more than 5 float steps between neighbours. `log(1.75 * 2^k)` less k ln 2 is the
+  same -5.3e-6 for every k, to the float steps of adding k ln 2.
+- `math.atan` (`numbers-atan`), over j * 2^-11 (j 0 to 4095), 0.5 + j * 2^-19, 2 + j / 8, 2^k and 3 * 2^k, and 96
+  random pairs: smooth, within 2.3e-7 of the true one below 2 (up to 15 float steps where it is small, at
+  0.015) and 1.2 float steps from 2 to 130; `atan(2^k)` for k -30 to -11 is 2^k (1 - 2^-20), the bits `..7ffff0`.
 
 ## JASS maps
 

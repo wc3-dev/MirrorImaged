@@ -22,15 +22,11 @@
 
 # Pow as ^, exp(y log x) where the power isn't whole (D32, D152, Close): a few float steps off.
 - Pow 40000000 3f000000 = f 3fb504f3 1.41421354 same
-+ Pow 40000000 3f000000 = f 3fb504f2 1.41421342 same
++ Pow 40000000 3f000000 = f 3fb504f1 1.4142133 same
 - Pow 41c80000 3f000000 = f 409ffff6 4.99999523 same
-+ Pow 41c80000 3f000000 = f 409fffff 4.99999952 same
-- Pow c1000000 3eaaaaab = f 3ffffffd 1.99999964 same
-+ Pow c1000000 3eaaaaab = f 3fffffff 1.99999988 same
-- Pow 40000000 bf800000 = f 3f000002 0.500000119 same
-+ Pow 40000000 bf800000 = f 3f000001 0.50000006 same
++ Pow 41c80000 3f000000 = f 409ffffc 4.99999809 same
 - Pow 3f000000 3f000000 = f 3f3504f5 0.707106888 same
-+ Pow 3f000000 3f000000 = f 3f3504f6 0.707106948 same
++ Pow 3f000000 3f000000 = f 3f3504f7 0.707107008 same
 
 # The random generator is SplitMix64, not the game's, which isn't known (D46, D86, Close).
 - GetRandomInt 0 99 after seed 42 = 63 11 34 15 77

@@ -1,7 +1,8 @@
 # Where MirrorImaged differs from the game's lines in expected/numbers-fine-2.txt, in order, with why (decisions D121): a line
 # starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
 
-# atan is the double model's, a float step or two off; the game's is x (1 - 2^-20) near 0 (D32, D152, Close).
+# atan is the double model's, a float step or two off; the game's is x (1 - 2^-20) near 0 (D32, D152, Close; D484,
+# not fitted).
 - atan tiny 0 00000000 377ffff0 37fffff0 383ffff4 387ffff0 389ffff6 38bffff4 38dffff2 38fffff0 390ffff7 391ffff6 392ffff5 393ffff4 394ffff3 395ffff2 396ffff1 397ffff0 3987fff7 398ffff7 3997fff6 399ffff6 39a7fff5 39affff5 39b7fff4
 + atan tiny 0 00000000 377fffff 37ffffff 383fffff 387fffff 389fffff 38bfffff 38dfffff 38ffffff 390fffff 391fffff 392fffff 393fffff 394fffff 395fffff 396fffff 397fffff 3987ffff 398fffff 3997ffff 399fffff 39a7ffff 39afffff 39b7ffff
 - atan tiny 24 39bffff4 39c7fff3 39cffff3 39d7fff2 39dffff2 39e7fff1 39effff1 39f7fff0 39fffff0 3a03fff7 3a07fff7 3a0bfff7 3a0ffff7 3a13fff6 3a17fff6 3a1bfff6 3a1ffff6 3a23fff5 3a27fff3 3a2bfff2 3a2ffff2 3a33fff3 3a37fff2 3a3bfff2
@@ -15,23 +16,8 @@
 - atan tiny 120 3aefffe0 3af1ffe0 3af3ffde 3af5ffdf 3af7ffdf 3af9ffdc 3afbffdc 3afdffdd 3affffdd 3b00ffed 3b01ffed 3b02ffed 3b03ffeb 3b04ffeb 3b05ffec 3b06ffeb 3b07ffeb 3b08ffeb 3b09ffea 3b0affe9 3b0bffe9 3b0cffea 3b0dffe9 3b0effe8
 + atan tiny 120 3aefffee 3af1ffed 3af3ffed 3af5ffed 3af7ffec 3af9ffec 3afbffeb 3afdffeb 3affffea 3b00fff5 3b01fff4 3b02fff4 3b03fff4 3b04fff4 3b05fff3 3b06fff3 3b07fff3 3b08fff2 3b09fff2 3b0afff2 3b0bfff2 3b0cfff1 3b0dfff1 3b0efff1
 
-# exp is the double model's (D32, D152, Close): the game's is a table on a straight line by its steps, and 1 over
-# exp(-x) below 0, as here.
-- exp 1 0 402df853 402df85d 402df868 402df873 402df87e 402df889 402df894 402df89f 402df8a9 402df8b4 402df8bf 402df8ca 402df8d5 402df8e0 402df8eb 402df8f6 402df900 402df90b 402df916 402df921 402df92c 402df937 402df942 402df94d
-+ exp 1 0 402df854 402df85f 402df86a 402df874 402df87f 402df88a 402df895 402df8a0 402df8ab 402df8b6 402df8c1 402df8cb 402df8d6 402df8e1 402df8ec 402df8f7 402df902 402df90d 402df918 402df922 402df92d 402df938 402df943 402df94e
-- exp 1 24 402df957 402df962 402df96d 402df978 402df983 402df98e 402df999 402df9a4 402df9ae 402df9b9 402df9c4 402df9cf 402df9da 402df9e5 402df9f0 402df9fb 402dfa05 402dfa10 402dfa1b 402dfa26 402dfa31 402dfa3c 402dfa47 402dfa52
-+ exp 1 24 402df959 402df964 402df96f 402df979 402df984 402df98f 402df99a 402df9a5 402df9b0 402df9bb 402df9c6 402df9d0 402df9db 402df9e6 402df9f1 402df9fc 402dfa07 402dfa12 402dfa1d 402dfa27 402dfa32 402dfa3d 402dfa48 402dfa53
-- exp 1 48 402dfa5c 402dfa67 402dfa72 402dfa7d 402dfa88 402dfa93 402dfa9e 402dfaa9 402dfab3 402dfabe 402dfac9 402dfad4 402dfadf 402dfaea 402dfaf5 402dfb00 402dfb0a 402dfb15 402dfb20 402dfb2b 402dfb36 402dfb41 402dfb4c 402dfb56
-+ exp 1 48 402dfa5e 402dfa69 402dfa74 402dfa7e 402dfa89 402dfa94 402dfa9f 402dfaaa 402dfab5 402dfac0 402dfacb 402dfad5 402dfae0 402dfaeb 402dfaf6 402dfb01 402dfb0c 402dfb17 402dfb21 402dfb2c 402dfb37 402dfb42 402dfb4d 402dfb58
-- exp 1 72 402dfb61 402dfb6c 402dfb77 402dfb82 402dfb8d 402dfb98 402dfba3 402dfbad 402dfbb8 402dfbc3 402dfbce 402dfbd9 402dfbe4 402dfbef 402dfbfa 402dfc04 402dfc0f 402dfc1a 402dfc25 402dfc30 402dfc3b 402dfc46 402dfc51 402dfc5b
-+ exp 1 72 402dfb63 402dfb6e 402dfb78 402dfb83 402dfb8e 402dfb99 402dfba4 402dfbaf 402dfbba 402dfbc5 402dfbcf 402dfbda 402dfbe5 402dfbf0 402dfbfb 402dfc06 402dfc11 402dfc1c 402dfc26 402dfc31 402dfc3c 402dfc47 402dfc52 402dfc5d
-- exp 1 96 402dfc66 402dfc71 402dfc7c 402dfc87 402dfc92 402dfc9d 402dfca8 402dfcb2 402dfcbd 402dfcc8 402dfcd3 402dfcde 402dfce9 402dfcf4 402dfcff 402dfd09 402dfd14 402dfd1f 402dfd2a 402dfd35 402dfd40 402dfd4b 402dfd56 402dfd60
-+ exp 1 96 402dfc68 402dfc73 402dfc7d 402dfc88 402dfc93 402dfc9e 402dfca9 402dfcb4 402dfcbf 402dfcca 402dfcd4 402dfcdf 402dfcea 402dfcf5 402dfd00 402dfd0b 402dfd16 402dfd21 402dfd2b 402dfd36 402dfd41 402dfd4c 402dfd57 402dfd62
-- exp 1 120 402dfd6b 402dfd76 402dfd81 402dfd8c 402dfd97 402dfda2 402dfdad 402dfdb7 402dfdc2 402dfdcd 402dfdd8 402dfde3 402dfdee 402dfdf9 402dfe03 402dfe0e 402dfe19 402dfe24 402dfe2f 402dfe3a 402dfe45 402dfe50 402dfe5a 402dfe65
-+ exp 1 120 402dfd6d 402dfd78 402dfd82 402dfd8d 402dfd98 402dfda3 402dfdae 402dfdb9 402dfdc4 402dfdcf 402dfdd9 402dfde4 402dfdef 402dfdfa 402dfe05 402dfe10 402dfe1b 402dfe26 402dfe30 402dfe3b 402dfe46 402dfe51 402dfe5c 402dfe67
-
-# log is the double model's (D32, D152, Close): the game's is right near 1 and off from 1.5 up (log(1000) by 41
-# float steps).
+# log is the double model's (D32, D152, Close; D484, not fitted): the game's is right near 1 and off from 1.5 up
+# (log(1000) by 41 float steps).
 - log 1 0 00000000 377fff80 37ffff00 383ffedf 387ffe00 389ffe6f 38bffdbe 38dffcef 38fffc00 390ffd78 391ffce0 392ffc38 393ffb7f 394ffab8 395ff9e0 396ff8f7 397ff801 3987fb7c 398ffaf0 3997fa5c 399ff9c0 39a7f91c 39aff871 39b7f7bd
 + log 1 0 00000000 377fff80 37ffff00 383ffee0 387ffe00 389ffe70 38bffdc0 38dffcf0 38fffc00 390ffd78 391ffce0 392ffc38 393ffb80 394ffab8 395ff9e0 396ff8f8 397ff800 3987fb7c 398ffaf0 3997fa5c 399ff9c0 39a7f91c 39aff870 39b7f7bc
 - log 1 24 39bff700 39c7f63d 39cff572 39d7f49e 39dff3c1 39e7f2de 39eff1f1 39f7f0fe 39fff003 3a03f77f 3a07f6f9 3a0bf66f 3a0ff5e1 3a13f54f 3a17f4b9 3a1bf420 3a1ff382 3a23f2e0 3a27f23a 3a2bf191 3a2ff0e3 3a33f030 3a37ef7b 3a3beec1

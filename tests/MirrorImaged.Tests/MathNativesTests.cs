@@ -117,6 +117,8 @@ public sealed class MathNativesTests : IDisposable
     [InlineData("Atan2", 0x00000000u, 0xbf800000u, 0x40490fdbu)]
     [InlineData("Atan2", 0x3f800000u, 0x00000000u, 0x3fc90fdbu)]
     [InlineData("Pow", 0x00000000u, 0xbf800000u, 0x00000000u)]
+    [InlineData("Pow", 0xc1000000u, 0x3eaaaaabu, 0x3ffffffdu)]
+    [InlineData("Pow", 0x40000000u, 0xbf800000u, 0x3f000002u)]
     [InlineData("SquareRoot", 0x3a83126fu, 0u, 0x3d018707u)]
     public void The_maths_natives_give_the_games_numbers(string native, uint x, uint y, uint game) =>
         Assert.Equal(game, Call(native, x, y));
@@ -128,11 +130,9 @@ public sealed class MathNativesTests : IDisposable
     [InlineData("Atan2", 0x3f800000u, 0x3f800000u, 0x3f490fdcu, 0x3f490fdau)]
     [InlineData("Atan2", 0xbf800000u, 0xbf800000u, 0xc016cbe4u, 0xc016cbe3u)]
     [InlineData("Atan2", 0x40400000u, 0x40800000u, 0x3f24bc7eu, 0x3f24bc7du)]
-    [InlineData("Pow", 0x40000000u, 0x3f000000u, 0x3fb504f3u, 0x3fb504f2u)]
-    [InlineData("Pow", 0x41c80000u, 0x3f000000u, 0x409ffff6u, 0x409fffffu)]
-    [InlineData("Pow", 0xc1000000u, 0x3eaaaaabu, 0x3ffffffdu, 0x3fffffffu)]
-    [InlineData("Pow", 0x40000000u, 0xbf800000u, 0x3f000002u, 0x3f000001u)]
-    [InlineData("Pow", 0x3f000000u, 0x3f000000u, 0x3f3504f5u, 0x3f3504f6u)]
+    [InlineData("Pow", 0x40000000u, 0x3f000000u, 0x3fb504f3u, 0x3fb504f1u)]
+    [InlineData("Pow", 0x41c80000u, 0x3f000000u, 0x409ffff6u, 0x409ffffcu)]
+    [InlineData("Pow", 0x3f000000u, 0x3f000000u, 0x3f3504f5u, 0x3f3504f7u)]
     public void The_maths_natives_are_off_the_game_where_the_math_model_is(string native, uint x, uint y, uint game, uint model)
     {
         Assert.NotEqual(game, model);

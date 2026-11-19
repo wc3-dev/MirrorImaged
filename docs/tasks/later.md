@@ -58,11 +58,11 @@ Each item names the wave whose file it goes into when that file is written.
 - (The unit animation natives and `SetUnitTimeScale` moved to wave-5.md, W5-3.)
 - Wave 10 (speed): a cross-process cache of the standard data (about 1.2-1.7 s a process) if the benchmark or the
   corpus runs need it; it must live outside the repo and packages (A15) (W2-1).
-- Wave 10 (the number model, W1-10's rest): find the game's `exp`, `log` and `atan` (tables on straight lines, by the
-  fine probes; `numbers-fine-2` has runs to start from) and with them `asin`, `acos` and powers that aren't whole; the
-  reciprocal between its knots, a step off for about 1 in 5 divisors (D151; `numbers-div` and `numbers-fine` hold 2,376
-  measured); and the game's integer root in `math.sqrt`, a step higher for six of `numbers-squares`' roots (D152), which
-  keeps `(int)Sqrt(n * n)` going wrong 70 times here against the game's 64.
+- Wave 10 (the number model, what L-mirror-number-model left, D483, D484): the order of operations in `exp`'s
+  series (100 of 4,096 inputs in [0, 1) a float step or two off); `log` (smooth, 2.4e-5 short under 2) and with it
+  powers that aren't whole; `atan`; `asin` and `acos` (a table of 1024 in 2^-29 radians, and what happens in the last
+  1/1024 before 1). `numbers-exp`, `numbers-log`, `numbers-atan` and `numbers-asin` hold scans to fit against. Also
+  `S2R`'s rule for long strings of digits, now that division is the game's (D486).
 - Wave 10 (timers, W1-10's rest): the game's clock starts a hair past 0 and timers' ends drop it, so reads come a float
   step past whole times, and a timer paused and resumed at 0.25 for 0.75 ran before those due with it (D153); model the
   clock as the game's floats, or accept the reads against A2. Also W1-9's time of day: the frame effects of a set
