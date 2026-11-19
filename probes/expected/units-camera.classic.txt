@@ -1,0 +1,19 @@
+# Classic graphics (War3Preferences hd=0), 3.0.1.24371, 11-19 (L-mirror-graphics-mode): the game's lines in two runs, the
+# same but where a {t} or {w} says. They are units-camera.reforged.txt's where the game gave the same; that file's notes
+# below were written for Reforged graphics (hd=2), and its {t}s and {w}s are kept.
+# probes/units-camera.lua on 3.0.1.24371, single player, 11-08: the game's lines.
+follow now 0.0000 0.0000 0.0000
+follow 0s 0.0000 0.0000 0.0000
+follow 0.5s 300.0000 150.0000 0.0000
+unit moved now 300.0000 150.0000 0.0000
+unit moved 0.5s 700.0000 -250.0000 0.0000
+orient 600.0000 -300.0000 0.0000 rotation 1.5708
+orient faced 0 600.0000 -300.0000 0.0000 rotation 1.5708
+after pan 0.0000 0.0000 0.0000 rotation 1.5708
+after pan unit moved 0.0000 0.0000 0.0000
+follow again -500.0000 -300.0000 0.0000
+after reset unit moved -500.0000 -300.0000 0.0000 rotation 1.5708
+inherit 500.0000 -300.0000 0.0000 rotation 1.5708
+inherit faced 180 500.0000 -300.0000 0.0000 rotation 1.5708
+after position at target 500.0000 -300.0000 0.0000
+removed 0.0000 -300.0000 0.0000

@@ -60,6 +60,9 @@ public sealed class GameData
     /// <summary>A file of the installed game by its storage path (<c>War3.w3mod:Scripts/common.ai</c>); null where the data didn't come from an install or the file isn't there.</summary>
     public byte[]? InstallFile(string path) => Standard.Storage?.Invoke(path);
 
+    /// <summary>The graphics mode the standard data was read for (decisions D681).</summary>
+    public GraphicsMode Graphics => Standard.Graphics;
+
     /// <summary>The ground of the map's <c>war3map.w3e</c>; null when it has none.</summary>
     public Terrain? Terrain { get; }
 
@@ -165,9 +168,9 @@ public sealed class GameData
     /// <summary>
     /// The length in milliseconds of the sound file at <paramref name="path"/> (<c>Units\Human\Footman\FootmanYes1.wav</c>,
     /// <c>/</c> or <c>\</c>, any case), as GetSoundFileDuration reads it (probes sounds, sounds-2): the map's own file, else
-    /// the install's classic one, its language's then the base's, else its Definitive Edition one, else its HD one; under
-    /// the path as given, then with each of the four extensions in place of its own or none, so a <c>.wav</c> asked for
-    /// reads the <c>.ogg</c> stored. 0 for none, one that isn't a sound, and a path with a letter outside ASCII in the
+    /// the install's classic one, its language's then the base's, else, in Reforged graphics only, its Definitive Edition
+    /// one, else its HD one (D684); under the path as given, then with each of the four extensions in place of its own or
+    /// none, so a <c>.wav</c> asked for reads the <c>.ogg</c> stored. 0 for none, one that isn't a sound, and a path with a letter outside ASCII in the
     /// map, which the game doesn't find (game-facts, a War3Net-packed <c>Sound\ProbeÅska.wav</c>).
     /// </summary>
     public int SoundLength(string path)
@@ -178,7 +181,7 @@ public sealed class GameData
         var stem = dot > name.LastIndexOf('\\') && SoundExtensions.Contains(name[dot..], StringComparer.OrdinalIgnoreCase) ? name[..dot] : name;
         var names = SoundExtensions.Select(extension => stem + extension).Prepend(name).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         var locale = $"_Locales/{Standard.Locale}.w3mod:";
-        string[] layers = [locale, "", "_DE.w3mod:" + locale, "_DE.w3mod:", "_HD.w3mod:" + locale, "_HD.w3mod:"];
+        string[] layers = Standard.Graphics == GraphicsMode.Classic ? [locale, ""] : [locale, "", "_DE.w3mod:" + locale, "_DE.w3mod:", "_HD.w3mod:" + locale, "_HD.w3mod:"];
         var bytes = (Map is not null && name.All(char.IsAscii) ? names.Select(Map.File).FirstOrDefault(file => file is not null) : null)
             ?? (Standard.Storage is { } storage
                 ? layers.SelectMany(layer => names.Select(file => storage("War3.w3mod:" + layer + file.Replace('\\', '/')))).FirstOrDefault(file => file is not null)

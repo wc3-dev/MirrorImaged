@@ -1,4 +1,4 @@
-# Where MirrorImaged differs from the game's lines in expected/cameras-2.txt, in order, with why (decisions D121): a line
+# Where MirrorImaged differs from the game's lines in expected/cameras-2.reforged.txt, in order, with why (decisions D121): a line
 # starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
 
 # A position set as the game starts lands 0.2 to 0.25 s later in the game (cameras-3), here in the next step, as it

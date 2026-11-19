@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using MirrorImaged.Data;
 
 namespace MirrorImaged.GameTests;
 
@@ -150,19 +151,30 @@ public sealed class GameRunnerTests : IDisposable
         if (preferences is not null)
             File.WriteAllText(Path.Combine(_folder, "War3Preferences.txt"), preferences);
 
-        Assert.Equal(mode, GameRunner.GraphicsMode(_folder));
+        Assert.Equal(mode, GameRunner.Hd(_folder));
+    }
+
+    [Theory]
+    [InlineData("[Misc]\nhd=0\n", GraphicsMode.Classic)]
+    [InlineData("[Misc]\nhd=2\n", GraphicsMode.Reforged)]
+    [InlineData("[Misc]\n", GraphicsMode.Reforged)]
+    [InlineData(null, GraphicsMode.Reforged)]
+    public void The_runner_runs_in_the_players_graphics_mode(string? preferences, GraphicsMode mode)
+    {
+        if (preferences is not null)
+            File.WriteAllText(Path.Combine(_folder, "War3Preferences.txt"), preferences);
+
+        Assert.Equal(mode, new GameRunner(Path.Combine(_folder, "game.exe"), _folder, Path.Combine(_folder, "maps")).Graphics);
     }
 
     [Fact]
-    public void A_run_is_refused_up_front_when_the_game_is_not_on_the_graphics_the_lines_were_recorded_on()
+    public void A_graphics_mode_without_probe_lines_is_refused_in_one_line()
     {
-        File.WriteAllText(Path.Combine(_folder, "War3Preferences.txt"), "[Misc]\nhd=0\n");
-        var runner = new GameRunner(Path.Combine(_folder, "game.exe"), _folder, Path.Combine(_folder, "maps"));
+        File.WriteAllText(Path.Combine(_folder, "War3Preferences.txt"), "[Misc]\nhd=1\n");
 
-        var refused = Assert.Throws<InvalidOperationException>(() => runner.Run("hello", "done()", TimeSpan.FromSeconds(1)));
+        var refused = Assert.Throws<InvalidOperationException>(() => new GameRunner(Path.Combine(_folder, "game.exe"), _folder, Path.Combine(_folder, "maps")).Graphics);
 
-        Assert.StartsWith("The game is on classic graphics (War3Preferences hd=0); the probes' lines were recorded on Reforged (hd=2)", refused.Message);
-        Assert.False(Directory.Exists(Path.Combine(_folder, "maps")));
+        Assert.Equal("The game is on graphics mode hd=1 (War3Preferences), which has no probe lines; switch it to classic or Reforged graphics in its options", refused.Message);
     }
 
     [WindowsFact]

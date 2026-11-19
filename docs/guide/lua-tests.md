@@ -20,7 +20,7 @@ end)
 
 | Call | What it does |
 | ---- | ------------ |
-| `mirror.load(path, {seed = n, difficulty = "easy"})` | Opens a Lua or JASS map; the seed starts the random numbers (0 by default), the difficulty is the computers' (`easy`, `normal` by default, `insane`) |
+| `mirror.load(path, {seed = n, difficulty = "easy", graphics = "classic"})` | Opens a Lua or JASS map; the seed starts the random numbers (0 by default), the difficulty is the computers' (`easy`, `normal` by default, `insane`), the graphics mode the player's (`reforged` by default, `classic`), whose data the run reads |
 | `sim:advance(seconds)` | Moves the clock on |
 | `sim:advance_steps(n)` | Moves the clock on by whole steps of 1/1024 s, exactly |
 | `sim:wait_until(check, within, every)` | Advances by `every` (0.1 s) until `check()` is true or `within` seconds have passed; returns whether it held |

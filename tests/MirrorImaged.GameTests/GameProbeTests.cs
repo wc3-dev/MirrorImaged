@@ -28,31 +28,39 @@ public sealed class GameProbeTests
 {
     public static TheoryData<string> Probes => [.. ProbeComparison.Names];
 
-    // Runs a probe in the game and in MirrorImaged and compares both with the game's lines in probes/expected (decisions
-    // D120): the game must still give them, and MirrorImaged give them but for what probes/differences records. One
-    // probe, from PowerShell: dotnet test tests/MirrorImaged.GameTests --filter 'Needs=Game&DisplayName~name: \"triggers\"'
+    // Runs a probe in the game, in the player's graphics mode, and in MirrorImaged in that mode, and compares both with
+    // the game's lines for that mode in probes/expected (decisions D120, D683): the game must still give them, and
+    // MirrorImaged give them but for what probes/differences records. A probe with lines only for the other mode fails
+    // before the game starts. One probe, from PowerShell:
+    // dotnet test tests/MirrorImaged.GameTests --filter 'Needs=Game&DisplayName~name: \"triggers\"'
     [GameTheory]
     [MemberData(nameof(Probes))]
     public void A_probe_gives_the_games_lines_in_the_game_and_in_MirrorImaged(string name)
     {
+        var mode = GameRunner.Default.Graphics;
+        var modes = ProbeComparison.Modes(name);
+        Assert.True(modes.Count == 0 || modes.Contains(mode),
+            $"{name} has lines only for {string.Join(" and ", modes)} graphics, and the game is on {mode} graphics (War3Preferences hd): " +
+            $"record its {mode} lines as probes/expected/{Path.GetFileName(ProbeComparison.Record("expected", name, mode))}");
         var run = GameRunner.Default.Run(name, ProbeComparison.Source(name), ProbeComparison.Longest, ProbeComparison.WithComputer(name), ProbeComparison.Change(name),
             ProbeComparison.IsJass(name));
         Assert.True(run.State is ProbeState.Done or ProbeState.Closed, $"{run.State}: {run.Detail}");
         IReadOnlyList<string> lines = run.State == ProbeState.Closed ? [ProbeComparison.Closes] : run.Lines;
-        Assert.True(File.Exists(ProbeComparison.Expected(name)), $"""
-            {name} has no probes/expected/{name}.txt; the game gave:
+        Assert.True(modes.Count > 0, $"""
+            {name} has no probes/expected/{name}.txt; the game gave, on {mode} graphics:
             {string.Join('\n', lines)}
             """);
-        var game = ProbeComparison.Compare(ProbeComparison.Expected(name), lines);
+        var expected = ProbeComparison.Expected(name, mode);
+        var game = ProbeComparison.Compare(expected, lines);
         Assert.True(game.Count == 0, $"""
-            {name}: the game no longer gives probes/expected/{name}.txt's lines:
+            {name}: the game no longer gives probes/expected/{Path.GetFileName(expected)}'s lines on {mode} graphics:
             {string.Join('\n', game.Select(d => d.Describe("this run")))}
             This run's lines:
             {string.Join('\n', lines)}
             {run.Detail}
             """);
 
-        ProbeComparison.AssertMirror(name);
+        ProbeComparison.AssertMirror(name, mode);
     }
 
     [GameFact]

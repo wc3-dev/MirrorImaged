@@ -1,3 +1,6 @@
+# Classic graphics (War3Preferences hd=0), 3.0.1.24371, 11-19 (L-mirror-graphics-mode): the game's lines in two runs, the
+# same but where a {t} or {w} says. They are destructables.reforged.txt's where the game gave the same; that file's notes
+# below were written for Reforged graphics (hd=2), and its {t}s and {w}s are kept.
 # 3.0.1.24371, 11-08 (W2-4): the probe's lines as the game gave them; six runs as it grew, the lines they shared the same each time
 hfoo nil zero nil
 variation 15 true
@@ -172,10 +175,10 @@ self killed 3 0 []
   self death 3 removed life 50.000
 self removed 3 0
 revival unit nil nil true
-deck YT16 32.000 -1280.000 286.5 277.5 255.0 247.1 198.8 158.2 288.9 0.0 0.0 0.0
-deck LT06 -1280.000 32.000 274.2 274.2 0.0 0.0 0.0 0.0 269.3 251.2 250.3 243.5
+deck YT16 32.000 -1280.000 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+deck LT06 -1280.000 32.000 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
   death bridge life 0.000 widget true event 89
-deck killed 286.5 277.5 255.0 247.1 198.8 158.2 288.9 0.0 0.0 0.0
+deck killed 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
 deck 3 s 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
 revived 50.000/50.000
-deck restored 3 s 286.5 277.5 255.0 247.1 198.8 158.2 288.9 0.0 0.0 0.0
+deck restored 3 s 274.6 268.5 247.0 247.4 193.4 0.0 280.8 0.0 0.0 0.0

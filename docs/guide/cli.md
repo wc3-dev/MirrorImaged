@@ -36,6 +36,10 @@ A `<map>` is one of three, and every command takes each:
 Any command that takes a map also takes the seats: `--users 0,1` and `--computers 2,3` name the slots people and computers play, and `--melee true` seats the map's first user slot with a
 person and every other with a computer. With none of them, the map's first user slot is a person and its computer slots are computers.
 
+It also takes `--graphics reforged` or `--graphics classic`: the graphics mode the player has chosen in the game's options. The game's
+data answers follow it, not the map: a unit's scale and animation speeds, the game camera, a bridge's height under `GetLocationZ` and which
+sound files exist, so a script can read different numbers in each mode. Reforged unless given; a recording replays in its own mode.
+
 ## Recordings
 
 A recording is a JSON file: the map, the seed, the seats, the inputs each at its step, and the step the run reached. See [recordings](recordings.md).

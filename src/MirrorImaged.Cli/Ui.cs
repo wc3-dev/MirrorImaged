@@ -22,7 +22,7 @@ static class Ui
         ("fuzz <map> [--seconds <n>] [--seed <n>] [--orders <n>]", "Gives every player's units random legal orders each second and reports script errors"),
     ];
 
-    const string Seating = "A map is a map file (.w3x or .w3m), a folder map (a folder of that name holding the map's files), or one named War3.w3mod:Maps/..., which is read from the installed game. Any command that takes a map also takes --users <slots> and --computers <slots> (comma separated), or --melee true to seat the first user slot with a person and the others with computers.";
+    const string Seating = "A map is a map file (.w3x or .w3m), a folder map (a folder of that name holding the map's files), or one named War3.w3mod:Maps/..., which is read from the installed game. Any command that takes a map also takes --users <slots> and --computers <slots> (comma separated), or --melee true to seat the first user slot with a person and the others with computers, and --graphics reforged or classic, the graphics mode the player has chosen in the game's options, whose data the run reads (Reforged unless given; a recording keeps its own).";
 
     const string OneCommand = "mirror <command> --help shows one command.";
 

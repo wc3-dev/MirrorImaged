@@ -164,18 +164,37 @@ public static class ProbeComparison
                 ground.TerrainTiles[(int)(y * (ground.Width + 1) + x)].Height = x / 16f + y / 4f;
     }
 
-    /// <summary>The game's lines of a probe, <c>probes/expected/&lt;probe&gt;.txt</c>.</summary>
-    public static string Expected(string name) => Path.Combine(Probes, "expected", name + ".txt");
+    /// <summary>
+    /// The graphics modes a probe has the game's lines for (decisions D683): both when <c>probes/expected/&lt;probe&gt;.txt</c>
+    /// holds them, as the game gives the same in both; else each mode with a <c>&lt;probe&gt;.&lt;mode&gt;.txt</c>
+    /// (<c>units.classic.txt</c>), as the game's data answers differ between them.
+    /// </summary>
+    public static IReadOnlyList<GraphicsMode> Modes(string name) => File.Exists(Record("expected", name, null))
+        ? Enum.GetValues<GraphicsMode>()
+        : [.. Enum.GetValues<GraphicsMode>().Where(mode => File.Exists(Record("expected", name, mode)))];
 
-    /// <summary>Where MirrorImaged's known differences from a probe's expected lines are, <c>probes/differences/&lt;probe&gt;.txt</c>.</summary>
-    public static string Differences(string name) => Path.Combine(Probes, "differences", name + ".txt");
+    /// <summary>The game's lines of a probe in a graphics mode: <c>probes/expected/&lt;probe&gt;.&lt;mode&gt;.txt</c>, else <c>&lt;probe&gt;.txt</c>.</summary>
+    public static string Expected(string name, GraphicsMode mode) => Either("expected", name, mode);
 
     /// <summary>
-    /// Runs a probe's map in MirrorImaged, through the seam that runs without blizzard.j, for at most
+    /// Where MirrorImaged's known differences from a probe's expected lines in a graphics mode are:
+    /// <c>probes/differences/&lt;probe&gt;.&lt;mode&gt;.txt</c>, else <c>&lt;probe&gt;.txt</c>.
+    /// </summary>
+    public static string Differences(string name, GraphicsMode mode) => Either("differences", name, mode);
+
+    /// <summary>The name a probe's record has in <c>probes/expected</c> or <c>probes/differences</c>, for a mode or for both (null).</summary>
+    public static string Record(string folder, string name, GraphicsMode? mode) =>
+        Path.Combine(Probes, folder, mode is null ? name + ".txt" : $"{name}.{mode.ToString()!.ToLowerInvariant()}.txt");
+
+    static string Either(string folder, string name, GraphicsMode mode) =>
+        File.Exists(Record(folder, name, mode)) ? Record(folder, name, mode) : Record(folder, name, null);
+
+    /// <summary>
+    /// Runs a probe's map in MirrorImaged in a graphics mode, through the seam that runs without blizzard.j, for at most
     /// <see cref="Longest"/>; returns its lines, <see cref="Closes"/> alone if the run closed the game, or why it gave
     /// none.
     /// </summary>
-    public static (IReadOnlyList<string>? Lines, string? Stop) Mirror(string name)
+    public static (IReadOnlyList<string>? Lines, string? Stop) Mirror(string name, GraphicsMode mode)
     {
         var folder = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())).FullName;
         try
@@ -183,8 +202,8 @@ public static class ProbeComparison
             var map = Path.Combine(folder, name + ".w3x");
             if (IsJass(name)) ProbeMap.BuildJass(name, ProbeMap.JassSource(name), map);
             else ProbeMap.Build(name, ProbeMap.Source(name), map, WithComputer(name), Change(name));
-            var data = ReadsData(name) ? StandardData.Installed(GameInstall.Require(), MapArchive.Read(map).Files.Info) : null;
-            using var simulation = Simulation.Load(map, Frame, data: data);
+            var data = ReadsData(name) ? StandardData.Installed(GameInstall.Require(), MapArchive.Read(map).Files.Info, mode) : null;
+            using var simulation = Simulation.Load(map, Frame, new SimulationOptions { Graphics = mode }, data);
             var file = $@"{ProbeMap.Folder}\{name}.pld";
             for (var time = TimeSpan.Zero; time < Longest && simulation is { Stopped: null, Ended: false } && !simulation.Documents.CustomMapData.ContainsKey(file); time += TimeSpan.FromSeconds(1))
             {
@@ -289,26 +308,26 @@ public static class ProbeComparison
             : null);
     }
 
-    /// <summary>Runs a probe in MirrorImaged and fails unless it differs from the game's lines as recorded.</summary>
-    public static void AssertMirror(string name)
+    /// <summary>Runs a probe in MirrorImaged in a graphics mode and fails unless it differs from the game's lines in that mode as recorded.</summary>
+    public static void AssertMirror(string name, GraphicsMode mode)
     {
-        Assert.True(File.Exists(Expected(name)), $"{name} has no probes/expected/{name}.txt: run it in the game first");
-        var (lines, stop) = Mirror(name);
-        AssertRecorded(name, lines is null ? [new Difference(0, null, null, stop)] : Compare(Expected(name), lines));
+        Assert.True(Modes(name).Contains(mode), $"{name} has no lines for {mode} graphics in probes/expected: run it in the game in that mode first");
+        var (lines, stop) = Mirror(name, mode);
+        AssertRecorded(name, mode, lines is null ? [new Difference(0, null, null, stop)] : Compare(Expected(name, mode), lines));
     }
 
     /// <summary>
-    /// Fails unless <paramref name="differences"/> are what <c>probes/differences/&lt;probe&gt;.txt</c> records, in
-    /// order (decisions D121): none when there is no such file. The message names each difference and gives the lines
-    /// the file would hold.
+    /// Fails unless <paramref name="differences"/> are what the probe's differences file in the mode
+    /// (<see cref="Differences"/>) records, in order (decisions D121): none when there is no such file. The message names
+    /// each difference and gives the lines the file would hold.
     /// </summary>
-    public static void AssertRecorded(string name, IReadOnlyList<Difference> differences)
+    public static void AssertRecorded(string name, GraphicsMode mode, IReadOnlyList<Difference> differences)
     {
-        var file = Differences(name);
+        var file = Differences(name, mode);
         var recorded = File.Exists(file) ? File.ReadAllLines(file).Where(line => line.Length > 0 && !line.StartsWith("# ")).ToList() : [];
         var actual = differences.SelectMany(d => d.Recorded).ToList();
         Assert.True(recorded.SequenceEqual(actual), $"""
-            {name}: MirrorImaged's lines differ from the game's (probes/expected/{name}.txt) otherwise than probes/differences/{name}.txt records.
+            {name}, {mode} graphics: MirrorImaged's lines differ from the game's (probes/expected/{Path.GetFileName(Expected(name, mode))}) otherwise than probes/differences/{Path.GetFileName(file)} records.
             {(differences.Count == 0 ? "They no longer differ." : string.Join('\n', differences))}
             The file's lines but its notes would be:
             {string.Join('\n', actual)}

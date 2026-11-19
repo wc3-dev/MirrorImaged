@@ -60,7 +60,7 @@ public sealed partial class Simulation
     public static Simulation Restore(Snapshot snapshot, string? map = null) =>
         Restore(snapshot, Load(map ?? snapshot.Recording.Map, Options(snapshot.Recording)));
 
-    static SimulationOptions Options(Recording recording) => new() { Seed = recording.Seed, Users = recording.Users, Computers = recording.Computers, Difficulty = recording.Difficulty };
+    static SimulationOptions Options(Recording recording) => new() { Seed = recording.Seed, Users = recording.Users, Computers = recording.Computers, Difficulty = recording.Difficulty, Graphics = recording.Graphics };
 
     static Simulation Restore(Snapshot snapshot, Simulation simulation)
     {
