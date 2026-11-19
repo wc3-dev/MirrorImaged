@@ -54,6 +54,8 @@ public sealed class Browser : IAsyncLifetime
         // The browser writes the port it listens on into its profile, and says it too. On Windows Edge's first process ends at once and leaves the
         // browser running, so the file is what says it started there. Elsewhere what it prints is read as it comes: a browser whose output nobody
         // reads writes into a closed pipe
+        var clock = Stopwatch.StartNew();
+        long firstLine = -1;
         var profile = Path.Combine(_folder, "profile");
         string[] switches = ["--headless=new", "--disable-gpu", "--no-sandbox", "--no-first-run", "--disable-dev-shm-usage", "--remote-debugging-port=0", $"--user-data-dir={profile}", "about:blank"];
         try
@@ -63,7 +65,11 @@ public sealed class Browser : IAsyncLifetime
             {
                 void Said(object sender, DataReceivedEventArgs line)
                 {
-                    lock (_said) _said.AppendLine(line.Data);
+                    lock (_said)
+                    {
+                        if (firstLine < 0 && !string.IsNullOrEmpty(line.Data)) firstLine = clock.ElapsedMilliseconds;
+                        _said.AppendLine(line.Data);
+                    }
                 }
                 _process = Process.Start(new ProcessStartInfo(browser, switches) { RedirectStandardOutput = true, RedirectStandardError = true });
                 if (_process is not null)
@@ -90,6 +96,8 @@ public sealed class Browser : IAsyncLifetime
             lock (_said) port ??= Regex.Match(_said.ToString(), @"DevTools listening on ws://[^:/]+:(\d+)/") is { Success: true } listening ? listening.Groups[1].Value : null;
             if (port is { Length: > 0 } && await Version($"http://127.0.0.1:{port}") is not null) (_endpoint, _started) = ($"http://127.0.0.1:{port}", true);
         }
+        if (Environment.GetEnvironmentVariable("MIRROR_BROWSER_TIMES") is { Length: > 0 } times)
+            lock (_said) File.AppendAllText(times, $"{clock.ElapsedMilliseconds} {(_endpoint is null ? "fail" : "ok")} first-line={firstLine} dbus={_said.ToString().Contains("dbus/bus.cc")}\n");
         if (_endpoint is not null) return;
         lock (_said) Missing = $"{browser} gave no debugging port in 30 s{(_process is { HasExited: true } ? $" and ended with code {_process.ExitCode}" : "")}; it said: {_said.ToString().Trim()}";
     }

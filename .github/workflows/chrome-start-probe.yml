@@ -1,14 +1,9 @@
 name: Chrome start probe
 
-# Temporary: measures how long headless Chrome takes to open its debugging port on the Linux runner, idle and while the test suite runs beside it.
+# Temporary: runs CI's own test step ten times in a row on the Linux runner and reads how long each start of the browser tests' Chrome took.
 on:
   push:
     branches: [task/linux-browser]
-  workflow_dispatch:
-    inputs:
-      switches:
-        description: Extra switches for Chrome
-        default: ''
 
 permissions:
   contents: read
@@ -18,8 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        load: [idle, suite]
-        copy: [1, 2]
+        copy: [1, 2, 3, 4]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -27,17 +21,20 @@ jobs:
           persist-credentials: false
 
       - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
-        if: matrix.load == 'suite'
         with:
           dotnet-version: 10.0.x
 
       - name: Build
-        if: matrix.load == 'suite'
         run: dotnet build MirrorImaged.slnx
 
-      - name: Start Chrome 40 times
+      - name: Run the tests ten times
         shell: bash
-        env:
-          EXTRA: ${{ inputs.switches }}
-          LOAD: ${{ matrix.load }}
-        run: bash tools/chrome-start-probe.sh
+        run: |
+          export MIRROR_BROWSER_TIMES="$PWD/browser-times.txt"
+          for i in $(seq 1 10); do
+            dotnet test MirrorImaged.slnx --no-build --filter "Needs!=Game" > "test-$i.log" 2>&1
+            echo "run $i: $(grep -hE 'Passed!|Failed!' "test-$i.log" | sed 's/ - MirrorImaged.*//' | tr '\n' ';') browser tests failed: $(grep -c 'ViewerBrowserTests.*\[FAIL\]' "test-$i.log")"
+          done
+          echo "--- each start of the browser: ms, result, when its first line came, whether it printed the dbus line"
+          cat "$MIRROR_BROWSER_TIMES"
+          sort -n "$MIRROR_BROWSER_TIMES" | awk '{ t[NR] = $1; if ($2 == "fail") f++ } END { printf "starts: %d; failed: %d; least %d ms, median %d ms, most %d ms; over 5 s: ", NR, f, t[1], t[int((NR + 1) / 2)], t[NR]; n = 0; for (i = 1; i <= NR; i++) if (t[i] > 5000) n++; print n }'
