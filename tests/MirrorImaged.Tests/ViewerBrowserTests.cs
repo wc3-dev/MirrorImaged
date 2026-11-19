@@ -68,6 +68,7 @@ public sealed class ViewerPage : IAsyncLifetime
 /// unit. What is drawn is read from the canvas's pixels at the places the page says it drew at. Skipped on a computer with no browser, and failed
 /// where there is one that doesn't answer.
 /// </summary>
+[Collection(BrowserTests.Name)]
 public sealed class ViewerBrowserTests(ViewerPage viewer) : IClassFixture<ViewerPage>
 {
     static readonly string[] Palette = ["#e03131", "#1c7ed6"];
