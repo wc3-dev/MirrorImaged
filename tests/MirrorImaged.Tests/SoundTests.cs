@@ -137,7 +137,7 @@ public sealed class SoundTests : IDisposable
 
     // The install as the storage names its files: a classic file under the language's folder, its Definitive Edition
     // and HD files of other lengths, a classic one with no language, and one only of the Definitive Edition and HD
-    static StandardData Install()
+    static StandardData Install(GraphicsMode graphics = GraphicsMode.Reforged)
     {
         var files = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase)
         {
@@ -149,7 +149,7 @@ public sealed class SoundTests : IDisposable
             ["War3.w3mod:_HD.w3mod:Abilities/Spells/Human/HeroicSlash/HeroicSlash0.ogg"] = Vorbis(48000, 96000),
             ["War3.w3mod:Sound/Music/mp3Music/Tension.mp3"] = Mp3(748, false),
         };
-        var data = new StandardData { Storage = files.GetValueOrDefault };
+        var data = new StandardData { Storage = files.GetValueOrDefault, Graphics = graphics };
         data.Sounds["QuestNew"] = "Sound/Interface/QuestNew.flac";
         data.Sounds["HeroPaladinWhat"] = "HeroPaladinWhat1,HeroPaladinWhat2";
         data.Sounds["RoosterSound"] = "Sound/Interface/QuestNew.flac,Sound/Time/DaybreakRooster.flac";
@@ -185,6 +185,15 @@ public sealed class SoundTests : IDisposable
     [InlineData("QuestNew", 0)]
     public void A_sound_files_length_is_the_installs_classic_files(string path, int length) =>
         Assert.Equal(length, new GameData(Install()).SoundLength(path));
+
+    // probe sounds in classic graphics: the classic files as in Reforged, and none of the Definitive Edition's or HD's,
+    // so a file only they have reads 0 (D684)
+    [Theory]
+    [InlineData(@"Units\Human\HeroPaladin\HeroPaladinWhat1.wav", 1288)]
+    [InlineData(@"Sound\Interface\QuestNew.wav", 3750)]
+    [InlineData(@"Abilities\Spells\Human\HeroicSlash\HeroicSlash0.ogg", 0)]
+    public void In_classic_graphics_a_sound_file_is_only_ever_the_installs_classic_file(string path, int length) =>
+        Assert.Equal(length, new GameData(Install(GraphicsMode.Classic)).SoundLength(path));
 
     // facts ("Files"): a map's own Sound\ProbeAska.wav read 1000 ms, and the same packed as Sound\ProbeÅska.wav 0
     [Fact]

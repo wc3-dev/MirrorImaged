@@ -1,3 +1,4 @@
+# Reforged graphics (War3Preferences hd=2); the classic lines are in the .classic.txt beside this file (D683).
 # probes/cameras-2.lua on 3.0.1.24371, single player, 11-08: the game's lines. Where a target or a field is part way
 # through a move, or a few hundredths off where it lands, its number varies with the game's frames and is a {t}, as are
 # the setups' camera types, a number of their own each run. In a line, each {t} stands for a number, the rest exact

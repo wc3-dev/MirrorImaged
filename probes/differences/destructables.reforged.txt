@@ -1,4 +1,4 @@
-# Where MirrorImaged differs from the game's lines in expected/destructables.txt, in order, with why (decisions D121): a
+# Where MirrorImaged differs from the game's lines in expected/destructables.reforged.txt, in order, with why (decisions D121): a
 # line starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
 
 # GetLocationZ on a bridge's deck: the decks are measured in whole units, so most points read up to 0.5 off; between

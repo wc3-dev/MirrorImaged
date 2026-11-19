@@ -65,8 +65,8 @@ public sealed class StandardDataTests
             "// strings the game uses\n[WorldEditStrings]\nWESTRING_DEST_SUMMER_TREE_WALL=Summer Tree Wall\nWESTRING_DEST_LONG_STONE_CLIFF_1_VERTICAL=\"Long Stone Bridge\"\n",
     };
 
-    static GameData Read(string? values = null, string? objects = null, string locale = "enUS") =>
-        new(StandardData.Read(path => Files.TryGetValue(path, out var text) ? Encoding.UTF8.GetBytes(text) : null, values, objects, locale));
+    static GameData Read(string? values = null, string? objects = null, string locale = "enUS", GraphicsMode graphics = GraphicsMode.Reforged) =>
+        new(StandardData.Read(path => Files.TryGetValue(path, out var text) ? Encoding.UTF8.GetBytes(text) : null, values, objects, locale, graphics));
 
     static int Id(string id) => Ids.Of(id);
 
@@ -107,6 +107,17 @@ public sealed class StandardDataTests
 
         Assert.Equal(0.8f, data.Object(ObjectKind.Unit, Id("hfoo"))!.Real(Id("usca")));
         Assert.Equal(1.2f, data.Object(ObjectKind.Unit, Id("hkni"))!.Real(Id("usca")));
+    }
+
+    // facts, "The game runner": with War3Preferences hd=0 the game reads :sd, else the plain key, never :hd or :de (hfoo 1.0; D681)
+    [Fact]
+    public void A_value_with_graphics_modes_is_read_as_classic_graphics_read_it_in_classic_graphics()
+    {
+        var data = Read(graphics: GraphicsMode.Classic);
+
+        Assert.Equal(1f, data.Object(ObjectKind.Unit, Id("hfoo"))!.Real(Id("usca")));
+        Assert.Equal(2f, data.Object(ObjectKind.Unit, Id("hkni"))!.Real(Id("usca")));
+        Assert.Equal(GraphicsMode.Classic, data.Graphics);
     }
 
     // game-facts, "Object data": a set's tables replace the base's, and an object one of them leaves out doesn't exist

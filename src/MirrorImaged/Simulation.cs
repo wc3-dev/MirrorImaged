@@ -37,6 +37,12 @@ public sealed class SimulationOptions
     /// <summary>The difficulty the computers play at.</summary>
     public Difficulty Difficulty { get; init; } = Difficulty.Normal;
 
+    /// <summary>
+    /// The graphics mode the local player has chosen in the game's options, whose data the run reads: a unit's scale and
+    /// animation speeds, the game camera, the sound files found. Reforged unless given (decisions D680).
+    /// </summary>
+    public GraphicsMode Graphics { get; init; }
+
     /// <summary>The race of a slot, as <c>RACE_*</c> (human 1, orc 2, undead 3, night elf 4), where the lobby chose it; null for the map's.</summary>
     public IReadOnlyDictionary<int, int>? Races { get; init; }
 
@@ -154,7 +160,7 @@ public sealed partial class Simulation : IDisposable
         var map = Read(path); // first, so a missing map says so whether or not the game is installed
         var blizzard = Blizzard.Lua(map.Jass);
         var script = map.Jass ? JassLua(path, map.Script!, Blizzard.Syntax()) : map.Script!;
-        return Recorded(new(new GameData(StandardData.Installed(GameInstall.Require(), map.Files.Info), map), script, blizzard, options ?? new SimulationOptions()), path, options, o => Load(path, o));
+        return Recorded(new(new GameData(StandardData.Installed(GameInstall.Require(), map.Files.Info, options?.Graphics ?? default), map), script, blizzard, options ?? new SimulationOptions()), path, options, o => Load(path, o));
     }
 
     /// <summary>
@@ -163,11 +169,15 @@ public sealed partial class Simulation : IDisposable
     /// <c>""</c> and the data a test gives for the tests of the runtime itself, which run without the game. A JASS map's
     /// script is then made into Lua knowing only common.j.
     /// </summary>
+    /// <exception cref="ArgumentException">The data was read for another graphics mode than the options give.</exception>
     internal static Simulation Load(string path, string blizzard, SimulationOptions? options = null, StandardData? data = null)
     {
+        var graphics = options?.Graphics ?? default;
+        if (data is not null && data.Graphics != graphics)
+            throw new ArgumentException($"The data was read for {data.Graphics} graphics and the run is in {graphics} graphics", nameof(data));
         var map = Read(path);
         var script = map.Jass ? JassLua(path, map.Script!, null) : map.Script!;
-        return Recorded(new(new GameData(data ?? new StandardData(), map), script, blizzard, options ?? new SimulationOptions()), path, options, o => Load(path, blizzard, o, data));
+        return Recorded(new(new GameData(data ?? new StandardData { Graphics = graphics }, map), script, blizzard, options ?? new SimulationOptions()), path, options, o => Load(path, blizzard, o, data));
     }
 
     // The recording starts with the map, the seed and the seats the run was given
@@ -177,6 +187,7 @@ public sealed partial class Simulation : IDisposable
         (simulation._recording.Map, simulation._recording.Seed) = (path, options?.Seed ?? 0);
         (simulation._recording.Users, simulation._recording.Computers) = (options?.Users?.ToArray(), options?.Computers?.ToArray());
         simulation._recording.Difficulty = options?.Difficulty ?? Difficulty.Normal;
+        simulation._recording.Graphics = options?.Graphics ?? default;
         return simulation;
     }
 

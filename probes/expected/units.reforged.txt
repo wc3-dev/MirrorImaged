@@ -1,3 +1,4 @@
+# Reforged graphics (War3Preferences hd=2); the classic lines are in the .classic.txt beside this file (D683).
 # probes/units.lua on 3.0.1.24371, single player, 11-08 (W2-2): the game's lines. Two runs, the same, the turning and decay lines too; two more after the rawequal of the widget was added, the same.
 create
 ids 1 1 1 1

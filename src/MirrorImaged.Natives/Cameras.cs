@@ -1,10 +1,12 @@
+using MirrorImaged.Data;
 using MirrorImaged.World;
 
 namespace MirrorImaged.Natives;
 
 public partial class camerasetup
 {
-    // CAMERA_FIELD_TARGET_DISTANCE (0) to CAMERA_FIELD_ZABSOLUTE (13) as set, angles in degrees, each with its time
+    // CAMERA_FIELD_TARGET_DISTANCE (0) to CAMERA_FIELD_ZABSOLUTE (13) as set, angles in degrees, each with its time; a
+    // new setup's far clip is 5400 in Reforged graphics and 5000 in classic (cameras; D685)
     internal readonly float[] Fields = [3000, 5400, 304, 70, 0, 90, 0, 16, 0, 0, 0, 0, 0, 0];
     internal readonly float[] Durations = new float[14];
     internal float X, Y, Duration;
@@ -23,10 +25,16 @@ public sealed partial class GameNatives
     const int CameraFields = 14;
     const float PanSpeed = 3000; // PanCameraTo's, and a setup's pan that isn't timed, a second (cameras-3)
 
-    // The game camera's fields, which ResetToGameCamera puts back (cameras)
-    static readonly float[] GameCamera = [2000, 5300, 304, 70, 0, 90, 10, 16, 0, 0, 0, 0, 0, 0];
+    // The game camera's fields, which ResetToGameCamera puts back, in Reforged graphics and in classic, whose far clip and
+    // z offset are classic's UI\MiscData.txt [Camera] FarZ and Height (cameras; D685)
+    static readonly float[] ReforgedCamera = [2000, 5300, 304, 70, 0, 90, 10, 16, 0, 0, 0, 0, 0, 0];
+    static readonly float[] ClassicCamera = [2000, 5000, 304, 70, 0, 90, 0, 16, 0, 0, 0, 0, 0, 0];
 
-    readonly Motion[] _camera = [.. GameCamera.Select((value, field) => new Motion(Limit(field, value)))];
+    float[] GameCamera => Data.Graphics == GraphicsMode.Classic ? ClassicCamera : ReforgedCamera;
+
+    // Made at the first read, as Data, which says the mode, is set after the natives are
+    Motion[]? _cameraFields;
+    Motion[] _camera => _cameraFields ??= [.. GameCamera.Select((value, i) => new Motion(Limit(i, value)))];
     Motion _cameraX, _cameraY;
     // A pan's height, in place of the z offset, until the target moves again or, from the step after _panZUntil,
     // StopCamera or ResetToGameCamera drops it; following a unit keeps it (cameras-2, cameras-4, units-camera-2)
@@ -374,7 +382,12 @@ public sealed partial class GameNatives
     public location? GetCameraEyePositionLoc() => Location(Eye().X + Aside, Eye().Y + Aside);
 
     [Native(Level.Exact, Fact = Cameras)]
-    public camerasetup? CreateCameraSetup() => Make(new camerasetup());
+    public camerasetup? CreateCameraSetup()
+    {
+        var setup = new camerasetup();
+        if (Data.Graphics == GraphicsMode.Classic) setup.Fields[1] = ClassicCamera[1];
+        return Make(setup);
+    }
 
     /// <summary>Kept as given, in degrees for an angle, a length below 0 as 0; its time is the field's when the setup is applied.</summary>
     [Native(Level.Exact, Fact = Cameras)]
