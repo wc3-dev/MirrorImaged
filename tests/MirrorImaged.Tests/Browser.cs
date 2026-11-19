@@ -58,6 +58,12 @@ public sealed class Browser : IAsyncLifetime
         long firstLine = -1;
         var profile = Path.Combine(_folder, "profile");
         string[] switches = ["--headless=new", "--disable-gpu", "--no-sandbox", "--no-first-run", "--disable-dev-shm-usage", "--remote-debugging-port=0", $"--user-data-dir={profile}", "about:blank"];
+        var timing = Environment.GetEnvironmentVariable("MIRROR_BROWSER_TIMES") is { Length: > 0 };
+        if (timing) switches = ["--enable-logging=stderr", "--v=1", .. switches];
+        var load = File.Exists("/proc/loadavg") ? File.ReadAllText("/proc/loadavg").Trim() : "";
+        var others = Directory.Exists("/proc") ? Directory.GetDirectories("/proc").Count(d => int.TryParse(Path.GetFileName(d), out _) && File.Exists(Path.Combine(d, "cmdline"))
+            && TryRead(Path.Combine(d, "cmdline")).Contains("MirrorImaged.GameTests")) : -1;
+        static string TryRead(string path) { try { return File.ReadAllText(path); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return ""; } }
         try
         {
             if (OperatingSystem.IsWindows()) StartOnItsOwnDesktop(browser, switches);
@@ -97,7 +103,22 @@ public sealed class Browser : IAsyncLifetime
             if (port is { Length: > 0 } && await Version($"http://127.0.0.1:{port}") is not null) (_endpoint, _started) = ($"http://127.0.0.1:{port}", true);
         }
         if (Environment.GetEnvironmentVariable("MIRROR_BROWSER_TIMES") is { Length: > 0 } times)
-            lock (_said) File.AppendAllText(times, $"{clock.ElapsedMilliseconds} {(_endpoint is null ? "fail" : "ok")} first-line={firstLine} dbus={_said.ToString().Contains("dbus/bus.cc")}\n");
+            lock (_said)
+            {
+                File.AppendAllText(times, $"{clock.ElapsedMilliseconds} {(_endpoint is null ? "fail" : "ok")} first-line={firstLine} dbus={_said.ToString().Contains("dbus/bus.cc")} load=[{load}] game-tests-processes={others}\n");
+                // A slow start's log: each line that came a second or more after the one before it, with the gap
+                if (clock.ElapsedMilliseconds > 3000)
+                {
+                    double? last = null;
+                    foreach (var line in _said.ToString().Split('\n'))
+                        if (Regex.Match(line, @"^\[\d+:\d+:\d+/(\d\d)(\d\d)(\d\d\.\d+)") is { Success: true } at)
+                        {
+                            var seconds = int.Parse(at.Groups[1].Value) * 3600 + int.Parse(at.Groups[2].Value) * 60 + double.Parse(at.Groups[3].Value, System.Globalization.CultureInfo.InvariantCulture);
+                            if (last is { } before && seconds - before >= 0.5) File.AppendAllText(times, $"  +{seconds - before:0.0}s {line[..Math.Min(line.Length, 240)]}\n");
+                            last = seconds;
+                        }
+                }
+            }
         if (_endpoint is not null) return;
         lock (_said) Missing = $"{browser} gave no debugging port in 30 s{(_process is { HasExited: true } ? $" and ended with code {_process.ExitCode}" : "")}; it said: {_said.ToString().Trim()}";
     }
