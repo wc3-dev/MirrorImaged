@@ -2544,6 +2544,37 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   difference: the game fires a second summon event 0.18 s after the first, one of the two without a unit, and moves the caster and the image to two places near (which of them where changes from run to
   run); here one summon event fires, with the image, and the caster stays.
 
+- **D420 (Replays of the game today):** read from one replay of a ladder game of 2.0 (header version 10200, build 7003), not from a document.
+  Before the lobby's slots come blocks 0x38 and 0x39 (a kind, a byte, a length of four bytes, that many bytes), which are skipped. Action 0x7A
+  is 17 bytes: the two numbers of a unit, an ability and an order, sent when a button of the unit is pressed, before the order itself. Action
+  0x77 is two strings and four bytes, a ladder's own data. The reader now also gives groups (0x17), a group picked (0x18), the subgroup (0x19),
+  whether an order was queued, the result of a leaving player, and the map's path from the lobby's encoded settings. With these the replay has no
+  action that is not read. A unit is named by two numbers; the second counts up as the game makes objects and the first is used again.
+
+- **D421 (A replay's seats):** `Simulation.Load(map, replay)` seats the lobby's people whose slots the map has as users (a watcher has none), no
+  computers, each with the race the lobby holds (a player who took random gets a random one: the replay does not say what the game drew). A
+  replay does not say where the game put the players either, so each gets the start place nearest the first place it gave an order at. This
+  lane's choice; it held for the one replay (both players' first orders were at their own gold mines). `SimulationOptions.Races` and
+  `StartLocations` carry it.
+
+- **D422 (Which unit a replay's numbers name):** the game's numbers for a unit are its own and a run here cannot have them, so D375's "the id
+  the unit has here" never held for a played game. `ReplayRun` finds the unit when an order first needs it: among the player's living units no
+  numbers have yet, made after the units of lower second numbers and before those of higher ones, the first of the type the subgroup action
+  told of that unit; else a building or not, as a pressed button told (`Aque`, a build menu); else, in a selection of several, the first that
+  is not a building; else the first. An order's target is the unit with no numbers yet within 64 of the place the order gives, else the tree
+  there, else the place. A unit the game made and this run did not is never found, and its orders are counted (`Unowned`). This lane's
+  model, Close: a wrong match is possible and is not detected. `ToRecording` is gone; the run's own recording (`act` inputs, with the run's
+  unit ids) plays it again exactly.
+
+- **D423 (Who takes a replay's order):** smart, stop, attack, move, patrol and hold position go to every unit of the selection. Any other order
+  is a button of the card and goes to one unit: the first that takes it, those of the shown subgroup's type first. The game's own rule (the
+  building with the shortest queue, the nearest worker) is not measured. An order of a hero ability's code is the skill learned. Read and not
+  played, and counted (`NotPlayed`): giving and dropping items (0x13, 0x14), taking from a queue (0x1E, 0x1F) and the escape key (0x61).
+
+- **D424 (Smart at a mine or a tree):** a replay's smart order of a unit with a harvest ability (`Ahar`, `Aaha`, `Awha` for gold; `Ahar`,
+  `Ahrl`, `Awha` for a tree) at a mine with gold or at a tree is given as `harvest`, as the game turns a person's right-click into it.
+  `IssueTargetOrder(smart)` from a script is left as it was. Acolytes and wisps then carry gold in trips as workers do, which the game's do not.
+
 ### The corpus runs (L-mirror-corpus-runs)
 
 - **D440 (the corpus tests run in parts):** `ShippedMapTests` and `MeleeCorpusTests` each took longer than the 10 minutes the test run gives a test (35 min 17 s for the 466 shipped maps on 11-19, and
