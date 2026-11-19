@@ -2851,7 +2851,7 @@ in Python against the lines, then written into `native/mifloat.c`.
   called every player crippled: "You will be revealed ..." at 2 s and "Revealing ..." at 122 s on every map. Close: that a hall being built counts is this lane's reading of the function it replaced
   in `blizzard.j` (`GetPlayerTypedUnitCount` with incomplete ones included), not a measurement.
 
-- **D494 (what the melee corpus asserts, and its parts):** `Every_melee_map_runs_30_minutes_with_computers_without_a_script_error` looked only at the computers' units added together. It now looks at the
-  game each minute and fails a map where a computer never had more units than it began with, where no computer had two town halls at once, or where no unit was seen dead (a unit that is gone with no
-  body was taken away, as a defeated player's are, and is not counted). It is not loosened for the maps that fail; they are listed in the pull request. The corpus theories run in 24 parts, not 8: a
+- **D494 (what the melee corpus asserts, and its parts):** `Every_melee_map_runs_30_minutes_with_computers_without_a_script_error` looked only at the computers' units added together. The corpus now looks at
+  the game each minute and has a second test that fails a map where a computer never had more units than it began with, where no computer had two town halls at once, or where no unit was seen dead (a unit that is gone with no
+  body was taken away, as a defeated player's are, and is not counted). That stricter line is a test of its own, `On_every_melee_map_each_computer_trains_and_one_expands_and_a_unit_is_killed`, which is not loosened or skipped for the maps that fail (27 of 258 on 11-19, listed in pull request 114), so the first test stays the regression check: no stop, no script error, and the computers' units grow, on every map. Both read one play of a part. The corpus theories run in 24 parts, not 8: a
   part took 6 to 15 minutes with other work running, against the 10 minutes the test run gives a test, and a third of that fits.

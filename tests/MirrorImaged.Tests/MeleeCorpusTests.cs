@@ -8,9 +8,10 @@ namespace MirrorImaged.Tests;
 
 /// <summary>
 /// A4 and A10 on the installed game's melee maps: a person in the first slot, who gives no orders, and computers in the others play 30 simulated
-/// minutes without a script error; each computer trains units, and on each map a computer takes a second town hall and a unit is killed. A 4-player
-/// map goes through 30 game minutes in under 60 seconds. Set MIRROR_MELEE to a part of a map's name to run only the maps with it. The whole set
-/// runs in parts (<see cref="Corpus"/>).
+/// minutes. One test is the regression check (no script error, and the computers' units grow); another asserts the rest of A4's line (each
+/// computer trains units, a computer takes a second town hall and a unit is killed) and fails on the maps where it doesn't hold. Both read one
+/// play of the maps. A 4-player map goes through 30 game minutes in under 60 seconds. Set MIRROR_MELEE to a part of a map's name to run only the
+/// maps with it. The whole set runs in parts (<see cref="Corpus"/>).
 /// </summary>
 [Trait("Needs", "Game")]
 [Collection(Corpus.Name)]
@@ -55,9 +56,36 @@ public sealed class MeleeCorpusTests(ITestOutputHelper output) : IDisposable
     // The town halls of the four races, each with what it upgrades to: more than one is a computer that expanded
     static readonly HashSet<string> Halls = ["htow", "hkee", "hcas", "ogre", "ostr", "ofrt", "etol", "etoa", "etoe", "unpl", "unp1", "unp2"];
 
+    sealed record Played(List<string> Lines, List<string> Errors, List<string> Unmet);
+
+    // Each part is played once, by whichever of the two tests asks first
+    static readonly System.Collections.Concurrent.ConcurrentDictionary<int, Lazy<Played>> Results = [];
+
+    Played Result(int part)
+    {
+        var played = Results.GetOrAdd(part, _ => new Lazy<Played>(() => Play(part))).Value;
+        foreach (var line in played.Lines) output.WriteLine(line);
+        return played;
+    }
+
     [InstallTheory]
     [MemberData(nameof(Corpus.Parts), MemberType = typeof(Corpus))]
     public void Every_melee_map_runs_30_minutes_with_computers_without_a_script_error(int part)
+    {
+        var errors = Result(part).Errors;
+        Assert.True(errors.Count == 0, string.Join('\n', errors));
+    }
+
+    /// <summary>The rest of A4's line, a map at a time; it fails on the maps where the line doesn't hold, and names which part of it.</summary>
+    [InstallTheory]
+    [MemberData(nameof(Corpus.Parts), MemberType = typeof(Corpus))]
+    public void On_every_melee_map_each_computer_trains_and_one_expands_and_a_unit_is_killed(int part)
+    {
+        var unmet = Result(part).Unmet;
+        Assert.True(unmet.Count == 0, string.Join('\n', unmet));
+    }
+
+    Played Play(int part)
     {
         using var storage = CascStorage.Open(GameInstall.Require());
         var only = Environment.GetEnvironmentVariable("MIRROR_MELEE");
@@ -66,10 +94,10 @@ public sealed class MeleeCorpusTests(ITestOutputHelper output) : IDisposable
             .Where(name => only is null || name.Contains(only, StringComparison.OrdinalIgnoreCase))
             .Order(StringComparer.Ordinal), part);
         var lines = new string?[maps.Count];
-        var found = new List<string>[maps.Count];
+        var (found, short_) = (new List<string>[maps.Count], new List<string>[maps.Count]);
         Corpus.Each(maps, (at, name) =>
         {
-            var problems = found[at] = [];
+            var (problems, unmet) = (found[at] = [], short_[at] = []);
             var path = Path.Combine(_folder, at + Path.GetExtension(name));
             try
             {
@@ -102,17 +130,16 @@ public sealed class MeleeCorpusTests(ITestOutputHelper output) : IDisposable
                     + string.Join(", ", seats.Computers.Select((player, n) => $"{player}: {first[n + 2]} to {last[n + 2]} units, {most[n + 2]} at most, {halls[n + 2]} halls at most, {killed[n + 2]} killed"));
                 if (simulation.Stopped is not null) problems.Add($"{name}: stopped: {simulation.Stopped.Message.Split('\n')[0]}");
                 foreach (var line in simulation.Log.Where(l => l.Split(' ').ElementAtOrDefault(1) == "error:").Take(1)) problems.Add($"{name}: {line}");
+                if (last.Skip(2).Sum() <= first.Skip(2).Sum()) problems.Add($"{name}: the computers trained no units ({first.Skip(2).Sum()} to {last.Skip(2).Sum()})");
                 for (var n = 2; n < sides.Length; n++)
-                    if (most[n] <= first[n]) problems.Add($"{name}: computer {sides[n]} trained no units ({first[n]} at the start, {most[n]} at most)");
-                if (halls.Skip(2).All(count => count < 2)) problems.Add($"{name}: no computer took a second town hall");
-                if (killed.Sum() == 0) problems.Add($"{name}: no unit was killed");
+                    if (most[n] <= first[n]) unmet.Add($"{name}: computer {sides[n]} trained no units ({first[n]} at the start, {most[n]} at most)");
+                if (halls.Skip(2).All(count => count < 2)) unmet.Add($"{name}: no computer took a second town hall");
+                if (killed.Sum() == 0) unmet.Add($"{name}: no unit was killed");
             }
             catch (Exception e) { problems.Add($"{name}: {e.GetType().Name}: {e.Message.Split('\n')[0]}"); }
             finally { File.Delete(path); }
         });
 
-        foreach (var line in lines.OfType<string>()) output.WriteLine(line);
-        var all = found.SelectMany(problems => problems).ToList();
-        Assert.True(all.Count == 0, string.Join('\n', all));
+        return new([.. lines.OfType<string>()], [.. found.SelectMany(problems => problems)], [.. short_.SelectMany(unmet => unmet)]);
     }
 }
