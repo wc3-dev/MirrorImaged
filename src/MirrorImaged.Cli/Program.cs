@@ -215,7 +215,11 @@ static int DesyncCheck(string map, double seconds, int seed)
         return 0;
     }
     Ui.Line($"[red]Desync at step {report.Step} ({(double)report.Step / StepsPerSecond:0.###} s): {report.Part} differs[/]");
-    foreach (var (slot, hash) in report.Players.Zip(report.Hashes)) Ui.Line($"  player {slot}'s game: {hash}");
+    foreach (var (slot, n) in report.Players.Select((slot, n) => (slot, n)))
+    {
+        Ui.Line($"  player {slot}'s game: {report.What} is {report.Values[n] ?? "not there"} (state {report.Hashes[n]})");
+        foreach (var call in report.Stacks[n]?.Split('\n').Skip(1) ?? []) Ui.Line($"    {call.Trim()}");
+    }
     if (report.LogLine is not null) Ui.Line($"  first differing log line: {report.LogLine}");
     return 1;
 }

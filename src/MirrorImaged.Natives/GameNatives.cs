@@ -34,6 +34,13 @@ public sealed partial class GameNatives
     /// </summary>
     public bool Jass { get; init; }
 
+    /// <summary>
+    /// Which machine the run is on, 0 as the probes measured it. The desync check gives each player's game its own, and what a player's own
+    /// hands and screen decide (where the camera looks, the size of the window) then reads differently in each, as it does between two PCs
+    /// (decisions D509).
+    /// </summary>
+    internal int Machine { get; init; }
+
     T Make<T>(T handle) where T : handle
     {
         handle.Id = _game.NewId();

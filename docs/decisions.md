@@ -2721,3 +2721,22 @@ are this lane's; D458 to D469 are not used.
   (others' maps), for 60 simulated seconds, and fails for one that stops or logs a script error. `Needs=Game`; skipped where there is no install or no such folder. This lane's choices: the maps are
   found, not named, so a new test map is checked with nothing changed, and none is in the repository; "runs to its end" is a minute, as the audit's run by hand was; nothing is compared with the
   game's output, as none is recorded for these maps. On 2026-11-19 all 24 ran: 17 map files and 7 folder maps.
+## The desync report (lane desync-report, 2026-11-19)
+
+- **D508 (the desync report: the step, the value and the Lua stack):** `Desync.Check` still compares the games once a second (D368), since a hash each step
+  of a clean run costs more than it finds. When they differ it runs the games again to the last compare that agreed and on a step at a time, so `Step` is
+  the step they first differ in, 0 for a difference `main` made. The state is also read a value at a time (`GameNatives.Fields`: the part, what it is, the
+  value as text), the snapshot's part hashes are made from those, and the report gives the first that differs with its value in each player's game. A third
+  run watches that one value after each C# function the script calls through that step (`LuaState.Called`), and keeps the Lua stack (`luaL_traceback`) of
+  each call that changed it; the first change that isn't the same in every game is the call reported, for each game that made one. So a report costs three
+  runs of the map and a clean check one. A map whose runs differ from run to run may not differ again: the report is then of the games as compared, with
+  no stacks. `DesyncReport` gained `What`, `Values` and `Stacks`, in the order of `Players`; this lane's choice of names.
+- **D509 (what the check compares, and each game its own machine):** the state hash also holds the triggers that aren't destroyed and whether each is on,
+  the sync events' players and prefixes, and the frames that aren't destroyed, since the facts name a trigger disabled, a sync event registered and a frame
+  destroyed for one player only as desyncs; a run with none of them hashes as before. A frame's text, size and visibility stay out: showing a frame to
+  one player is the usual, safe use. For Moonwell's MW0002 (a value only one machine has, used outside a local block) each game of a check is a machine
+  of its own (`SimulationOptions.Machine`, internal): the camera's target and eye read 64 further along x and y for each next player, as if that player had
+  moved it, and the window is 16 by 9 larger. A read alone changes nothing; a change of the game made from one differs between the games and is found. This
+  is a model, not a measurement, and only the check uses it: every other run is machine 0, as the probes measured. The other machine-local reads
+  (names by language, keys, sounds, a frame's getters, the camera's fields) read the same in every game and are listed in the guide as not covered, with
+  the game's own bugs. This lane's choice.

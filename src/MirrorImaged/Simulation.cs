@@ -54,6 +54,12 @@ public sealed class SimulationOptions
     /// tool copes with one. The <c>MIRROR_MISSING</c> environment variable, names separated by commas, adds to it.
     /// </summary>
     public IReadOnlyList<string>? TreatAsMissing { get; init; }
+
+    /// <summary>The desync check's: which machine the run is on (<see cref="GameNatives.Machine"/>).</summary>
+    internal int Machine { get; init; }
+
+    /// <summary>The desync check's: runs once before any of the script, then after each C# function the script calls, where <see cref="Simulation.Stack"/> reads that call's Lua stack.</summary>
+    internal Action<Simulation>? Called { get; init; }
 }
 
 /// <summary>
@@ -82,7 +88,7 @@ public sealed partial class Simulation : IDisposable
         _jass = data.Map.Jass;
         _game = new Game(options.Seed);
         _treatAsMissing = [.. options.TreatAsMissing ?? [], .. (Environment.GetEnvironmentVariable("MIRROR_MISSING") ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
-        _natives = new GameNatives(_game) { Threads = new ScriptThreads(this), Documents = options.Documents, RunPreloadFile = RunPreloadFile, AiLoader = LoadAi, Data = data, Jass = _jass, Difficulty = (int)options.Difficulty };
+        _natives = new GameNatives(_game) { Threads = new ScriptThreads(this), Documents = options.Documents, RunPreloadFile = RunPreloadFile, AiLoader = LoadAi, Data = data, Jass = _jass, Difficulty = (int)options.Difficulty, Machine = options.Machine };
         try
         {
             var (users, computers, others) = Lineup(info, options);
@@ -92,6 +98,11 @@ public sealed partial class Simulation : IDisposable
                 _lua.Register(native.Name, Bind(native));
             foreach (var (name, value) in _natives.Globals())
                 _lua[name] = value is handle h ? ToLua(h, h.GetType()) : value;
+            if (options.Called is { } called)
+            {
+                called(this);
+                _lua.Called = () => called(this);
+            }
             AddLuaExtras();
             AddPreloader();
             if (_jass) AddJassRules();
@@ -215,6 +226,9 @@ public sealed partial class Simulation : IDisposable
 
     /// <summary>The natives the run's script calls.</summary>
     internal GameNatives Natives => _natives;
+
+    /// <summary>The Lua stack of the call a native is running for now (<see cref="LuaState.Traceback"/>).</summary>
+    internal string Stack() => _lua.Traceback();
 
     /// <summary>A hash of the world now (time, players, units): equal for two runs of a map with one seed and the same input at every step.</summary>
     public string StateHash() => _natives.Hash();

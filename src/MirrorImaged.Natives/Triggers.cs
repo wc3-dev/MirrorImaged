@@ -114,7 +114,15 @@ public sealed partial class GameNatives
     Firing Current => _firing ?? (_outside ??= new(null, Convert<gameevent>(0)));
 
     [Native(Level.Close)]
-    public trigger? CreateTrigger() => Make(new trigger());
+    public trigger? CreateTrigger()
+    {
+        var made = Make(new trigger());
+        _triggers.Add(made);
+        return made;
+    }
+
+    // The triggers that aren't destroyed, the first made first: part of the state the desync check compares
+    readonly List<trigger> _triggers = [];
 
     /// <summary>
     /// Its events stop and they, its actions and its conditions are let go of; a thread already running its actions runs
@@ -125,6 +133,7 @@ public sealed partial class GameNatives
     {
         if (whichTrigger is null) return;
         whichTrigger.Destroyed = true;
+        _triggers.Remove(whichTrigger);
         TriggerClearActions(whichTrigger);
         TriggerClearConditions(whichTrigger);
         foreach (var registered in whichTrigger.Events)
