@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace MirrorImaged.Tests;
 
@@ -15,7 +16,7 @@ public sealed class Browser : IAsyncLifetime
     static readonly string[] Places =
     [
         @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe", @"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
-        @"C:\Program Files\Google\Chrome\Application\chrome.exe", "/usr/bin/microsoft-edge", "/usr/bin/google-chrome", "/usr/bin/chromium",
+        @"C:\Program Files\Google\Chrome\Application\chrome.exe", "/usr/bin/google-chrome", "/usr/bin/chromium", "/usr/bin/microsoft-edge",
         "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
     ];
 
@@ -26,6 +27,8 @@ public sealed class Browser : IAsyncLifetime
 
     readonly string _folder = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())).FullName;
     readonly HttpClient _http = new() { Timeout = TimeSpan.FromSeconds(5) };
+    readonly StringBuilder _said = new();
+    Process? _process;
     string? _endpoint;
     bool _started;
 
@@ -45,29 +48,43 @@ public sealed class Browser : IAsyncLifetime
             Missing = None;
             return;
         }
-        // The browser writes the port it listens on into its profile; on Windows Edge's first process ends at once and leaves the browser running,
-        // so the file is what says it started, and its output is never read
+        // The browser writes the port it listens on into its profile, and says it too. On Windows Edge's first process ends at once and leaves the
+        // browser running, so the file is what says it started there. What it prints is read as it comes: a browser whose output nobody reads
+        // writes into a closed pipe
         var profile = Path.Combine(_folder, "profile");
-        var start = new ProcessStartInfo(browser, ["--headless=new", "--disable-gpu", "--no-sandbox", "--no-first-run", "--remote-debugging-port=0", $"--user-data-dir={profile}", "about:blank"])
+        var start = new ProcessStartInfo(browser, ["--headless=new", "--disable-gpu", "--no-sandbox", "--no-first-run", "--disable-dev-shm-usage", "--remote-debugging-port=0", $"--user-data-dir={profile}", "about:blank"])
         {
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };
-        try { Process.Start(start)?.Dispose(); }
-        catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException) { }
-        var port = Path.Combine(profile, "DevToolsActivePort");
-        for (var waited = 0; waited < 150 && _endpoint is null; waited++)
+        void Said(object sender, DataReceivedEventArgs line)
+        {
+            lock (_said) _said.AppendLine(line.Data);
+        }
+        try
+        {
+            _process = Process.Start(start);
+            if (_process is not null)
+            {
+                _process.OutputDataReceived += Said;
+                _process.ErrorDataReceived += Said;
+                _process.BeginOutputReadLine();
+                _process.BeginErrorReadLine();
+            }
+        }
+        catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException) { lock (_said) _said.AppendLine(e.Message); }
+        var file = Path.Combine(profile, "DevToolsActivePort");
+        for (var waited = 0; waited < 300 && _endpoint is null; waited++)
         {
             await Task.Delay(100);
-            if (!File.Exists(port)) continue;
-            try
-            {
-                if (File.ReadLines(port).FirstOrDefault() is { Length: > 0 } number && await Version($"http://127.0.0.1:{number}") is not null)
-                    (_endpoint, _started) = ($"http://127.0.0.1:{number}", true);
-            }
+            string? port = null;
+            try { port = File.Exists(file) ? File.ReadLines(file).FirstOrDefault() : null; }
             catch (IOException) { }
+            lock (_said) port ??= Regex.Match(_said.ToString(), @"DevTools listening on ws://[^:/]+:(\d+)/") is { Success: true } listening ? listening.Groups[1].Value : null;
+            if (port is { Length: > 0 } && await Version($"http://127.0.0.1:{port}") is not null) (_endpoint, _started) = ($"http://127.0.0.1:{port}", true);
         }
-        if (_endpoint is null) Missing = $"{browser} gave no debugging port in 15 s; set MIRROR_BROWSER to a browser's debugging address to run it";
+        if (_endpoint is not null) return;
+        lock (_said) Missing = $"{browser} gave no debugging port in 30 s{(_process is { HasExited: true } ? $" and ended with code {_process.ExitCode}" : "")}; it said: {_said.ToString().Trim()}";
     }
 
     async Task<JsonElement?> Version(string endpoint)
@@ -102,6 +119,11 @@ public sealed class Browser : IAsyncLifetime
             catch (Exception e) when (e is WebSocketException or IOException or OperationCanceledException or InvalidOperationException) { }
         }
         _http.Dispose();
+        if (_process is not null)
+        {
+            if (!_process.WaitForExit(3000)) _process.Kill(true);
+            _process.Dispose();
+        }
         // The browser's processes may hold their profile for a moment more; the folder is the system's temporary one
         for (var tries = 0; tries < 20; tries++)
         {
