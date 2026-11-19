@@ -54,16 +54,8 @@ public sealed class Browser : IAsyncLifetime
         // The browser writes the port it listens on into its profile, and says it too. On Windows Edge's first process ends at once and leaves the
         // browser running, so the file is what says it started there. Elsewhere what it prints is read as it comes: a browser whose output nobody
         // reads writes into a closed pipe
-        var clock = Stopwatch.StartNew();
-        long firstLine = -1;
         var profile = Path.Combine(_folder, "profile");
         string[] switches = ["--headless=new", "--disable-gpu", "--no-sandbox", "--no-first-run", "--disable-dev-shm-usage", "--remote-debugging-port=0", $"--user-data-dir={profile}", "about:blank"];
-        var timing = Environment.GetEnvironmentVariable("MIRROR_BROWSER_TIMES") is { Length: > 0 };
-        if (timing) switches = ["--enable-logging=stderr", "--v=1", .. switches];
-        var load = File.Exists("/proc/loadavg") ? File.ReadAllText("/proc/loadavg").Trim() : "";
-        var others = Directory.Exists("/proc") ? Directory.GetDirectories("/proc").Count(d => int.TryParse(Path.GetFileName(d), out _) && File.Exists(Path.Combine(d, "cmdline"))
-            && TryRead(Path.Combine(d, "cmdline")).Contains("MirrorImaged.GameTests")) : -1;
-        static string TryRead(string path) { try { return File.ReadAllText(path); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return ""; } }
         try
         {
             if (OperatingSystem.IsWindows()) StartOnItsOwnDesktop(browser, switches);
@@ -71,11 +63,7 @@ public sealed class Browser : IAsyncLifetime
             {
                 void Said(object sender, DataReceivedEventArgs line)
                 {
-                    lock (_said)
-                    {
-                        if (firstLine < 0 && !string.IsNullOrEmpty(line.Data)) firstLine = clock.ElapsedMilliseconds;
-                        _said.AppendLine(line.Data);
-                    }
+                    lock (_said) _said.AppendLine(line.Data);
                 }
                 _process = Process.Start(new ProcessStartInfo(browser, switches) { RedirectStandardOutput = true, RedirectStandardError = true });
                 if (_process is not null)
@@ -102,23 +90,6 @@ public sealed class Browser : IAsyncLifetime
             lock (_said) port ??= Regex.Match(_said.ToString(), @"DevTools listening on ws://[^:/]+:(\d+)/") is { Success: true } listening ? listening.Groups[1].Value : null;
             if (port is { Length: > 0 } && await Version($"http://127.0.0.1:{port}") is not null) (_endpoint, _started) = ($"http://127.0.0.1:{port}", true);
         }
-        if (Environment.GetEnvironmentVariable("MIRROR_BROWSER_TIMES") is { Length: > 0 } times)
-            lock (_said)
-            {
-                File.AppendAllText(times, $"{clock.ElapsedMilliseconds} {(_endpoint is null ? "fail" : "ok")} first-line={firstLine} dbus={_said.ToString().Contains("dbus/bus.cc")} load=[{load}] game-tests-processes={others}\n");
-                // A slow start's log: each line that came a second or more after the one before it, with the gap
-                if (clock.ElapsedMilliseconds > 3000)
-                {
-                    double? last = null;
-                    foreach (var line in _said.ToString().Split('\n'))
-                        if (Regex.Match(line, @"^\[\d+:\d+:\d+/(\d\d)(\d\d)(\d\d\.\d+)") is { Success: true } at)
-                        {
-                            var seconds = int.Parse(at.Groups[1].Value) * 3600 + int.Parse(at.Groups[2].Value) * 60 + double.Parse(at.Groups[3].Value, System.Globalization.CultureInfo.InvariantCulture);
-                            if (last is { } before && seconds - before >= 0.5) File.AppendAllText(times, $"  +{seconds - before:0.0}s {line[..Math.Min(line.Length, 240)]}\n");
-                            last = seconds;
-                        }
-                }
-            }
         if (_endpoint is not null) return;
         lock (_said) Missing = $"{browser} gave no debugging port in 30 s{(_process is { HasExited: true } ? $" and ended with code {_process.ExitCode}" : "")}; it said: {_said.ToString().Trim()}";
     }
@@ -224,9 +195,8 @@ public sealed class Browser : IAsyncLifetime
 }
 
 /// <summary>
-/// The tests that start a browser, which run when no other test of the assembly runs. A browser's first start on a fresh machine reads its files
-/// from the disk: on the Linux runner that took under a second alone and up to 22 s beside the rest of the suite, against the 30 s
-/// <see cref="Browser"/> waits for it (decisions D690).
+/// The tests that start a browser, which run when no other test of the assembly runs. Chrome's first start on a fresh Linux runner is slow: up to
+/// 22 s beside the rest of the suite, against the 30 s <see cref="Browser"/> waits, and up to 10 s with nothing else running (decisions D690).
 /// </summary>
 [CollectionDefinition(Name, DisableParallelization = true)]
 public sealed class BrowserTests
