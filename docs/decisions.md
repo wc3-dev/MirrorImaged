@@ -2590,3 +2590,111 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
 - **D436 (A step that clips what the way goes round):** a unit on a found way whose next step is stopped takes the part of the step along one axis
   (x first) when that is free. The way is found over the centres of 32 cells and buildings stop a unit as circles, so a unit at a circle's edge could
   have a way and no first step, and searched again for good: five workers of a computer stood so with a town hall to build.
+
+- **D420 (Replays of the game today):** read from one replay of a ladder game of 2.0 (header version 10200, build 7003), not from a document.
+  Before the lobby's slots come blocks 0x38 and 0x39 (a kind, a byte, a length of four bytes, that many bytes), which are skipped. Action 0x7A
+  is 17 bytes: the two numbers of a unit, an ability and an order, sent when a button of the unit is pressed, before the order itself. Action
+  0x77 is two strings and four bytes, a ladder's own data. The reader now also gives groups (0x17), a group picked (0x18), the subgroup (0x19),
+  whether an order was queued, the result of a leaving player, and the map's path from the lobby's encoded settings. With these the replay has no
+  action that is not read. A unit is named by two numbers; the second counts up as the game makes objects and the first is used again.
+
+- **D421 (A replay's seats):** `Simulation.Load(map, replay)` seats the lobby's people whose slots the map has as users (a watcher has none), no
+  computers, each with the race the lobby holds (a player who took random gets a random one: the replay does not say what the game drew). A
+  replay does not say where the game put the players either, so each gets the start place nearest the first place it gave an order at. This
+  lane's choice; it held for the one replay (both players' first orders were at their own gold mines). `SimulationOptions.Races` and
+  `StartLocations` carry it.
+
+- **D422 (Which unit a replay's numbers name):** the game's numbers for a unit are its own and a run here cannot have them, so D375's "the id
+  the unit has here" never held for a played game. `ReplayRun` finds the unit when an order first needs it: among the player's living units no
+  numbers have yet, made after the units of lower second numbers and before those of higher ones, the first of the type the subgroup action
+  told of that unit; else a building or not, as a pressed button told (`Aque`, a build menu); else, in a selection of several, the first that
+  is not a building; else the first. An order's target is the unit with no numbers yet within 64 of the place the order gives, else the tree
+  there, else the place. A unit the game made and this run did not is never found, and its orders are counted (`Unowned`). This lane's
+  model, Close: a wrong match is possible and is not detected. `ToRecording` is gone; the run's own recording (`act` inputs, with the run's
+  unit ids) plays it again exactly.
+
+- **D423 (Who takes a replay's order):** smart, stop, attack, move, patrol and hold position go to every unit of the selection. Any other order
+  is a button of the card and goes to one unit: the first that takes it, those of the shown subgroup's type first. The game's own rule (the
+  building with the shortest queue, the nearest worker) is not measured. An order of a hero ability's code is the skill learned. Read and not
+  played, and counted (`NotPlayed`): giving and dropping items (0x13, 0x14), taking from a queue (0x1E, 0x1F) and the escape key (0x61).
+
+- **D424 (Smart at a mine or a tree):** a replay's smart order of a unit with a harvest ability (`Ahar`, `Aaha`, `Awha` for gold; `Ahar`,
+  `Ahrl`, `Awha` for a tree) at a mine with gold or at a tree is given as `harvest`, as the game turns a person's right-click into it.
+  `IssueTargetOrder(smart)` from a script is left as it was. Acolytes and wisps then carry gold in trips as workers do, which the game's do not.
+
+### The corpus runs (L-mirror-corpus-runs)
+
+- **D440 (the corpus tests run in parts):** `ShippedMapTests` and `MeleeCorpusTests` each took longer than the 10 minutes the test run gives a test (35 min 17 s for the 466 shipped maps on 11-19, and
+  about 3 h 13 min for the 258 melee maps, worked out from the 136 the old test got through in 5,016 s), so nobody ran them to the end. Each is now a theory of 8 parts (`Corpus.Shards`), a part taking
+  every 8th map of the sorted list, so the long maps, which sort together by their players, are spread over the parts. A part is one test, so the 10 minutes count for each part: the longest took 2 min 2 s of the shipped maps' 7 min 35 s and 4 min 33 s of the melee maps'
+  31 min 26 s (with 4 parts the longest melee part took 8 min 57 s, too near the limit). The two classes are one
+  xUnit collection, so they never run at once.
+
+- **D441 (a part runs its maps side by side):** on half the PC's processors (`Environment.ProcessorCount / 2`, 6 on the 12 this was measured on), each map its own simulation and file. A map's result
+  doesn't depend on what runs beside it: the 136 melee maps the old test finished had the same unit counts in the new one, and seven maps' state hashes every 150 s are the same before and after.
+
+- **D442 (the tests use the server garbage collector):** `ServerGarbageCollector` in the test project. With the workstation collector six maps in one process each waited on the others' garbage: the
+  46 two-player melee maps took 103 to 138 s, and 88 s with the server collector, while six processes ran a map as fast as one. It changes no result.
+
+- **D443 (JASS is made into Lua one map at a time):** `Jass.ToLua` holds a lock. Once in some 1,500 loads side by side, a map's `war3map.j` failed to become Lua (`NotSupportedException`, on
+  `Campaign/Classic/TFT/OrcX02_09.w3x`, which loads alone and loaded in every run since). The inner error wasn't caught, so the cause is not known: it is in the parser, War3Net's transpiler or the
+  renderer, none of which says it may be used from two threads. The lock costs little, as a map's script takes about 0.2 s. This lane's call; the failure has not been seen again in the 1,448 loads of the two full runs
+  with it, which is not proof.
+
+- **D444 (the speed-ups, none of which changes a state hash):** a standard object keeps each field it has read (`StandardObject.Cell`: three strings joined and three look-ups a read before); the AI's
+  nearest tree is found without sorting every tree, a type's being a tree is kept, and the towns are listed once in a round of worker slots (`AiEconomy.cs`); and a unit's sight is marked explored again
+  only when it moved, its sight changed or cells were taken back since (`Vision.cs`: every `IsLocationVisibleToPlayer` marked every unit's circle, 67% of `HumanX06`, which went from 69 s to 16 s).
+  The 4-player benchmark (A10, `mirror bench "(4)Adrenaline" --seconds 1800 --melee true`) went from 16.0 to 17.1 s to 11.2 s. Tried and taken back: the explored cells as one number each, whose
+  hash collides and made `HumanX06` 195 s.
+
+- **D445 (what is left, not done here):** the nearest enemy is looked for among every unit by every unit (`Nearest` in `Combat.cs`, 41% of `Orc01`'s 877 units), and the path search keeps its cells in
+  dictionaries (`FindPath`, 35% of `ExtremeCandyWar2004`, the longest shipped map at 94 s). Both want a grid, which is more than a small change in another lane's file.
+
+## Engine timing (lane engine-timing, 2026-11-19)
+
+Probes `abilities-cast-timing`, `units-attack-timing` and `heroes-mana-regeneration`, each run in the game (3.0.1.24371); what they gave is in `docs/facts.md`, "Engine timing". The numbers D450 to D469
+are this lane's; D458 to D469 are not used.
+
+- **D450 (the cast's timing, measured):** a spell order's channel and cast events fire inside the order's call when the unit is in range, as the game's did. The effect event, with the mana and the
+  cooldown spent, comes the caster's cast point later (the unit's own `ucpt`, which `BlzSetUnitRealField` sets; inside the call when it is 0), and the finish and end-cast events the caster's backswing
+  (`ucbs`) after that, the order staying the unit's until then. Another order ends a cast that has begun with its end-cast event and no finish; before the cast point nothing is spent and no cooldown
+  starts. Wind Walk and Immolation stay cast whole inside the call and Mirror Image's cast ends with its effect, as measured (D413, D415). The steps are scheduled on the clock (1/1024 s), not looked
+  at each engine step, so the times are the game's to 0.01 s. Casts whose steps fall due in one instant go on in the order their units were made, as probe `abilities-beetles` has it (of two heroes
+  ordered in one instant, the one made first had its effect first, though ordered second), and after whatever else is due then, which is not measured. This lane's choices, not measured: a spell order the unit can't take (no mana, a cooldown) leaves a cast under way as it is, where it
+  silently ended one before; a caster that dies in its cast gets the end-cast event; a paused caster's cast waits until it is free. Left as a difference: a unit turns at once, where the game's Archmage
+  took 0.21 s to turn round before its cast began.
+
+- **D451 (a casting time comes after the effect event):** for an ability with a casting time, what the spell does comes that long after the effect event, with the finish and end-cast events, and the
+  backswing doesn't count; an order before then ends the cast and the spell does nothing, the mana staying spent. Measured for Flame Strike (effect +0.30, finish and first fire +1.63 with a backswing
+  of 0.5, 2.4 and 3; no fire when stopped 1 s in). That every ability with a casting time goes so is this lane's reading, as only Flame Strike was measured; before, the casting time was waited before
+  the effect event. Flame Strike's model no longer waits its casting time itself.
+
+- **D452 (a hero's agility and the attack rate, measured):** the attack rate is 1 + the hero's agility (with its bonuses) x `AgiAttackSpeedBonus` (0.02) + the buffs' share, kept between 0.2 and 5,
+  and both the cooldown and the damage point are divided by it: a Paladin's 2.20 s between hits was 1.833, 1.746, 1.467, 1.100, 0.733, 0.550 at agility 10, 13, 25, 50, 100, 150, and 0.440 at 200, 250
+  and 400, and its hit came 0.43 s after its swing began at agility 0, 0.22 at 50, 0.09 at 200. The 5 is the measured cap, in no constant that was found. Not measured, this lane's reading: that
+  the buffs' share adds to the agility's before the cap, and that agility from items counts.
+
+- **D453 (a missile's flight, measured):** a weapon of type missile, mbounce, msplash, mline, artillery, aline or alsplash lands its hit a flight after the damage point: the way between the two units,
+  less the attacker's `launchY` (`ulpy`: how far ahead of it its missiles start; an archer's 62, a headhunter's -34, an Archmage's 0), over the weapon's missile speed (`ua1z`). The game's archer, at
+  200 to 500, and its Archmage, at 100 to 600, landed within 0.01 s of that, with the speed set to 300, 450 and 1800 too, and the arc changed nothing. A way under 94 lands at once: an archer's 88
+  did and an Archmage's 100 flew, and 94 is the middle, this lane's choice. Storm Bolt's hits land the same flight after its effect, at the ability's missile speed (`amsp`). The flight is worked out
+  as the missile leaves, so a target that walks is hit as if it stood (a shortcut, named in the code). Not modelled: heights (a flier, a cliff), the other spells' missiles, which were not measured,
+  and the 0.03 s more that a Priest's and a Sorceress's missiles took, for which no reason was found.
+
+- **D454 (attacks come a cooldown apart to the clock's step):** a unit whose cooldown is running is looked at again the step the cooldown ends, not at the engine's next 1/32 s step, and a swing
+  that was waited for counts its cooldown from when it was due: the game's hits came exactly a cooldown apart (1.350, 2.200, 1.500 s over 24 s), where the engine's step gave 1.375 for 1.35. The
+  first swing after an order still starts on the engine's step; the game's started 0.03 to 0.27 s after the order, differently each run, which is not modelled.
+
+- **D455 (mana comes back, measured):** a hero regains `IntRegenBonus` (0.05) a second for each point of intelligence (with its bonuses, which is this lane's reading), and its type's own
+  regeneration doesn't count (an Archmage of intelligence 0 got none in 30 s; of 1, 0.50 every 10 s); any other unit regains its type's regeneration (`umpr`, or what `BlzSetUnitRealField` set). A
+  paused or dead unit regains none, a hidden one does, and none goes past the most. It is worked out when the mana is read or set and before what decides it changes (`unit.Mana` is a property
+  now), in the engine's steps of 1/32 s, so an idle game runs nothing for it and the mana doesn't move inside a step: the second look of a mana state event a frame after a set (probe
+  units-more) still sees the set value. Not done: a unit state event doesn't fire as regeneration passes its limit (a shortcut, named in the code); life doesn't come back; the game's amounts fall
+  about 0.013% short of rate x time (449.94 of 450), which is left as a difference.
+
+- **D456 (a paused unit's buff, measured):** a buff's time stands still while its unit is paused and goes on when it is free: 16 s of Silence ended 36 s in on a Priest paused for the first 20, and
+  32 s in on one paused from 4 to 20. `PauseUnit` keeps each timed buff's steps left and starts them again. What a buff's model schedules beside its end (a root's damage each second) still runs.
+
+- **D457 (Mirror Image's summon events, measured):** the game fires a summon event for each image and one more whose summoned unit is none: 2, 3 and 4 events at levels 1 to 3, the first DataD (0.5 s)
+  after the effect and the last 0.16 to 0.18 s later, which of them is the one without a unit changing from run to run. Here the images' events come at DataD and the one without a unit 0.18 s later,
+  `GetSummoningUnit` the caster in each; the order and the 0.18 are this lane's choice, so the times are Close. This closes the difference D415 left.

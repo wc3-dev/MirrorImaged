@@ -55,7 +55,7 @@ public sealed partial class Simulation
     /// <summary>The step of the run now, 1024 to the second.</summary>
     public long Step => _game.Step;
 
-    static string FourCC(int id) => new([(char)(id >> 24 & 255), (char)(id >> 16 & 255), (char)(id >> 8 & 255), (char)(id & 255)]);
+    internal static string FourCC(int id) => new([(char)(id >> 24 & 255), (char)(id >> 16 & 255), (char)(id >> 8 & 255), (char)(id & 255)]);
 
     UnitView View(unit u) => new(u.Id, FourCC(u.Type.Id), _natives.GetUnitName(u) ?? "", _natives.GetPlayerId(u.Owner), u.X, u.Y, u.Life, u.MaxLife, u.Mana, u.Order, u.Dead);
 
@@ -122,6 +122,9 @@ public sealed partial class Simulation
                 break;
             case "leave":
                 _natives.Leave(player);
+                break;
+            case "act":
+                Act(input, false);
                 break;
             default:
                 throw new ArgumentException($"Unknown input {input.Kind}");

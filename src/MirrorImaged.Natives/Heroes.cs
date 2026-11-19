@@ -31,6 +31,7 @@ public sealed partial class GameNatives
     void Change(unit u, Action change)
     {
         var (strength, intelligence) = (Whole(u.Str), Whole(u.Int));
+        Regenerate(u);
         change();
         Shift(u, (Whole(u.Str) - strength) * Data.Constant("StrHitPointBonus", 25), (Whole(u.Int) - intelligence) * Data.Constant("IntManaBonus", 15));
     }

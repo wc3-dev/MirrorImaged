@@ -5,7 +5,7 @@ namespace MirrorImaged.Tests;
 
 /// <summary>An AI script of the game runs for a computer player: it loads, runs its first steps and sleeps without a script error.</summary>
 [Trait("Needs", "Game")]
-public sealed class AiRunTests : IDisposable
+public sealed class AiRunTests(Xunit.Abstractions.ITestOutputHelper output) : IDisposable
 {
     readonly TestMaps _maps = new();
     readonly string _folder = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())).FullName;
@@ -239,6 +239,7 @@ public sealed class AiRunTests : IDisposable
         Assert.Null(simulation.Stopped);
         Assert.DoesNotContain(simulation.Log, line => line.Split(' ').ElementAtOrDefault(1) == "error:");
         var seen = $"most units {most[0]}/{most[1]}, most halls {towns[0]}/{towns[1]}, units lost {lost[0]}/{lost[1]}, creeps {creeps} to {simulation.Units(24).Count}";
+        output.WriteLine(seen);
         Assert.True(most.All(n => n >= 45) && towns.All(n => n >= 2) && lost.All(n => n >= 5) && simulation.Units(24).Count < creeps, seen);
     }
 }

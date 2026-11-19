@@ -37,7 +37,9 @@ public sealed partial class GameNatives
     {
         if (whichUnit is not { Dead: false } u || u.Paused == flag) return;
         Asleep(u);
+        Regenerate(u);
         u.Paused = flag;
+        HoldBuffs(u);
         if (flag)
         {
             if (u.Unpausing is { } back)

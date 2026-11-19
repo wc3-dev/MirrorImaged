@@ -1,0 +1,56 @@
+# 3.0.1.24371, 11-19 (lane engine-timing): the probe's lines as the game gave them. {t} is what changed between runs: when the first swing began (0.03 to 0.27 s after the order, in steps of 0.03) and its hit, and the first of the three times from an attacked event to its hit, which is 0.01 more in some runs, and the least time between a headhunter's hits, 2.30 or 2.31.
+an archer at 100: missile speed 900 arc 0.15
+an archer at 150: missile speed 900 arc 0.15
+an archer at 200: missile speed 900 arc 0.15
+an archer at 250: missile speed 900 arc 0.15
+an archer at 300: missile speed 900 arc 0.15
+an archer at 350: missile speed 900 arc 0.15
+an archer at 400: missile speed 900 arc 0.15
+an archer at 450: missile speed 900 arc 0.15
+an archer at 500: missile speed 900 arc 0.15
+an archer at 400, speed set to 300: missile speed 300 arc 0.15
+an archer at 400, speed set to 450: missile speed 450 arc 0.15
+an archer at 400, speed set to 1800: missile speed 1800 arc 0.15
+an archer at 400, arc set to 0: missile speed 900 arc 0.00
+an archer at 400, arc set to 0.5: missile speed 900 arc 0.50
+a footman: cooldown 1.35, damage point 0.50; attacked +{t}, first hit +{t}; between hits 1.350 (1.35 to 1.35)
+a Paladin of agility 0: cooldown 2.20, damage point 0.43; attacked +{t}, first hit +{t}; between hits 2.200 (2.20 to 2.20)
+a Paladin of agility 10: cooldown 2.20, damage point 0.43; attacked +{t}, first hit +{t}; between hits 1.833 (1.83 to 1.83)
+a Paladin of agility 13: cooldown 2.20, damage point 0.43; attacked +{t}, first hit +{t}; between hits 1.746 (1.75 to 1.75)
+a Paladin of agility 25: cooldown 2.20, damage point 0.43; attacked +{t}, first hit +{t}; between hits 1.467 (1.47 to 1.47)
+a Paladin of agility 50: cooldown 2.20, damage point 0.43; attacked +{t}, first hit +{t}; between hits 1.100 (1.10 to 1.10)
+a Paladin of agility 100: cooldown 2.20, damage point 0.43; attacked +{t}, first hit +{t}; between hits 0.733 (0.73 to 0.73)
+a Paladin of agility 150: cooldown 2.20, damage point 0.43; attacked +{t}, first hit +{t}; between hits 0.550 (0.55 to 0.55)
+a Paladin of agility 200: cooldown 2.20, damage point 0.43; attacked +{t}, first hit +{t}; between hits 0.440 (0.44 to 0.44)
+a Paladin of agility 250: cooldown 2.20, damage point 0.43; attacked +{t}, first hit +{t}; between hits 0.440 (0.44 to 0.44)
+a Paladin of agility 400: cooldown 2.20, damage point 0.43; attacked +{t}, first hit +{t}; between hits 0.440 (0.44 to 0.44)
+a Blademaster of agility 0: cooldown 1.77, damage point 0.33; attacked +{t}, first hit +{t}; between hits 1.770 (1.77 to 1.77)
+a Blademaster of agility 30: cooldown 1.77, damage point 0.33; attacked +{t}, first hit +{t}; between hits 1.106 (1.11 to 1.11)
+a Blademaster of agility 100: cooldown 1.77, damage point 0.33; attacked +{t}, first hit +{t}; between hits 0.590 (0.59 to 0.59)
+an archer at 100: cooldown 1.50, damage point 0.72; attacked +{t}, first hit +{t}; between hits 1.500 (1.50 to 1.50); attacked to hit {t} 0.72 0.72; it stands 100 from the foe
+an archer at 150: cooldown 1.50, damage point 0.72; attacked +{t}, first hit +{t}; between hits 1.500 (1.50 to 1.50); attacked to hit {t} 0.72 0.72; it stands 150 from the foe
+an archer at 200: cooldown 1.50, damage point 0.72; attacked +{t}, first hit +{t}; between hits 1.500 (1.50 to 1.50); attacked to hit {t} 0.87 0.87; it stands 200 from the foe
+an archer at 250: cooldown 1.50, damage point 0.72; attacked +{t}, first hit +{t}; between hits 1.500 (1.50 to 1.50); attacked to hit {t} 0.93 0.93; it stands 250 from the foe
+an archer at 300: cooldown 1.50, damage point 0.72; attacked +{t}, first hit +{t}; between hits 1.500 (1.50 to 1.50); attacked to hit {t} 0.98 0.98; it stands 300 from the foe
+an archer at 350: cooldown 1.50, damage point 0.72; attacked +{t}, first hit +{t}; between hits 1.500 (1.50 to 1.50); attacked to hit {t} 1.04 1.04; it stands 350 from the foe
+an archer at 400: cooldown 1.50, damage point 0.72; attacked +{t}, first hit +{t}; between hits 1.500 (1.50 to 1.50); attacked to hit {t} 1.10 1.10; it stands 400 from the foe
+an archer at 450: cooldown 1.50, damage point 0.72; attacked +{t}, first hit +{t}; between hits 1.500 (1.50 to 1.50); attacked to hit {t} 1.15 1.15; it stands 450 from the foe
+an archer at 500: cooldown 1.50, damage point 0.72; attacked +{t}, first hit +{t}; between hits 1.500 (1.50 to 1.50); attacked to hit {t} 1.21 1.21; it stands 500 from the foe
+an archer at 400, speed set to 300: cooldown 1.50, damage point 0.72; attacked +{t}, first hit +{t}; between hits 1.500 (1.50 to 1.50); attacked to hit {t} 1.85 1.85; it stands 400 from the foe
+an archer at 400, speed set to 450: cooldown 1.50, damage point 0.72; attacked +{t}, first hit +{t}; between hits 1.500 (1.50 to 1.50); attacked to hit {t} 1.47 1.47; it stands 400 from the foe
+an archer at 400, speed set to 1800: cooldown 1.50, damage point 0.72; attacked +{t}, first hit +{t}; between hits 1.500 (1.50 to 1.50); attacked to hit {t} 0.91 0.91; it stands 400 from the foe
+an archer at 400, arc set to 0: cooldown 1.50, damage point 0.72; attacked +{t}, first hit +{t}; between hits 1.500 (1.50 to 1.50); attacked to hit {t} 1.10 1.10; it stands 400 from the foe
+an archer at 400, arc set to 0.5: cooldown 1.50, damage point 0.72; attacked +{t}, first hit +{t}; between hits 1.500 (1.50 to 1.50); attacked to hit {t} 1.10 1.10; it stands 400 from the foe
+an Archmage of agility 0 at 100: cooldown 2.13, damage point 0.55; attacked +{t}, first hit +{t}; between hits 2.130 (2.13 to 2.13); attacked to hit {t} 0.66 0.66; it stands 100 from the foe
+an Archmage of agility 0 at 200: cooldown 2.13, damage point 0.55; attacked +{t}, first hit +{t}; between hits 2.130 (2.13 to 2.13); attacked to hit {t} 0.77 0.77; it stands 200 from the foe
+an Archmage of agility 0 at 300: cooldown 2.13, damage point 0.55; attacked +{t}, first hit +{t}; between hits 2.130 (2.13 to 2.13); attacked to hit {t} 0.88 0.88; it stands 300 from the foe
+an Archmage of agility 0 at 400: cooldown 2.13, damage point 0.55; attacked +{t}, first hit +{t}; between hits 2.130 (2.13 to 2.13); attacked to hit {t} 0.99 0.99; it stands 400 from the foe
+an Archmage of agility 0 at 500: cooldown 2.13, damage point 0.55; attacked +{t}, first hit +{t}; between hits 2.130 (2.13 to 2.13); attacked to hit {t} 1.11 1.11; it stands 500 from the foe
+an Archmage of agility 0 at 600: cooldown 2.13, damage point 0.55; attacked +{t}, first hit +{t}; between hits 2.130 (2.13 to 2.13); attacked to hit {t} 1.22 1.22; it stands 600 from the foe
+a ohun at 200: cooldown 2.31, damage point 0.31; attacked +{t}, first hit +{t}; between hits 2.310 ({t} to 2.31); attacked to hit {t} 0.50 0.50; it stands 200 from the foe
+a ohun at 400: cooldown 2.31, damage point 0.31; attacked +{t}, first hit +{t}; between hits 2.310 (2.31 to 2.31); attacked to hit {t} 0.67 0.67; it stands 400 from the foe
+a hmpr at 200: cooldown 2.00, damage point 0.59; attacked +{t}, first hit +{t}; between hits 2.000 (2.00 to 2.00); attacked to hit {t} 0.84 0.84; it stands 200 from the foe
+a hmpr at 400: cooldown 2.00, damage point 0.59; attacked +{t}, first hit +{t}; between hits 2.000 (2.00 to 2.00); attacked to hit {t} 1.06 1.06; it stands 400 from the foe
+a hsor at 200: cooldown 1.75, damage point 0.75; attacked +{t}, first hit +{t}; between hits 1.750 (1.75 to 1.75); attacked to hit {t} 1.00 1.00; it stands 200 from the foe
+a hsor at 400: cooldown 1.75, damage point 0.75; attacked +{t}, first hit +{t}; between hits 1.750 (1.75 to 1.75); attacked to hit {t} 1.22 1.22; it stands 400 from the foe
+a rifleman at 400: cooldown 1.50, damage point 0.17; attacked +{t}, first hit +{t}; between hits 1.500 (1.50 to 1.50); attacked to hit {t} 0.17 0.17; it stands 400 from the foe

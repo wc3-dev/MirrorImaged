@@ -6,19 +6,24 @@ namespace MirrorImaged.Natives;
 public partial class unit
 {
     internal ability? Casting;      // the ability its current order casts
-    internal double CastEffectAt;   // when the cast point is over, 0 before the unit is in range, -1 for a spell cast at once
+    internal Happening? Cast;       // the cast under way, from its channel event until its end cast; null while the unit walks into range
+    internal int Given;             // how many orders it has been given, so that a cast's end tells an order given inside its last event
 }
 
-// The cast flow (game-facts, "Spells and abilities"): an order whose name is the Order of an ability the unit has is a spell order, taken
-// when the unit has the mana and the ability is off cooldown; the unit walks into the ability's range, then the channel and cast events
-// fire, the cast point passes, mana and cooldown are spent and the effect event fires with the effect, then finish and end cast, and the
-// unit is idle. Effects are data-driven for the abilities named in decisions D355 (Holy Light, Storm Bolt, Thunder Clap) and the others
-// only fire their events (Close).
+// The cast flow (probe abilities-cast-timing; decisions D450, D451): an order whose name is the Order of an ability the unit has is a spell order,
+// taken when the unit has the mana and the ability is off cooldown. The unit walks into the ability's range; there the channel and cast events
+// fire, inside the order's call when it is in range already. The caster's cast point later the mana and cooldown are spent and the effect event
+// fires, and what the spell does comes with it, or after the ability's casting time when it has one. The finish and end-cast events fire the
+// caster's backswing after the effect (after the casting time instead, for an ability that has one), and the unit is idle. Another order before
+// that ends the cast with the end-cast event alone: before the cast point nothing is spent, and inside a casting time the spell does nothing.
+// Close: the caster turns to its target at once, where the game's Archmage took 0.21 s to turn round. Effects are data-driven for the abilities
+// named in decisions D355 (Holy Light, Storm Bolt, Thunder Clap) and SpellEffects; the others only fire their events.
 public sealed partial class GameNatives
 {
     const int UnitSpellChannel = 289, UnitSpellCast = 290, UnitSpellEffect = 291, UnitSpellFinish = 292, UnitSpellEndCast = 293;
     const int PlayerSpellChannel = 272, PlayerSpellCast = 273, PlayerSpellEffect = 274, PlayerSpellFinish = 275, PlayerSpellEndCast = 276;
-    static readonly int CastTime = Code("acas"), CastRange = Code("aran"), CastArea = Code("aare"), MirrorImage = Code("AOmi");
+    static readonly int CastTime = Code("acas"), CastRange = Code("aran"), CastArea = Code("aare"), MirrorImage = Code("AOmi"),
+        CastPoint = Code("ucpt"), CastBackswing = Code("ucbs");
 
     // The spells cast inside their order's call, every event of the cast with it (probe abilities-spells: Wind Walk, Immolation)
     static readonly HashSet<int> Instant = [Code("AOwk"), Code("AEim")];
@@ -41,52 +46,99 @@ public sealed partial class GameNatives
     // Whether the unit can start the spell: alive, the mana, no cooldown running
     bool Ready(unit u, ability a) => !u.Dead && !u.Buffs.Any(b => b.Silence) && CooldownLeft(a) <= 0 && u.Mana >= BlzGetAbilityIntegerLevelField(a, Convert<abilityintegerlevelfield>(ManaCost), a.Level - 1);
 
-    // A spell order taken before the order itself is given; false from here when the unit can't cast it
-    bool Spell(unit u, int order, out bool taken)
+    // Whether the order is a spell's; the ability it casts, or null when the unit can't cast it now
+    bool Spell(unit u, int order, out ability? taken)
     {
-        taken = false;
-        if (SpellOf(u, order) is not { } ability) return false;
-        taken = Ready(u, ability);
-        if (taken) (u.Casting, u.CastEffectAt) = (ability, 0);
-        return true;
+        var ability = SpellOf(u, order);
+        taken = ability is not null && Ready(u, ability) ? ability : null;
+        return ability is not null;
     }
 
-    // One step of a casting unit: into range, then through the cast point
-    bool Cast(unit u)
+    // Another order, or the caster's death, ends a cast that had begun: its end-cast event fires, with no finish
+    void BreakCast(unit u)
+    {
+        var cast = u.Cast;
+        (u.Casting, u.Cast) = (null, null);
+        if (cast is not null && !u.Removed) FireUnit(cast, UnitSpellEndCast, PlayerSpellEndCast);
+    }
+
+    // Where the casts' steps come among what is due in one instant: after the rest, in the order the units were made
+    const long CastPlace = 1L << 60;
+
+    // The next part of a cast, the seconds later, unless the cast was ended before; a paused caster's waits until it is free, and a dead one's is over.
+    // Casts due in the same instant go on in the order their units were made, not the order of their orders (probe abilities-beetles: of two heroes
+    // ordered in one instant, the one made first had its effect first, though it was ordered second)
+    void Later(unit u, Happening cast, double seconds, Action next)
+    {
+        if (Game.Steps(seconds) <= 0) { next(); return; }
+        _game.At(_game.Step + Game.Steps(seconds), CastPlace + u.Id, () =>
+        {
+            if (u.Cast != cast) return;
+            if (u.Dead || u.Removed) BreakCast(u);
+            else if (u.Paused) Later(u, cast, TickSeconds, next);
+            else next();
+        });
+    }
+
+    // One step of a casting unit: it walks into range, and there the cast begins. Inside the order's call it doesn't walk
+    bool Cast(unit u, bool walk = true)
     {
         if (u.Casting is not { } ability) return Finish(u);
+        if (u.Cast is not null) return true;
         var (x, y, target) = (u.OrderX, u.OrderY, u.OrderTarget);
         // shortcut: an immediate order has no place and stores 0, 0, so it is told from a point order by that place; a point order at exactly 0, 0 then casts where the caster stands
         if (target is null && x == 0 && y == 0) (x, y) = (u.X, u.Y);
         var range = Field(ability, CastRange) + (target is unit t ? t.Type.Real(Collision) : 0);
-        if (u.CastEffectAt == 0)
-        {
-            if (range > 0 && Distance2(x - u.X, y - u.Y) > range * range) return Walk(u, x, y, follow: true);
-            var happening = new Happening(u, Skill: ability.Type.Id, PointX: x, PointY: y, Target: target);
-            FireUnit(happening, UnitSpellChannel, PlayerSpellChannel);
-            if (u.Casting != ability) return true;
-            FireUnit(happening, UnitSpellCast, PlayerSpellCast);
-            u.CastEffectAt = Instant.Contains(ability.Type.BaseId) ? -1 : Seconds + Math.Max(Field(ability, CastTime), 0.001);
-            return true;
-        }
-        if (Seconds < u.CastEffectAt) return true;
+        if (range > 0 && Distance2(x - u.X, y - u.Y) > range * range) return !walk || Walk(u, x, y, follow: true);
+        var cast = u.Cast = new Happening(u, Skill: ability.Type.Id, PointX: x, PointY: y, Target: target);
+        var instant = Instant.Contains(ability.Type.BaseId);
+        FireUnit(cast, UnitSpellChannel, PlayerSpellChannel);
+        if (u.Cast == cast) FireUnit(cast, UnitSpellCast, PlayerSpellCast);
+        if (u.Cast == cast) Later(u, cast, instant ? 0 : Own(u, CastPoint, u.Type.Real(CastPoint)), () => Effected(u, ability, cast, instant));
+        return true;
+    }
+
+    // The cast point: the mana and the cooldown are spent, the effect event fires, and the spell does what it does, now or after its casting time
+    void Effected(unit u, ability ability, Happening cast, bool instant)
+    {
         var cost = BlzGetAbilityIntegerLevelField(ability, Convert<abilityintegerlevelfield>(ManaCost), ability.Level - 1);
         var cooldown = Field(ability, Cooldown);
-        var effect = new Happening(u, Skill: ability.Type.Id, PointX: x, PointY: y, Target: target);
-        if (u.Mana >= cost && !u.Dead)
+        if (u.Mana < cost || u.Dead)
         {
-            SetMana(u, u.Mana - cost);
-            (ability.Cooldown, ability.CooldownEnd) = (cooldown, Seconds + cooldown);
-            FireUnit(effect, UnitSpellEffect, PlayerSpellEffect);
-            Effect(u, ability, x, y, target);
-            // A channelled spell keeps its order, and its end fires the last events (SpellEffects: Channelled)
-            if (u.Channel is not null) { u.Casting = null; return true; }
-            // Mirror Image's cast has no finish event (probe abilities-spells)
-            if (ability.Type.BaseId != MirrorImage) FireUnit(effect, UnitSpellFinish, PlayerSpellFinish);
+            var given = u.Given;
+            BreakCast(u);
+            if (u.Given == given) Finish(u);
+            return;
         }
-        FireUnit(effect, UnitSpellEndCast, PlayerSpellEndCast);
-        u.Casting = null;
-        return Finish(u);
+        SetMana(u, u.Mana - cost);
+        (ability.Cooldown, ability.CooldownEnd) = (cooldown, Seconds + cooldown);
+        FireUnit(cast, UnitSpellEffect, PlayerSpellEffect);
+        var casting = instant ? 0 : Field(ability, CastTime);
+        if (Game.Steps(casting) > 0)
+        {
+            // Flame Strike's fire came with its finish event, its casting time after the effect whatever the backswing, and not at all when
+            // the caster was stopped before; taken to be so for every ability with a casting time
+            Later(u, cast, casting, () => { Effect(u, ability, cast.PointX, cast.PointY, cast.Target); Done(u, ability, cast); });
+            return;
+        }
+        Effect(u, ability, cast.PointX, cast.PointY, cast.Target);
+        // A channelled spell keeps its order, and its own end fires the last events (SpellEffects: Channelled)
+        if (u.Cast == cast && u.Channel is not null) (u.Casting, u.Cast) = (null, null);
+        // Mirror Image's cast ends with its effect (probe abilities-cast-timing)
+        if (u.Cast == cast) Later(u, cast, instant || ability.Type.BaseId == MirrorImage ? 0 : Own(u, CastBackswing, u.Type.Real(CastBackswing)), () => Done(u, ability, cast));
+    }
+
+    // The cast's end: the finish and end-cast events, and the unit is idle unless one of them gave it an order. A spell that began to channel
+    // after its casting time keeps its order; Mirror Image's cast has no finish event (probe abilities-spells)
+    void Done(unit u, ability ability, Happening cast)
+    {
+        if (u.Cast != cast) return;
+        if (u.Channel is not null) { (u.Casting, u.Cast) = (null, null); return; }
+        if (ability.Type.BaseId != MirrorImage) FireUnit(cast, UnitSpellFinish, PlayerSpellFinish);
+        if (u.Cast != cast) return;
+        var given = u.Given;
+        BreakCast(u);
+        if (u.Given == given && Finish(u)) Wake();
     }
 
     // How long a buff of the ability lasts on the unit: its duration, a hero's own where it has one
@@ -103,10 +155,18 @@ public sealed partial class GameNatives
                 SetLife(ally, ally.Life + amount);
                 break;
             case var id when id == Code("AHtb") && target is unit foe && !foe.Dead:
-                // Storm Bolt: a hit of 0 of unknown type, then the damage of type sonic (facts, Damage)
-                UnitDamageTarget(caster, foe, 0, false, false, Convert<attacktype>(0), Convert<damagetype>(0), Convert<weapontype>(0));
-                UnitDamageTarget(caster, foe, amount, false, false, Convert<attacktype>(0), Convert<damagetype>(15), Convert<weapontype>(0));
-                if (!foe.Dead) Apply(foe, caster, StunBuff, Lasts(a, foe), false, b => b.Stun = true);
+                // Storm Bolt: its missile flies as an attack's does, at the ability's missile speed (probe abilities-cast-timing: 0.40 s to a foe
+                // 400 away at 1000, 0.80 at 500), then a hit of 0 of unknown type and the damage of type sonic (facts, Damage)
+                void Land()
+                {
+                    if (foe.Dead || foe.Removed) return;
+                    UnitDamageTarget(caster, foe, 0, false, false, Convert<attacktype>(0), Convert<damagetype>(0), Convert<weapontype>(0));
+                    UnitDamageTarget(caster, foe, amount, false, false, Convert<attacktype>(0), Convert<damagetype>(15), Convert<weapontype>(0));
+                    if (!foe.Dead) Apply(foe, caster, StunBuff, Lasts(a, foe), false, b => b.Stun = true);
+                }
+                var flight = Game.Steps(Flight(caster, foe, BlzGetAbilityIntegerField(a, Convert<abilityintegerfield>(Code("amsp")))));
+                if (flight > 0) _game.At(_game.Step + flight, Land);
+                else Land();
                 break;
             case var id when id == Code("Aslo") && target is unit slowed && !slowed.Dead:
                 Apply(slowed, caster, SlowBuff, Lasts(a, slowed), false, b => (b.SpeedFactor, b.AttackSpeedBonus) = (1 - amount, -TagValue(a.Type, "DataB" + a.Level)));

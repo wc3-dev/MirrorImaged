@@ -1,0 +1,9 @@
+# The time between a hero's hits by its agility and a missile's flight by its distance and speed (decisions D452 to D454; 2026-11-19). What differs: a Priest's and a Sorceress's hits land 0.03 s later than their damage point and the way over the missile's speed give; why is not known.
+- a hmpr at 200: cooldown 2.00, damage point 0.59; attacked +{t}, first hit +{t}; between hits 2.000 (2.00 to 2.00); attacked to hit {t} 0.84 0.84; it stands 200 from the foe
++ a hmpr at 200: cooldown 2.00, damage point 0.59; attacked +0.01, first hit +0.82; between hits 2.000 (2.00 to 2.00); attacked to hit 0.81 0.81 0.81; it stands 200 from the foe
+- a hmpr at 400: cooldown 2.00, damage point 0.59; attacked +{t}, first hit +{t}; between hits 2.000 (2.00 to 2.00); attacked to hit {t} 1.06 1.06; it stands 400 from the foe
++ a hmpr at 400: cooldown 2.00, damage point 0.59; attacked +0.01, first hit +1.05; between hits 2.000 (2.00 to 2.00); attacked to hit 1.03 1.03 1.03; it stands 400 from the foe
+- a hsor at 200: cooldown 1.75, damage point 0.75; attacked +{t}, first hit +{t}; between hits 1.750 (1.75 to 1.75); attacked to hit {t} 1.00 1.00; it stands 200 from the foe
++ a hsor at 200: cooldown 1.75, damage point 0.75; attacked +0.01, first hit +0.98; between hits 1.750 (1.75 to 1.75); attacked to hit 0.97 0.97 0.97; it stands 200 from the foe
+- a hsor at 400: cooldown 1.75, damage point 0.75; attacked +{t}, first hit +{t}; between hits 1.750 (1.75 to 1.75); attacked to hit {t} 1.22 1.22; it stands 400 from the foe
++ a hsor at 400: cooldown 1.75, damage point 0.75; attacked +0.01, first hit +1.21; between hits 1.750 (1.75 to 1.75); attacked to hit 1.19 1.19 1.19; it stands 400 from the foe

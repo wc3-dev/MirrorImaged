@@ -59,7 +59,8 @@ public sealed partial class GameNatives
 
     [Native(Level.Close)]
     public int GetTownUnitCount(int id, int tn, bool dn) =>
-        TownHasHall(tn) ? Mine(Ai).Count(u => u.Type.Id == id && (!dn || !u.Constructing) && Distance2(u.X - Towns()[tn].X, u.Y - Towns()[tn].Y) <= TownReach * TownReach) : 0;
+        Towns() is var towns && tn >= 0 && tn < towns.Count && towns[tn] is var hall
+            ? Mine(Ai).Count(u => u.Type.Id == id && (!dn || !u.Constructing) && Distance2(u.X - hall.X, u.Y - hall.Y) <= TownReach * TownReach) : 0;
 
     /// <summary>A building of the player (the first made), nil for none.</summary>
     [Native(Level.Close)]
@@ -95,8 +96,17 @@ public sealed partial class GameNatives
 
     // The tree nearest the hall that stands, within the reach of the town and a little beyond
     destructable? TreeNear(unit hall) =>
-        _destructables.Where(d => !d.Dead && d.Life > 0.405f && (d.Type.Text(Code("btar")) ?? "").Contains("tree", StringComparison.OrdinalIgnoreCase)
-                && Distance2(d.X - hall.X, d.Y - hall.Y) <= 1500 * 1500).OrderBy(d => Distance2(d.X - hall.X, d.Y - hall.Y)).FirstOrDefault();
+        _destructables.Where(d => !d.Dead && d.Life > 0.405f && Distance2(d.X - hall.X, d.Y - hall.Y) <= 1500 * 1500 && IsTree(d.Type))
+            .MinBy(d => Distance2(d.X - hall.X, d.Y - hall.Y));
+
+    // Whether a destructable of the type is a tree, kept by type: a map has thousands of them and the AI looks every round
+    readonly Dictionary<GameObject, bool> _trees = [];
+
+    bool IsTree(GameObject type)
+    {
+        if (!_trees.TryGetValue(type, out var tree)) _trees[type] = tree = (type.Text(Code("btar")) ?? "").Contains("tree", StringComparison.OrdinalIgnoreCase);
+        return tree;
+    }
 
     // A unit that gathers lumber without being a worker that builds, as the undead ghoul does (the lumber harvest ability)
     bool GathersLumberOnly(unit u) => u.Abilities.Any(a => a.Type.Id == LumberHarvest) && !IsWorker(u);
@@ -109,15 +119,16 @@ public sealed partial class GameNatives
     {
         var pool = Mine(Ai).Where(u => !u.Constructing && u.Building is null && (IsWorker(u) || GathersLumberOnly(u)) && u.Order is 0 or OrderHarvest or OrderReturn).OrderBy(u => u.Id).ToList();
         var used = new HashSet<unit>();
+        var towns = Towns();
         foreach (var (gold, town) in _slots)
         {
             var worker = pool.Where(w => !used.Contains(w) && (!gold || IsWorker(w))).OrderBy(w => !gold && GathersLumberOnly(w) ? 0 : 1).FirstOrDefault();
             if (worker is null) continue;
             used.Add(worker);
-            if (!TownHasHall(town)) continue;
+            if (town < 0 || town >= towns.Count) continue;
             var current = worker.Order == OrderReturn ? worker.HarvestTarget : worker.OrderTarget;
             if (worker.Order != 0 && (gold ? current is unit : current is destructable) && !SpentTarget(this, current)) continue;
-            widget? target = gold ? MineNear(Towns()[town]) : TreeNear(Towns()[town]);
+            widget? target = gold ? MineNear(towns[town]) : TreeNear(towns[town]);
             if (target is null) continue;
             if (worker.Order == OrderReturn && worker.CarryGold + worker.CarryLumber > 0) continue;
             Give(worker, OrderHarvest, GetWidgetX(target), GetWidgetY(target), target, 2);

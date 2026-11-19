@@ -16,13 +16,24 @@ public sealed record ReplayPlayer(int Slot, int Id, string Name, bool Computer, 
 /// <summary>One thing a player did in a replay.</summary>
 /// <param name="Millis">The time in milliseconds of the game it was done at.</param>
 /// <param name="Player">The player number it was done by.</param>
-/// <param name="Kind">What it was: <c>order</c>, <c>select</c>, <c>chat</c>, <c>leave</c> or <c>other</c>.</param>
-/// <param name="Code">The replay's own number for the action, or the order's id.</param>
-/// <param name="X">The place of an order, or 0.</param>
-/// <param name="Y">The place of an order, or 0.</param>
-/// <param name="Objects">The ids of the units an order targets, or a selection holds.</param>
+/// <param name="Kind">
+/// What it was: <c>order</c>, <c>select</c> (adding to the selection or taking from it), <c>group</c> (the selection kept under a number),
+/// <c>pick</c> (a kept group selected), <c>subgroup</c> (the type of the selection that takes its orders), <c>ability</c> (a button of a unit
+/// pressed, which the order follows), <c>chat</c>, <c>leave</c> or <c>other</c> (an action this reader does not know).
+/// </param>
+/// <param name="Code">
+/// The order's id; 1 for adding to the selection and 2 for taking from it; the group's number; the subgroup's unit type; the ability; the
+/// result the game gave a leaving player; or the replay's own number of an action that is not known.
+/// </param>
+/// <param name="X">The place of an order; not a number for an order with none.</param>
+/// <param name="Y">The place of an order; not a number for an order with none.</param>
+/// <param name="Objects">
+/// The object an order targets (-1 for the ground), or those a selection, group, subgroup or ability names. The game names an object by two
+/// numbers, here the first in the low half and the second, which it counts up as it makes objects, in the high half.
+/// </param>
 /// <param name="Text">A chat message.</param>
-public sealed record ReplayAction(long Millis, int Player, string Kind, int Code, float X, float Y, IReadOnlyList<int> Objects, string? Text = null);
+/// <param name="Queued">Whether an order was given to be done after the unit's others (shift held).</param>
+public sealed record ReplayAction(long Millis, int Player, string Kind, int Code, float X, float Y, IReadOnlyList<long> Objects, string? Text = null, bool Queued = false);
 
 /// <summary>
 /// A replay (<c>.w3g</c>) read: its lobby, and what each player did, in time order. A replay holds the players' input only, so a map run with
@@ -38,6 +49,9 @@ public sealed class Replay
 
     /// <summary>The name of the game.</summary>
     public string GameName { get; private set; } = "";
+
+    /// <summary>The path of the map the game was played on, as the lobby held it; empty when it can't be read.</summary>
+    public string Map { get; private set; } = "";
 
     /// <summary>The lobby's slots in order.</summary>
     public List<ReplayPlayer> Players { get; } = [];
@@ -94,14 +108,16 @@ public sealed class Replay
         PlayerRecord(data, ref at);
         GameName = Text(data, ref at);
         Text(data, ref at);
-        Text(data, ref at);
+        Map = MapOf(data, ref at);
         at += 4 + 1 + 1 + 2 + 4;
         while (at < data.Length && data[at] == 0x16)
         {
             PlayerRecord(data, ref at);
             at += 4;
         }
-        if (at >= data.Length || data[at] != 0x19) throw new InvalidDataException("The replay's lobby could not be read");
+        // The game since 1.32 puts blocks of its own here (the players' accounts and skins), each a kind, a length and that many bytes
+        while (at + 6 <= data.Length && data[at] is 0x38 or 0x39) at += 6 + BitConverter.ToInt32(data, at + 2);
+        if (at >= data.Length || data[at] != 0x19) throw new InvalidDataException($"The replay's lobby could not be read: block 0x{(at < data.Length ? data[at] : 0):X2} at {at}");
         var length = BitConverter.ToUInt16(data, at + 1);
         var slots = data[at + 3];
         for (var slot = 0; slot < slots; slot++)
@@ -115,6 +131,22 @@ public sealed class Replay
         // Three small blocks, then the time slots
         while (at < data.Length && data[at] is 0x1A or 0x1B or 0x1C) at += 5;
         Blocks(data, at);
+    }
+
+    // The lobby's settings are written so that no byte is 0: a byte of flags, then seven bytes, each one more than it is unless its flag is set.
+    // Decoded, the map's path follows 13 bytes of settings.
+    static string MapOf(byte[] data, ref int at)
+    {
+        var decoded = new List<byte>();
+        var mask = 0;
+        for (var i = 0; at < data.Length && data[at] != 0; at++, i++)
+        {
+            if (i % 8 == 0) mask = data[at];
+            else decoded.Add((byte)((mask >> i % 8 & 1) != 0 ? data[at] : data[at] - 1));
+        }
+        at = Math.Min(at + 1, data.Length);
+        var end = decoded.Count > 13 ? decoded.IndexOf(0, 13) : -1;
+        return end < 0 ? "" : Encoding.UTF8.GetString([.. decoded], 13, end - 13);
     }
 
     readonly Dictionary<int, string> _names = [];
@@ -156,7 +188,7 @@ public sealed class Replay
             else if (kind == 0x17)
             {
                 if (at + 14 > data.Length) break;
-                Actions.Add(new(millis, data[at + 5], "leave", 0x17, 0, 0, []));
+                Actions.Add(new(millis, data[at + 5], "leave", BitConverter.ToInt32(data, at + 6), 0, 0, []));
                 at += 14;
             }
             else if (kind == 0x22) at += 2 + data[at + 1];
@@ -185,6 +217,7 @@ public sealed class Replay
     {
         float Float(int i) => BitConverter.ToSingle(data, i);
         int Int(int i) => BitConverter.ToInt32(data, i);
+        long Long(int i) => BitConverter.ToInt64(data, i);
         while (at < end)
         {
             var code = data[at];
@@ -192,16 +225,17 @@ public sealed class Replay
             int size;
             switch (code)
             {
+                // An order: flags (1 is shift held), the order, 8 bytes, then its place and its target as its kind has them
                 case 0x10 when at + 15 <= end:
-                    Actions.Add(new(millis, player, "order", Int(at + 3), 0, 0, []));
+                    Actions.Add(new(millis, player, "order", Int(at + 3), float.NaN, float.NaN, [], Queued: (data[at + 1] & 1) != 0));
                     size = 15;
                     break;
                 case 0x11 when at + 23 <= end:
-                    Actions.Add(new(millis, player, "order", Int(at + 3), Float(at + 15), Float(at + 19), []));
+                    Actions.Add(new(millis, player, "order", Int(at + 3), Float(at + 15), Float(at + 19), [], Queued: (data[at + 1] & 1) != 0));
                     size = 23;
                     break;
                 case 0x12 when at + 31 <= end:
-                    Actions.Add(new(millis, player, "order", Int(at + 3), Float(at + 15), Float(at + 19), [Int(at + 23)]));
+                    Actions.Add(new(millis, player, "order", Int(at + 3), Float(at + 15), Float(at + 19), [Long(at + 23)], Queued: (data[at + 1] & 1) != 0));
                     size = 31;
                     break;
                 case 0x13 when at + 39 <= end: size = 39; break;
@@ -211,11 +245,17 @@ public sealed class Replay
                     var count = BitConverter.ToUInt16(data, at + 2);
                     size = 4 + count * 8;
                     if (at + size > end) return;
-                    if (code == 0x16) Actions.Add(new(millis, player, "select", data[at + 1], 0, 0, [.. Enumerable.Range(0, count).Select(i => Int(at + 4 + i * 8))]));
+                    Actions.Add(new(millis, player, code == 0x16 ? "select" : "group", data[at + 1], 0, 0, [.. Enumerable.Range(0, count).Select(i => Long(at + 4 + i * 8))]));
                     break;
                 }
-                case 0x18: size = 3; break;
-                case 0x19: size = 13; break;
+                case 0x18 when at + 3 <= end:
+                    Actions.Add(new(millis, player, "pick", data[at + 1], 0, 0, []));
+                    size = 3;
+                    break;
+                case 0x19 when at + 13 <= end:
+                    Actions.Add(new(millis, player, "subgroup", Int(at + 1), 0, 0, [Long(at + 5)]));
+                    size = 13;
+                    break;
                 case 0x1A: size = 1; break;
                 case 0x1B or 0x1C: size = 10; break;
                 case 0x1D: size = 9; break;
@@ -228,7 +268,14 @@ public sealed class Replay
                 case 0x51: size = 10; break;
                 case 0x62: size = 13; break;
                 case 0x68: size = 13; break;
-                case 0x69 or 0x6A: size = 17; break;
+                case 0x69 or 0x6A or 0x7B: size = 17; break;
+                // Since 2.0: a button of a unit pressed (the unit, the ability, the order), before the order it gives
+                case 0x7A when at + 17 <= end:
+                    Actions.Add(new(millis, player, "ability", Int(at + 9), 0, 0, [Long(at + 1)]));
+                    size = 17;
+                    break;
+                // Since 2.0: data a ladder sends (two strings and four bytes)
+                case 0x77: size = Array.IndexOf(data, (byte)0, Array.IndexOf(data, (byte)0, at + 1) + 1) + 5 - at; break;
                 default:
                     // An action this reader cannot measure: the rest of the player's actions of this slot are left
                     Actions.Add(new(millis, player, "other", code, 0, 0, []));
@@ -238,43 +285,4 @@ public sealed class Replay
             at += size;
         }
     }
-
-    /// <summary>
-    /// The replay as a <see cref="Recording"/> of the map: each player's selection, orders, chat and leaving at the step of its time, which
-    /// <see cref="Simulation.Follow"/> runs. A unit is named by the id the replay gives it, which is the id a unit has here when the map made its
-    /// units as the game did; an order of a unit that is not there, or of an order the game has no name for, is left out.
-    /// </summary>
-    public Recording ToRecording(string map, int seed = 0)
-    {
-        var recording = new Recording { Map = map, Seed = seed, Steps = (long)Math.Round(DurationMillis * 1024.0 / 1000) };
-        var slotOf = Players.Where(player => player.Id > 0).ToDictionary(player => player.Id, player => player.Slot);
-        var selected = new Dictionary<int, List<int>>();
-        foreach (var action in Actions)
-        {
-            if (!slotOf.TryGetValue(action.Player, out var player)) continue;
-            var step = (long)Math.Round(action.Millis * 1024.0 / 1000);
-            switch (action.Kind)
-            {
-                case "select":
-                    var set = selected.TryGetValue(player, out var current) ? current : selected[player] = [];
-                    if (action.Code == 2) set.RemoveAll(action.Objects.Contains);
-                    else set.AddRange(action.Objects.Where(id => !set.Contains(id)));
-                    recording.Inputs.Add(new(step, "select", player, [.. set]));
-                    break;
-                case "order" when GameNaturalName(action.Code) is { } name:
-                    foreach (var unit in selected.GetValueOrDefault(player) ?? [])
-                        recording.Inputs.Add(new(step, "order", player, action.Objects.Count > 0 ? [unit, action.Objects[0]] : [unit], action.X != 0 || action.Y != 0 ? [action.X, action.Y] : null, name));
-                    break;
-                case "chat":
-                    recording.Inputs.Add(new(step, "say", player, Text: action.Text));
-                    break;
-                case "leave":
-                    recording.Inputs.Add(new(step, "leave", player));
-                    break;
-            }
-        }
-        return recording;
-    }
-
-    static string? GameNaturalName(int order) => Natives.GameNatives.NameOfOrder(order);
 }

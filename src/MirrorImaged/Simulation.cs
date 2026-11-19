@@ -37,6 +37,12 @@ public sealed class SimulationOptions
     /// <summary>The difficulty the computers play at.</summary>
     public Difficulty Difficulty { get; init; } = Difficulty.Normal;
 
+    /// <summary>The race of a slot, as <c>RACE_*</c> (human 1, orc 2, undead 3, night elf 4), where the lobby chose it; null for the map's.</summary>
+    public IReadOnlyDictionary<int, int>? Races { get; init; }
+
+    /// <summary>The start location of a slot, where the lobby placed it; null for the one the map's <c>config</c> gives.</summary>
+    public IReadOnlyDictionary<int, int>? StartLocations { get; init; }
+
     /// <summary>
     /// The simulated <c>Documents\Warcraft III</c> the run reads and writes: its <c>CustomMapData</c> files and saved
     /// game caches. Give the same one to the next run to keep them.
@@ -96,6 +102,10 @@ public sealed partial class Simulation : IDisposable
             var flags = info?.MapFlags ?? 0;
             _natives.Seat(users, computers, others, flags.HasFlag(MapFlags.UseCustomForces), flags.HasFlag(MapFlags.FixedPlayerSettingsForCustomForces),
                 info?.Players.Where(p => p.Controller == PlayerController.Computer).DistinctBy(p => p.Id).ToDictionary(p => p.Id, p => data.Map.Resolve(p.Name)));
+            foreach (var (slot, race) in options.Races ?? new Dictionary<int, int>())
+                if (_natives.Player(slot) is { } player) player.Race = race;
+            foreach (var (slot, start) in options.StartLocations ?? new Dictionary<int, int>())
+                if (_natives.Player(slot) is { } player) player.StartLocation = start;
             Protect(() => _lua.Call("main"));
         }
         catch (LuaException e) when (_lua.Halted is not null)

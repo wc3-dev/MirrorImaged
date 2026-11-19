@@ -92,6 +92,13 @@ public sealed partial class GameNatives
 
     internal unit? UnitById(int id) => _units.GetValueOrDefault(id);
 
+    /// <summary>Whether the unit's type is a building.</summary>
+    internal bool Structure(unit u) => u.Type.Integer(IsBuilding) != 0;
+
+    /// <summary>The living destructable within 64 of the place either way, the nearest; a replay's order at a tree names it by the game's own number.</summary>
+    internal destructable? TreeAt(float x, float y) =>
+        _destructables.Where(d => !d.Dead && Math.Abs(d.X - x) <= 64 && Math.Abs(d.Y - y) <= 64).MinBy(d => (d.X - x) * (d.X - x) + (d.Y - y) * (d.Y - y));
+
     /// <summary>The pathing grid of the map, a byte a cell of 32 with the bits of <c>PATHING_TYPE_*</c>, from its south-west corner; none where the map has none.</summary>
     internal (int Width, int Height, float Left, float Bottom, byte[] Cells)? PathingGrid() =>
         Data.Terrain is { } terrain && Cells() is { } cells && Data.Map?.Files.PathingMap is { } pathing ? ((int)pathing.Width, (int)pathing.Height, terrain.Grid.Item3, terrain.Grid.Item4, cells) : null;
