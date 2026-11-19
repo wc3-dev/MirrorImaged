@@ -95,8 +95,11 @@ public sealed class MapArchiveTests : IDisposable
         finally { File.Delete(path); }
     }
 
-    [Fact]
-    public void Every_map_file_is_read_and_one_the_map_lacks_is_null()
+    // decisions D510: a folder map is read as the archive of the same files is
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Every_map_file_is_read_and_one_the_map_lacks_is_null(bool folder)
     {
         var path = _maps.Build("function main() end", map: map =>
         {
@@ -113,6 +116,7 @@ public sealed class MapArchiveTests : IDisposable
             ["war3mapImported\\ui.toc"] = "war3mapImported\\ui.fdf\r\n",
             ["war3mapImported\\ui.fdf"] = "Frame \"TEXT\" \"Name\" {}\n",
         });
+        if (folder) path = _maps.Unpack(path);
 
         var map = MapArchive.Read(path).Files;
         var files = MapArchive.Read(path);
@@ -133,6 +137,56 @@ public sealed class MapArchiveTests : IDisposable
         Assert.Equal("war3mapImported\\ui.fdf\r\n", Encoding.UTF8.GetString(files.File("war3mapImported\\ui.toc")!));
         Assert.Equal("Frame \"TEXT\" \"Name\" {}\n", Encoding.UTF8.GetString(files.File("WAR3MAPIMPORTED\\UI.FDF")!));
         Assert.Null(files.File("war3mapImported\\none.fdf"));
+        Assert.Equal("function main() end", Encoding.UTF8.GetString(files.Script!));
+    }
+
+    [Fact]
+    public void A_folder_maps_file_is_found_by_its_name_in_an_archive_in_any_case_and_with_either_slash()
+    {
+        var folder = Directory.CreateDirectory(Path.Combine(Path.GetDirectoryName(_maps.Build("function main() end"))!, "Folder.w3m")).FullName;
+        Directory.CreateDirectory(Path.Combine(folder, "Scripts"));
+        File.WriteAllText(Path.Combine(folder, "Scripts", "War3Map.j"), "// jass\n");
+
+        var map = MapArchive.Read(folder);
+
+        Assert.True(map.Jass);
+        Assert.Equal("// jass\n", Encoding.UTF8.GetString(map.Script!));
+        Assert.Equal("// jass\n", Encoding.UTF8.GetString(map.File("scripts/war3map.j")!));
+        Assert.Null(map.Files.Info);
+    }
+
+    [Fact]
+    public void A_folder_map_runs()
+    {
+        var folder = _maps.Unpack(_maps.Build("function config() end\nfunction main() TimerStart(CreateTimer(), 1, false, function() print('folder') end) end\n"));
+
+        using var simulation = Simulation.Load(folder, "");
+        simulation.Advance(TimeSpan.FromSeconds(2));
+
+        Assert.Equal(["1.000 print: folder"], simulation.Log);
+    }
+
+    [Fact]
+    public void A_map_that_isnt_there_says_so()
+    {
+        var nowhere = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".w3x");
+
+        var error = Assert.Throws<FileNotFoundException>(() => MapArchive.Read(nowhere));
+
+        Assert.Equal($"There is no map at {nowhere}", error.Message);
+    }
+
+    // decisions D511: a map of the installed game is read by its name in the storage, wherever a map is read
+    [InstallFact]
+    [Trait("Needs", "Game")]
+    public void A_map_named_from_the_install_is_read_from_its_storage()
+    {
+        var map = MapArchive.Read("War3.w3mod:Maps/(4)Adrenaline.w3m");
+
+        Assert.NotNull(map.Script);
+        Assert.Equal(4, map.Files.Info!.Players.Count);
+        Assert.NotNull(map.File("war3map.w3i"));
+        Assert.Contains("is not in the installed game", Assert.Throws<FileNotFoundException>(() => MapArchive.Read("War3.w3mod:Maps/NoSuchMap.w3m")).Message);
     }
 
     // A map of a script and one file that isn't what its name says.

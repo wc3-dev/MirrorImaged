@@ -62,8 +62,9 @@ public sealed partial class GameNatives
     [Native(Level.Close)] public void BlzSetHUDScale(int percentage) => _settings["hud"] = percentage / 100f;
     [Native(Level.Close)] public int BlzGetMinShadowCastingPointLightCount() => Setting("lights", 0);
     [Native(Level.Close)] public void BlzSetMinShadowCastingPointLightCount(int count) => _settings["lights"] = count;
-    [Native(Level.Close)] public int BlzGetLocalClientWidth() => 1920;
-    [Native(Level.Close)] public int BlzGetLocalClientHeight() => 1080;
+    /// <summary>1920 by 1080, a little larger on each other machine of a desync check (<see cref="Machine"/>).</summary>
+    [Native(Level.Close)] public int BlzGetLocalClientWidth() => 1920 + Machine * 16;
+    [Native(Level.Close)] public int BlzGetLocalClientHeight() => 1080 + Machine * 9;
     [Native(Level.Close)] public string? BlzGetLocale() => "enUS";
     [Native(Level.Close)] public bool BlzIsLocalClientActive() => true;
 

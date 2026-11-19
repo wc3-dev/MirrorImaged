@@ -8,6 +8,9 @@ namespace MirrorImaged;
 /// <summary>A unit as a test reads it.</summary>
 public sealed record UnitView(int Id, string Type, string Name, int Player, float X, float Y, float Life, float MaxLife, float Mana, int Order, bool Dead);
 
+/// <summary>A missile in flight as a test reads it: the run's count of it, the player it was shot for, the unit it follows (none for a shell, which flies to a place) and where it is.</summary>
+public sealed record MissileView(int Id, int Player, int? Target, float X, float Y);
+
 /// <summary>One thing a person did at a step of the run.</summary>
 public sealed record Input(long Step, string Kind, int Player, int[]? Ints = null, float[]? Floats = null, string? Text = null);
 
@@ -62,6 +65,17 @@ public sealed partial class Simulation
     /// <summary>The units of the run, living ones, the first made first; of one player only when given.</summary>
     public IReadOnlyList<UnitView> Units(int? player = null) =>
         [.. _natives.AllUnits.Where(u => !u.Dead && !u.Removed && (player is null || _natives.GetPlayerId(u.Owner) == player)).Select(View)];
+
+    /// <summary>The missiles in flight now, the first to leave first.</summary>
+    public IReadOnlyList<MissileView> Missiles()
+    {
+        MissileView View(GameNatives.Missile m)
+        {
+            var (x, y) = m.Place(_game.Step);
+            return new(m.Id, m.Player, m.Target?.Id, (float)x, (float)y);
+        }
+        return [.. _natives.Missiles.Select(View)];
+    }
 
     /// <summary>The unit with the id, or null when there is none.</summary>
     public UnitView? Unit(int id) => _natives.UnitById(id) is { } u ? View(u) : null;

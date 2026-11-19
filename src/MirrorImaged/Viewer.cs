@@ -6,7 +6,7 @@ using MirrorImaged.Lua;
 
 namespace MirrorImaged;
 
-/// <summary>A run seen from above: the map, then what each unit was at each sampled time, and what the log said when.</summary>
+/// <summary>A run seen from above: the map, then what each unit was at each sampled time, each missile's flight, and what the log said when.</summary>
 public sealed class Trace
 {
     /// <summary>The file name of the map.</summary>
@@ -29,6 +29,11 @@ public sealed class Trace
     public List<string> Names { get; set; } = [];
     /// <summary>The units at each sampled time.</summary>
     public List<TraceFrame> Frames { get; set; } = [];
+    /// <summary>
+    /// The missiles that flew, in the order they landed, then the ones still flying at the end: each as the times in seconds it left and landed (or
+    /// the end), its player, the place it left and the place it landed (or was at the end).
+    /// </summary>
+    public List<double[]> Missiles { get; set; } = [];
     /// <summary>The log, each line with the time it was shown at.</summary>
     public List<TraceLine> Log { get; set; } = [];
     /// <summary>What stopped the run, if something did.</summary>
@@ -43,7 +48,7 @@ public sealed record TraceFrame(double Time, List<object[]> Units);
 /// <param name="Text">What was shown, with where it came from.</param>
 public sealed record TraceLine(double Time, string Text);
 
-/// <summary>The viewer: a page that opens a trace of a run, scrubs through it, shows the units and regions, and inspects a unit.</summary>
+/// <summary>The viewer: a page that opens a trace of a run, scrubs through it, shows the units, missiles and regions, and inspects a unit.</summary>
 public static class Viewer
 {
     static readonly JsonSerializerOptions Format = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
@@ -54,6 +59,7 @@ public static class Viewer
         var slice = every ?? TimeSpan.FromSeconds(0.5);
         var trace = new Trace { Map = Path.GetFileName(simulation.Recording.Map) };
         var names = new Dictionary<string, int>();
+        simulation.KeepFlights();
         void Sample()
         {
             var units = simulation.Units().Select(u =>
@@ -73,6 +79,7 @@ public static class Viewer
         trace.Names = [.. names.OrderBy(pair => pair.Value).Select(pair => pair.Key)];
         trace.Log = [.. simulation.Log.Select(Line)];
         trace.Stopped = simulation.Stopped?.Message;
+        trace.Missiles = simulation.Flights();
         simulation.Describe(trace);
         return trace;
     }
@@ -97,6 +104,12 @@ public static class Viewer
 
 public sealed partial class Simulation
 {
+    // From here on the natives keep each missile's flight as it lands
+    internal void KeepFlights() => _natives.Flights ??= [];
+
+    // The flights kept, and those of the missiles in flight now
+    internal List<double[]> Flights() => [.. _natives.Flights ?? [], .. _natives.Missiles.Select(_natives.Flight)];
+
     // The map's own shape: its bounds, pathing grid and regions
     internal void Describe(Trace trace)
     {

@@ -88,6 +88,7 @@ internal static unsafe partial class Native
     [LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf8)]
     public static partial int luaL_loadbufferx(nint l, byte* code, nuint size, string name, string mode);
 
+    [LibraryImport(Lib)] public static partial void luaL_traceback(nint l, nint of, byte* message, int level);
     [LibraryImport(Lib)] public static partial int lua_gettop(nint l);
     [LibraryImport(Lib)] public static partial void lua_settop(nint l, int index);
     [LibraryImport(Lib)] public static partial int lua_type(nint l, int index);
