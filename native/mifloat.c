@@ -62,11 +62,13 @@ float mi_mul (float x, float y) {
 /* The reciprocal of a divisor's mantissa m (2^23 to 2^24 - 1) in 2^-47. Measured at the 1024 knots: the k-th is
    2^47 / (m - 1), but the first, 1/1, which is 2^24. Between them a fit, not the game's way (Close, a step off for
    about 1 in 5): straight lines to 2^47 / m less a little at the next knot (2^23 at the last), a step up from below. */
+static uint64_t reciprocal_at (uint64_t i) {
+  return i ? (1ull << 47) / (((0x400 + i) << 13) - 1) : 1ull << 24;
+}
+
 static uint64_t reciprocal (uint32_t m) {
-  uint64_t i = (m >> 13) & 0x3ff, f = m & 0x1fff, knot = (0x400 + i) << 13;
-  uint64_t lo = i ? (1ull << 47) / (knot - 1) : 1ull << 24;
-  uint64_t hi = i == 0x3ff ? 1ull << 23 : ((1ull << 47) - (1ull << 16)) / (knot + 0x2000);
-  return f ? (((lo << 13) - (lo - hi) * f) >> 13) + 1 : lo;
+  uint64_t i = (m >> 13) & 0x3ff, f = m & 0x1fff, lo = reciprocal_at(i);
+  return f ? lo - ((lo - reciprocal_at(i + 1)) * f - 1) / 8191 : lo;
 }
 
 /* The dividend times the divisor's reciprocal. A number divided by the same bits is 1, so 0/0 and -0/-0 are 1;
