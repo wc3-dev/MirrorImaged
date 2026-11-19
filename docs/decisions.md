@@ -2574,3 +2574,31 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
 - **D424 (Smart at a mine or a tree):** a replay's smart order of a unit with a harvest ability (`Ahar`, `Aaha`, `Awha` for gold; `Ahar`,
   `Ahrl`, `Awha` for a tree) at a mine with gold or at a tree is given as `harvest`, as the game turns a person's right-click into it.
   `IssueTargetOrder(smart)` from a script is left as it was. Acolytes and wisps then carry gold in trips as workers do, which the game's do not.
+
+### The corpus runs (L-mirror-corpus-runs)
+
+- **D440 (the corpus tests run in parts):** `ShippedMapTests` and `MeleeCorpusTests` each took longer than the 10 minutes the test run gives a test (35 min 17 s for the 466 shipped maps on 11-19, and
+  about 3 h 13 min for the 258 melee maps, worked out from the 136 the old test got through in 5,016 s), so nobody ran them to the end. Each is now a theory of 8 parts (`Corpus.Shards`), a part taking
+  every 8th map of the sorted list, so the long maps, which sort together by their players, are spread over the parts. A part is one test, so the 10 minutes count for each part: the longest took 2 min 2 s of the shipped maps' 7 min 35 s and 4 min 33 s of the melee maps'
+  31 min 26 s (with 4 parts the longest melee part took 8 min 57 s, too near the limit). The two classes are one
+  xUnit collection, so they never run at once.
+
+- **D441 (a part runs its maps side by side):** on half the PC's processors (`Environment.ProcessorCount / 2`, 6 on the 12 this was measured on), each map its own simulation and file. A map's result
+  doesn't depend on what runs beside it: the 136 melee maps the old test finished had the same unit counts in the new one, and seven maps' state hashes every 150 s are the same before and after.
+
+- **D442 (the tests use the server garbage collector):** `ServerGarbageCollector` in the test project. With the workstation collector six maps in one process each waited on the others' garbage: the
+  46 two-player melee maps took 103 to 138 s, and 88 s with the server collector, while six processes ran a map as fast as one. It changes no result.
+
+- **D443 (JASS is made into Lua one map at a time):** `Jass.ToLua` holds a lock. Once in some 1,500 loads side by side, a map's `war3map.j` failed to become Lua (`NotSupportedException`, on
+  `Campaign/Classic/TFT/OrcX02_09.w3x`, which loads alone and loaded in every run since). The inner error wasn't caught, so the cause is not known: it is in the parser, War3Net's transpiler or the
+  renderer, none of which says it may be used from two threads. The lock costs little, as a map's script takes about 0.2 s. This lane's call; the failure has not been seen again in the 1,448 loads of the two full runs
+  with it, which is not proof.
+
+- **D444 (the speed-ups, none of which changes a state hash):** a standard object keeps each field it has read (`StandardObject.Cell`: three strings joined and three look-ups a read before); the AI's
+  nearest tree is found without sorting every tree, a type's being a tree is kept, and the towns are listed once in a round of worker slots (`AiEconomy.cs`); and a unit's sight is marked explored again
+  only when it moved, its sight changed or cells were taken back since (`Vision.cs`: every `IsLocationVisibleToPlayer` marked every unit's circle, 67% of `HumanX06`, which went from 69 s to 16 s).
+  The 4-player benchmark (A10, `mirror bench "(4)Adrenaline" --seconds 1800 --melee true`) went from 16.0 to 17.1 s to 11.2 s. Tried and taken back: the explored cells as one number each, whose
+  hash collides and made `HumanX06` 195 s.
+
+- **D445 (what is left, not done here):** the nearest enemy is looked for among every unit by every unit (`Nearest` in `Combat.cs`, 41% of `Orc01`'s 877 units), and the path search keeps its cells in
+  dictionaries (`FindPath`, 35% of `ExtremeCandyWar2004`, the longest shipped map at 94 s). Both want a grid, which is more than a small change in another lane's file.

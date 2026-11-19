@@ -14,6 +14,7 @@ using Xunit.Abstractions;
 namespace MirrorImaged.Tests;
 
 /// <summary>The install's maps, and two kinds of file in them War3Net 6.1.2 refuses (decisions D300 to D302).</summary>
+[Collection(Corpus.Name)]
 public sealed class ShippedMapTests(ITestOutputHelper output) : IDisposable
 {
     readonly string _folder = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())).FullName;
@@ -65,9 +66,10 @@ public sealed class ShippedMapTests(ITestOutputHelper output) : IDisposable
 
     // A4, A5: every map in the install's Maps and Campaign folders reads, and each runs to its first Missing native or
     // through its first 10 minutes without a script error; where they stop is D302's
-    [InstallFact]
+    [InstallTheory]
+    [MemberData(nameof(Corpus.Parts), MemberType = typeof(Corpus))]
     [Trait("Needs", "Game")]
-    public void Every_shipped_map_reads_and_runs_to_its_first_missing_native()
+    public void Every_shipped_map_reads_and_runs_to_its_first_missing_native(int part)
     {
         using var storage = CascStorage.Open(GameInstall.Require());
         var maps = storage.Names
@@ -78,36 +80,39 @@ public sealed class ShippedMapTests(ITestOutputHelper output) : IDisposable
         // The install's campaigns are folders of maps; a campaign archive would need opening
         Assert.DoesNotContain(maps, name => name.EndsWith(".w3n", StringComparison.OrdinalIgnoreCase));
         Assert.NotEmpty(maps);
+        maps = Corpus.Part(maps, part);
 
-        var failures = new List<string>();
-        var stops = new List<(string Stop, string Map)>();
-        var errors = new List<string>();
-        foreach (var name in maps)
+        var ran = new (string? Stop, string? Failure, string? Error, double Seconds)[maps.Count];
+        Corpus.Each(maps, (at, name) =>
         {
-            var path = Path.Combine(_folder, "map" + Path.GetExtension(name));
-            File.WriteAllBytes(path, storage.Read(name) ?? throw new InvalidDataException($"{name} isn't stored locally"));
+            var clock = System.Diagnostics.Stopwatch.StartNew();
+            var path = Path.Combine(_folder, at + Path.GetExtension(name));
             try
             {
+                File.WriteAllBytes(path, Corpus.Read(storage, name));
                 using var simulation = Simulation.Load(path);
                 if (simulation.Stopped is null)
                     try { simulation.Advance(TimeSpan.FromMinutes(10)); }
                     catch (LuaException) when (simulation.Stopped is not null) { }
-                stops.Add((simulation.Stopped?.InnerException switch
+                ran[at].Stop = simulation.Stopped?.InnerException switch
                 {
                     null => "ran 10 minutes",
                     MissingNativeException missing => "Missing " + missing.Native,
                     var other => throw new InvalidOperationException("stopped by " + other.Message, other),
-                }, name));
+                };
                 if (!KnownScriptErrors.ContainsKey(name["War3.w3mod:".Length..]))
-                    errors.AddRange(simulation.Log.Where(line => line.Split(' ')[1] == "error:").Take(1).Select(line => $"{name}: {line}"));
+                    ran[at].Error = simulation.Log.Where(line => line.Split(' ')[1] == "error:").Take(1).Select(line => $"{name}: {line}").FirstOrDefault();
             }
-            catch (Exception e) { failures.Add($"{name}: {e.GetType().Name}: {e.Message}"); }
-        }
+            catch (Exception e) { ran[at].Failure = $"{name}: {e.GetType().Name}: {e.Message}"; }
+            ran[at].Seconds = clock.Elapsed.TotalSeconds;
+        });
 
+        var stops = ran.Zip(maps).Where(r => r.First.Stop is not null).Select(r => (r.First.Stop, Map: r.Second));
         foreach (var stop in stops.GroupBy(s => s.Stop).OrderByDescending(g => g.Count()).ThenBy(g => g.Key, StringComparer.Ordinal))
             output.WriteLine($"{stop.Count(),4} {stop.Key}: {string.Join(", ", stop.Take(3).Select(s => s.Map))}{(stop.Count() > 3 ? ", ..." : "")}");
-        Assert.Empty(failures);
-        Assert.Empty(errors);
+        output.WriteLine($"{maps.Count} maps, the longest: {string.Join(", ", ran.Zip(maps).OrderByDescending(r => r.First.Seconds).Take(5).Select(r => $"{r.Second} {r.First.Seconds:0.0} s"))}");
+        var problems = ran.SelectMany(r => new[] { r.Failure, r.Error }).OfType<string>().ToList();
+        Assert.True(problems.Count == 0, string.Join('\n', problems));
     }
 
     // Maps whose own script fails here; none now (ForgottenHollow ran into the game UI's frames, decisions D398)
