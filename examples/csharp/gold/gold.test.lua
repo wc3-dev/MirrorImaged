@@ -1,0 +1,8 @@
+-- Run with: mirror test examples/csharp/gold   (after `dotnet moonwell build` there)
+test("the player is paid every 2 seconds, in C#", function()
+  local sim = mirror.load("build/Gold.w3x")
+  sim:advance(7)
+  sim:say(0, "-purse")
+  sim:advance(0.1)
+  assert_contains(sim:log(), "gold 30")
+end)

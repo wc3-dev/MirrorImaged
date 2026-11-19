@@ -140,6 +140,31 @@ public sealed class GameRunnerTests : IDisposable
 
     static string Hash(string file) => Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(file)));
 
+    [Theory]
+    [InlineData("[Misc]\nhd=0\nmostRecentlySeenGraphicsMode=2\n", 0)]
+    [InlineData("[Misc]\r\nhd=2\r\n", 2)]
+    [InlineData("[Misc]\nchd=1\n", null)]
+    [InlineData(null, null)]
+    public void The_graphics_mode_is_the_preferences_hd_line(string? preferences, int? mode)
+    {
+        if (preferences is not null)
+            File.WriteAllText(Path.Combine(_folder, "War3Preferences.txt"), preferences);
+
+        Assert.Equal(mode, GameRunner.GraphicsMode(_folder));
+    }
+
+    [Fact]
+    public void A_run_is_refused_up_front_when_the_game_is_not_on_the_graphics_the_lines_were_recorded_on()
+    {
+        File.WriteAllText(Path.Combine(_folder, "War3Preferences.txt"), "[Misc]\nhd=0\n");
+        var runner = new GameRunner(Path.Combine(_folder, "game.exe"), _folder, Path.Combine(_folder, "maps"));
+
+        var refused = Assert.Throws<InvalidOperationException>(() => runner.Run("hello", "done()", TimeSpan.FromSeconds(1)));
+
+        Assert.StartsWith("The game is on classic graphics (War3Preferences hd=0); the probes' lines were recorded on Reforged (hd=2)", refused.Message);
+        Assert.False(Directory.Exists(Path.Combine(_folder, "maps")));
+    }
+
     [WindowsFact]
     public void A_run_is_refused_while_a_Warcraft_III_it_did_not_start_runs()
     {
