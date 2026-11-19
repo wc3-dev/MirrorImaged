@@ -123,7 +123,7 @@ public sealed class GameTests
         Assert.Equal(Draw(1), Enumerable.Range(0, 20).Select(_ => _game.RandomInt(0, 1000000)));
     }
 
-    // docs/facts.md, "Strings, numbers and hashtables": over 1,000 draws GetRandomInt(5, 1) gave 5 to 9 and
+    // facts, "Strings, numbers and hashtables": over 1,000 draws GetRandomInt(5, 1) gave 5 to 9 and
     // GetRandomReal(2, 1) 2.0016 to 2.9992
     [Fact]
     public void Random_integers_go_from_the_first_bound_up_by_the_bounds_distance()

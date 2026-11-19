@@ -4,7 +4,7 @@ namespace MirrorImaged.Natives;
 
 // The captains of the computer players' AI (common.ai): the attack captain is a group of the units of the wave the AI asked for, which the
 // natives send to a place to fight, bring home and ask about; the defence captain is not kept apart. Close: units of a wave type join in the
-// order of their ids, and the rules of the wave (reinforcing, retreating on losses) are the script's, as the AI calls them (docs/decisions.md, D366).
+// order of their ids, and the rules of the wave (reinforcing, retreating on losses) are the script's, as the AI calls them (decisions D366).
 public sealed partial class GameNatives
 {
     sealed class War

@@ -85,14 +85,14 @@ public partial class timer
     internal List<@event>? ExpireEvents;
 }
 
-// Triggers, conditions, threads and waits, as the probes triggers to triggers-4 measure them (docs/facts.md, "Triggers and
+// Triggers, conditions, threads and waits, as the probes triggers to triggers-4 measure them (facts, "Triggers and
 // threads"). Events that need units, players or regions come with them.
 public sealed partial class GameNatives
 {
-    const string Probe1 = "facts.md, Triggers and threads: probe triggers (11-08)";
-    const string Probe2 = "facts.md, Triggers and threads: probe triggers-2 (11-08)";
-    const string Probe3 = "facts.md, Triggers and threads: probe triggers-3 (11-08)";
-    const string Probe4 = "facts.md, Triggers and threads: probe triggers-4 (11-08)";
+    const string Probe1 = "facts, Triggers and threads: probe triggers (11-08)";
+    const string Probe2 = "facts, Triggers and threads: probe triggers-2 (11-08)";
+    const string Probe3 = "facts, Triggers and threads: probe triggers-3 (11-08)";
+    const string Probe4 = "facts, Triggers and threads: probe triggers-4 (11-08)";
     const int TimerExpired = 4;  // EVENT_GAME_TIMER_EXPIRED
 
     // What the event responses read in a thread: the trigger it runs for and the event that started it (decisions D75),
@@ -521,7 +521,7 @@ public sealed partial class GameNatives
         if (e is null) return;
         // shortcut: a destroyed Condition or Filter stays in the game for good, as Lua may still give it to a native (a
         // filter destroyed per call by blizzard.j's matching functions keeps about 80 bytes each); let it go once Lua
-        // has collected its userdata, with wave 10's collector-driven id reuse (docs/tasks/later.md).
+        // has collected its userdata, with wave 10's collector-driven id reuse (left for later).
         if (e.Place is { } place)
         {
             if (place.Code is null) return;

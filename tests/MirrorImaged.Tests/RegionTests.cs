@@ -1,7 +1,7 @@
 namespace MirrorImaged.Tests;
 
 /// <summary>
-/// Regions and their enter and leave events against the game's lines of the probe units-regions (docs/facts.md,
+/// Regions and their enter and leave events against the game's lines of the probe units-regions (facts,
 /// "Regions"; probes/expected/units-regions.txt) and the facts' "Units".
 /// </summary>
 public sealed class RegionTests : IDisposable

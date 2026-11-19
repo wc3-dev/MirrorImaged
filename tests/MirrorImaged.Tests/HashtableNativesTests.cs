@@ -3,7 +3,7 @@ using MirrorImaged.World;
 
 namespace MirrorImaged.Tests;
 
-/// <summary>The hashtable natives against the probes hashtables and strings-2 (docs/facts.md, "Strings, numbers and hashtables").</summary>
+/// <summary>The hashtable natives against the probes hashtables and strings-2 (facts, "Strings, numbers and hashtables").</summary>
 public sealed class HashtableNativesTests : IDisposable
 {
     readonly GameNatives _natives = new(new Game(0));

@@ -1,5 +1,5 @@
 /*
-** The game's float arithmetic, measured on 3.0.1.24371 (docs/decisions.md, "The game's Lua numbers"). All on
+** The game's float arithmetic, measured on 3.0.1.24371 (decisions, "The game's Lua numbers"). All on
 ** the bits with integers, or in doubles with + - * / only, so every platform gives the same bits.
 */
 #define LUA_CORE

@@ -3,7 +3,7 @@ using MirrorImaged.Data;
 namespace MirrorImaged.Natives;
 
 // The unit field natives, as the units probe reads and sets every one of them on a footman, a Paladin, a barracks and a
-// gryphon rider (docs/facts.md, "Units"). A field reads the unit's type's data (as a number, a word read as the
+// gryphon rider (facts, "Units"). A field reads the unit's type's data (as a number, a word read as the
 // constant common.j gives it, or a list of words read as flags), or the unit's own state where the field is one; a set
 // changes only that unit. The data's useUnit, useHero and useBuilding aren't read: a field applies to any unit, but for
 // what only a hero has: its attributes and their gains, its proper names and its primary attribute (decisions D220).

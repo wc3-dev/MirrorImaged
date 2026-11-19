@@ -1,6 +1,6 @@
 /*
 ** The game's float arithmetic and maths in place of the CPU's and the C library's, included at the end of
-** luaconf.h. The models and the measurements behind them: docs/decisions.md, "The game's Lua numbers".
+** luaconf.h. The models and the measurements behind them: decisions, "The game's Lua numbers".
 */
 #ifndef mifloat_h
 #define mifloat_h

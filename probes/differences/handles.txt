@@ -10,6 +10,6 @@
 - blizzard 1048577 1048578 1048579 1048580 1048581 1048582 1048583
 + blizzard 1048604 1048605 1048606 1048607 1048608 1048609 1048610
 
-# Condition(nil) inside And and Not, as D114 has it (Close; docs/tasks/later.md, wave 10).
+# Condition(nil) inside And and Not, as D114 has it (Close; left for wave 10).
 - after a pass false false false false false
 + after a pass true true false false false

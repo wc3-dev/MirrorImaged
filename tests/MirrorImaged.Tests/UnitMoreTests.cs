@@ -4,7 +4,7 @@ namespace MirrorImaged.Tests;
 
 /// <summary>
 /// The rest of the units, against the probes units-more, units-more-2, units-types, units-bones and units-gold
-/// (docs/facts.md, "Units"), on maps with the data the test gives (decisions D207): the standard values the probes read,
+/// (facts, "Units"), on maps with the data the test gives (decisions D207): the standard values the probes read,
 /// under the probe map's balance set (custom_v1).
 /// </summary>
 public sealed class UnitMoreTests : IDisposable

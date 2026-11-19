@@ -7,13 +7,13 @@
 - players 15 16 17 18 19 20 21 22 23 24 25 1 60 62
 + players 14 15 16 17 18 19 20 21 22 23 24 25 26 27
 
-# Ids given again in the game, never here (D111; docs/tasks/later.md, wave 10).
+# Ids given again in the game, never here (D111; left for wave 10).
 - new a b, 2 other
 + new , 4 other
 - made c
 + made new
 
-# Condition(nil) inside And, Or and Not, as D114 has it (Close; docs/tasks/later.md, wave 10).
+# Condition(nil) inside And, Or and Not, as D114 has it (Close; left for wave 10).
 - predicted false false true false true false false
 + predicted false false true false false true true
 - ran t1,f1,t2,f3,f5,t6,u6,t8,u8

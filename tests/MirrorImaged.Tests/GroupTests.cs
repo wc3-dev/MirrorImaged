@@ -4,7 +4,7 @@ namespace MirrorImaged.Tests;
 
 /// <summary>
 /// Groups and the unit enumerations against the game's lines of the probes units-groups and units-order
-/// (docs/facts.md, "Groups"; probes/expected), on maps with the data the test gives: the units' collision sizes.
+/// (facts, "Groups"; probes/expected), on maps with the data the test gives: the units' collision sizes.
 /// </summary>
 public sealed class GroupTests : IDisposable
 {

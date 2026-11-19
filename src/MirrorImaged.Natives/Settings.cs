@@ -3,7 +3,7 @@ using MirrorImaged.Data;
 namespace MirrorImaged.Natives;
 
 // The game's settings, menu and bookkeeping natives: what a getter reads back is kept; the screens, saves and campaign menus
-// aren't simulated and are Recorded. Defaults not measured are noted (docs/decisions.md, D600).
+// aren't simulated and are Recorded. Defaults not measured are noted (decisions D600).
 public sealed partial class GameNatives
 {
     const string SettingsNote = "A setting of the game's screens or menus; no native reads it back";
@@ -23,11 +23,11 @@ public sealed partial class GameNatives
     public string? AbilityId2String(int abilityId) => Name(abilityId);
 
     /// <summary>The id of a named order (any case), 0 for a name the game doesn't give an order (probe orders-table: 373 names).</summary>
-    [Native(Level.Exact, Fact = "docs/facts.md, Orders: probe orders-table (11-15); game-facts.md, Orders and events: OrderId2String (10-15, 11-03)")]
+    [Native(Level.Exact, Fact = "facts, Orders: probe orders-table (11-15); game-facts.md, Orders and events: OrderId2String (10-15, 11-03)")]
     public int OrderId(string? orderIdString) => orderIdString is null ? 0 : OrderIds.GetValueOrDefault(orderIdString);
 
     /// <summary>The name of an order id; "" for an id with none (852008, 851974), also an id of a unit.</summary>
-    [Native(Level.Exact, Fact = "docs/facts.md, Orders: probe orders-table (11-15); game-facts.md, Orders and events: OrderId2String (10-15, 11-03)")]
+    [Native(Level.Exact, Fact = "facts, Orders: probe orders-table (11-15); game-facts.md, Orders and events: OrderId2String (10-15, 11-03)")]
     public string? OrderId2String(int orderId) => OrderNames.GetValueOrDefault(orderId, "");
 
     // The animation names of ANIM_TYPE_*

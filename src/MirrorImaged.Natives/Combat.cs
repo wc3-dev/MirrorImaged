@@ -18,7 +18,7 @@ public partial class unit
 // place or target of its order at its speed, attacks in range with its weapon (a swing, the damage at the damage point, then the cooldown)
 // and acquires the nearest enemy it may attack in its acquisition range when it has no order, holds position or attack-moves. Close:
 // units walk straight lines (no pathfinding or collision, only the unwalkable cells and the world's edge stop them), a missile flies
-// level, and the facts' orders and events of waves 3 are the ones kept (docs/decisions.md, D352). Attacks come a
+// level, and the facts' orders and events of waves 3 are the ones kept (decisions D352). Attacks come a
 // cooldown apart to the clock's step, and a hero's agility quickens them (probe units-attack-timing, D452 to D454). A missile is a thing in
 // flight that follows its target, and an artillery shell one that lands where its target stood (probe units-missile-homing, D620 to D622).
 public sealed partial class GameNatives

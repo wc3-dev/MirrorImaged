@@ -11,12 +11,12 @@ public partial class unit
     internal long Entered; // when it entered that square
 }
 
-// Groups and the unit enumerations, as the probes units-groups and units-order measure them (docs/facts.md, "Groups").
+// Groups and the unit enumerations, as the probes units-groups and units-order measure them (facts, "Groups").
 // A group holds its units in an order of their own whatever order they were added in: the game's is the order made
 // while its memory is fresh, and otherwise its memory's (decisions D271); here always the order made.
 public sealed partial class GameNatives
 {
-    const string GroupsProbe = "facts.md, Groups: probes units-groups and units-order (11-08)";
+    const string GroupsProbe = "facts, Groups: probes units-groups and units-order (11-08)";
 
     // The game's units by handle id, the order made; one leaves once gone
     readonly SortedDictionary<int, unit> _units = [];

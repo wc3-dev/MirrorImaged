@@ -7,7 +7,7 @@ public partial class unit
 }
 
 // A creep guards the place it stands at: it fights what comes near, follows it no further than the game's GuardReturnDistance from its post, and
-// walks back when it has nothing to fight. Close: the distance is the constant's, the rule is not measured (docs/decisions.md, D435).
+// walks back when it has nothing to fight. Close: the distance is the constant's, the rule is not measured (decisions D435).
 public sealed partial class GameNatives
 {
     bool Guards(unit u) => u.CreepGuard ?? GetPlayerId(u.Owner) == GetPlayerNeutralAggressive();

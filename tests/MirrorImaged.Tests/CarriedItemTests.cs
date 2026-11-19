@@ -4,7 +4,7 @@ namespace MirrorImaged.Tests;
 
 /// <summary>
 /// What carried items and powerups give a hero, the heal of a use, the ankh, and a unit stored in a game cache, against
-/// the probes items-carried, items-ankh and heroes-store (docs/facts.md, "Items carried (W2-3)" and "Stored units
+/// the probes items-carried, items-ankh and heroes-store (facts, "Items carried (W2-3)" and "Stored units
 /// (W2-3)"), on maps with the data the test gives (decisions D207).
 /// </summary>
 public sealed class CarriedItemTests : IDisposable

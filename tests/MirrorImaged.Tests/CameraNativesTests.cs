@@ -5,7 +5,7 @@ using MirrorImaged.World;
 namespace MirrorImaged.Tests;
 
 /// <summary>
-/// The local player's camera and the fog flags, against the probes cameras to cameras-4 and units-camera (docs/facts.md,
+/// The local player's camera and the fog flags, against the probes cameras to cameras-4 and units-camera (facts,
 /// "Cameras").
 /// </summary>
 public sealed class CameraNativesTests

@@ -9,7 +9,7 @@ jobs:
     runs-on: [self-hosted, windows]
     steps:
       - uses: actions/checkout@v4
-      - uses: wc3-dev/mirror-imaged/.github/actions/mirror-test@main
+      - uses: wc3-dev/MirrorImaged/.github/actions/mirror-test@main
         with:
           tests: tests
           junit: mirror-junit.xml

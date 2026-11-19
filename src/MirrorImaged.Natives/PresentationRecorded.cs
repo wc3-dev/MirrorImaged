@@ -1,6 +1,6 @@
 namespace MirrorImaged.Natives;
 
-// What the game draws and nothing reads back (docs/facts.md; game-facts.md, Presentation): floating text, weather, images, splats, minimap icons, cinematics, animations and indicators. Recorded: kept by their handles, not simulated.
+// What the game draws and nothing reads back (the facts; game-facts.md, Presentation): floating text, weather, images, splats, minimap icons, cinematics, animations and indicators. Recorded: kept by their handles, not simulated.
 public sealed partial class GameNatives
 {
     [Native(Level.Recorded, Reason = "Floating text is drawn on the screen; no native reads it back")]

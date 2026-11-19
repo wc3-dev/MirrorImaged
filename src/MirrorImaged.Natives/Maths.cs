@@ -7,7 +7,7 @@ namespace MirrorImaged.Natives;
 // SquareRoot is 0 below 0.001, and Asin, Acos and Atan2 give 0 outside their domains where math.* gives pi/2, 0 or pi.
 public sealed partial class GameNatives
 {
-    const string NumbersFact = "docs/facts.md, The number model's probes (probes numbers-sqrt, numbers-sqrt-2, numbers-squares, "
+    const string NumbersFact = "facts, The number model's probes (probes numbers-sqrt, numbers-sqrt-2, numbers-squares, "
         + "numbers-trig, numbers-sin-2, numbers-fine, numbers-fine-2): every root measured, at each of the 19,195 places the "
         + "root steps too, and all 11,552 sines and cosines measured as the game's";
 

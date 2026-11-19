@@ -18,8 +18,8 @@ public partial class camerasetup
 // the local player's (multiplayer: wave 6).
 public sealed partial class GameNatives
 {
-    const string Cameras = "docs/facts.md, Cameras: probes cameras, cameras-2 and cameras-3 (11-08)";
-    const string Cameras5 = "docs/facts.md, Cameras: probe units-camera-2 (11-08)";
+    const string Cameras = "facts, Cameras: probes cameras, cameras-2 and cameras-3 (11-08)";
+    const string Cameras5 = "facts, Cameras: probe units-camera-2 (11-08)";
     const int CameraFields = 14;
     const float PanSpeed = 3000; // PanCameraTo's, and a setup's pan that isn't timed, a second (cameras-3)
 
@@ -504,7 +504,7 @@ public sealed partial class GameNatives
     /// <summary>
     /// Close: while a cinematic camera plays, the game's target and eye read the model's camera (CameraZoomOut: the
     /// target about 110 to 120 up, the eye 200 to 250 from it), here the game camera's; the fields read as they were and
-    /// ResetToGameCamera ends it, in both (units-camera-2). Reading the models' cameras is later.md's.
+    /// ResetToGameCamera ends it, in both (units-camera-2). Reading the models' cameras is left for later.
     /// </summary>
     [Native(Level.Close)]
     public void SetCinematicCamera(string? cameraModelFile) { }

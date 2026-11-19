@@ -249,7 +249,7 @@ public sealed class MapArchiveTests : IDisposable
         Assert.Contains(name, error.Message);
     }
 
-    // docs/facts.md, "The game's data": TRIGSTR_1, TRIGSTR_0001 and "TRIGSTR_001 " are string 1, trigstr_001 and a string
+    // facts, "The game's data": TRIGSTR_1, TRIGSTR_0001 and "TRIGSTR_001 " are string 1, trigstr_001 and a string
     // the file doesn't have stay as they are
     [Fact]
     public void A_trigstr_is_the_maps_string_its_number_read_as_atoi_reads_it()

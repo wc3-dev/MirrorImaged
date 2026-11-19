@@ -177,7 +177,7 @@ public sealed class StandardDataTests
         Assert.Equal(7, data.Constant("Nothing", 7));
     }
 
-    // docs/facts.md, "The game's data": the string lists' keys in their case; the hotkeys in any case and the installed language
+    // facts, "The game's data": the string lists' keys in their case; the hotkeys in any case and the installed language
     [Fact]
     public void Strings_and_hotkeys_are_the_locales()
     {

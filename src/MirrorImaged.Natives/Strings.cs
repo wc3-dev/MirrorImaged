@@ -4,12 +4,12 @@ using MirrorImaged.Lua;
 
 namespace MirrorImaged.Natives;
 
-// The string and number natives as the probes strings to strings-6 measured them (docs/facts.md, "Strings,
+// The string and number natives as the probes strings to strings-6 measured them (facts, "Strings,
 // numbers and hashtables"). A string is the game's bytes as UTF-8: one that isn't UTF-8 reaches C# changed (decisions
 // D38), which is where SubString and StringHash can differ from the game.
 public sealed partial class GameNatives
 {
-    const string StringsFact = "docs/facts.md, Strings, numbers and hashtables (probes strings to strings-6)";
+    const string StringsFact = "facts, Strings, numbers and hashtables (probes strings to strings-6)";
 
     /// <summary>
     /// The string's length in bytes. A string that isn't UTF-8 reaches C# with U+FFFD, three bytes, in place of each

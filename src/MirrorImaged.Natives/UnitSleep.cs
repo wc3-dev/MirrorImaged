@@ -6,7 +6,7 @@ public partial class unit
     internal double? WokenAt;
 }
 
-// Creeps asleep at night, as the probes units-more and units-more-2 measure them (docs/facts.md, "Units"). Whether a unit
+// Creeps asleep at night, as the probes units-more and units-more-2 measure them (facts, "Units"). Whether a unit
 // sleeps is settled as it is made, woken or allowed to sleep, and again when read after the day has turned, so nothing
 // runs for it in between; a change to what that reads (death, pause, owner, the owner's no creep sleep) settles it first.
 public sealed partial class GameNatives

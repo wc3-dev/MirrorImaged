@@ -3,7 +3,7 @@ using MirrorImaged.Data;
 namespace MirrorImaged.Tests;
 
 /// <summary>
-/// Heroes, against the probes heroes, heroes-nonhero, heroes-nonhero-level, -str and -setstr (docs/facts.md, "Heroes
+/// Heroes, against the probes heroes, heroes-nonhero, heroes-nonhero-level, -str and -setstr (facts, "Heroes
 /// (W2-3)") and game-facts' "Heroes" experience tables, on maps with the data the test gives (decisions D207).
 /// </summary>
 public sealed class HeroTests : IDisposable

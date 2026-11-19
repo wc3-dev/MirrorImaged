@@ -40,7 +40,7 @@ public sealed partial class GameNatives
     /// Melee, as a <c>-loadfile</c> game is, from <c>config</c> on, with custom forces or without (the players and lobby
     /// probes; custom forces without fixed settings not measured).
     /// </summary>
-    [Native(Level.Exact, Fact = "docs/facts.md, Players and the game: the players and lobby probes")]
+    [Native(Level.Exact, Fact = "facts, Players and the game: the players and lobby probes")]
     public gametype? GetGameTypeSelected() => Convert<gametype>(1); // GAME_TYPE_MELEE
 
     [Native(Level.Close)]
@@ -91,6 +91,6 @@ public sealed partial class GameNatives
     /// A flag set, or the lobby's, once it has seated the players after <c>config</c>: none, but
     /// MAP_LOCK_ALLIANCE_CHANGES and 2^20 for custom forces with fixed player settings (the lobby probe).
     /// </summary>
-    [Native(Level.Exact, Fact = "game-facts.md, Version and launching: custom forces and fixed player settings start with MAP_LOCK_ALLIANCE_CHANGES set (11-06); docs/facts.md, Players and the game: no flag without them")]
+    [Native(Level.Exact, Fact = "game-facts.md, Version and launching: custom forces and fixed player settings start with MAP_LOCK_ALLIANCE_CHANGES set (11-06); facts, Players and the game: no flag without them")]
     public bool IsMapFlagSet(mapflag? whichMapFlag) => whichMapFlag is not null && (_mapFlags & whichMapFlag.Id) != 0;
 }

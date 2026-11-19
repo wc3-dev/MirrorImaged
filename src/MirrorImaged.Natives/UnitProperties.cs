@@ -2,7 +2,7 @@ using MirrorImaged.Data;
 
 namespace MirrorImaged.Natives;
 
-// A unit's speeds, facing, height, owner and kind, as the units probe measures them (docs/facts.md, "Units").
+// A unit's speeds, facing, height, owner and kind, as the units probe measures them (facts, "Units").
 public sealed partial class GameNatives
 {
     static readonly int MoveSpeed = Code("umvs"), PropWindow = Code("uprw"), Race = Code("urac"), FoodUsed = Code("ufoo"),

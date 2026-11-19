@@ -1,11 +1,11 @@
 namespace MirrorImaged.Natives;
 
-// Player and game events as the events probe measures them (docs/facts.md, "Player and game events"): RemovePlayer,
+// Player and game events as the events probe measures them (facts, "Player and game events"): RemovePlayer,
 // SetPlayerAlliance and SetPlayerState fire them inside the call; leaving, chat, cinematics, keys and the mouse come with
 // players and input (wave 6), so their events never fire yet.
 public sealed partial class GameNatives
 {
-    const string Events = "facts.md, Player and game events: probe events (11-08)";
+    const string Events = "facts, Player and game events: probe events (11-08)";
     const int PlayerStateLimit = 11, PlayerAllianceChanged = 12, PlayerDefeat = 13, PlayerVictory = 14; // EVENT_PLAYER_*
 
     readonly List<(player Player, int Kind, @event Event)> _playerEvents = [];

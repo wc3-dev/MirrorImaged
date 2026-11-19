@@ -24,7 +24,7 @@ public partial class unit
 // Buildings, training and research (waves 3's economy): a worker given a build order walks to the place, pays and starts the building,
 // which finishes after its build time; a building given a unit's or an upgrade's id as an immediate order queues it, pays at once, trains one
 // at a time and fires the start, cancel and finish events. Gold and lumber are the player's states, food is held while a unit is in the
-// queue. Close: the game's refunds, rally orders and the building's life while it grows are not measured (docs/decisions.md, D353).
+// queue. Close: the game's refunds, rally orders and the building's life while it grows are not measured (decisions D353).
 public sealed partial class GameNatives
 {
     const int OrderCancel = 851976;

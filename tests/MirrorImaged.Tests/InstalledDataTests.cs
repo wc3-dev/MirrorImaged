@@ -6,7 +6,7 @@ namespace MirrorImaged.Tests;
 
 /// <summary>
 /// The installed game's standard data, against what the game gives (game-facts, "Units", "Object data", "Spells and
-/// abilities" and "Heroes"; docs/facts.md, "The game's data"), for a map of The Frozen Throne's custom data, as
+/// abilities" and "Heroes"; facts, "The game's data"), for a map of The Frozen Throne's custom data, as
 /// World Editor makes one.
 /// </summary>
 [Trait("Needs", "Game")]

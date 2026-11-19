@@ -6,7 +6,7 @@ namespace MirrorImaged.Natives;
 // 20 game seconds at scale 1, a day of 24 hours, the standard gameplay constants (DayLength 480, DayHours 24), or the
 // map's own (decisions D208). The time is worked out from the clock, not added up frame by frame, so it moves only
 // where an event's pass sets it to its limit, by under a step's share each time (decisions D144); the game adds each
-// frame's share and loses a little (2.5 millionths of an hour in 2 s, 0.00013 in 20, docs/facts.md), which isn't
+// frame's share and loses a little (2.5 millionths of an hour in 2 s, 0.00013 in 20, the facts), which isn't
 // modelled.
 public sealed partial class GameNatives
 {
@@ -160,7 +160,7 @@ public sealed partial class GameNatives
     /// The speed, normal at the start (the players probe). Game time is the simulation's whatever the speed: it
     /// changes only how fast real time would pass.
     /// </summary>
-    [Native(Level.Exact, Fact = "docs/facts.md, Players and the game: normal at the start of a -loadfile game")]
+    [Native(Level.Exact, Fact = "facts, Players and the game: normal at the start of a -loadfile game")]
     public gamespeed? GetGameSpeed() => Convert<gamespeed>(_speed);
 
     /// <summary>Fastest is refused and the speed stays (the players probe); the others aren't all measured.</summary>
@@ -177,7 +177,7 @@ public sealed partial class GameNatives
     [Native(Level.Close)]
     public void PauseGame(bool flag) => _game.Paused = flag;
 
-    [Native(Level.Exact, Fact = "docs/facts.md, Players and the game: easy in a -loadfile game")]
+    [Native(Level.Exact, Fact = "facts, Players and the game: easy in a -loadfile game")]
     public gamedifficulty? GetGameDifficulty() => Convert<gamedifficulty>(_difficulty);
 
     [Native(Level.Close)]
@@ -186,13 +186,13 @@ public sealed partial class GameNatives
         if (whichdifficulty is not null) _difficulty = whichdifficulty.Id;
     }
 
-    [Native(Level.Exact, Fact = "docs/facts.md, Players and the game: VERSION_FROZEN_THRONE")]
+    [Native(Level.Exact, Fact = "facts, Players and the game: VERSION_FROZEN_THRONE")]
     public version? VersionGet() => Convert<version>(1);
 
-    [Native(Level.Exact, Fact = "docs/facts.md, Players and the game: false in a -loadfile game")]
+    [Native(Level.Exact, Fact = "facts, Players and the game: false in a -loadfile game")]
     public bool IsNoVictoryCheat() => false;
 
-    [Native(Level.Exact, Fact = "docs/facts.md, Players and the game: false in a -loadfile game")]
+    [Native(Level.Exact, Fact = "facts, Players and the game: false in a -loadfile game")]
     public bool IsNoDefeatCheat() => false;
 
     /// <summary>

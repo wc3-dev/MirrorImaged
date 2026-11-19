@@ -16,11 +16,11 @@ public partial class destructable
     internal bool Dead => Life <= 0;
 }
 
-// Destructables, trees and gates, as the destructables probe measures them (docs/facts.md, "Destructables") with the
+// Destructables, trees and gates, as the destructables probe measures them (facts, "Destructables") with the
 // facts' "Units". A destructable's data is its type's. The natives every widget takes are in Widgets.cs.
 public sealed partial class GameNatives
 {
-    const string Destructables = "facts.md, Destructables: probe destructables (11-08)";
+    const string Destructables = "facts, Destructables: probe destructables (11-08)";
 
     static readonly int DestructableLife = Code("bhps"), Occlusion = Code("boch"), FixedRotation = Code("bfxr"), PathTexture = Code("bptx"),
         DestructableName = Code("bnam");

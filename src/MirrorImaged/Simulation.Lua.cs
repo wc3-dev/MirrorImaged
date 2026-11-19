@@ -46,7 +46,7 @@ public sealed partial class Simulation
             };
         if (type == typeof(bool)) return value is not (null or false) && value != None;
         // As luaL_checklstring: a number is written as tostring writes it, nil is refused, and the native reads up to
-        // the first NUL (docs/facts.md, "Strings, numbers and hashtables"). A TRIGSTR_n given to a native that reads it
+        // the first NUL (facts, "Strings, numbers and hashtables"). A TRIGSTR_n given to a native that reads it
         // is the map's string n (decisions D206). A JASS map gives natives null, as its JASS does (probe jass-threads,
         // decisions D136).
         if (type == typeof(string))

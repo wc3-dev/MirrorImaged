@@ -12,13 +12,13 @@ public partial class sound
     internal string SpeakerKey = "", TextKey = "";
 }
 
-// Sounds as the probes sounds and sounds-2 measure them (docs/facts.md, "Sounds"): nothing is played. A sound's length is
+// Sounds as the probes sounds and sounds-2 measure them (facts, "Sounds"): nothing is played. A sound's length is
 // its file's, read from the map or the install (GameData.SoundLength), and it reads playing from StartSound for that
 // long. The game reads a sound playing longer, as its start waits a varying while (0.8 to 1.4 s in probe sounds, 3.6 to
 // 4.0 s in sounds-2), so GetSoundIsPlaying is Close (decisions D520 to D524).
 public sealed partial class GameNatives
 {
-    const string Sounds = "facts.md, Sounds: probes sounds and sounds-2 (11-08)";
+    const string Sounds = "facts, Sounds: probes sounds and sounds-2 (11-08)";
     const string NotPlayed = "what a sound sounds like: nothing is played, and no native reads it back (probes sounds and sounds-2)";
 
     /// <summary>A sound of the file, which takes the next handle id; its length is the file's. Nothing is played (D521).</summary>

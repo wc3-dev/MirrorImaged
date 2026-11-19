@@ -3,7 +3,7 @@ using MirrorImaged.World;
 
 namespace MirrorImaged.Tests;
 
-/// <summary>The game cache natives, against the files probe (docs/facts.md, "Files and game cache").</summary>
+/// <summary>The game cache natives, against the files probe (facts, "Files and game cache").</summary>
 public sealed class GameCacheNativesTests
 {
     readonly Documents _documents = new();

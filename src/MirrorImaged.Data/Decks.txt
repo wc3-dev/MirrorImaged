@@ -1,7 +1,7 @@
-# Copied as it is from Moonwell's src/Moonwell.Build/Data/Decks.txt (wc3-dev/moonwell, MIT), which the workspace's deck
-# probe measured in the game; MirrorImaged reads it for GetLocationZ (decisions D255).
+# Copied from Moonwell's src/Moonwell.Build/Data/Decks.txt (wc3-dev/moonwell, MIT), its data as it is, which the
+# workspace's deck probe measured in the game; MirrorImaged reads it for GetLocationZ (decisions D255).
 # Deck shapes of the game's walkable destructables (bwal), one block per type and variation, measured on
-# Warcraft III 3.0.1.24371 by wc3-cs docs/tools/deck-probe: each placed alone on flat ground at facing 270 and
+# Warcraft III 3.0.1.24371 by the deck probe: each placed alone on flat ground at facing 270 and
 # scale 1, GetLocationZ read every 32 around its place, less the bare ground there (the ground read 0.0 to 0.0).
 # A block is a line "type variation cell columns rows originColumn originRow", then rows lines of columns values:
 # the deck's height above the ground beneath, in whole units, or "." where it is within 0.5 of the ground.

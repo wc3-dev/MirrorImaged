@@ -13,12 +13,12 @@ public partial class rect
 }
 
 // Locations, rects, the map's bounds and where a unit is put, as the probes units-bounds and terrain-edge measure them
-// (docs/facts.md, "Rects and locations"). A rect's corners are kept in order and held in the world as the game holds
+// (facts, "Rects and locations"). A rect's corners are kept in order and held in the world as the game holds
 // them; a location is a place, anywhere.
 public sealed partial class GameNatives
 {
-    const string BoundsProbe = "facts.md, Rects and locations: probe units-bounds (11-08)";
-    const string EdgeProbe = "facts.md, Rects and locations: probe terrain-edge (11-08)";
+    const string BoundsProbe = "facts, Rects and locations: probe units-bounds (11-08)";
+    const string EdgeProbe = "facts, Rects and locations: probe terrain-edge (11-08)";
 
     [Native(Level.Exact, Fact = BoundsProbe)]
     public location? Location(float x, float y) => Make(new location { X = x, Y = y });

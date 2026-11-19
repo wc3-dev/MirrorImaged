@@ -22,7 +22,7 @@ public static partial class ProbeMap
     /// <summary>The file under <c>CustomMapData</c> a probe map writes when its game has started, past the loading screen.</summary>
     public const string Started = Folder + @"\started.pld";
 
-    // A black minimap in place of World Editor's war3mapMap.blp: without either, the game closes as the map loads (docs/facts.md).
+    // A black minimap in place of World Editor's war3mapMap.blp: without either, the game closes as the map loads (the facts).
     static readonly byte[] Minimap = MakeMinimap(256);
 
     /// <summary>The Lua of a probe in <c>probes/</c>, by its name.</summary>

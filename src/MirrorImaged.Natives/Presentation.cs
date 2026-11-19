@@ -3,7 +3,7 @@ namespace MirrorImaged.Natives;
 // What main and InitBlizzard set for the view, Recorded as the view isn't simulated, and the fog flags (probe cameras-4).
 public sealed partial class GameNatives
 {
-    const string Cameras4 = "docs/facts.md, Cameras: probe cameras-4 (11-08)";
+    const string Cameras4 = "facts, Cameras: probe cameras-4 (11-08)";
 
     bool _fog = true, _fogMask = true;
 

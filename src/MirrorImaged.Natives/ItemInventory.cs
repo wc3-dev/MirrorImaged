@@ -6,7 +6,7 @@ public partial class unit
 }
 
 // A hero's inventory: six slots, the item events inside the calls, powerups, as the items probe measures them
-// (docs/facts.md, "Items (W2-3)"). The orders that need a unit to walk to a place (dropping at a point or to a unit),
+// (facts, "Items (W2-3)"). The orders that need a unit to walk to a place (dropping at a point or to a unit),
 // the shops are later waves'.
 public sealed partial class GameNatives
 {
