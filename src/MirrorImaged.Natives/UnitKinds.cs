@@ -78,12 +78,6 @@ public sealed partial class GameNatives
     [Native(Level.Exact, Fact = MoreProbe)]
     public bool UnitIgnoreAlarmToggled(unit? whichUnit) => whichUnit?.IgnoresAlarm ?? false;
 
-    /// <summary>Does nothing yet: creep camps guarding and going back are the AI's (wave 7), which will keep and read it.</summary>
-    [Native(Level.Close)]
-    public void SetUnitCreepGuard(unit? whichUnit, bool creepGuard)
-    {
-    }
-
     [Native(Level.Recorded, Reason = "Shows the unit's other icon; no native reads it back")]
     public void UnitSetUsesAltIcon(unit? whichUnit, bool flag)
     {

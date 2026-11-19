@@ -138,8 +138,8 @@ public sealed partial class GameNatives
     /// <summary>Close: the scores come with the game's counting (waves 3 and 6); 0 until then.</summary>
     [Native(Level.Close)] public int GetPlayerScore(player? whichPlayer, playerscore? whichPlayerScore) => 0;
 
-    /// <summary>A computer's difficulty is Normal here, as the lobby seats it (decision D141); Close.</summary>
-    [Native(Level.Close)] public aidifficulty? GetAIDifficulty(player? num) => Convert<aidifficulty>(1);
+    /// <summary>The difficulty the run seats its computers at, Normal unless it says otherwise (decisions D141, D430); Close.</summary>
+    [Native(Level.Close)] public aidifficulty? GetAIDifficulty(player? num) => Convert<aidifficulty>(Difficulty);
 
     [Native(Level.Close)] public player? GetTournamentFinishNowPlayer() => null;
     [Native(Level.Close)] public int GetTournamentFinishNowRule() => 0;

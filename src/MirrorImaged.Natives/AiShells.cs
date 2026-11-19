@@ -1,24 +1,18 @@
 namespace MirrorImaged.Natives;
 
-// The natives of the computer players AI (common.ai and the AI commands of common.j). The melee and campaign AI scripts run on the
-// economy, the build orders and the fight of waves 3 and 4, which are not simulated yet (wave 7 brings them together), so these
-// answer as an AI with nothing to count or command does: counts read 0, questions false, commands do nothing.
+// The natives of the computer players' AI (common.ai and the AI commands of common.j) that are not modelled. The melee scripts set how the AI
+// fights (fleeing, repairing, targeting heroes) through settings nothing reads back, which are Recorded; the rest are the campaign scripts'
+// (guard posts, defenders, suicide waves, commands from the map, zeppelins) and answer as an AI with nothing to count or command does: counts
+// read 0, questions false, commands do nothing (docs/decisions.md, D431). What the melee scripts' choices rest on is in AiTown.cs.
 public sealed partial class GameNatives
 {
+    const string AiSetting = "A setting of how the AI fights and works that the simulation does not model; no native reads it back", DebugText = "Shows a text of the AI script to its developer";
+
     [Native(Level.Close)]
     public void CommandAI(player? num, int command, int data) { }
 
     [Native(Level.Close)]
     public void PauseCompAI(player? p, bool pause) { }
-
-    [Native(Level.Close)]
-    public void RecycleGuardPosition(unit? hUnit) { }
-
-    [Native(Level.Close)]
-    public void RemoveAllGuardPositions(player? num) { }
-
-    [Native(Level.Close)]
-    public void RemoveGuardPosition(unit? hUnit) { }
 
     [Native(Level.Close)]
     public bool AddDefenders(int qty, int id) => false;
@@ -29,34 +23,28 @@ public sealed partial class GameNatives
     [Native(Level.Close)]
     public int CommandsWaiting() => 0;
 
-    [Native(Level.Close)]
-    public bool ConvertUnits(int qty, int id) => false;
-
-    [Native(Level.Close)]
-    public bool CreepsOnMap() => false;
-
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = DebugText)]
     public void DebugFI(string? str, int val) { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = DebugText)]
     public void DebugS(string? str) { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = DebugText)]
     public void DebugUnitID(string? str, int val) { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = AiSetting)]
     public void DisablePathing() { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = DebugText)]
     public void DisplayText(int p, string? str) { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = DebugText)]
     public void DisplayTextI(int p, string? str, int val) { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = DebugText)]
     public void DisplayTextII(int p, string? str, int v1, int v2) { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = DebugText)]
     public void DisplayTextIII(int p, string? str, int v1, int v2, int v3) { }
 
     [Native(Level.Close)]
@@ -64,9 +52,6 @@ public sealed partial class GameNatives
 
     [Native(Level.Close)]
     public void FillGuardPosts() { }
-
-    [Native(Level.Close)]
-    public unit? GetAllianceTarget() => null;
 
     [Native(Level.Close)]
     public int GetLastCommand() => 0;
@@ -77,20 +62,14 @@ public sealed partial class GameNatives
     [Native(Level.Close)]
     public unit? GetMegaTarget() => null;
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = AiSetting)]
     public void GroupTimedLife(bool allow) { }
 
     [Native(Level.Close)]
     public int IgnoredUnits(int unitid) => 0;
 
     [Native(Level.Close)]
-    public bool IsTowered(unit? target) => false;
-
-    [Native(Level.Close)]
     public void LoadZepWave(int x, int y) { }
-
-    [Native(Level.Close)]
-    public bool MergeUnits(int qty, int a, int b, int make) => false;
 
     [Native(Level.Close)]
     public void PopLastCommand() { }
@@ -107,67 +86,64 @@ public sealed partial class GameNatives
     [Native(Level.Close)]
     public void ReturnGuardPosts() { }
 
-    [Native(Level.Close)]
-    public void SetAllianceTarget(unit? id) { }
-
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = AiSetting)]
     public void SetAmphibious() { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = AiSetting)]
     public void SetCampaignAI() { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = AiSetting)]
     public void SetDefendPlayer(bool state) { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = AiSetting)]
     public void SetGroupsFlee(bool state) { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = AiSetting)]
     public void SetHeroesBuyItems(bool state) { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = AiSetting)]
     public void SetHeroesFlee(bool state) { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = AiSetting)]
     public void SetHeroesTakeItems(bool state) { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = AiSetting)]
     public void SetIgnoreInjured(bool state) { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = AiSetting)]
     public void SetMeleeAI() { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = AiSetting)]
     public void SetNewHeroes(bool state) { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = AiSetting)]
     public void SetPeonsRepair(bool state) { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = AiSetting)]
     public void SetRandomPaths(bool state) { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = AiSetting)]
     public void SetReplacementCount(int qty) { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = AiSetting)]
     public void SetSlowChopping(bool state) { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = AiSetting)]
     public void SetSmartArtillery(bool state) { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = AiSetting)]
     public void SetStagePoint(float x, float y) { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = AiSetting)]
     public void SetTargetHeroes(bool state) { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = AiSetting)]
     public void SetUnitsFlee(bool state) { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = AiSetting)]
     public void SetWatchMegaTargets(bool state) { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = AiSetting)]
     public void ShiftTownSpot(float x, float y) { }
 
     [Native(Level.Close)]
@@ -186,12 +162,5 @@ public sealed partial class GameNatives
     public void SuicideUnitEx(int ct, int uid, int pid) { }
 
     [Native(Level.Close)]
-    public bool TownThreatened() => false;
-
-    [Native(Level.Close)]
-    public bool UnitInvis(unit? id) => false;
-
-    [Native(Level.Close)]
     public void Unsummon(unit? unitid) { }
-
 }

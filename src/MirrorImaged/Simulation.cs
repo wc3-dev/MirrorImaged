@@ -7,6 +7,17 @@ using War3Net.Build.Info;
 
 namespace MirrorImaged;
 
+/// <summary>How hard the computer players play, as the lobby names it.</summary>
+public enum Difficulty
+{
+    /// <summary>Easy.</summary>
+    Easy,
+    /// <summary>Normal.</summary>
+    Normal,
+    /// <summary>Insane.</summary>
+    Insane,
+}
+
 /// <summary>How a run is set up.</summary>
 public sealed class SimulationOptions
 {
@@ -15,12 +26,16 @@ public sealed class SimulationOptions
 
     /// <summary>
     /// The slots people play, 0 to 23, the first of them the local player, whose game the run is; null for a
-    /// single-player game in the map's first user slot.
+    /// single-player game in the map's first user slot. Empty for a game of computers only, which is seen from the
+    /// first computer's slot.
     /// </summary>
     public IReadOnlyList<int>? Users { get; init; }
 
     /// <summary>The slots computers play; null for the map's computer slots that aren't among <see cref="Users"/>.</summary>
     public IReadOnlyList<int>? Computers { get; init; }
+
+    /// <summary>The difficulty the computers play at.</summary>
+    public Difficulty Difficulty { get; init; } = Difficulty.Normal;
 
     /// <summary>The race of a slot, as <c>RACE_*</c> (human 1, orc 2, undead 3, night elf 4), where the lobby chose it; null for the map's.</summary>
     public IReadOnlyDictionary<int, int>? Races { get; init; }
@@ -67,7 +82,7 @@ public sealed partial class Simulation : IDisposable
         _jass = data.Map.Jass;
         _game = new Game(options.Seed);
         _treatAsMissing = [.. options.TreatAsMissing ?? [], .. (Environment.GetEnvironmentVariable("MIRROR_MISSING") ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
-        _natives = new GameNatives(_game) { Threads = new ScriptThreads(this), Documents = options.Documents, RunPreloadFile = RunPreloadFile, AiLoader = LoadAi, Data = data, Jass = _jass };
+        _natives = new GameNatives(_game) { Threads = new ScriptThreads(this), Documents = options.Documents, RunPreloadFile = RunPreloadFile, AiLoader = LoadAi, Data = data, Jass = _jass, Difficulty = (int)options.Difficulty };
         try
         {
             var (users, computers, others) = Lineup(info, options);
@@ -150,6 +165,7 @@ public sealed partial class Simulation : IDisposable
         simulation._reload = reload;
         (simulation._recording.Map, simulation._recording.Seed) = (path, options?.Seed ?? 0);
         (simulation._recording.Users, simulation._recording.Computers) = (options?.Users?.ToArray(), options?.Computers?.ToArray());
+        simulation._recording.Difficulty = options?.Difficulty ?? Difficulty.Normal;
         return simulation;
     }
 

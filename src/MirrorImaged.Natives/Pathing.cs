@@ -81,6 +81,14 @@ public sealed partial class GameNatives
             Move(u, nx, ny);
             return true;
         }
+        // On a found way, a step that clips what the way goes round slides along it: the part of the step along one axis
+        if (u.Path.Count > 0)
+            foreach (var (sx, sy) in new[] { (nx, u.Y), (u.X, ny) })
+                if ((sx != u.X || sy != u.Y) && !Blocked(u, sx, sy))
+                {
+                    Move(u, sx, sy);
+                    return true;
+                }
         if (u.NoWayTo == (x, y) && Seconds < u.NoWayUntil) return Finish(u);
         // Blocked again soon after a search: wait a moment before the next one, as a search costs thousands of looks at the ground
         if (Seconds < u.ReplanAt) return true;

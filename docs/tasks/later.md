@@ -2,8 +2,8 @@
 
 Each item names the wave whose file it goes into when that file is written.
 
-- Wave 6 (players and input) and wave 7 (AI): the test API can't choose a selectable slot's race (only through the
-  seed) or a computer's difficulty; A4 needs computer players on Normal (W1-4's plan review).
+- Wave 6 (players and input): the test API can't choose a selectable slot's race (only through the seed); a
+  computer's difficulty it can (D430), one for all of them (W1-4's plan review).
 - Wave 8 (test tools): the plan says a Recorded native's call is logged, but D98 keeps lobby-only Recorded calls out
   of the map's log (which is what the map shows). Give Recorded calls their own record a test can read, and make
   `Level.Recorded`'s doc and D98 agree (W1-4's re-review).
@@ -42,8 +42,16 @@ Each item names the wave whose file it goes into when that file is written.
   map could corrupt the test process), which keeps `lua-config` different for good; that A6 exception is the
   coordinator's call, listed for Sven's review at the end.
 - Wave 5 (presentation): a map's own FDF/TOC string lists (D211, `BlzLoadTOCFile`) for `GetLocalizedString` (W2-1).
-- Wave 7 (AI): the balance sets hold their own AI scripts (`_Balance/Custom_V0.w3mod`, `Melee_V0.w3mod`:
-  `Scripts/human.ai` etc. and `*Melee.pld`); take them from the set `StandardData.Sets` picks (W2-1).
+- Wave 7 (AI): the balance sets' `*Melee.pld` files (`_Balance/Custom_V0.w3mod`, `Melee_V0.w3mod`); their AI scripts
+  are read (D434) (W2-1).
+- Wave 7 (AI), left by the shells lane (D431 to D435), each for a probe with an AI script in a map, which can write
+  through `Preload`: what `SetProduce` answers false for; the order `CommandAI`'s commands come out in (`CommandsWaiting`,
+  `GetLastCommand`, `GetLastData`, `PopLastCommand`), which the campaign scripts wait on; `GetMegaTarget`'s rule;
+  `TownThreatened`'s reach and what the game's AI does about a threat (the wave comes home); a creep's leash
+  (`GuardDistance`, `GuardReturnDistance`, `GuardReturnTime`) and whether a moved creep's post moves; the price and
+  time of `MergeUnits` and `ConvertUnits`. And seen on Echo Isles, not looked into: an undead computer builds six to
+  eight Haunted Gold Mines beside its hall instead of one on a mine; a player's food cap goes below 0 when its farms
+  are destroyed (-20, -30); the AI's lumber stays near 0 while its gold piles up past 10,000.
 - Wave 3 (orders and movement): the game moves a unit made where others stand off them (D223); `SetUnitPosition`;
   what `PauseUnit` and `BlzPauseUnitEx` hold back; `SetUnitFacing`'s turning eased into its end and on the game's
   frames, and the facing of angles past a turn (D224); orders beyond `SetUnitOwner`'s stop (W2-2).
@@ -83,7 +91,7 @@ Each item names the wave whose file it goes into when that file is written.
 - Wave 4 (abilities): `IsUnitType`'s stunned, plagued, snared, poisoned, polymorphed, resistant, ethereal and magic
   immune (D230); summon events with `GetSummonedUnit` and `GetSummoningUnit`; illusions for `IsUnitIllusion`; and
   timed life with a summon's buff (`BHwe`: no decay event, the body gone at its decay time, D312) (W2-10).
-- Wave 7 (AI): creep camps guarding and going back, for `SetUnitCreepGuard`, which does nothing yet (D314); and the
+- Wave 7 (AI): the
   creeps' sleep 0.2 to 0.25 s after dusk and waking as long after dawn, where MirrorImaged acts at the hour (D313;
   `probes/differences/units-more-2.txt`) (W2-10).
 

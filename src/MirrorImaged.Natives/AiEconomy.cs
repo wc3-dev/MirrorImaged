@@ -11,12 +11,16 @@ public sealed partial class GameNatives
     /// <summary>The player the AI natives act for while an AI script runs (the local player where none does).</summary>
     internal player? AiFor { get; set; }
     const float TownReach = 1000;
+    const float Lane = 96; // the room the AI leaves between its buildings, so that its workers and army walk through its base
 
     player Ai => AiFor ?? _local ?? Player(0)!;
 
-    /// <summary>The difficulty the computer plays at: 1, Normal, as the lobby seats it (GetAIDifficulty).</summary>
+    /// <summary>The difficulty the computers play at: 0 Easy, 1 Normal, 2 Insane; Normal unless the run says otherwise.</summary>
+    public int Difficulty { get; init; } = 1;
+
+    /// <summary>The difficulty the computer plays at, as GetAIDifficulty.</summary>
     [Native(Level.Close)]
-    public int MeleeDifficulty() => 1;
+    public int MeleeDifficulty() => Difficulty;
 
     [Native(Level.Close)]
     public int GetAiPlayer() => GetPlayerId(Ai);
@@ -67,7 +71,11 @@ public sealed partial class GameNatives
     public bool SetProduce(int qty, int id, int town)
     {
         if (qty <= 0) return true;
+        // A building another one turns into (a Keep from a Town Hall) is made there, not built anew
+        if (Mine(Ai).Where(b => Listed(b, UpgradesTo, id)).OrderBy(b => b.Id).ToList() is { Count: > 0 } lower) return lower.Any(b => QueueOrder(b, id));
         if (Data.Object(ObjectKind.Unit, id) is { } type && type.Integer(IsBuilding) != 0) return BuildFor(Ai, id, qty, town);
+        // What nothing of the player's trains is not waited for: the script has set its price aside and goes on to what comes after (D433)
+        if (!Mine(Ai).Any(b => Listed(b, Trains, id))) return true;
         var missing = qty;
         foreach (var building in Mine(Ai).Where(b => !b.Constructing && Listed(b, Trains, id)).OrderBy(b => b.Train.Count))
             while (missing > 0 && QueueOrder(building, id)) missing--;
@@ -175,8 +183,8 @@ public sealed partial class GameNatives
                 var (x, y) = (hall.X + radius * MathF.Cos(angle), hall.Y + radius * MathF.Sin(angle));
                 if (Data.Terrain is { } terrain && terrain.Bounds is var (minX, minY, maxX, maxY) && (x < minX + 128 || x > maxX - 128 || y < minY + 128 || y > maxY - 128)) continue;
                 if (Data.Map?.Files.PathingMap is not null && IsTerrainPathable(x, y, Convert<pathingtype>(3)) || Data.Map?.Files.PathingMap is not null && IsTerrainPathable(x, y, Convert<pathingtype>(1))) continue;
-                if (buildings.Any(b => Distance2(b.X - x, b.Y - y) < MathF.Pow(b.Type.Real(Collision) + half + 24, 2) && !(b.Constructing && false))) continue;
-                if (orders.Any(w => Distance2(w.OrderX - x, w.OrderY - y) < MathF.Pow(half * 2 + 24, 2))) continue;
+                if (buildings.Any(b => Distance2(b.X - x, b.Y - y) < MathF.Pow(b.Type.Real(Collision) + half + Lane, 2))) continue;
+                if (orders.Any(w => Distance2(w.OrderX - x, w.OrderY - y) < MathF.Pow(half * 2 + Lane, 2))) continue;
                 if (_units.Values.Any(m => !m.Dead && GetResourceAmount(m) > 0 && Distance2(m.X - x, m.Y - y) < MathF.Pow(m.Type.Real(Collision) + half + 150, 2))) continue;
                 return (x, y);
             }

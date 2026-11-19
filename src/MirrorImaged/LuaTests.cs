@@ -8,7 +8,7 @@ namespace MirrorImaged;
 public sealed record LuaTestResult(string File, string Name, bool Passed, string? Message, TimeSpan Time);
 
 /// <summary>
-/// Tests written in Lua: a file calls <c>test(name, function)</c>, and inside a test <c>mirror.load(map, {seed = n})</c> gives a simulation
+/// Tests written in Lua: a file calls <c>test(name, function)</c>, and inside a test <c>mirror.load(map, {seed = n, difficulty = "easy"})</c> (the difficulty of the computers: easy, normal or insane) gives a simulation
 /// with the calls of the C# API (<c>advance</c>, <c>units</c>, <c>order</c>, <c>select</c>, <c>key</c>, <c>mouse</c>, <c>leave</c>, <c>say</c>,
 /// <c>log</c>, <c>hash</c>, <c>wait_until</c>, <c>recording</c>; a map path that is not rooted is read from the test file's folder), and <c>assert_eq</c>, <c>assert_true</c>, <c>assert_close</c> and
 /// <c>assert_contains</c> check results. The test files run in a Lua state of their own, apart from the games they load.
@@ -23,7 +23,7 @@ public sealed class LuaTestHost : IDisposable
     /// <summary>Makes a host with the test API ready.</summary>
     public LuaTestHost()
     {
-        _lua.Register("__load", args => Open(Text(args, 0), Int(args, 1)));
+        _lua.Register("__load", args => Open(Text(args, 0), Int(args, 1), args.Length > 2 && args[2] is string difficulty ? Enum.Parse<Difficulty>(difficulty, true) : Difficulty.Normal));
         _lua.Register("__close", args =>
         {
             if (_simulations.Remove(Int(args, 0), out var simulation)) simulation.Dispose();
@@ -67,10 +67,10 @@ public sealed class LuaTestHost : IDisposable
         return [];
     }
 
-    object?[] Open(string path, int seed)
+    object?[] Open(string path, int seed, Difficulty difficulty)
     {
         var id = _next++;
-        _simulations[id] = Simulation.Load(Path.IsPathRooted(path) ? path : Path.Combine(_folder, path), new SimulationOptions { Seed = seed });
+        _simulations[id] = Simulation.Load(Path.IsPathRooted(path) ? path : Path.Combine(_folder, path), new SimulationOptions { Seed = seed, Difficulty = difficulty });
         return [id];
     }
 
@@ -158,7 +158,7 @@ public sealed class LuaTestHost : IDisposable
         mirror = {}
 
         function mirror.load(path, options)
-          local h = __load(path, (options and options.seed) or 0)
+          local h = __load(path, (options and options.seed) or 0, options and options.difficulty)
           local sim = {}
           sims[#sims + 1] = sim
           function sim:advance(seconds) __advance(h, seconds) end

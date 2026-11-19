@@ -22,6 +22,8 @@ public sealed class Recording
     public int[]? Users { get; set; }
     /// <summary>The slots computers play; null for the map's computers.</summary>
     public int[]? Computers { get; set; }
+    /// <summary>The difficulty the computers play at.</summary>
+    public Difficulty Difficulty { get; set; } = Difficulty.Normal;
     /// <summary>What was given, in the order it was given.</summary>
     public List<Input> Inputs { get; set; } = [];
     /// <summary>The step the run had reached.</summary>
@@ -157,7 +159,7 @@ public sealed partial class Simulation
     /// <summary>Runs the map again as the recording says: its seed and seats, each input at its step, to the step it ran to.</summary>
     public static Simulation Replay(Recording recording, string? map = null)
     {
-        var simulation = Load(map ?? recording.Map, new SimulationOptions { Seed = recording.Seed, Users = recording.Users, Computers = recording.Computers });
+        var simulation = Load(map ?? recording.Map, new SimulationOptions { Seed = recording.Seed, Users = recording.Users, Computers = recording.Computers, Difficulty = recording.Difficulty });
         simulation.Follow(recording);
         return simulation;
     }

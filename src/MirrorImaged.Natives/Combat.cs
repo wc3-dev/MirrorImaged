@@ -110,6 +110,7 @@ public sealed partial class GameNatives
         }
         if (order == 0 || order == OrderHold)
         {
+            if (order == 0 && GoBackToPost(u)) return true;
             if (u.AttackTarget is null && armed && scan && !Sneaks(u) && Nearest(u, order == OrderHold ? HoldRange(u) : GetUnitAcquireRange(u)) is { } found) Acquired(u, found);
             if (u.AttackTarget is { } t) Engage(u, t, chase: order == 0);
             return armed;

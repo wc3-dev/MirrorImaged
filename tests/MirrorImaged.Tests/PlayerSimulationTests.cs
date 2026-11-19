@@ -97,7 +97,7 @@ public sealed class PlayerSimulationTests : IDisposable
     }
 
     [Theory]
-    [InlineData(new int[0], null, "A run needs a person playing, and no user slot is given")]
+    [InlineData(new int[0], new int[0], "A run needs someone playing, and no slot is given")]
     [InlineData(new[] { 0 }, new[] { 0 }, "Slot 0 is given twice")]
     [InlineData(new[] { 24 }, null, "Slot 24 can't be played: people and computers play slots 0 to 23")]
     [InlineData(new[] { 4 }, null, "Slot 4 isn't one of the map's players in war3map.w3i (0, 1, 2, 3)")]
@@ -112,6 +112,30 @@ public sealed class PlayerSimulationTests : IDisposable
         var error = Assert.Throws<ArgumentException>(() => Simulation.Load(map, "", new SimulationOptions { Users = users, Computers = computers }));
 
         Assert.Equal(message, error.Message);
+    }
+
+    [Theory]
+    [InlineData(Difficulty.Easy, "true\t0\tComputer (Easy)")]
+    [InlineData(Difficulty.Normal, "true\t1\tComputer (Normal)")]
+    [InlineData(Difficulty.Insane, "true\t2\tComputer (Insane)")]
+    public void The_computers_play_at_the_difficulty_the_run_gives(Difficulty difficulty, string expected)
+    {
+        var level = difficulty switch { Difficulty.Easy => "AI_DIFFICULTY_NEWBIE", Difficulty.Normal => "AI_DIFFICULTY_NORMAL", _ => "AI_DIFFICULTY_INSANE" };
+        using var simulation = Simulation.Load(Map($"print(GetAIDifficulty(Player(1)) == {level}, MeleeDifficulty(), GetPlayerName(Player(1)))"), "",
+            new SimulationOptions { Users = [0], Computers = [1], Difficulty = difficulty });
+
+        Assert.Equal(["0.000 print: " + expected], simulation.Log);
+        // and a recording of the run keeps it, so that playing it again seats the same computers
+        Assert.Equal(difficulty, Recording.FromJson(simulation.Recording.ToJson()).Difficulty);
+    }
+
+    [Fact]
+    public void A_game_of_computers_only_is_seen_from_the_first_computers_slot()
+    {
+        using var simulation = Simulation.Load(Map("print(GetPlayerId(GetLocalPlayer()), GetPlayerController(Player(1)) == MAP_CONTROL_COMPUTER, GetPlayerController(Player(2)) == MAP_CONTROL_COMPUTER, GetPlayerSlotState(Player(0)) == PLAYER_SLOT_STATE_PLAYING)"), "",
+            new SimulationOptions { Users = [], Computers = [1, 2] });
+
+        Assert.Equal(["0.000 print: 1\ttrue\ttrue\tfalse"], simulation.Log);
     }
 
     // facts: GetPlayerColor compares equal to ConvertPlayerColor(n), and GetPlayerRace to RACE_*, with Lua's ==
