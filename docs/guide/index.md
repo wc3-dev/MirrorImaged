@@ -10,6 +10,7 @@ downloads game files.
 | [Lua tests](lua-tests.md) | `mirror test`, the `mirror` API and the checks, with the example map |
 | [C# tests](csharp-tests.md) | The `Simulation` API from xUnit or NUnit |
 | [JASS and TypeScript maps](jass-and-typescript.md) | The same tests for maps written in JASS or TypeScriptToLua |
+| [C# maps](csharp-maps.md) | The same tests for maps written in C# with Moonwell |
 | [The command line](cli.md) | Every `mirror` command and option |
 | [Recordings, replays and stepping back](recordings.md) | Recording a run, replaying it, snapshots, the desync check |
 | [The viewer](viewer.md) | `mirror view`: scrub through a run in a browser |

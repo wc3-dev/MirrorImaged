@@ -72,4 +72,4 @@ The files are the same ones `mirror test` runs; a map path in them is read from 
 ## The example
 
 `examples/lua/gold` is a map that pays its player 10 gold every 2 seconds. Its test checks the gold after 7 seconds and that two runs of
-one seed end in the same hash. The same test runs for the [JASS](jass-and-typescript.md) and TypeScript versions of the map.
+one seed end in the same hash. The same test runs for the [JASS](jass-and-typescript.md), TypeScript and [C#](csharp-maps.md) versions of the map.

@@ -30,8 +30,20 @@ A JASS map that calls a native or a `blizzard.j` function MirrorImaged cannot ru
 
 ## TypeScript
 
-`examples/typescript/gold` has `src/main.ts` and a `tsconfig.json` for TypeScriptToLua (`npx tstl`), which bundles the map into `war3map.lua`. Build the
-`.w3x` as you always do (War3Net, a map builder or the World Editor), and its test is the Lua test of the Lua example.
+`examples/typescript/gold` is the gold map in TypeScript: `src/main.ts`, the natives it calls declared in `src/natives.d.ts`, and a
+`package.json` that pins TypeScriptToLua and TypeScript. `npm ci` and then `npm run build` bundle it into `war3map.lua`:
 
-The suite builds the example's map from the Lua script the Lua example holds, which is what `tstl` makes of the TypeScript, so the example needs no
-Node tools to be checked.
+```json
+{
+  "compilerOptions": { "target": "ESNext", "lib": ["ESNext"], "strict": true, "types": [] },
+  "tstl": { "luaTarget": "5.3", "luaBundle": "war3map.lua", "luaBundleEntry": "src/main.ts", "noImplicitSelf": true, "noHeader": true },
+  "include": ["src"]
+}
+```
+
+`noImplicitSelf` keeps the calls to natives as they are written, with no `self` argument added. `config` and `main` are plain functions in
+`main.ts`, so the bundle makes them globals, where the game looks for them. A larger map takes the natives' types from a package for them instead of
+declaring its own.
+
+Build the `.w3x` from `war3map.lua` as you always do (War3Net, a map builder or the World Editor); its test is the Lua test of the Lua example. The
+suite compiles the example this way and runs the test; without Node.js (`npm` on the path) that test is skipped.
