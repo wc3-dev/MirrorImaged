@@ -36,7 +36,7 @@ public sealed class AiEconomyTests : IDisposable
                 local a, b = CreateUnit(p, FourCC("hpea"), 100, 100, 0), CreateUnit(p, FourCC("hpea"), 100, -100, 0)
                 print(GetAiPlayer(), GetUnitCount(FourCC("hpea")), GetUnitCountDone(FourCC("hpea")), GetGoldOwned(), GetUnitGoldCost(FourCC("hfoo")), GetUnitBuildTime(FourCC("hfoo")), GetUpgradeGoldCost(FourCC("Rhme")), GetUpgradeLevel(FourCC("Rhme")))
                 print(TownHasHall(0), TownHasHall(1), TownHasMine(0), GetMinesOwned(), TownWithMine(), GetBuilding(p) == hall, GetTownUnitCount(FourCC("hpea"), 0, true))
-                print(SetProduce(2, FourCC("hpea"), 0), GetUnitCount(FourCC("hpea")), GetUnitCountDone(FourCC("hpea")), GetGoldOwned(), SetProduce(0, FourCC("hpea"), 0), SetUpgrade(FourCC("Rhme")), GetGoldOwned())
+                print(SetProduce(2, FourCC("hpea"), 0), GetUnitCount(FourCC("hpea")), GetUnitCountDone(FourCC("hpea")), GetPlayerState(p, PLAYER_STATE_RESOURCE_GOLD), SetProduce(0, FourCC("hpea"), 0), SetUpgrade(FourCC("Rhme")), GetPlayerState(p, PLAYER_STATE_RESOURCE_GOLD))
                 HarvestGold(0, 5)
                 print(GetUnitCurrentOrder(a) == 852018, GetUnitCurrentOrder(b) == 852018)
             end
@@ -44,7 +44,7 @@ public sealed class AiEconomyTests : IDisposable
         var lines = simulation.Log.Select(line => line[(line.IndexOf(": ", StringComparison.Ordinal) + 2)..]).ToList();
 
         Assert.Equal([
-            "0\t2\t2\t1000\t135\t20\t100\t0",
+            "0\t2\t2\t100\t135\t20\t100\t0",
             "true\tfalse\ttrue\t1\t0\ttrue\t2",
             "true\t4\t2\t850\ttrue\ttrue\t750",
             "true\ttrue",
