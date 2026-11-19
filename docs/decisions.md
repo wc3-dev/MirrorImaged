@@ -2764,3 +2764,66 @@ are this lane's; D458 to D469 are not used.
   or Chrome the tests start with `--remote-debugging-port=0`, whose port they read from the profile's `DevToolsActivePort`: Edge's first process ends at once on Windows and leaves the browser
   running, which is why the old test's `--dump-dom` printed nothing there. On a computer with no browser the tests are skipped (`BrowserFact`, decided before the run, as xunit 2.9 cannot skip
   from inside a test); a browser that is there and doesn't answer fails them.
+
+### The number model fitted further (L-mirror-number-model)
+
+Seven more probes in `probes/` (`numbers-div-2`, `numbers-sqrt-2`, `numbers-sin-2`, `numbers-exp`, `numbers-log`,
+`numbers-atan`, `numbers-asin`), each run twice in the game with the same lines, 3.0.1.24371, single player, 11-19;
+their lines in `probes/expected` and `docs/facts.md`, "The number model's probes, second round". Each rule was found
+in Python against the lines, then written into `native/mifloat.c`.
+
+- **D480. Division is the game's, measured over every mantissa.** The reciprocal of a divisor's mantissa is D151's
+  table of 1024 and, between two entries lo and hi, a straight line over the 8192 mantissas divided into 8191 parts:
+  `lo - ((lo - hi) * f - 1) // 8191` for the f-th mantissa after an entry, so the last one before an entry is one above
+  it. `numbers-div-2` checks this rule inside the game against the game's own quotients: all 8,387,584 mantissas between
+  the entries and 100,000 random quotients (n times the reciprocal, cut), none differing. This replaces D151's fit
+  between the entries (a step off for about 1 in 5). `numbers-div` 43 lines to 0, `numbers-fine` 9 to 0; `tan` and
+  `exp` below 0, which divide, follow.
+- **D481. The square root's integer root is taken of the mantissa in 32 bits, its top 8 fraction bits repeated at the
+  end** (`m << 8 | (m >> 15 & 0xff)` for the 24-bit mantissa m), not of `m << 8` as D152 had it. `numbers-sqrt-2`
+  measures the root at each of the 19,195 places it steps in [1, 2) and at the mantissa on each side: the game steps
+  one mantissa early at 9,568 of them, exactly where the repeated bits carry the number past a square, and all 57,585
+  roots are this rule's. The roots in [2, 4) are those times `3fb504f3` and in [4, 8) twice them at all 19,195. This
+  explains D152's six roots a step high; `(int)Sqrt(n * n)` now goes wrong 64 times, as in the game. `numbers-squares`
+  7 lines to 0.
+- **D482. A table's straight line is cut toward its first value, and comes one short where the quotient is whole.**
+  Between two table values lo and hi, step f of the line is lo plus `((hi - lo) * f)` divided into the parts (255 for
+  the sine's 256 steps, 8191 for the reciprocal's 8192), the size cut down and a whole quotient taken one lower, falling
+  or rising: `between` in `mifloat.c`. So the sine table needs no odd last value: its ends are 0, and `sin(pi)`, a step
+  short of the half turn, is 2^-31 by the rule (D152 had put a 1 at the table's end). `numbers-sin-2` measures the sine
+  and cosine at every 2^-20 turn within 1024 of each zero, where a float holds the table's 2^-31: all 9,216 are the
+  rule's, as are the 2,336 measured before and the facts' 720 whole degrees (D152: 2,333 and 716). `numbers-trig` 14
+  lines to 0. Not measured: how the game comes by the rule (a fraction a hair under f / parts would give it).
+- **D483. exp is powers of e^(1/4) times a short series (Close).** For x from 0: the float nearest e^(1/4),
+  `3fa45af2`, to the power of the whole quarters in x, multiplied out squaring as it goes (as `^` does a whole power),
+  times 1 + r + r^2/2 + ... + r^6/720 for the rest r below 1/4, the series worked out from its last term in
+  (`s = 1 + r * s / k` for k 6 down to 2, then `1 + r * s`, the division a multiplication by the float under 1/k).
+  Measured: `exp(n)` for n 0 to 88 (89 of 89), k/16 for k 0 to 160 (161 of 161), so `exp(1)` is `402df853`, a float
+  step under e; the scans' 4,093 of 4,096 by 1 and 2,042 of 2,048 by 5. The series is the open part: the degree is 6
+  (7 fits fewer), but its own order of operations isn't found, and 100 of the 4,096 inputs in [0, 1) come out a float
+  step or two from the game's (67 one above, 29 two above, 4 one below). Tried and worse: the terms added first to
+  last, powers times cut or rounded 1/k!, Horner with the division done by the game's division, the square taken apart,
+  and a product of `exp(2^-k)` over the bits of x. `numbers-functions`' exp lines all match now (54 lines to 39 with
+  the rest), `numbers-fine-2` 24 to 18; `numbers-exp` differs in 68 of 190 lines.
+- **D484. Not fitted: log, atan, asin and acos, and so powers that aren't whole.** They stay D32's doubles. What the
+  scans show, for whoever takes them up: **asin** is a table of 1024 over 0 to 1 on straight lines in 2^-29 radians
+  (knots at k/1024; `asin(2^-12)` is 2^-12 + 2^-29), and **acos** looks to be pi/2 less it (in the game's addition asin + acos is `3fc90fda` or a
+  float step under it at 4,095 of the 4,096 inputs); the entries are within a step and a half of asin(k/1024) * 2^29 rounded and one added, and a table model gets
+  3,909 of 4,096 over [0, 1) but none of the 1,024 inputs within 2^-14 of 1, where the game's line is hundreds of
+  float steps from the curve and something else joins in (`asin(1 - j * 2^-24)` is pi/2 for j 1 to 3). **log** is one
+  smooth rule over an octave with k ln 2 added (`log(1.75 * 2^k)` moves with k by the float arithmetic only), no table
+  and no jump over [1, 2): short by 5.2e-7 at 1.5, 5.3e-6 at 1.75 and 2.4e-5 just under 2, with a few float steps of
+  noise; a Pade form of log(1 + t) with cubics over cubics has that shape but is 7 to 17 percent further off, and no
+  cut series in t or in (m - 1) / (m + 1) has it. **atan** is smooth too, within 2.3e-7 of the true one below 2 (up to 15 float steps where it is small) and x
+  (1 - 2^-20) near 0, which a polynomial with a leading term just under 1 would give; not tried further.
+  `numbers-sqrt`'s 41 lines are all `x ^ 0.5`, which goes through log.
+- **D485. The new probes check a rule inside the game, or scan with differences.** `numbers-div-2` and
+  `numbers-sqrt-2` work the rule out in the probe's own integers and give counts and the cases that differ, so one run
+  covers every mantissa or step; the scan probes give a first value and then each value's bits less the one before, as
+  whole numbers, some hundred a line. A line of such a probe holds many measurements, so its count of differing lines
+  says less than the earlier probes' did.
+- **D486. Two things this leaves as they were.** `S2R` (Close, D83) fits one string fewer with the game's division
+  than with D151's fit: "2.500000000000" reads `401fffff` where the game gives 2.5 (`strings-2` 16 lines to 17), its
+  own rule for long strings of digits being a fit to the old division. And `SquareRoot`, `Sin`, `Cos` and `Tan` keep
+  the level Close, though every case measured is now the game's: raising them is the coordinator's to do with the
+  README's table.

@@ -59,14 +59,24 @@ float mi_mul (float x, float y) {
   return pack((a ^ b) >> 31, e, (uint32_t)m);
 }
 
-/* The reciprocal of a divisor's mantissa m (2^23 to 2^24 - 1) in 2^-47. Measured at the 1024 knots: the k-th is
-   2^47 / (m - 1), but the first, 1/1, which is 2^24. Between them a fit, not the game's way (Close, a step off for
-   about 1 in 5): straight lines to 2^47 / m less a little at the next knot (2^23 at the last), a step up from below. */
+/* The reciprocal of a divisor's mantissa m (2^23 to 2^24 - 1) in 2^-47: a table of 1024, the k-th 2^47 / (m - 1)
+   cut, but the first, 1/1, which is 2^24, and one past the last 2^23; between two of them the game's straight line
+   over the 8192 mantissas. */
+static int64_t reciprocal_at (int64_t i) {
+  return i ? (1ll << 47) / (((0x400 + i) << 13) - 1) : 1ll << 24;
+}
+
+/* The game's straight line between two table values lo and hi, at step f of the `parts` + 1 steps between them: the
+   rise or fall times f is divided into `parts` (one fewer than the steps) and cut toward lo, a whole quotient too,
+   which comes one short: the last step is one from hi (measured: every reciprocal, the sines by each zero). */
+static int64_t between (int64_t lo, int64_t hi, int64_t f, int64_t parts) {
+  int64_t n = (hi - lo) * f;
+  return lo + (n < 0 ? n + 1 : n > 0 ? n - 1 : 0) / parts;
+}
+
 static uint64_t reciprocal (uint32_t m) {
-  uint64_t i = (m >> 13) & 0x3ff, f = m & 0x1fff, knot = (0x400 + i) << 13;
-  uint64_t lo = i ? (1ull << 47) / (knot - 1) : 1ull << 24;
-  uint64_t hi = i == 0x3ff ? 1ull << 23 : ((1ull << 47) - (1ull << 16)) / (knot + 0x2000);
-  return f ? (((lo << 13) - (lo - hi) * f) >> 13) + 1 : lo;
+  int64_t i = (m >> 13) & 0x3ff;
+  return (uint64_t)between(reciprocal_at(i), reciprocal_at(i + 1), m & 0x1fff, 8191);
 }
 
 /* The dividend times the divisor's reciprocal. A number divided by the same bits is 1, so 0/0 and -0/-0 are 1;
@@ -123,17 +133,16 @@ static uint64_t isqrt (uint64_t n) {
   return r;
 }
 
-/* One more than the integer root of the mantissa m times 2^8 (so 46341 to 65536), made a number from 1 below 2 by
-   1 + 46341 (r - 46341) / 2^31, cut toward zero; for an odd exponent, times the float nearest sqrt(2). A zero,
-   subnormal or negative number gives 0. Close: 6,156 of the 6,162 roots measured; the game's integer root is a step
-   higher for some m * 2^8 just below a square (49 and 68 below, not 25 or 145), by a rule not found. */
+/* One more than the integer root of the mantissa in 32 bits, its 23 bits after the first followed by their top 8
+   again (so 46341 to 65536), made a number from 1 below 2 by 1 + 46341 (r - 46341) / 2^31, cut toward zero; for an
+   odd exponent, times the float nearest sqrt(2). A zero, subnormal or negative number gives 0. */
 float mi_sqrtf (float x) {
   uint32_t a = bits(x);
   int32_t e = (int32_t)((a >> 23) & 0xff) - 127;
   uint64_t r;
   float s;
   if ((a >> 31) || e == -127) return 0.0f;
-  r = isqrt((uint64_t)((a & 0x7fffff) | 0x800000) << 8) + 1;
+  r = isqrt((uint64_t)((a & 0x7fffff) | 0x800000) << 8 | (a & 0x7fffff) >> 15) + 1;
   s = pack(0, (e - (e & 1)) / 2 + 127, (uint32_t)((46341 * r - 4633) >> 8));
   return (e & 1) ? mi_mul(s, flt(0x3fb504f3)) : s;
 }
@@ -162,13 +171,6 @@ static float to_float (double d) {
   return flt(s | (uint32_t)(e + 127) << 23 | ((uint32_t)(u >> 29) & 0x7fffff));
 }
 
-static double scale2 (double x, int32_t k) {  /* x * 2^k, k in -1022..1023 */
-  uint64_t u = (uint64_t)(k + 1023) << 52;
-  double p;
-  memcpy(&p, &u, sizeof p);
-  return x * p;
-}
-
 static double sin_d (double x) {  /* x from 0 to pi */
   double k, r, z, ps, pc;
   int32_t n = (int32_t)(x * (2 / PI) + 0.5);
@@ -183,10 +185,9 @@ static double sin_d (double x) {  /* x from 0 to pi */
   return n == 0 ? ps : n == 1 ? pc : -ps;
 }
 
-/* sin(pi k / 2048) in 2^-31, cut toward zero, for k 0 to 2048: the game's table, whose top is 2^31 - 1 and whose
-   last is 1. */
+/* sin(pi k / 2048) in 2^-31, cut toward zero, for k 0 to 2048: the game's table, whose top is 2^31 - 1. */
 static int64_t sine_at (uint32_t k) {
-  if (k == 0 || k == 1024 || k == 2048) return k == 1024 ? 2147483647 : k == 2048;
+  if (k == 0 || k == 1024 || k == 2048) return k == 1024 ? 2147483647 : 0;
   return (int64_t)(sin_d(k * (PI / 2048)) * 2147483648.0);
 }
 
@@ -201,22 +202,20 @@ static float q31 (int64_t v) {
 
 /* The game's sine: the angle in 2^-20 turns, x times the float nearest 1/(2 pi) in its arithmetic and cut toward
    zero, a quarter turn more for the cosine; then the table above for half a turn, the 256 steps between two of its
-   values on a straight line divided into 255, negated for the other half. Close: 2,333 of the 2,336 measured; the three
-   near pi and its multiples are a 2^-31 step off. */
+   values on the game's straight line, negated for the other half. So sin(pi), a step short of the half turn, is
+   2^-31. */
 static float sine (float x, uint32_t quarter) {
   uint32_t u = bits(mi_mul(x, flt(0x3e22f983))), p, i, f;
   uint64_t m = (u & 0x7fffff) | 0x800000;
   int32_t e = (int32_t)((u >> 23) & 0xff) - 127 - 3;  /* |u| * 2^20 = m * 2^e */
-  int64_t lo, hi, v;
+  int64_t v;
   if (!(u & 0x7f800000) || e >= 20) p = 0;
   else p = (uint32_t)((e >= 0 ? m << e : e > -32 ? m >> -e : 0) & 0xfffff);
   if (u >> 31) p = (0x100000 - p) & 0xfffff;
   p = (p + quarter) & 0xfffff;
   i = (p >> 8) & 0x7ff;
   f = p & 0xff;
-  lo = sine_at(i);
-  hi = sine_at(i + 1);
-  v = lo + (hi - lo) * (int64_t)f / 255;
+  v = between(sine_at(i), sine_at(i + 1), f, 255);
   return q31(p >> 19 ? -v : v);
 }
 
@@ -229,16 +228,6 @@ float mi_tanf (float x) { return mi_div(mi_sinf(x), mi_cosf(x)); }
 /*
 ** The rest is not pinned down by the measurements (Close), but for what each says.
 */
-
-static double exp_d (double x) {  /* x of 0 and up */
-  double r, s = 1, t = 1;
-  int32_t k, i;
-  if (!(x <= 91)) return 0x1p200;  /* and nan */
-  k = (int32_t)(x * 1.44269504088896338700e+00 + 0.5);
-  r = (x - k * LN2_HI) - k * LN2_LO;
-  for (i = 1; i <= 17; i++) { t *= r / i; s += t; }
-  return scale2(s, k);
-}
 
 /* log(x) = e ln 2 + log(m), for x > 0 */
 static double log_d (double x) {
@@ -257,15 +246,26 @@ static double log_d (double x) {
   return e * LN2_HI + (2 * sum + e * LN2_LO);
 }
 
-/* exp(x) for x of 0 and up, past the float range packed as a product is (exp(89) is a nan, exp(100) is 0) */
+/* exp(x) for x of 0 and up, in the game's arithmetic: the float nearest e^(1/4) to the power of the whole quarters
+   in x, squaring as it goes (so exp(1) is 402df853, a step under e, and exp(89) a nan, exp(100) 0, as its products
+   are packed), times 1 + r + r^2/2 + ... + r^6/720 for the rest r, worked out from the last term in. Every whole x
+   and k/16 measured is the game's; of other x about 1 in 40 is a step off, the series' own order not being found
+   (Close). */
 static float exp_up (float x) {
-  double d = exp_d(x) * (1.0 + 0x1p-45);
-  uint64_t u;
-  int32_t e;
-  memcpy(&u, &d, sizeof u);
-  e = (int32_t)((u >> 52) & 0x7ff) - 1023 + 127;
-  if ((uint32_t)(e - 1) > 255) return 0.0f;
-  return pack(0, e, (uint32_t)(u >> 29));
+  static const uint32_t inverse[] = { 0x3f000000, 0x3eaaaaaa, 0x3e800000, 0x3e4ccccc, 0x3e2aaaaa };  /* 1/2 to 1/6, cut */
+  float p = 1.0f, b = flt(0x3fa45af2), r, s = 1.0f;
+  uint32_t m;
+  int32_t k;
+  if (!(x < 1024)) return 0.0f;  /* and nan */
+  m = (uint32_t)(x * 4);
+  r = x - m * 0.25f;
+  for (k = 4; k >= 0; k--) s = mi_add(1.0f, mi_mul(mi_mul(r, s), flt(inverse[k])));
+  s = mi_add(1.0f, mi_mul(r, s));
+  for (; m; m >>= 1) {
+    if (m & 1) p = mi_mul(p, b);
+    b = mi_mul(b, b);
+  }
+  return mi_mul(p, s);
 }
 
 /* Below 0 the game's exp is 1 over exp(-x) in its division, so exp(-104) is 2^127, as 1/0 is. */
