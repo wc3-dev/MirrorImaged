@@ -27,7 +27,7 @@ public sealed partial class GameNatives
     [Native(Level.Recorded, Reason = "Auras are drawn and counted by abilities, which come with wave 4; nothing reads the switch back")]
     public void BlzUnitEnableAuras(unit? whichUnit, bool enable, bool affectsUI) { }
 
-    /// <summary>No run fires the victory event with a winner (docs/tasks/later.md, wave 6): nil.</summary>
+    /// <summary>No run fires the victory event with a winner (left for wave 6): nil.</summary>
     [Native(Level.Close)] public player? GetWinningPlayer() => null;
 
     // ---- Chat, keys, the mouse and trackables (wave 6)

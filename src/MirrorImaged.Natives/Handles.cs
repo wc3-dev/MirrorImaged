@@ -1,9 +1,9 @@
 namespace MirrorImaged.Natives;
 
-// Handle ids as the probes handles to handles-3 measure them (docs/facts.md, "Handles and errors")
+// Handle ids as the probes handles to handles-3 measure them (facts, "Handles and errors")
 public sealed partial class GameNatives
 {
-    const string Handles = "facts.md, Handles and errors: probes handles, handles-2, handles-3 and arguments (11-08)";
+    const string Handles = "facts, Handles and errors: probes handles, handles-2, handles-3 and arguments (11-08)";
 
     /// <summary>
     /// The id the game shows: each handle a native makes takes the next, whatever its type, a trigger's actions,

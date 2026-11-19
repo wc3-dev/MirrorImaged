@@ -4,7 +4,7 @@ using MirrorImaged.World;
 namespace MirrorImaged.Tests;
 
 /// <summary>
-/// The maths natives against the probes strings and strings-2 (docs/facts.md, "Strings, numbers and hashtables"). In
+/// The maths natives against the probes strings and strings-2 (facts, "Strings, numbers and hashtables"). In
 /// the game they give Lua's math.* numbers, so they share its model and are Close where it is (decisions D31, D32):
 /// there the game's value is given beside the model's and the model's is asserted.
 /// </summary>

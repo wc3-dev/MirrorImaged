@@ -27,12 +27,12 @@ public partial class player
     internal readonly HashSet<int> Unavailable = []; // SetPlayerAbilityAvailable's
 }
 
-// A unit's abilities without casting (probes abilities and abilities-lists, docs/facts.md "Abilities"; game-facts, "Spells
+// A unit's abilities without casting (probes abilities and abilities-lists, facts, "Abilities"; game-facts, "Spells
 // and abilities"): adding and removing, levels, the ability handles, hiding, disabling and permanence, Avul and an
 // upgrade raising an ability's level. The cast flow is wave 4's.
 public sealed partial class GameNatives
 {
-    const string AbilitiesProbe = "facts.md, Abilities: probe abilities (11-08)";
+    const string AbilitiesProbe = "facts, Abilities: probe abilities (11-08)";
     static readonly int Invulnerable = Code("Avul"), AbilityList = Code("uabi"), Locust = Code("Aloc"), AttackAbility = Code("Aatk"), UpgradesUsed = Code("upgr"), AbilityCode = Code("code");
 
     // The abilities an upgrade raises may change level when the owner's research does (probe abilities-upgrades)
@@ -151,7 +151,7 @@ public sealed partial class GameNatives
     /// 0) and one of no levels, Attack and Move (probe abilities). An upgrade the unit's type uses raises its level as for
     /// the type's own (probe abilities-upgrades). A hero's skill added fires no skill event and takes no point (game-facts).
     /// </summary>
-    [Native(Level.Exact, Fact = AbilitiesProbe + "; facts.md, Abilities: probe abilities-upgrades; game-facts.md, Spells and abilities: UnitAddAbility (11-02)")]
+    [Native(Level.Exact, Fact = AbilitiesProbe + "; facts, Abilities: probe abilities-upgrades; game-facts.md, Spells and abilities: UnitAddAbility (11-02)")]
     public bool UnitAddAbility(unit? whichUnit, int abilityId)
     {
         if (whichUnit is null || Find(whichUnit, abilityId) is not null || Data.Object(ObjectKind.Ability, abilityId) is not { Levels: > 0 } type) return false;
@@ -185,7 +185,7 @@ public sealed partial class GameNatives
         ?? (whichUnit?.Buffs.Any(b => b.Id == abilcode) == true ? 1 : 0);
 
     /// <summary>The level set, kept from 1 to the ability's level count; 0, adding nothing, when the unit lacks it (probe abilities).</summary>
-    [Native(Level.Exact, Fact = AbilitiesProbe + "; facts.md, Abilities: probe abilities-sets")]
+    [Native(Level.Exact, Fact = AbilitiesProbe + "; facts, Abilities: probe abilities-sets")]
     public int SetUnitAbilityLevel(unit? whichUnit, int abilcode, int level)
     {
         if (Find(whichUnit, abilcode) is not { } a) return 0;
@@ -194,7 +194,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>One level up, to one past the last at most (3 to 4 on Holy Light, not 5); the level; 0 when the unit lacks it (probe abilities).</summary>
-    [Native(Level.Exact, Fact = AbilitiesProbe + "; facts.md, Abilities: probe abilities-sets")]
+    [Native(Level.Exact, Fact = AbilitiesProbe + "; facts, Abilities: probe abilities-sets")]
     public int IncUnitAbilityLevel(unit? whichUnit, int abilcode)
     {
         if (Find(whichUnit, abilcode) is not { } a) return 0;
@@ -222,7 +222,7 @@ public sealed partial class GameNatives
     /// The unit's ability at the index from 0: the one added last first, then the type's own list after the abilities the
     /// game gives it for what it is (probes abilities and abilities-lists); nil outside the list.
     /// </summary>
-    [Native(Level.Exact, Fact = AbilitiesProbe + "; facts.md, Abilities: probe abilities-lists")]
+    [Native(Level.Exact, Fact = AbilitiesProbe + "; facts, Abilities: probe abilities-lists")]
     public ability? BlzGetUnitAbilityByIndex(unit? whichUnit, int index) =>
         whichUnit is not null && index >= 0 && index < whichUnit.Abilities.Count ? Out(whichUnit.Abilities[index]) : null;
 

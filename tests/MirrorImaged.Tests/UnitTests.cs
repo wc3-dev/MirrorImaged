@@ -5,7 +5,7 @@ using MirrorImaged.Natives;
 namespace MirrorImaged.Tests;
 
 /// <summary>
-/// Units without movement, against the probes units, units-decay, units-attribute and units-primary (docs/facts.md,
+/// Units without movement, against the probes units, units-decay, units-attribute and units-primary (facts,
 /// "Units") and the facts' "Units" and "Orders and events", on maps with the data the test gives (decisions D207): the
 /// standard values of the units the probes made, under the probe map's balance set (custom_v1).
 /// </summary>

@@ -2,7 +2,7 @@ namespace MirrorImaged.Natives;
 
 // What a person at a player does, given by a test or a recording: keys, the mouse, a selection, and leaving the game (wave 6). Each fires the
 // events a map registered for it and sets what the map can read back. Close: the events and what they answer are the documented ones; their
-// order against other events of one step is the order the input was given in (docs/decisions.md, D367).
+// order against other events of one step is the order the input was given in (decisions D367).
 public sealed partial class GameNatives
 {
     const int PlayerLeave = 15, MouseDown = 305, MouseUp = 306, MouseMove = 307, UnitSelectedKind = 57, UnitDeselectedKind = 58, PlayerUnitSelectedKind = 24, PlayerUnitDeselectedKind = 25;

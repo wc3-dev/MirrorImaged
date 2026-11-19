@@ -2,7 +2,7 @@
 # but when the sounds stopped reading playing (from 1000 ms 3.65 to 4.30 s, at pitch 2 4.30 to 4.65, the rest 4.85 to
 # 5.25), so those lines move (~) and read {t}; and three waits (each {t}): the first 1.5 s, and 1.4 in the fifth to
 # seventh runs; 0.5's 1.0, 1.0, 0.9, 1.0, 0.9, 1.0 and 0.9 s; nil's 0.1, 0.1, 0.1, 0.2, 0.1, 0.1 and 0.1 s. The line after
-# "loop plays at 6" came with the seventh run; see docs/facts.md, "Sounds".
+# "loop plays at 6" came with the seventh run; see facts, "Sounds".
 music ArthasTheme 122305
 music BloodElfTheme 144561
 music Comradeship 124865

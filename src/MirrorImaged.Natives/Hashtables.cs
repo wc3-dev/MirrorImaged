@@ -8,12 +8,12 @@ public partial class hashtable
 
 enum Slot { Integer, Real, Boolean, String, Handle }
 
-// The hashtable natives as the probes hashtables and strings-2 measured them (docs/facts.md, "Strings, numbers and
+// The hashtable natives as the probes hashtables and strings-2 measured them (facts, "Strings, numbers and
 // hashtables"): what a key holds of one kind leaves the others alone; a missing value loads as 0, 0.0, false, "" or
 // null; at most 256 hashtables at once, and FlushParentHashtable destroys one, which gives its place back.
 public sealed partial class GameNatives
 {
-    const string TablesFact = "docs/facts.md, Strings, numbers and hashtables (probes hashtables, strings-2)";
+    const string TablesFact = "facts, Strings, numbers and hashtables (probes hashtables, strings-2)";
     int _hashtables;
 
     /// <summary>A new hashtable; null when 256 are in use.</summary>

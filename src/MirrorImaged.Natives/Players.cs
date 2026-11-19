@@ -19,7 +19,7 @@ public partial class player
     internal readonly Dictionary<int, int> TechMax = [], TechLevels = [];
 }
 
-// Players as a -loadfile game starts them (the players and lobby probes, docs/facts.md "Players and the game"): slots 0
+// Players as a -loadfile game starts them (the players and lobby probes, facts, "Players and the game"): slots 0
 // to 23 empty, unnamed, with no controller and a random race preference until the lobby seats them (Seat), the four
 // neutral ones playing as creeps.
 public sealed partial class GameNatives
@@ -206,7 +206,7 @@ public sealed partial class GameNatives
     [Native(Level.Recorded, Reason = "Picks the look of the player's race; no native reads it back")]
     public void SetPlayerRaceSkin(player? whichPlayer, racepreference? whichRacePreference) { }
 
-    [Native(Level.Exact, Fact = "game-facts.md, Input and sync: in single player player 1 is a user (10-20); docs/facts.md, Players and the game")]
+    [Native(Level.Exact, Fact = "game-facts.md, Input and sync: in single player player 1 is a user (10-20); facts, Players and the game")]
     public mapcontrol? GetPlayerController(player? whichPlayer) => whichPlayer is null ? null : Convert<mapcontrol>(whichPlayer.Controller);
 
     /// <summary>The controller a script reads; who plays is the lobby's (<see cref="Seat"/>), which sets it again for the seated slots.</summary>
@@ -216,10 +216,10 @@ public sealed partial class GameNatives
         if (whichPlayer is not null && controlType is not null) whichPlayer.Controller = controlType.Id;
     }
 
-    [Native(Level.Exact, Fact = "game-facts.md, Version and launching: RemovePlayer and CustomDefeatBJ leave the slot Left, victory Playing (11-06); docs/facts.md, Players and the game")]
+    [Native(Level.Exact, Fact = "game-facts.md, Version and launching: RemovePlayer and CustomDefeatBJ leave the slot Left, victory Playing (11-06); facts, Players and the game")]
     public playerslotstate? GetPlayerSlotState(player? whichPlayer) => whichPlayer is null ? null : Convert<playerslotstate>(whichPlayer.SlotState);
 
-    [Native(Level.Exact, Fact = "game-facts.md, Version and launching: an unused slot's team is -1 (10-20); docs/facts.md, Players and the game")]
+    [Native(Level.Exact, Fact = "game-facts.md, Version and launching: an unused slot's team is -1 (10-20); facts, Players and the game")]
     public int GetPlayerTeam(player? whichPlayer) => whichPlayer?.Team ?? 0;
 
     [Native(Level.Exact, Fact = "game-facts.md, Version and launching: SetPlayerTeam changes the team number only (11-06)")]
@@ -242,7 +242,7 @@ public sealed partial class GameNatives
     [Native(Level.Close)]
     public void ForcePlayerStartLocation(player? whichPlayer, int startLocIndex) => SetPlayerStartLocation(whichPlayer, startLocIndex);
 
-    [Native(Level.Exact, Fact = "game-facts.md, Version and launching: alliances go one way (10-20); docs/facts.md, Players and the game: the starting alliances")]
+    [Native(Level.Exact, Fact = "game-facts.md, Version and launching: alliances go one way (10-20); facts, Players and the game: the starting alliances")]
     public bool GetPlayerAlliance(player? sourcePlayer, player? otherPlayer, alliancetype? whichAllianceSetting) =>
         sourcePlayer is not null && otherPlayer is not null && whichAllianceSetting is { Id: >= 0 and < 32 }
         && (sourcePlayer.Alliances[otherPlayer.Number] & (1 << whichAllianceSetting.Id)) != 0;
@@ -285,7 +285,7 @@ public sealed partial class GameNatives
     /// fires the player's state events whose comparison the new value meets, inside the call
     /// (<see cref="PlayerStateChanged"/>).
     /// </summary>
-    [Native(Level.Exact, Fact = "docs/facts.md, Players and the game: gold below 0 reads 0; " + Events)]
+    [Native(Level.Exact, Fact = "facts, Players and the game: gold below 0 reads 0; " + Events)]
     public void SetPlayerState(player? whichPlayer, playerstate? whichPlayerState, int value)
     {
         if (whichPlayer is null || whichPlayerState is not { Id: >= 0 and < 26 }) return;
@@ -332,14 +332,14 @@ public sealed partial class GameNatives
     /// The limit set; for none or a negative one, an upgrade's level count, with the map's change (a new upgrade's is
     /// its standard base's), and 2147483647 for anything else.
     /// </summary>
-    [Native(Level.Exact, Fact = "docs/facts.md, Players and the game (Rhme 3, hfoo and zzzz 2147483647, -5 set) and The game's data (Rhme changed to 5, R000 made from it 3)")]
+    [Native(Level.Exact, Fact = "facts, Players and the game (Rhme 3, hfoo and zzzz 2147483647, -5 set) and The game's data (Rhme changed to 5, R000 made from it 3)")]
     public int GetPlayerTechMaxAllowed(player? whichPlayer, int techid) =>
         whichPlayer is not null && whichPlayer.TechMax.TryGetValue(techid, out var max) && max >= 0 ? max : Levels(techid) ?? int.MaxValue;
 
     // An upgrade's level count; null for anything else.
     int? Levels(int techid) => Data.Object(ObjectKind.Upgrade, techid)?.Levels;
 
-    [Native(Level.Exact, Fact = "game-facts.md, Version and launching: a limit of 0 and of 2147483647 read back (10-20); docs/facts.md, Players and the game: a negative one reads 2147483647")]
+    [Native(Level.Exact, Fact = "game-facts.md, Version and launching: a limit of 0 and of 2147483647 read back (10-20); facts, Players and the game: a negative one reads 2147483647")]
     public void SetPlayerTechMaxAllowed(player? whichPlayer, int techid, int maximum)
     {
         if (whichPlayer is not null) whichPlayer.TechMax[techid] = maximum;
@@ -350,7 +350,7 @@ public sealed partial class GameNatives
     /// GetPlayerTypedUnitCount counts them, with the types it upgrades to unless <paramref name="specificonly"/> (probe
     /// units-more: a town hall 1 and 3 with a keep and a castle).
     /// </summary>
-    [Native(Level.Exact, Fact = "docs/facts.md, Players and the game: probe players; " + MoreProbe)]
+    [Native(Level.Exact, Fact = "facts, Players and the game: probe players; " + MoreProbe)]
     public int GetPlayerTechCount(player? whichPlayer, int techid, bool specificonly) =>
         Data.Object(ObjectKind.Unit, techid) is not null ? Typed(whichPlayer, techid, !specificonly) : whichPlayer?.TechLevels.GetValueOrDefault(techid) ?? 0;
 

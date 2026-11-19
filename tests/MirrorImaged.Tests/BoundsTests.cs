@@ -2,7 +2,7 @@ namespace MirrorImaged.Tests;
 
 /// <summary>
 /// Rects, locations, start locations and the map's bounds against the game's lines of the probe units-bounds
-/// (docs/facts.md, "Rects and locations"; probes/expected/units-bounds.txt), on the tests' map of 32 by 32 tiles, the
+/// (facts, "Rects and locations"; probes/expected/units-bounds.txt), on the tests' map of 32 by 32 tiles, the
 /// world -2048 to 2048 each way, as the probe map's.
 /// </summary>
 public sealed class BoundsTests : IDisposable

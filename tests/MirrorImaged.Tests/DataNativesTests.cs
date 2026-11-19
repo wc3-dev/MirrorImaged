@@ -8,7 +8,7 @@ namespace MirrorImaged.Tests;
 
 /// <summary>
 /// The natives that read the game's data, run on maps with data the test gives (decisions D207) against the probes of
-/// docs/facts.md, "The game's data", and the facts' "Time of day".
+/// facts, "The game's data", and the facts' "Time of day".
 /// </summary>
 public sealed class DataNativesTests : IDisposable
 {

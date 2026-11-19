@@ -4,8 +4,8 @@ using MirrorImaged.Lua;
 namespace MirrorImaged.Tests.Lua;
 
 /// <summary>
-/// The game's math library, from the "Lua runtime" facts and their probes (3.0.1.24371, docs/facts.md "Lua numbers").
-/// Exact where the model reproduces the game. Where it doesn't (Close, docs/decisions.md "The game's Lua numbers"),
+/// The game's math library, from the "Lua runtime" facts and their probes (3.0.1.24371, facts, "Lua numbers").
+/// Exact where the model reproduces the game. Where it doesn't (Close, decisions, "The game's Lua numbers"),
 /// the tests give the game's value beside the model's and assert the model's, so the recorded gap can't grow unseen.
 /// </summary>
 public sealed class LuaMathTests : IDisposable
@@ -177,7 +177,7 @@ public sealed class LuaMathTests : IDisposable
 
     /// <summary>
     /// The game's values the model doesn't reproduce (Close): the model's own value is asserted, so the gap to the
-    /// game's stays what docs/decisions.md records.
+    /// game's stays what the decisions record.
     /// </summary>
     [Theory]
     [InlineData("math.atan(1, 1) * 4", "3.14159298", "3.1415925")]

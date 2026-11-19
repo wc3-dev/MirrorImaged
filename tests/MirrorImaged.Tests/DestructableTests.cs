@@ -10,7 +10,7 @@ using War3Net.Common.Extensions;
 namespace MirrorImaged.Tests;
 
 /// <summary>
-/// Destructables, trees and gates against the game's lines of the destructables probe (docs/facts.md, "Destructables";
+/// Destructables, trees and gates against the game's lines of the destructables probe (facts, "Destructables";
 /// probes/expected/destructables.txt) and the facts' "Units", with the standard data of the types it makes given here.
 /// </summary>
 public sealed class DestructableTests : IDisposable

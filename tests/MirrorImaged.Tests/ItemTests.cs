@@ -3,7 +3,7 @@ using MirrorImaged.Data;
 namespace MirrorImaged.Tests;
 
 /// <summary>
-/// Items and inventories, against the probe items (docs/facts.md, "Items (W2-3)"), on maps with the data the test gives
+/// Items and inventories, against the probe items (facts, "Items (W2-3)"), on maps with the data the test gives
 /// (decisions D207): the standard items the probe made.
 /// </summary>
 public sealed class ItemTests : IDisposable
@@ -281,7 +281,7 @@ public sealed class ItemTests : IDisposable
         Assert.Equal(["event 86 tdex false", "event 85 tdex false", "tome tdex 0,0,0,0,0,0 count 0", "later tdex", "then 0"], Printed(simulation));
     }
 
-    // wave-2.md: the random item picks take the data's pick-random items of the level and class, in a fixed order; pools
+    // Wave 2's task: the random item picks take the data's pick-random items of the level and class, in a fixed order; pools
     // pick by weight and make what they pick; an empty pool or no match gives nothing
     [Fact]
     public void Pools_and_random_picks_choose_from_the_data()

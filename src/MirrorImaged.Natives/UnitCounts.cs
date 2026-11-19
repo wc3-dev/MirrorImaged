@@ -7,7 +7,7 @@ public partial class player
     internal readonly Dictionary<int, int> UnitCounts = []; // its living units by type, a removed one until it is gone
 }
 
-// Units by name, the player's unit counts and food, as the probe units-more measures them (docs/facts.md, "Units").
+// Units by name, the player's unit counts and food, as the probe units-more measures them (facts, "Units").
 public sealed partial class GameNatives
 {
     const int FoodCap = 4, FoodUsedState = 5; // PLAYER_STATE_RESOURCE_FOOD_*

@@ -7,7 +7,7 @@ using War3Net.Common.Extensions;
 
 namespace MirrorImaged.GameTests;
 
-// The maps of W2-1's probes (docs/facts.md, "The game's data"), each the probe map changed (ProbeComparison.Change).
+// The maps of W2-1's probes (facts, "The game's data"), each the probe map changed (ProbeComparison.Change).
 public static class DataProbeMaps
 {
     /// <summary>The probe map (info format 28, which has no data version, and the Default data set) with the melee flag.</summary>

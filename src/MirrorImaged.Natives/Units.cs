@@ -47,12 +47,12 @@ struct Change(float to)
     }
 }
 
-// Units without movement, as the units and units-decay probes measure them (docs/facts.md, "Units") with the facts'
+// Units without movement, as the units and units-decay probes measure them (facts, "Units") with the facts'
 // "Units" and "Orders and events". A unit's data is its type's (GameData) with its own changes on top.
 public sealed partial class GameNatives
 {
-    const string DecayProbe = "facts.md, Units: probe units-decay (11-08)";
-    const string BonesProbe = "facts.md, Units: probe units-bones (11-08)";
+    const string DecayProbe = "facts, Units: probe units-decay (11-08)";
+    const string BonesProbe = "facts, Units: probe units-bones (11-08)";
     const float Dying = 0.405f; // a unit whose life is set below it dies (facts, Units)
 
     static int Code(string id) => Ids.Of(id);
@@ -263,7 +263,7 @@ public sealed partial class GameNatives
     /// one the map's balance set leaves out; "Default string" for anything else, a buff's and a destructable's name too,
     /// as the units probe and the facts' "Object data" read them. Not the name BlzSetUnitName gives one unit.
     /// </summary>
-    [Native(Level.Exact, Fact = UnitsProbe + "; facts.md, The game's data: probes data-objects and data-sets-melee; game-facts.md, Object data: GetObjectName (10-18)")]
+    [Native(Level.Exact, Fact = UnitsProbe + "; facts, The game's data: probes data-objects and data-sets-melee; game-facts.md, Object data: GetObjectName (10-18)")]
     public string? GetObjectName(int objectId) => Data.Name(objectId) ?? "Default string";
 
     /// <summary>The name BlzSetUnitName gave the unit, else its type's: a hero's type name, not its proper name (facts, Units).</summary>

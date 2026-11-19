@@ -4,7 +4,7 @@ using MirrorImaged.World;
 namespace MirrorImaged.Tests;
 
 /// <summary>
-/// The player natives, against the facts' "Version and launching" and the players probe (docs/facts.md, "Players and
+/// The player natives, against the facts' "Version and launching" and the players probe (facts, "Players and
 /// the game"): a one-player <c>-loadfile</c> game, seated as <see cref="GameNatives.Seat"/> seats it.
 /// </summary>
 public sealed class PlayerNativesTests
@@ -121,7 +121,7 @@ public sealed class PlayerNativesTests
         }
         Assert.Same(_natives.ConvertPlayerSlotState(0), _natives.GetPlayerSlotState(P(0)));
         Assert.Equal("Player 4", _natives.GetPlayerName(P(3)));
-        Assert.Equal("Computer (Normal)", _natives.GetPlayerName(P(5))); // docs/facts.md, The game's data
+        Assert.Equal("Computer (Normal)", _natives.GetPlayerName(P(5))); // facts, The game's data
     }
 
     // decisions D91: inferred, as the game likely seats them

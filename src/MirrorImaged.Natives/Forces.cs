@@ -6,7 +6,7 @@ public partial class force
     internal bool Looped; // ForForce has run over it
 }
 
-// Forces as the players and events probes measure them (docs/facts.md, "Players and the game", "Player and game
+// Forces as the players and events probes measure them (facts, "Players and the game", "Player and game
 // events"): ForForce goes in slot order, and the enumerations clear the force first and take the playing players of
 // slots 0 to 23 that their filter passes, not the neutral ones, though those play too.
 public sealed partial class GameNatives
@@ -59,23 +59,23 @@ public sealed partial class GameNatives
     /// The playing players of slots 0 to 23 that the filter passes, as a trigger's condition passes, called for each in
     /// slot order with GetFilterPlayer set; a destroyed filter runs what its place holds (decisions D115).
     /// </summary>
-    [Native(Level.Exact, Fact = "docs/facts.md, Players and the game: the players probe; " + Events)]
+    [Native(Level.Exact, Fact = "facts, Players and the game: the players probe; " + Events)]
     public void ForceEnumPlayers(force? whichForce, boolexpr? filter) => Enumerate(whichForce, filter, _ => true);
 
     /// <summary>As ForceEnumPlayers, until it holds <paramref name="countLimit"/> players: the filter isn't called after.</summary>
-    [Native(Level.Exact, Fact = "docs/facts.md, Players and the game: the players probe; " + Events)]
+    [Native(Level.Exact, Fact = "facts, Players and the game: the players probe; " + Events)]
     public void ForceEnumPlayersCounted(force? whichForce, boolexpr? filter, int countLimit) => Enumerate(whichForce, filter, _ => true, countLimit);
 
     /// <summary>
     /// The players <paramref name="whichPlayer"/> is passive to, itself among them (not measured beyond itself), that the
     /// filter passes: it is called for every playing player, ally or not.
     /// </summary>
-    [Native(Level.Exact, Fact = "docs/facts.md, Players and the game: the players and lobby probes; " + Events)]
+    [Native(Level.Exact, Fact = "facts, Players and the game: the players and lobby probes; " + Events)]
     public void ForceEnumAllies(force? whichForce, player? whichPlayer, boolexpr? filter) =>
         Enumerate(whichForce, filter, p => IsPlayerAlly(whichPlayer, p));
 
     /// <summary>As ForceEnumAllies, for the players it isn't passive to.</summary>
-    [Native(Level.Exact, Fact = "docs/facts.md, Players and the game: the players and lobby probes; " + Events)]
+    [Native(Level.Exact, Fact = "facts, Players and the game: the players and lobby probes; " + Events)]
     public void ForceEnumEnemies(force? whichForce, player? whichPlayer, boolexpr? filter) =>
         Enumerate(whichForce, filter, p => IsPlayerEnemy(whichPlayer, p));
 
@@ -132,6 +132,6 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The player ForForce is running for; null outside it.</summary>
-    [Native(Level.Exact, Fact = "docs/facts.md, Players and the game: nil after ForForce")]
+    [Native(Level.Exact, Fact = "facts, Players and the game: nil after ForForce")]
     public player? GetEnumPlayer() => _enumPlayer;
 }

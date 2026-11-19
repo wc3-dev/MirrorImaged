@@ -69,7 +69,7 @@ for _, n in ipairs({150, 200, 201, 202, 230}) do
 end
 
 -- A file that ends PreloadFiles early and goes on in Lua, as some maps' save files do, closed the game (one run, 11-08;
--- docs/facts.md), so it isn't read here.
+-- the facts), so it isn't read here.
 
 -- Game caches.
 local c1 = InitGameCache("files-probe.w3v")
@@ -104,7 +104,7 @@ out("stored after the flush: " .. GetStoredInteger(c1, "m", "after") .. ", by na
 SyncStoredInteger(c1, "m", "after")
 out("synced: " .. GetStoredInteger(c1, "m", "after"))
 
--- SaveGameCache and ReloadGameCachesFromDisk were measured once and are left out here (docs/facts.md, "Files and game
+-- SaveGameCache and ReloadGameCachesFromDisk were measured once and are left out here (facts, "Files and game
 -- cache"): SaveGameCache rewrites the account's Campaigns.w3v, which a probe mustn't touch.
 
 -- The ability tooltip carrier, as the workspace's facts read files back: each piece a BlzSetAbilityTooltip of a level of

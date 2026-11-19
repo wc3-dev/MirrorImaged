@@ -3,14 +3,14 @@ using MirrorImaged.Data;
 namespace MirrorImaged.Natives;
 
 // The ability field natives on a unit's ability, and its cooldown and mana cost, as the probes abilities-fields,
-// abilities-columns and abilities-sets read and set them (docs/facts.md, "Abilities"). A native takes only the fields
+// abilities-columns and abilities-sets read and set them (facts, "Abilities"). A native takes only the fields
 // common.j names for its kind. A level counts from 0. A field kept in a table column (DataA, Cool) reads the column the
 // ability keeps under its own field there (GameData.Own), so a field of another ability on that column reads it too, when
 // it is of the same type; a set goes to that column, with its type. A field of the text files (tooltips, icons) reads the
 // ability type's (AbilityTypes.cs) unless the ability's own was set.
 public sealed partial class GameNatives
 {
-    const string FieldsProbe = "facts.md, Abilities: probes abilities-fields, abilities-columns and abilities-sets (11-08)";
+    const string FieldsProbe = "facts, Abilities: probes abilities-fields, abilities-columns and abilities-sets (11-08)";
     static readonly int LevelCount = Code("alev"), LevelSkip = Code("alsk"), TargetAttachments = Code("atac"), CasterAttachments = Code("acac"),
         HeroAbility = Code("aher"), ItemAbility = Code("aite"), AbilityName = Code("anam"), Cooldown = Code("acdn"), ManaCost = Code("amcs");
 
@@ -147,7 +147,7 @@ public sealed partial class GameNatives
     /// Its name, sounds ("" without) and the activated and research icons (the type's, BTNTemp without); "" for nil
     /// (probes abilities-fields and abilities-types).
     /// </summary>
-    [Native(Level.Exact, Fact = FieldsProbe + "; facts.md, Abilities: probe abilities-types")]
+    [Native(Level.Exact, Fact = FieldsProbe + "; facts, Abilities: probe abilities-types")]
     public string? BlzGetAbilityStringField(ability? whichAbility, abilitystringfield? whichField)
     {
         if (whichAbility is not { } a || whichField is not { } f || !Declares(f)) return "";
@@ -185,7 +185,7 @@ public sealed partial class GameNatives
     /// As the other kinds; a boolean a set put in a column closes the game when read back (probe abilities-boolean:
     /// inferred, as the game closed after the set answered true and before the read's line came).
     /// </summary>
-    [Native(Level.Exact, Fact = FieldsProbe + "; facts.md, Abilities: probe abilities-boolean")]
+    [Native(Level.Exact, Fact = FieldsProbe + "; facts, Abilities: probe abilities-boolean")]
     public bool BlzGetAbilityBooleanLevelField(ability? whichAbility, abilitybooleanlevelfield? whichField, int level) => Read(whichAbility, whichField, level, false);
 
     /// <summary>
@@ -193,7 +193,7 @@ public sealed partial class GameNatives
     /// the other kinds (probe abilities-boolean); on one holding a boolean the game closes: Divine Shield's
     /// can-deactivate (probe abilities-columns), a Paladin's inventory's drop-items-on-death (game-facts).
     /// </summary>
-    [Native(Level.Exact, Fact = "facts.md, Abilities: probes abilities-columns and abilities-boolean; game-facts.md, Orders and events: ABILITY_BLF_DROP_ITEMS_ON_DEATH (11-02)")]
+    [Native(Level.Exact, Fact = "facts, Abilities: probes abilities-columns and abilities-boolean; game-facts.md, Orders and events: ABILITY_BLF_DROP_ITEMS_ON_DEATH (11-02)")]
     public bool BlzSetAbilityBooleanLevelField(ability? whichAbility, abilitybooleanlevelfield? whichField, int level, bool value) => Write(whichAbility, whichField, level, value);
 
     /// <summary>

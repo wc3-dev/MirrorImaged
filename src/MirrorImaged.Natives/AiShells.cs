@@ -3,7 +3,7 @@ namespace MirrorImaged.Natives;
 // The natives of the computer players' AI (common.ai and the AI commands of common.j) that are not modelled. The melee scripts set how the AI
 // fights (fleeing, repairing, targeting heroes) through settings nothing reads back, which are Recorded; the rest are the campaign scripts'
 // (guard posts, defenders, suicide waves, commands from the map, zeppelins) and answer as an AI with nothing to count or command does: counts
-// read 0, questions false, commands do nothing (docs/decisions.md, D431). What the melee scripts' choices rest on is in AiTown.cs.
+// read 0, questions false, commands do nothing (decisions D431). What the melee scripts' choices rest on is in AiTown.cs.
 public sealed partial class GameNatives
 {
     const string AiSetting = "A setting of how the AI fights and works that the simulation does not model; no native reads it back", DebugText = "Shows a text of the AI script to its developer";

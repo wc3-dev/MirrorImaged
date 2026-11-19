@@ -2,13 +2,13 @@ using MirrorImaged.Data;
 
 namespace MirrorImaged.Natives;
 
-// Heroes, as the heroes probe and the facts' "Units" and "Heroes" measure them (docs/facts.md, "Heroes (W2-3)"): levels
+// Heroes, as the heroes probe and the facts' "Units" and "Heroes" measure them (facts, "Heroes (W2-3)"): levels
 // and experience by the constants' formula, the attributes and what they give, skill points, revival and the hero
 // events. A hero keeps its attributes with the fractions its gains add up to; what a whole attribute is read as is the
 // whole part. Life, mana and armour follow the attributes: a change adds its share to the life and mana now.
 public sealed partial class GameNatives
 {
-    const string HeroProbe = "facts.md, Heroes (W2-3): probe heroes (11-15)";
+    const string HeroProbe = "facts, Heroes (W2-3): probe heroes (11-15)";
     const int HeroLevelEvent = 78, HeroSkillEvent = 79, HeroReviveStart = 81, HeroReviveFinish = 83,
         PlayerHeroLevel = 41, PlayerHeroSkill = 42, PlayerHeroReviveStart = 44, PlayerHeroReviveFinish = 46;
 

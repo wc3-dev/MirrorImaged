@@ -1,9 +1,9 @@
 namespace MirrorImaged.Natives;
 
-// The game's own strings and hotkeys (docs/facts.md, "The game's data": probe data).
+// The game's own strings and hotkeys (facts, "The game's data": probe data).
 public sealed partial class GameNatives
 {
-    const string DataProbe = "docs/facts.md, The game's data: probe data";
+    const string DataProbe = "facts, The game's data: probe data";
 
     /// <summary>
     /// The string the game's string lists give <paramref name="source"/> (its case as written), else

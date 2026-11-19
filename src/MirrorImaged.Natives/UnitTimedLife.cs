@@ -7,7 +7,7 @@ public partial class unit
     internal double? TimedEnd, TimedLeft; // when its timed life ends, while it runs; what is left of it, while paused
 }
 
-// Timed life, as the probes units-more and units-more-2 measure it (docs/facts.md, "Units"): a death like KillUnit's,
+// Timed life, as the probes units-more and units-more-2 measure it (facts, "Units"): a death like KillUnit's,
 // the killer nil, the body decaying as any other.
 public sealed partial class GameNatives
 {

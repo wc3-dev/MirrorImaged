@@ -10,7 +10,7 @@ sealed record StoredUnit(int Type, int Level, int Xp, int Points, double Str, do
 
 public sealed partial class GameNatives
 {
-    const string StoredProbe = "facts.md, Stored units (W2-3): probe heroes-store (11-15)";
+    const string StoredProbe = "facts, Stored units (W2-3): probe heroes-store (11-15)";
 
     /// <summary>
     /// Keeps the unit in the cache and answers false, the game's answer for every unit, one dead or a building too; a unit

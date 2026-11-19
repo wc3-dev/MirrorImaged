@@ -3,14 +3,14 @@ using MirrorImaged.Data;
 namespace MirrorImaged.Natives;
 
 // An ability type's tooltips, icons, button places, cooldown, mana cost and sounds, as the probe abilities-types reads and
-// sets them (docs/facts.md, "Abilities"; game-facts, "Spells and abilities" and "Files and Preload"). They are the game's
+// sets them (facts, "Abilities"; game-facts, "Spells and abilities" and "Files and Preload"). They are the game's
 // for every player here, a run being one machine; the game keeps them per player. A text is kept for each entry the
 // data has for it, a tooltip a level: a level outside them reads the last, and a set there is lost (game-facts: 100
 // pieces read back 3 on a 100-level copy without tooltips). The getters read an ability's, a unit's, an item's or an
 // upgrade's (probe abilities-types: hfoo's "Train Footman").
 public sealed partial class GameNatives
 {
-    const string AbilityTypesProbe = "facts.md, Abilities: probe abilities-types (11-08)";
+    const string AbilityTypesProbe = "facts, Abilities: probe abilities-types (11-08)";
     const string Temp = @"ReplaceableTextures\CommandButtons\BTNTemp.blp";
 
     readonly Dictionary<(ObjectKind Kind, int Id, int Field, int At), string> _texts = []; // the type setters'

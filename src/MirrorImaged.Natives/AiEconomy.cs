@@ -5,7 +5,7 @@ namespace MirrorImaged.Natives;
 // The economy natives of the computer players' AI (common.ai): what the AI player has and can do about its units, upgrades and workers, on the
 // buildings, training queue and harvesting of wave 3. The AI player is the one the AI script runs for (the lobby's computer, or the local player
 // where no AI runs). Close: a town is a place, where a town hall or a mine of the AI player's own first stood away from its other towns; it
-// stays when its hall dies, and a mine belongs to the town it stands within 1,000 of (docs/decisions.md, D357, D490).
+// stays when its hall dies, and a mine belongs to the town it stands within 1,000 of (decisions D357, D490).
 public sealed partial class GameNatives
 {
     /// <summary>The player the AI natives act for while an AI script runs (the local player where none does).</summary>

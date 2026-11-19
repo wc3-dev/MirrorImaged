@@ -3,7 +3,7 @@ using MirrorImaged.Data;
 namespace MirrorImaged.Natives;
 
 // What the melee AI scripts ask before and while they attack, and the units they make from others. Close: the game's own rules for these are not
-// measured; each is the smallest that gives the script the answer its code is written for (docs/decisions.md, D432 to D434).
+// measured; each is the smallest that gives the script the answer its code is written for (decisions D432 to D434).
 public sealed partial class GameNatives
 {
     const float TowerReach = 900;

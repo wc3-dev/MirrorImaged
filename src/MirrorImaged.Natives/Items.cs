@@ -14,11 +14,11 @@ public partial class item
     internal readonly Dictionary<int, object> Fields = []; // what the Blz field natives and the flag setters set
 }
 
-// Items on the ground and in the inventory, as the items probe measures them (docs/facts.md, "Items (W2-3)"). An item's
+// Items on the ground and in the inventory, as the items probe measures them (facts, "Items (W2-3)"). An item's
 // data is its type's with its own changes on top; once removed it reads 0 or nil at once, as no unit does.
 public sealed partial class GameNatives
 {
-    const string ItemProbe = "facts.md, Items (W2-3): probe items (11-15)";
+    const string ItemProbe = "facts, Items (W2-3): probe items (11-15)";
 
     static readonly int ItemClass = Code("icla"), ItemLevel = Code("ilev"), ItemUses = Code("iuse"), ItemHitPoints = Code("ihtp"), ItemPowerup = Code("ipow"),
         ItemSellable = Code("isel"), ItemPawnable = Code("ipaw"), ItemPerishable = Code("iper"), ItemRandom = Code("iprn"), ItemUsable = Code("iusa"),

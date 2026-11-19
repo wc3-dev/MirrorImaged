@@ -3,7 +3,7 @@ using MirrorImaged.World;
 
 namespace MirrorImaged.Tests;
 
-/// <summary>The random natives against the probes strings and strings-4 (docs/facts.md, "Strings, numbers and hashtables").</summary>
+/// <summary>The random natives against the probes strings and strings-4 (facts, "Strings, numbers and hashtables").</summary>
 public sealed class RandomNativesTests
 {
     readonly GameNatives _natives = new(new Game(1));

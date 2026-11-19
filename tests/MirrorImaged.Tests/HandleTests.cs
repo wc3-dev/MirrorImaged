@@ -2,7 +2,7 @@ namespace MirrorImaged.Tests;
 
 /// <summary>
 /// Handles' ids, identity and equality, and the natives' argument checks, against the probes handles, handles-2,
-/// handles-3 and arguments (docs/facts.md, "Handles and errors"). Each map's main is the script given, from line 3,
+/// handles-3 and arguments (facts, "Handles and errors"). Each map's main is the script given, from line 3,
 /// without blizzard.j.
 /// </summary>
 public sealed class HandleTests : IDisposable

@@ -13,7 +13,7 @@ public partial class gamecache
 // UnitCache.cs.
 public sealed partial class GameNatives
 {
-    const string CacheFact = "docs/facts.md, Files and game cache (the files probe, 11-08)";
+    const string CacheFact = "facts, Files and game cache (the files probe, 11-08)";
 
     // The game's caches, taken from the documents' saved ones as the game starts (Documents).
     Dictionary<string, Dictionary<(char, string, string), object>> _caches = new(StringComparer.OrdinalIgnoreCase);

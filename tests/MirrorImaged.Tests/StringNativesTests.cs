@@ -5,7 +5,7 @@ namespace MirrorImaged.Tests;
 
 /// <summary>
 /// The string and number natives against what the probes strings, strings-2 and strings-3 measured in the game
-/// (docs/facts.md, "Strings, numbers and hashtables"). Where the model differs (Close), the game's value is given
+/// (facts, "Strings, numbers and hashtables"). Where the model differs (Close), the game's value is given
 /// beside the model's and the model's is asserted, so the recorded gap can't grow unseen.
 /// </summary>
 public sealed class StringNativesTests : IDisposable

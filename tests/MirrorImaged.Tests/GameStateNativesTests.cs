@@ -5,7 +5,7 @@ namespace MirrorImaged.Tests;
 
 /// <summary>
 /// The game's settings, pause and the time of day, against the facts' "Version and launching" and "Time of day" and
-/// the players probe (docs/facts.md, "Players and the game").
+/// the players probe (facts, "Players and the game").
 /// </summary>
 public sealed class GameStateNativesTests
 {

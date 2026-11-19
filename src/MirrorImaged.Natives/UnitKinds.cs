@@ -11,12 +11,12 @@ public partial class unit
 }
 
 // The rest of the unit natives, as the probes units-more, units-more-2, units-types and units-gold measure them
-// (docs/facts.md, "Units"): kinds of a type and added kinds, sameness, illusions, selection, the alarm, rescue, a gold
+// (facts, "Units"): kinds of a type and added kinds, sameness, illusions, selection, the alarm, rescue, a gold
 // mine's gold, and what only shows.
 public sealed partial class GameNatives
 {
-    const string TypesProbe = "facts.md, Units: probe units-types (11-08)";
-    const string GoldProbe = "facts.md, Units: probe units-gold (11-08)";
+    const string TypesProbe = "facts, Units: probe units-types (11-08)";
+    const string GoldProbe = "facts, Units: probe units-gold (11-08)";
     static readonly int[] Mines = [Code("Agld"), Code("Abgm"), Code("Aegm")]; // a gold mine's, a haunted one's, an entangled one's
     static readonly int MaxGold = Code("Gld1");
 

@@ -6,7 +6,7 @@ namespace MirrorImaged.Tests;
 
 /// <summary>
 /// Abilities on units without casting, against the probes abilities, abilities-fields, abilities-columns,
-/// abilities-sets, abilities-types, abilities-lists, abilities-upgrades and abilities-boolean (docs/facts.md,
+/// abilities-sets, abilities-types, abilities-lists, abilities-upgrades and abilities-boolean (facts,
 /// "Abilities") and the facts' "Spells and abilities" and "Files and Preload", on maps with the data the test gives
 /// (decisions D207): the probe map's values (custom_v1) of what the probes used, with the metadata rows they need.
 /// </summary>

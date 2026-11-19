@@ -14,7 +14,7 @@ public partial class unit
 // speed, attack rate, regeneration, life steal and damage for the allies near. Each reads its numbers from the ability's own data (DataA..DataE by
 // level, its duration, area and range), as the game's tooltips name them. Close: the numbers' meanings are from the tooltips of the game's data and
 // the abilities of channels, summons, passives of an attack's chance (bash, critical strike, evasion), and the transformations are not here
-// (docs/decisions.md, D380). Flame Strike, Silence, Wind Walk, Immolation, Mirror Image, Earthquake and Starfall are as probe abilities-spells
+// (decisions D380). Flame Strike, Silence, Wind Walk, Immolation, Mirror Image, Earthquake and Starfall are as probe abilities-spells
 // measured them (D408 to D415).
 public sealed partial class GameNatives
 {

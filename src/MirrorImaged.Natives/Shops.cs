@@ -4,7 +4,7 @@ namespace MirrorImaged.Natives;
 
 // Shops: a building that lists items (`usei`) or units (`useu`) it sells gives one to a player who orders it, for the price, to the player's unit nearest it
 // within reach; the sell events fire with the item or the unit sold, the shop and the buyer. Close: a shop's stock is not kept (it always has the thing), nor
-// is the stock's wait, and a hero is only bought as the units of a tavern are, for the price (docs/decisions.md, D382).
+// is the stock's wait, and a hero is only bought as the units of a tavern are, for the price (decisions D382).
 public sealed partial class GameNatives
 {
     const int UnitSell = 286, UnitSellItem = 288, PlayerUnitSell = 269, PlayerUnitSellItem = 271, UnitPawnItem = 294, PlayerUnitPawnItem = 277;

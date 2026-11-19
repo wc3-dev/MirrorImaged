@@ -20,12 +20,12 @@ public partial class @event
 }
 
 // The unit events of wave 2 (death, decay, owner change, the order events of SetUnitOwner, KillUnit, RemoveUnit and
-// PauseUnit, and the unit state events), fired inside the call, as the units probes measure them (docs/facts.md,
+// PauseUnit, and the unit state events), fired inside the call, as the units probes measure them (facts,
 // "Units"). The other unit events register and wait for their waves.
 public sealed partial class GameNatives
 {
-    const string UnitsProbe = "facts.md, Units: probe units (11-08)";
-    const string MoreProbe = "facts.md, Units: probes units-more and units-more-2 (11-08)";
+    const string UnitsProbe = "facts, Units: probe units (11-08)";
+    const string MoreProbe = "facts, Units: probes units-more and units-more-2 (11-08)";
     const int UnitDeath = 53, UnitDecay = 54, UnitStateLimit = 59, UnitIssuedOrder = 75, UnitIssuedPointOrder = 76, UnitChangeOwner = 287, WidgetDeath = 89; // EVENT_UNIT_*, EVENT_WIDGET_DEATH
     const int PlayerUnitDeath = 20, PlayerUnitDecay = 21, PlayerUnitIssuedOrder = 38, PlayerUnitIssuedPointOrder = 39, PlayerUnitChangeOwner = 270; // EVENT_PLAYER_UNIT_*
 

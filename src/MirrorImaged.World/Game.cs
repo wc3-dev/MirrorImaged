@@ -128,7 +128,7 @@ public sealed class Game
 
     /// <summary>
     /// A random integer from <paramref name="low"/> up to the bounds' distance above it, both ends included, in 32-bit
-    /// integers that wrap as the game's GetRandomInt does (docs/facts.md, "Strings, numbers and hashtables"): from 5 to 9
+    /// integers that wrap as the game's GetRandomInt does (facts, "Strings, numbers and hashtables"): from 5 to 9
     /// for (5, 1); always <c>int.MinValue</c> for (<c>int.MinValue</c>, <c>int.MaxValue</c>), whose count of numbers
     /// wraps to 0; past <c>int.MaxValue</c> into the negatives for (<c>int.MaxValue</c>, 0).
     /// </summary>

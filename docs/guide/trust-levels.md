@@ -12,8 +12,8 @@ Every native in the game's `common.j` and `common.ai` has a trust level, and non
 No native of `common.j` and `common.ai` is Missing now, but the level stays: a native a later game patch adds is Missing until it is written, and `SimulationOptions.TreatAsMissing` (or the `MIRROR_MISSING` environment variable, names separated by commas) runs any native as Missing to see how a map copes. A Missing native stops the run: `Advance` throws a `LuaException` and `Simulation.Stopped` says which native it was, so a test never passes by
 doing nothing. A run's trust is the lowest level of the natives it calls; `mirror check Map.w3x` lists them.
 
-The facts a level rests on are in `docs/facts.md` and `docs/game-facts.md`; each native's attribute names its fact, and each decision made along the
-way is in `docs/decisions.md` with a D-number.
+Each native's attribute names the fact its level rests on, by the fact's section, and the code cites each decision made along the way by its D-number.
+The facts (cited as `facts` and `game-facts.md`) and the decisions are kept outside this repository.
 
 ## What Close means for combat, orders and the AI
 

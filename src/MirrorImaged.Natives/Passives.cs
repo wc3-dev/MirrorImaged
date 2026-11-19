@@ -2,7 +2,7 @@ namespace MirrorImaged.Natives;
 
 // The passive abilities of an attack's chance (wave 4): Bash (a chance of extra damage and a stun), Critical Strike (a chance of a multiple of the damage)
 // and Evasion (a chance that the attack of an enemy misses). Each draws from the game's random numbers when its unit attacks or is attacked, reading its
-// chance and numbers from the ability's data by level (docs/decisions.md, D384). Close: the abilities of other names with the same data (Orb of Venom, Pulverize,
+// chance and numbers from the ability's data by level (decisions D384). Close: the abilities of other names with the same data (Orb of Venom, Pulverize,
 // Cleave, Pillage...) are not here.
 public sealed partial class GameNatives
 {

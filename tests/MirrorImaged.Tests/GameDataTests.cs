@@ -8,7 +8,7 @@ namespace MirrorImaged.Tests;
 
 /// <summary>
 /// The map's changes to the standard data, read from maps built here: its object data and skin files, its strings and
-/// its gameplay constants (game-facts, "Object data"; docs/facts.md, "The game's data").
+/// its gameplay constants (game-facts, "Object data"; facts, "The game's data").
 /// </summary>
 public sealed class GameDataTests : IDisposable
 {
@@ -183,7 +183,7 @@ public sealed class GameDataTests : IDisposable
         Assert.Equal(number, Numbers.Integer(text));
     }
 
-    // docs/facts.md, "Destructables": World Editor numbers a doodad's variations from 1 in war3map.w3d (the install's
+    // facts, "Destructables": World Editor numbers a doodad's variations from 1 in war3map.w3d (the install's
     // maps change dvr1 at variations 1 to 10, never 0), so the file's variation is the field's level
     [Fact]
     public void A_doodads_variation_in_the_file_is_its_level_from_1()

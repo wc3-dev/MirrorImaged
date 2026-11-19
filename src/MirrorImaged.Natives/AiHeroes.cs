@@ -2,7 +2,7 @@ namespace MirrorImaged.Natives;
 
 // The skills a computer player's heroes learn: the AI script gives a function (`SetHeroLevels`) that answers, for the hero (`GetHeroId`) and the level it has
 // reached (`GetHeroLevelAI`), the ability to learn; each time a hero of the player has a skill point, the function is asked and the hero learns what it names
-// (docs/decisions.md, D383).
+// (decisions D383).
 public sealed partial class GameNatives
 {
     readonly Dictionary<player, Func<int>> _skillChoosers = [];

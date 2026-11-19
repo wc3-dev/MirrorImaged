@@ -4,7 +4,7 @@ using MirrorImaged.Lua;
 namespace MirrorImaged.Tests.Lua;
 
 /// <summary>
-/// The game's numbers, from the "Lua runtime" facts and the probes behind them (3.0.1.24371, docs/facts.md "Lua
+/// The game's numbers, from the "Lua runtime" facts and the probes behind them (3.0.1.24371, facts, "Lua
 /// numbers"): each expected value is the game's, given as its float bits or as the game printed it with %.9g, except
 /// in <see cref="NotMeasuredInTheGame"/>, which checks what the model or plain Lua gives where nothing was measured.
 /// </summary>
@@ -348,7 +348,7 @@ public sealed class LuaNumberTests : IDisposable
     public void ATimeInMillisecondsIsAFloat() =>
         Assert.Equal("float", _lua.Value("math.type(os.time() * 1000 % 2147483648)"));
 
-    /// <summary>Not measured in the game: what the model gives (docs/decisions.md), or plain Lua 5.3.</summary>
+    /// <summary>Not measured in the game: what the model gives (the decisions), or plain Lua 5.3.</summary>
     [Theory]
     [InlineData("bits(f(0x7f7fffff) * 2) == 0x7fffffff")]  // the game printed nan; its bits weren't read
     [InlineData("math.fmod(7.2, 0.1) == 0")]  // the game's 7.2 % 0.1 was measured, its math.fmod not

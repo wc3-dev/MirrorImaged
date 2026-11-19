@@ -9,7 +9,7 @@ using War3Net.IO.Mpq;
 namespace MirrorImaged.Tests;
 
 /// <summary>
-/// Sound files' lengths, sounds and their play state, against the probes sounds and sounds-2 (docs/facts.md, "Sounds")
+/// Sound files' lengths, sounds and their play state, against the probes sounds and sounds-2 (facts, "Sounds")
 /// and the facts' "Presentation" and "Files" sound bullets (decisions D520 to D527). The sound files are made here.
 /// </summary>
 public sealed class SoundTests : IDisposable

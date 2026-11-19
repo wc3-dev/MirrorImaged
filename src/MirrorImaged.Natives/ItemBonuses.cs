@@ -14,7 +14,7 @@ public partial class item
 // Impg, Ixpg), read where the ability keeps them.
 public sealed partial class GameNatives
 {
-    const string CarriedProbe = "facts.md, Items carried (W2-3): probe items-carried (11-15)";
+    const string CarriedProbe = "facts, Items carried (W2-3): probe items-carried (11-15)";
 
     static readonly int ItemAbilityList = Code("iabi"), BonusStrength = Code("Istr"), BonusAgility = Code("Iagi"), BonusIntelligence = Code("Iint"),
         BonusArmour = Code("Idef"), BonusLife = Code("Ilif"), BonusMana = Code("Iman"), HealLife = Code("Ihpg"), HealMana = Code("Impg"),

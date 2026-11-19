@@ -26,7 +26,7 @@ public enum ProbeState
     /// <summary>The map loaded, but the probe's Preload file didn't come in time.</summary>
     NoOutput,
 
-    /// <summary>The probe's game started and then exited by itself before its lines came: it closed, as on some calls (docs/facts.md).</summary>
+    /// <summary>The probe's game started and then exited by itself before its lines came: it closed, as on some calls (the facts).</summary>
     Closed,
 }
 
@@ -36,7 +36,7 @@ public sealed record ProbeRun(ProbeState State, IReadOnlyList<string> Lines, str
 /// <summary>
 /// Runs probe maps in the installed game, on a Windows desktop of its own that is never shown: builds the map, launches
 /// the game on it, presses space for the game while the map waits on its loading screen, waits for the probe's Preload
-/// file, ends the game and what it started, and returns the lines (docs/facts.md, "The game runner").
+/// file, ends the game and what it started, and returns the lines (facts, "The game runner").
 /// </summary>
 /// <param name="game">The game's executable.</param>
 /// <param name="documents">The game's documents folder (<c>Documents\Warcraft III</c>).</param>
@@ -52,7 +52,7 @@ public sealed class GameRunner(string game, string documents, string maps)
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Warcraft III"),
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MirrorImaged", "maps"));
 
-    /// <summary>The longest map path the game loads from <c>-loadfile</c>; with a longer one it stalls (docs/facts.md).</summary>
+    /// <summary>The longest map path the game loads from <c>-loadfile</c>; with a longer one it stalls (the facts).</summary>
     public const int LongestMapPath = 173;
 
     /// <summary>The game version the runner's facts were measured on.</summary>
@@ -69,7 +69,7 @@ public sealed class GameRunner(string game, string documents, string maps)
     const string AtLoginSays =
         "needs Sven: the game never got past its Battle.net login (it didn't open the account). Seen every time the runner " +
         "ran under Claude Code's Bash tool, where the game's browser loads web pages from outside as a login page would, " +
-        "and never from PowerShell (docs/facts.md): run the game tests from PowerShell or a normal terminal; if it happens " +
+        "and never from PowerShell (the facts): run the game tests from PowerShell or a normal terminal; if it happens " +
         "there, Sven looks at the game in a normal window (nobody else types a password into it)";
 
     /// <summary>The game's executable.</summary>
@@ -202,7 +202,7 @@ public sealed class GameRunner(string game, string documents, string maps)
 
         return version == MeasuredOn
             ? $"game {version}"
-            : $"game {version}; warning: the facts this runner relies on were measured on {MeasuredOn} (docs/facts.md)";
+            : $"game {version}; warning: the facts this runner relies on were measured on {MeasuredOn}";
     }
 
     // Each account's LastReplay.w3g and each of its campaigns' Campaigns.w3v and profile (named after the campaign's folder:

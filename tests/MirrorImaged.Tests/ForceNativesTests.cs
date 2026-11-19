@@ -3,7 +3,7 @@ using MirrorImaged.World;
 
 namespace MirrorImaged.Tests;
 
-/// <summary>Forces, against the players probe (docs/facts.md, "Players and the game").</summary>
+/// <summary>Forces, against the players probe (facts, "Players and the game").</summary>
 public sealed class ForceNativesTests
 {
     readonly Game _game = new(0);

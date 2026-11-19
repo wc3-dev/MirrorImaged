@@ -4,7 +4,7 @@ namespace MirrorImaged.Tests;
 
 /// <summary>
 /// Player and game events, filters, the lobby and the game's end, against the probes lobby, events and forforce-wait
-/// (docs/facts.md, "Players and the game" and "Player and game events") and the facts' "Version and launching" and
+/// (facts, "Players and the game" and "Player and game events") and the facts' "Version and launching" and
 /// "Orders and events". Each map is laid out as the probe map with a computer: a user in slot 0, a computer in 1 and a
 /// user slot 2 no one plays, all named in war3map.w3i, in custom forces with fixed player settings; no blizzard.j.
 /// </summary>

@@ -24,11 +24,11 @@ sealed record RegionEvent(region Region, bool Enter, boolexpr? Filter, @event Ev
 }
 
 // Regions, and their enter and leave events, as the probe units-regions and the facts' "Units" measure them
-// (docs/facts.md, "Regions"): a region is whole 32 cells on multiples of 32 from 0, and a rect covers the cells its
+// (facts, "Regions"): a region is whole 32 cells on multiples of 32 from 0, and a rect covers the cells its
 // corners are in, a max edge on the grid taking the cell past it.
 public sealed partial class GameNatives
 {
-    const string RegionsProbe = "facts.md, Regions: probe units-regions (11-08)";
+    const string RegionsProbe = "facts, Regions: probe units-regions (11-08)";
     const int EnterRegion = 5, LeaveRegion = 6; // EVENT_GAME_ENTER_REGION, EVENT_GAME_LEAVE_REGION
 
     // shortcut: every move reads every registration's region, cell by cell over its blocks; index the regions by place

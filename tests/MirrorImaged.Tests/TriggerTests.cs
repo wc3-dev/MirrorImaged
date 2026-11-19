@@ -5,7 +5,7 @@ namespace MirrorImaged.Tests;
 
 /// <summary>
 /// Triggers, conditions, threads and waits, against the facts' "Errors and callbacks" and "Initialisation" and the
-/// probes triggers, triggers-2 and triggers-3 (docs/facts.md, "Triggers and threads"). Each map's main is the script
+/// probes triggers, triggers-2 and triggers-3 (facts, "Triggers and threads"). Each map's main is the script
 /// given, from line 3, without blizzard.j.
 /// </summary>
 public sealed class TriggerTests : IDisposable

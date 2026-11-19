@@ -36,7 +36,7 @@ public sealed partial class GameNatives
     public Action<string, string>? RunPreloadFile { get; init; }
 
     /// <summary>Keeps the text for the next file <see cref="PreloadGenEnd"/> writes: its first 259 bytes.</summary>
-    [Native(Level.Exact, Fact = "game-facts.md, Files and Preload: one Preload call keeps the first 259 bytes of its text (11-02, 11-03); docs/facts.md, Files and game cache: kept until PreloadGenClear")]
+    [Native(Level.Exact, Fact = "game-facts.md, Files and Preload: one Preload call keeps the first 259 bytes of its text (11-02, 11-03); facts, Files and game cache: kept until PreloadGenClear")]
     public void Preload(string? filename)
     {
         // A file's own Preload calls, as Preloader runs it, aren't kept (the files probe).
@@ -45,7 +45,7 @@ public sealed partial class GameNatives
         _preloaded.Add(text.Length > 259 ? text[..259] : text);
     }
 
-    [Native(Level.Exact, Fact = "docs/facts.md, Files and game cache: PreloadGenClear empties what Preload kept, nothing else does")]
+    [Native(Level.Exact, Fact = "facts, Files and game cache: PreloadGenClear empties what Preload kept, nothing else does")]
     public void PreloadGenClear() => _preloaded.Clear();
 
     /// <summary>Does nothing here: the game starts the count it writes as <c>PreloadEnd</c>'s number, which isn't known.</summary>
@@ -82,7 +82,7 @@ public sealed partial class GameNatives
     /// Runs the file at <paramref name="filename"/> in <c>CustomMapData</c> at once, as the content the game first read
     /// at that path in this game; nothing for a missing file or a path the game reads nothing from (D101, D102).
     /// </summary>
-    [Native(Level.Exact, Fact = "game-facts.md, Files and Preload: read back at once, a missing file changes nothing, a path keeps its first content (11-03, 11-06); docs/facts.md, Files and game cache")]
+    [Native(Level.Exact, Fact = "game-facts.md, Files and Preload: read back at once, a missing file changes nothing, a path keeps its first content (11-03, 11-06); facts, Files and game cache")]
     public void Preloader(string? filename)
     {
         if (PreloadPath(filename, reading: true) is not { } path) return;
