@@ -2544,6 +2544,65 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
   difference: the game fires a second summon event 0.18 s after the first, one of the two without a unit, and moves the caster and the image to two places near (which of them where changes from run to
   run); here one summon event fires, with the image, and the caster stays.
 
+- **D420 (Replays of the game today):** read from one replay of a ladder game of 2.0 (header version 10200, build 7003), not from a document.
+  Before the lobby's slots come blocks 0x38 and 0x39 (a kind, a byte, a length of four bytes, that many bytes), which are skipped. Action 0x7A
+  is 17 bytes: the two numbers of a unit, an ability and an order, sent when a button of the unit is pressed, before the order itself. Action
+  0x77 is two strings and four bytes, a ladder's own data. The reader now also gives groups (0x17), a group picked (0x18), the subgroup (0x19),
+  whether an order was queued, the result of a leaving player, and the map's path from the lobby's encoded settings. With these the replay has no
+  action that is not read. A unit is named by two numbers; the second counts up as the game makes objects and the first is used again.
+
+- **D421 (A replay's seats):** `Simulation.Load(map, replay)` seats the lobby's people whose slots the map has as users (a watcher has none), no
+  computers, each with the race the lobby holds (a player who took random gets a random one: the replay does not say what the game drew). A
+  replay does not say where the game put the players either, so each gets the start place nearest the first place it gave an order at. This
+  lane's choice; it held for the one replay (both players' first orders were at their own gold mines). `SimulationOptions.Races` and
+  `StartLocations` carry it.
+
+- **D422 (Which unit a replay's numbers name):** the game's numbers for a unit are its own and a run here cannot have them, so D375's "the id
+  the unit has here" never held for a played game. `ReplayRun` finds the unit when an order first needs it: among the player's living units no
+  numbers have yet, made after the units of lower second numbers and before those of higher ones, the first of the type the subgroup action
+  told of that unit; else a building or not, as a pressed button told (`Aque`, a build menu); else, in a selection of several, the first that
+  is not a building; else the first. An order's target is the unit with no numbers yet within 64 of the place the order gives, else the tree
+  there, else the place. A unit the game made and this run did not is never found, and its orders are counted (`Unowned`). This lane's
+  model, Close: a wrong match is possible and is not detected. `ToRecording` is gone; the run's own recording (`act` inputs, with the run's
+  unit ids) plays it again exactly.
+
+- **D423 (Who takes a replay's order):** smart, stop, attack, move, patrol and hold position go to every unit of the selection. Any other order
+  is a button of the card and goes to one unit: the first that takes it, those of the shown subgroup's type first. The game's own rule (the
+  building with the shortest queue, the nearest worker) is not measured. An order of a hero ability's code is the skill learned. Read and not
+  played, and counted (`NotPlayed`): giving and dropping items (0x13, 0x14), taking from a queue (0x1E, 0x1F) and the escape key (0x61).
+
+- **D424 (Smart at a mine or a tree):** a replay's smart order of a unit with a harvest ability (`Ahar`, `Aaha`, `Awha` for gold; `Ahar`,
+  `Ahrl`, `Awha` for a tree) at a mine with gold or at a tree is given as `harvest`, as the game turns a person's right-click into it.
+  `IssueTargetOrder(smart)` from a script is left as it was. Acolytes and wisps then carry gold in trips as workers do, which the game's do not.
+
+### The corpus runs (L-mirror-corpus-runs)
+
+- **D440 (the corpus tests run in parts):** `ShippedMapTests` and `MeleeCorpusTests` each took longer than the 10 minutes the test run gives a test (35 min 17 s for the 466 shipped maps on 11-19, and
+  about 3 h 13 min for the 258 melee maps, worked out from the 136 the old test got through in 5,016 s), so nobody ran them to the end. Each is now a theory of 8 parts (`Corpus.Shards`), a part taking
+  every 8th map of the sorted list, so the long maps, which sort together by their players, are spread over the parts. A part is one test, so the 10 minutes count for each part: the longest took 2 min 2 s of the shipped maps' 7 min 35 s and 4 min 33 s of the melee maps'
+  31 min 26 s (with 4 parts the longest melee part took 8 min 57 s, too near the limit). The two classes are one
+  xUnit collection, so they never run at once.
+
+- **D441 (a part runs its maps side by side):** on half the PC's processors (`Environment.ProcessorCount / 2`, 6 on the 12 this was measured on), each map its own simulation and file. A map's result
+  doesn't depend on what runs beside it: the 136 melee maps the old test finished had the same unit counts in the new one, and seven maps' state hashes every 150 s are the same before and after.
+
+- **D442 (the tests use the server garbage collector):** `ServerGarbageCollector` in the test project. With the workstation collector six maps in one process each waited on the others' garbage: the
+  46 two-player melee maps took 103 to 138 s, and 88 s with the server collector, while six processes ran a map as fast as one. It changes no result.
+
+- **D443 (JASS is made into Lua one map at a time):** `Jass.ToLua` holds a lock. Once in some 1,500 loads side by side, a map's `war3map.j` failed to become Lua (`NotSupportedException`, on
+  `Campaign/Classic/TFT/OrcX02_09.w3x`, which loads alone and loaded in every run since). The inner error wasn't caught, so the cause is not known: it is in the parser, War3Net's transpiler or the
+  renderer, none of which says it may be used from two threads. The lock costs little, as a map's script takes about 0.2 s. This lane's call; the failure has not been seen again in the 1,448 loads of the two full runs
+  with it, which is not proof.
+
+- **D444 (the speed-ups, none of which changes a state hash):** a standard object keeps each field it has read (`StandardObject.Cell`: three strings joined and three look-ups a read before); the AI's
+  nearest tree is found without sorting every tree, a type's being a tree is kept, and the towns are listed once in a round of worker slots (`AiEconomy.cs`); and a unit's sight is marked explored again
+  only when it moved, its sight changed or cells were taken back since (`Vision.cs`: every `IsLocationVisibleToPlayer` marked every unit's circle, 67% of `HumanX06`, which went from 69 s to 16 s).
+  The 4-player benchmark (A10, `mirror bench "(4)Adrenaline" --seconds 1800 --melee true`) went from 16.0 to 17.1 s to 11.2 s. Tried and taken back: the explored cells as one number each, whose
+  hash collides and made `HumanX06` 195 s.
+
+- **D445 (what is left, not done here):** the nearest enemy is looked for among every unit by every unit (`Nearest` in `Combat.cs`, 41% of `Orc01`'s 877 units), and the path search keeps its cells in
+  dictionaries (`FindPath`, 35% of `ExtremeCandyWar2004`, the longest shipped map at 94 s). Both want a grid, which is more than a small change in another lane's file.
+
 ## Engine timing (lane engine-timing, 2026-11-19)
 
 Probes `abilities-cast-timing`, `units-attack-timing` and `heroes-mana-regeneration`, each run in the game (3.0.1.24371); what they gave is in `docs/facts.md`, "Engine timing". The numbers D450 to D469

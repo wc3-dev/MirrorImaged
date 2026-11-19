@@ -283,7 +283,7 @@ public sealed class GameObject
     string? Read(int id, int level, Field? where) =>
         Changes.GetValueOrDefault((id, level))
         ?? _standard?.Values.GetValueOrDefault((id, level))
-        ?? (where is null ? null : _standard?.Cell(where, level))
+        ?? (where is null ? null : _standard?.Cell(id, where, level))
         ?? (where?.PerLevel == PerLevel.Column && level > 4 ? Read(id, level - 1, where) : null);
 
     static int? LevelField(ObjectKind kind) => kind switch

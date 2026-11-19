@@ -60,6 +60,16 @@ sealed class StandardObject(Dictionary<string, string> rows)
     /// <summary>Its place among its kind's rows in the first table (unitdata.slk for units), or among a test's objects.</summary>
     public int Row { get; init; }
 
+    // The fields read so far: the rows never change once the object is made, and a run reads the same few fields every step
+    readonly System.Collections.Concurrent.ConcurrentDictionary<(int Field, int Level), string?> _cells = new();
+
+    /// <summary><see cref="Cell(Field, int)"/> for the field of the id, kept after the first read.</summary>
+    public string? Cell(int id, Field field, int level)
+    {
+        if (!_cells.TryGetValue((id, level), out var cell)) _cells[(id, level)] = cell = Cell(field, level);
+        return cell;
+    }
+
     /// <summary>
     /// The field's text at a level in the rows; null for none (blank, or the tables' <c>-</c> and <c>_</c>). A key with
     /// a graphics mode is read as the game reads it in Definitive Edition graphics: <c>:de</c>, else <c>:hd</c>, else the

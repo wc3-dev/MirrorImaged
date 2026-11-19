@@ -135,9 +135,8 @@ static int Run(string map, Dictionary<string, string> flags, double seconds, int
 
 static int PlayRecording(string recordingFile, Dictionary<string, string> flags, double hashEvery)
 {
-    var recording = recordingFile.EndsWith(".w3g", StringComparison.OrdinalIgnoreCase)
-        ? Replay.Read(recordingFile).ToRecording(flags.GetValueOrDefault("--map") ?? throw new ArgumentException("A replay needs the map it was played on: --map <map>"))
-        : Recording.FromJson(File.ReadAllText(recordingFile));
+    if (recordingFile.EndsWith(".w3g", StringComparison.OrdinalIgnoreCase)) return PlayReplay(recordingFile, flags, hashEvery);
+    var recording = Recording.FromJson(File.ReadAllText(recordingFile));
     var steps = recording.Steps;
     recording.Steps = 0;
     using var simulation = Simulation.Load(flags.GetValueOrDefault("--map") ?? recording.Map, new SimulationOptions { Seed = recording.Seed, Users = recording.Users, Computers = recording.Computers });
@@ -171,6 +170,36 @@ static int PlayRecording(string recordingFile, Dictionary<string, string> flags,
         });
     }
     catch (LuaException) when (simulation.Stopped is not null) { }
+    return Finish(simulation);
+}
+
+static int PlayReplay(string file, Dictionary<string, string> flags, double hashEvery)
+{
+    var replay = Replay.Read(file);
+    var map = flags.GetValueOrDefault("--map") ?? throw new ArgumentException($"A replay needs the map it was played on ({replay.Map}): --map <map>");
+    Ui.Line($"Build {replay.Build}, {TimeSpan.FromMilliseconds(replay.DurationMillis):h\\:mm\\:ss}, on {replay.Map}: {string.Join(", ", replay.Players.Where(p => p.Id > 0).Select(p => $"{p.Name} (slot {p.Slot})"))}");
+    using var simulation = Simulation.Load(map, replay);
+    var run = simulation.Play(replay);
+    try
+    {
+        Ui.Work($"Replaying {file}", () =>
+        {
+            var period = hashEvery > 0 ? (long)(hashEvery * StepsPerSecond) : run.Steps;
+            for (var at = period; at < run.Steps; at += period)
+            {
+                run.To(at);
+                Ui.Line($"hash {(double)at / StepsPerSecond:0.###} {simulation.StateHash()}");
+            }
+            run.To(run.Steps);
+            Ui.Line($"hash {(double)simulation.Step / StepsPerSecond:0.###} {simulation.StateHash()}");
+        });
+    }
+    catch (LuaException) when (simulation.Stopped is not null) { }
+    // What of the replay reached a unit: the run is as close to the game as MirrorImaged is, and no closer
+    Ui.Line($"Orders: {run.Orders}, taken by a unit {run.Taken}, with no unit of the selection in this run {run.Unowned}, refused {run.Refused.Values.Sum()}");
+    Ui.Line($"Units the orders named: {run.Named}, found in this run {run.Found}");
+    if (run.NotPlayed.Count > 0) Ui.Line($"Read and not played: {string.Join(", ", run.NotPlayed.Select(action => $"0x{action.Key:X2} x {action.Value}"))}");
+    if (replay.Actions.Count(action => action.Kind == "other") is var unknown and > 0) Ui.Line($"[yellow]Actions not read: {unknown}[/]");
     return Finish(simulation);
 }
 

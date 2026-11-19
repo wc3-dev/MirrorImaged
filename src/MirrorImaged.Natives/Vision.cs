@@ -4,6 +4,8 @@ public partial class unit
 {
     internal readonly HashSet<player> SharesWith = [];
     internal float ExploredX = float.MinValue, ExploredY = float.MinValue;
+    // Where the unit stood and how far it saw when its sight was last marked explored for a player, and how many cells had been taken back by then
+    internal readonly Dictionary<player, (float X, float Y, float Sight, long Unexplored)> Marked = [];
 }
 
 public partial class fogmodifier
@@ -28,7 +30,7 @@ public sealed partial class GameNatives
     readonly Dictionary<player, HashSet<(int, int)>> _explored = [];
     readonly List<fogmodifier> _modifiers = [];
     readonly Dictionary<player, HashSet<unit>> _selected = [];
-    long _modifierOrder;
+    long _modifierOrder, _unexplored;
 
     HashSet<(int, int)> Explored(player p) => _explored.TryGetValue(p, out var set) ? set : _explored[p] = [];
 
@@ -57,6 +59,11 @@ public sealed partial class GameNatives
     void Explore(player p, unit u)
     {
         if (!SeenThrough(u, p) || SightOf(u) is not (var sight and > 0)) return;
+        // Marking the same circle again changes nothing unless cells were taken back since: a map that asks what a player sees thousands of
+        // times a second would otherwise mark every unit's circle each time
+        var mark = (u.X, u.Y, sight, _unexplored);
+        if (u.Marked.TryGetValue(p, out var last) && last == mark) return;
+        u.Marked[p] = mark;
         var seen = Explored(p);
         for (var cy = (int)MathF.Floor((u.Y - sight) / FogCell); cy <= (int)MathF.Floor((u.Y + sight) / FogCell); cy++)
             for (var cx = (int)MathF.Floor((u.X - sight) / FogCell); cx <= (int)MathF.Floor((u.X + sight) / FogCell); cx++)
@@ -133,8 +140,8 @@ public sealed partial class GameNatives
             for (var cx = (int)MathF.Floor(x0 / FogCell); cx <= (int)MathF.Floor(x1 / FogCell); cx++)
                 if (covers((cx + 0.5f) * FogCell, (cy + 0.5f) * FogCell))
                 {
-                    if (state.Id == FogMasked) seen.Remove((cx, cy));
-                    else seen.Add((cx, cy));
+                    if (state.Id != FogMasked) seen.Add((cx, cy));
+                    else if (seen.Remove((cx, cy))) _unexplored++;
                 }
     }
 
