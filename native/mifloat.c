@@ -67,11 +67,11 @@ static int64_t reciprocal_at (int64_t i) {
 }
 
 /* The game's straight line between two table values lo and hi, at step f of the `parts` + 1 steps between them: the
-   rise times f is divided into `parts` (one fewer than the steps, so the last step is hi), and a fall is cut one
-   short of a whole quotient (measured: sines falling to pi, every reciprocal). */
+   rise or fall times f is divided into `parts` (one fewer than the steps) and cut toward lo, a whole quotient too,
+   which comes one short: the last step is one from hi (measured: every reciprocal, the sines by each zero). */
 static int64_t between (int64_t lo, int64_t hi, int64_t f, int64_t parts) {
   int64_t n = (hi - lo) * f;
-  return lo + (n < 0 ? n + 1 : n) / parts;
+  return lo + (n < 0 ? n + 1 : n > 0 ? n - 1 : 0) / parts;
 }
 
 static uint64_t reciprocal (uint32_t m) {
@@ -133,17 +133,16 @@ static uint64_t isqrt (uint64_t n) {
   return r;
 }
 
-/* One more than the integer root of the mantissa m times 2^8 (so 46341 to 65536), made a number from 1 below 2 by
-   1 + 46341 (r - 46341) / 2^31, cut toward zero; for an odd exponent, times the float nearest sqrt(2). A zero,
-   subnormal or negative number gives 0. Close: 6,156 of the 6,162 roots measured; the game's integer root is a step
-   higher for some m * 2^8 just below a square (49 and 68 below, not 25 or 145), by a rule not found. */
+/* One more than the integer root of the mantissa in 32 bits, its 23 bits after the first followed by their top 8
+   again (so 46341 to 65536), made a number from 1 below 2 by 1 + 46341 (r - 46341) / 2^31, cut toward zero; for an
+   odd exponent, times the float nearest sqrt(2). A zero, subnormal or negative number gives 0. */
 float mi_sqrtf (float x) {
   uint32_t a = bits(x);
   int32_t e = (int32_t)((a >> 23) & 0xff) - 127;
   uint64_t r;
   float s;
   if ((a >> 31) || e == -127) return 0.0f;
-  r = isqrt((uint64_t)((a & 0x7fffff) | 0x800000) << 8) + 1;
+  r = isqrt((uint64_t)((a & 0x7fffff) | 0x800000) << 8 | (a & 0x7fffff) >> 15) + 1;
   s = pack(0, (e - (e & 1)) / 2 + 127, (uint32_t)((46341 * r - 4633) >> 8));
   return (e & 1) ? mi_mul(s, flt(0x3fb504f3)) : s;
 }
