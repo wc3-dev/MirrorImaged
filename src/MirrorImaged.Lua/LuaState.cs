@@ -151,6 +151,22 @@ public sealed unsafe class LuaState : IDisposable
     /// </summary>
     public void Yield() => _yield = true;
 
+    /// <summary>Runs after each C# function Lua calls, while that call's Lua stack can still be read (<see cref="Traceback"/>).</summary>
+    internal Action? Called { get; set; }
+
+    /// <summary>
+    /// The Lua stack of the thread calling the C# function running now, as <c>debug.traceback</c> writes it, the function called first;
+    /// empty outside such a call.
+    /// </summary>
+    internal string Traceback()
+    {
+        if (_calling == 0) return "";
+        luaL_traceback(_calling, _calling, null, 0);
+        var text = ReadString(_calling, -1);
+        lua_settop(_calling, -2);
+        return text;
+    }
+
     internal void Release(int reference)
     {
         if (_handle.IsClosed) return;
@@ -249,7 +265,11 @@ public sealed unsafe class LuaState : IDisposable
             state._yield = false;
             var outer = state._calling;
             state._calling = l;
-            try { values = function(args); }
+            try
+            {
+                values = function(args);
+                state.Called?.Invoke();
+            }
             finally
             {
                 state._calling = outer;

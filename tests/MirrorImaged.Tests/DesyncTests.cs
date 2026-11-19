@@ -37,7 +37,45 @@ public sealed class DesyncTests : IDisposable
 
         Assert.NotNull(report);
         Assert.Equal("player 0", report.Part);
-        Assert.InRange(report.Step, 3 * 1024, 4 * 1024 + 8);
+        Assert.Equal(3 * 1024, report.Step);
+        Assert.Equal(["0", "999"], report.Values);
+    }
+
+    // The step is the one the games differ in, however far apart they are compared
+    [InstallTheory]
+    [InlineData(2.5, 1)]
+    [InlineData(2.5, 0.3)]
+    [InlineData(0.001, 1)]
+    public void The_step_is_exact(double at, double every)
+    {
+        var path = Map($$"""
+            TimerStart(CreateTimer(), {{at.ToString(System.Globalization.CultureInfo.InvariantCulture)}}, false, function()
+                if GetLocalPlayer() == Player(1) then SetPlayerState(Player(0), PLAYER_STATE_RESOURCE_GOLD, 999) end
+            end)
+            """);
+
+        var report = Desync.Check(path, TimeSpan.FromSeconds(5), every: TimeSpan.FromSeconds(every));
+
+        Assert.Equal((long)Math.Round(at * 1024), report!.Step);
+    }
+
+    [InstallFact]
+    public void The_command_prints_the_step_the_value_and_the_stack()
+    {
+        var path = Map("""
+            TimerStart(CreateTimer(), 3, false, function()
+                if GetLocalPlayer() == Player(1) then SetPlayerState(Player(0), PLAYER_STATE_RESOURCE_GOLD, 999) end
+            end)
+            """);
+
+        var (exit, output, _) = CoverageTests.Mirror("desync", path, "--seconds", "5");
+
+        Assert.Equal(1, exit);
+        Assert.Contains("Desync at step 3072 (3 s): player 0 differs", output);
+        Assert.Contains("player 0's game: PLAYER_STATE_RESOURCE_GOLD is 0", output);
+        Assert.Contains("player 1's game: PLAYER_STATE_RESOURCE_GOLD is 999", output);
+        Assert.Contains("[C]: in function 'SetPlayerState'", output);
+        Assert.Contains("war3map.lua:4:", output);
     }
 
     [InstallFact]

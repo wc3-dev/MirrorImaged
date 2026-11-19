@@ -336,12 +336,15 @@ public sealed partial class GameNatives
         if (whichUnit is not null) _follow = (whichUnit, x, y, _game.Step);
     }
 
+    // How far aside the camera of another machine of a desync check reads, each way: its player has moved it (Machine)
+    float Aside => Machine * 64f;
+
     /// <summary>The target's x as the step before left it.</summary>
     [Native(Level.Close)]
-    public float GetCameraTargetPositionX() => TargetX;
+    public float GetCameraTargetPositionX() => TargetX + Aside;
 
     [Native(Level.Close)]
-    public float GetCameraTargetPositionY() => TargetY;
+    public float GetCameraTargetPositionY() => TargetY + Aside;
 
     /// <summary>
     /// The ground's height there and the z offset, or a pan's z. Close: measured on flat ground; on a hill, inferred.
@@ -354,21 +357,21 @@ public sealed partial class GameNatives
     /// them. Close: the game's sums are a float step or so off.
     /// </summary>
     [Native(Level.Close)]
-    public float GetCameraEyePositionX() => Eye().X;
+    public float GetCameraEyePositionX() => Eye().X + Aside;
 
     [Native(Level.Close)]
-    public float GetCameraEyePositionY() => Eye().Y;
+    public float GetCameraEyePositionY() => Eye().Y + Aside;
 
     [Native(Level.Close)]
     public float GetCameraEyePositionZ() => Eye().Z;
 
     /// <summary>A new location each call at the target's x and y.</summary>
     [Native(Level.Close)]
-    public location? GetCameraTargetPositionLoc() => Location(TargetX, TargetY);
+    public location? GetCameraTargetPositionLoc() => Location(TargetX + Aside, TargetY + Aside);
 
     /// <summary>A new location each call at the eye's x and y.</summary>
     [Native(Level.Close)]
-    public location? GetCameraEyePositionLoc() => Location(Eye().X, Eye().Y);
+    public location? GetCameraEyePositionLoc() => Location(Eye().X + Aside, Eye().Y + Aside);
 
     [Native(Level.Exact, Fact = Cameras)]
     public camerasetup? CreateCameraSetup() => Make(new camerasetup());

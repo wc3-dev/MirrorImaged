@@ -2699,6 +2699,50 @@ are this lane's; D458 to D469 are not used.
   after the effect and the last 0.16 to 0.18 s later, which of them is the one without a unit changing from run to run. Here the images' events come at DataD and the one without a unit 0.18 s later,
   `GetSummoningUnit` the caster in each; the order and the 0.18 are this lane's choice, so the times are Close. This closes the difference D415 left.
 
+- **D510 (folder maps):** a folder named as a map (`x.w3x`, `x.w3m`) that holds the map's files, the form Moonwell builds and the game loads, is read wherever an archive is: `MapArchive.Read` takes
+  it, and its files go by the names they have in an archive, in any case and with either slash (`scripts\war3map.j` finds `Scripts/War3Map.j`). The folder's files are listed once, as the map is
+  read: a file put there later isn't found by `MapArchive.File`. Its `_Locales` folders are read no more than an archive's are.
+
+- **D511 (a map named from the install is read in the one place):** `War3.w3mod:Maps/...` is read from the install's storage in `MapArchive.Read`, the one place a map is opened, so the C# API, the
+  Lua tests and every command take it. The command line's own copy to a temporary file is gone, and `mirror check` reads its arguments as the other commands do. A recording or a snapshot of such a
+  map names it as the install does, where it named the temporary file. A path with nothing at it says "There is no map at ..." in place of War3Net's "Failed to open the MpqArchive". This lane's
+  choice: the map's bytes are kept while the run lives, and the storage is opened anew at each read.
+
+- **D512 (help):** `--help` or `-h` anywhere on the line, or `mirror help <command>`, prints that command's line of the usage and what it does, on standard output, and exits 0; with no command,
+  every command. Asked of a command there isn't, the usage is an error (exit 2). It is printed from the table the usage is printed from, so a command can't be in one and not the other. This lane's
+  choice: Spectre.Console, which the command line uses, has no help of its own, and Spectre.Console.Cli, which has, is a second package that reads the arguments itself, so every command would be
+  written again while three other lanes change `Program.cs`.
+
+- **D513 (stepping back on the command line):** this lane reads the plan's section 7 as naming no command for stepping back: the rows that are commands are written `mirror ...`, and "Stepping
+  back" is a row beside "Snapshots" and "C# API", which is `Simulation.StepBack`. But the acceptance line A11 is checked by the CLI tests, so `mirror snapshot` takes `--back n`: it runs to `--at`,
+  steps back n seconds and saves the world there. The test saves the run forward to the same step too and finds the same hash, and `mirror compare` the same world. No command of its own.
+
+- **D514 (the corpus of test maps):** `TestMapCorpusTests` runs every map in this computer's `Documents\Warcraft III\Maps`, map files and folder maps, but for its `amai` and `Download` folders
+  (others' maps), for 60 simulated seconds, and fails for one that stops or logs a script error. `Needs=Game`; skipped where there is no install or no such folder. This lane's choices: the maps are
+  found, not named, so a new test map is checked with nothing changed, and none is in the repository; "runs to its end" is a minute, as the audit's run by hand was; nothing is compared with the
+  game's output, as none is recorded for these maps. On 2026-11-19 all 24 ran: 17 map files and 7 folder maps.
+## The desync report (lane desync-report, 2026-11-19)
+
+- **D508 (the desync report: the step, the value and the Lua stack):** `Desync.Check` still compares the games once a second (D368), since a hash each step
+  of a clean run costs more than it finds. When they differ it runs the games again to the last compare that agreed and on a step at a time, so `Step` is
+  the step they first differ in, 0 for a difference `main` made. The state is also read a value at a time (`GameNatives.Fields`: the part, what it is, the
+  value as text), the snapshot's part hashes are made from those, and the report gives the first that differs with its value in each player's game. A third
+  run watches that one value after each C# function the script calls through that step (`LuaState.Called`), and keeps the Lua stack (`luaL_traceback`) of
+  each call that changed it; the first change that isn't the same in every game is the call reported, for each game that made one. So a report costs three
+  runs of the map and a clean check one. A map whose runs differ from run to run may not differ again: the report is then of the games as compared, with
+  no stacks. `DesyncReport` gained `What`, `Values` and `Stacks`, in the order of `Players`; this lane's choice of names.
+- **D509 (what the check compares, and each game its own machine):** the state hash also holds the triggers that aren't destroyed and whether each is on,
+  the sync events' players and prefixes, and the frames that aren't destroyed, since the facts name a trigger disabled, a sync event registered and a frame
+  destroyed for one player only as desyncs; a run with none of them hashes as before. A frame's text, size and visibility stay out: showing a frame to
+  one player is the usual, safe use. For Moonwell's MW0002 (a value only one machine has, used outside a local block) each game of a check is a machine
+  of its own (`SimulationOptions.Machine`, internal): the camera's target and eye read 64 further along x and y for each next player, as if that player had
+  moved it, and the window is 16 by 9 larger. A read alone changes nothing; a change of the game made from one differs between the games and is found. This
+  is a model, not a measurement, and only the check uses it: every other run is machine 0, as the probes measured. The other machine-local reads
+  (names by language, keys, sounds, a frame's getters, the camera's fields) read the same in every game and are listed in the guide as not covered, with
+  the game's own bugs. This lane's choice.
+
+## Missiles and the viewer's browser tests (lane viewer-missiles, 2026-11-19)
+
 - **D620 (a missile is a thing in flight that follows its target, measured):** a weapon of type missile, mbounce, mline or msplash, and Storm Bolt, makes a missile at the damage point (the effect, for
   the spell): it starts `launchY` ahead of the unit toward the target, flies at its speed, and every 1/32 s turns to where the target is then. It lands in the step it reaches the target, the target
   counted as walking on as it did since the last look, so it closes on a target walking away at the difference of the speeds, as the game's archer did (probe units-missile-homing: 2.28 s at 300

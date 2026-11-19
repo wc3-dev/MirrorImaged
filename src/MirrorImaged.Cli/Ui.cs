@@ -14,7 +14,7 @@ static class Ui
         ("run <map> [--seconds <n>] [--seed <n>] [--hash <n>] [--record <file>] [--input <file>]", "Runs a Lua or JASS map for n simulated seconds (60) with a seed (0), then prints its log; with --hash, the state hash every n seconds; with --input, the inputs of a recording (or a list of them) at their steps; with --record, saves the run as a recording"),
         ("replay <recording or .w3g> [--map <map>] [--hash <n>]", "Runs a recording again, exactly, and prints the state hash at its end (or every n seconds); a game replay (.w3g) needs its --map"),
         ("desync <map> [--seconds <n>] [--seed <n>]", "Runs the map for each person's slot as that player's own game and reports where the runs first differ"),
-        ("snapshot <map or recording> [--at <n>] [--seed <n>] [--out <file>]", "Saves the world after n simulated seconds with what it takes to run to it again"),
+        ("snapshot <map or recording> [--at <n>] [--back <n>] [--seed <n>] [--out <file>]", "Saves the world after n simulated seconds with what it takes to run to it again; with --back, runs to --at, steps back n seconds and saves the world there"),
         ("view <map or recording> [--seconds <n>] [--every <n>] [--out <file>]", "Runs it and saves a page that opens in a browser: the map from above, the units, a timeline to scrub and the log"),
         ("compare <snapshot> [--map <map>]", "Runs the snapshot's run again to its step and lists what differs"),
         ("test <file or folder> [--junit <file>]", "Runs the Lua tests (*.test.lua) with the Lua test API, prints each result and writes JUnit XML to the file"),
@@ -22,7 +22,11 @@ static class Ui
         ("fuzz <map> [--seconds <n>] [--seed <n>] [--orders <n>]", "Gives every player's units random legal orders each second and reports script errors"),
     ];
 
-    const string Seating = "Any command that takes a map also takes --users <slots> and --computers <slots> (comma separated), or --melee true to seat the first user slot with a person and the others with computers, and a map named War3.w3mod:Maps/... is read from the installed game.";
+    const string Seating = "A map is a map file (.w3x or .w3m), a folder map (a folder of that name holding the map's files), or one named War3.w3mod:Maps/..., which is read from the installed game. Any command that takes a map also takes --users <slots> and --computers <slots> (comma separated), or --melee true to seat the first user slot with a person and the others with computers.";
+
+    const string OneCommand = "mirror <command> --help shows one command.";
+
+    static string Name((string Command, string Does) command) => command.Command.Split(' ')[0];
 
     // The fixed text may hold Spectre markup; what is interpolated is never read as markup
     public static void Line(FormattableString line)
@@ -72,24 +76,40 @@ static class Ui
         AnsiConsole.Write(table);
     }
 
+    // Wrong arguments: every command, as an error
     public static int Usage()
     {
-        if (Errors is null)
+        Print(Commands, Errors, Console.Error);
+        return 2;
+    }
+
+    // Help that was asked for: the command named, or every command when none is; a command there isn't is wrong arguments
+    public static int Help(string? command)
+    {
+        var asked = command is null ? Commands : [.. Commands.Where(known => Name(known) == command)];
+        if (asked.Length == 0) return Usage();
+        Print(asked, Styled ? AnsiConsole.Console : null, Console.Out);
+        return 0;
+    }
+
+    static void Print((string Command, string Does)[] commands, IAnsiConsole? console, TextWriter plain)
+    {
+        var notes = string.Join("\n\n", new[] { commands.Any(command => command.Command.Contains("<map")) ? Seating : null, commands.Length > 1 ? OneCommand : null }.OfType<string>());
+        if (console is null)
         {
-            Console.Error.Write("usage:\n");
-            foreach (var (command, does) in Commands) Console.Error.Write($"  mirror {command}\n      {does}\n");
-            Console.Error.Write($"\n{Seating}\n");
-            return 2;
+            plain.Write("usage:\n");
+            foreach (var (command, does) in commands) plain.Write($"  mirror {command}\n      {does}\n");
+            if (notes != "") plain.Write($"\n{notes}\n");
+            return;
         }
-        Errors.Write(new Rule("[bold]mirror[/]").LeftJustified());
-        foreach (var (command, does) in Commands)
+        console.Write(new Rule("[bold]mirror[/]").LeftJustified());
+        foreach (var (command, does) in commands)
         {
             var words = command.Split(' ', 2);
-            Errors.MarkupLineInterpolated($"[bold aqua]mirror {words[0]}[/] [grey]{words.ElementAtOrDefault(1)}[/]");
-            Errors.Write(new Padder(new Text(does), new Padding(4, 0, 0, 1)));
+            console.MarkupLineInterpolated($"[bold aqua]mirror {words[0]}[/] [grey]{words.ElementAtOrDefault(1)}[/]");
+            console.Write(new Padder(new Text(does), new Padding(4, 0, 0, 1)));
         }
-        Errors.Write(new Text(Seating + "\n", new Style(Color.Grey)));
-        return 2;
+        if (notes != "") console.Write(new Text(notes + "\n", new Style(Color.Grey)));
     }
 
     static Color Colour(Level level) => level switch
