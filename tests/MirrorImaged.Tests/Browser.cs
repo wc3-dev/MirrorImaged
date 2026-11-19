@@ -202,6 +202,17 @@ public sealed class Browser : IAsyncLifetime
     }
 }
 
+/// <summary>
+/// The tests that start a browser, which run when no other test of the assembly runs. A browser's first start on a fresh machine reads its files
+/// from the disk: on the Linux runner that took under a second alone and up to 22 s beside the rest of the suite, against the 30 s
+/// <see cref="Browser"/> waits for it (decisions D690).
+/// </summary>
+[CollectionDefinition(Name, DisableParallelization = true)]
+public sealed class BrowserTests
+{
+    public const string Name = "Browser";
+}
+
 /// <summary>A test that needs a browser; skipped on a computer that has none.</summary>
 public sealed class BrowserFactAttribute : FactAttribute
 {
