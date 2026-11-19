@@ -2740,3 +2740,27 @@ are this lane's; D458 to D469 are not used.
   is a model, not a measurement, and only the check uses it: every other run is machine 0, as the probes measured. The other machine-local reads
   (names by language, keys, sounds, a frame's getters, the camera's fields) read the same in every game and are listed in the guide as not covered, with
   the game's own bugs. This lane's choice.
+
+## Missiles and the viewer's browser tests (lane viewer-missiles, 2026-11-19)
+
+- **D620 (a missile is a thing in flight that follows its target, measured):** a weapon of type missile, mbounce, mline or msplash, and Storm Bolt, makes a missile at the damage point (the effect, for
+  the spell): it starts `launchY` ahead of the unit toward the target, flies at its speed, and every 1/32 s turns to where the target is then. It lands in the step it reaches the target, the target
+  counted as walking on as it did since the last look, so it closes on a target walking away at the difference of the speeds, as the game's archer did (probe units-missile-homing: 2.28 s at 300
+  against 150). The hit is worked out as it lands, as before. A target moved faster than the missile flies was put somewhere and counts as standing for that look; a dead or removed target's last
+  place is flown to, and the hit does nothing, as before. This ends D453's shortcut (a walking target hit as if it stood); a standing target's times are the same to the step. Only type missile was
+  measured: that mbounce, mline and msplash follow too is this lane's reading. This lane was given D520 to D529, which the sound decisions already hold here, so its decisions start at D620: the
+  lane's own call, for the coordinator to renumber if it wants.
+- **D621 (a shell lands where its target stood, measured):** a weapon of type artillery, aline or alsplash makes a missile that flies to the place the target had at the damage point and doesn't
+  turn. When it lands the target takes the hit's damage whole within the weapon's full area of that place (`ua1f`), times the medium factor (`uhd1`) within the medium area (`ua1h`), times the
+  small factor (`uqd1`) within the small area (`ua1q`), and nothing further off: the game's mortar team (25, 150 and 250; 0.40 and 0.10) gave a footman 221 away 4.5 of 44.6. A shortcut, named
+  in the code: the target alone is hurt, not the others near where the shell lands. Only type artillery was measured.
+- **D622 (missiles are read, recorded and drawn):** `Simulation.Missiles()` gives the missiles in flight with their places at this step. A trace holds each flight as when and where it left and
+  landed and its player (`Trace.Missiles`), kept as each lands once `Viewer.Record` asked, so a flight shorter than the sampling is there too; a missile still flying at the end is there to
+  where it was. The page draws a missile on the straight line between, as a dot with a tail in its player's colour, so one that turned is drawn a little off its way. The state hash doesn't
+  count missiles (this lane's choice: what a missile does shows in life within its flight), so no hash changed. The page's `seek` goes to the time itself, between frames, and regions are drawn
+  stronger (1.5 px at 0.9 with a tint) after being looked at on Human01's page, where its 44 show. This replaces D373's "no missiles are drawn".
+- **D623 (the browser tests):** the page is driven over the DevTools protocol with .NET's own WebSocket, with no package added: the tests open the page of a small fight, scrub, read what was drawn
+  from the canvas's pixels at the places the page reports (`mirrorViewer.drawn`, `mirrorViewer.place`), and click with the protocol's mouse. The browser is the one `MIRROR_BROWSER` names, or an Edge
+  or Chrome the tests start with `--remote-debugging-port=0`, whose port they read from the profile's `DevToolsActivePort`: Edge's first process ends at once on Windows and leaves the browser
+  running, which is why the old test's `--dump-dom` printed nothing there. On a computer with no browser the tests are skipped (`BrowserFact`, decided before the run, as xunit 2.9 cannot skip
+  from inside a test); a browser that is there and doesn't answer fails them.

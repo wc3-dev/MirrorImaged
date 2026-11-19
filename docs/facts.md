@@ -1857,6 +1857,37 @@ its own 450 apart. Times are to 0.01 s.
 - A Priest of the caster's player healed a hero that a neighbour's Flame Strike had burned (its Heal casts by
   itself), so Flame Strike seems to burn its caster's own units; inferred, the probe did not look.
 - Not measured: what decides the first swing's delay; the 0.03 s of the Priest's and the Sorceress's missiles; a
-  missile to or from a flier or over a cliff, and one whose target walks; whether a buff's attack speed adds to
+  missile to or from a flier or over a cliff (one whose target walks is below); whether a buff's attack speed adds to
   agility's before the cap of five; the turn's time by its angle; why the mana falls 0.013% short; life that comes
   back; the types of Storm Bolt's third hit.
+
+### A missile at a target that walks (probe `units-missile-homing`)
+
+3.0.1.24371, 11-19, single player, standard data, four runs with the same lines but one time (0.75 or 0.76 s). Each
+attacker's damage is 50 without dice. Its foe is a footman of 50000 life without its attack (armour 2, so 44.6 a hit)
+that starts to walk at the attacker's first attacked event, already facing its way. "The launch" is the attacker's
+damage point after that event. Times are to 0.01 s, places from the attacker's.
+
+- **A missile follows its target.** An archer (missile speed 900, `launchY` 62) hit a footman walking away at 150
+  0.46 s after the launch, the footman 403 away at the launch and 472 at the hit. With the missile's speed set to 300:
+  2.28 s, 403 and 745. A footman walking closer at 150, 399 away at the launch: 0.75 s, 287 at the hit. So the time is
+  the way at the launch less the 62, over the difference of the speeds (341 / 750 and 341 / 150), or their sum
+  (337 / 450). A standing foe at 400, the control: 0.38 s.
+- **It turns after the target all the way.** A footman walking at 150 across the archer's line, at (300, 103) at the
+  launch, missile speed 300: 1.31 s, the footman at (301, 300). A missile that turns to where its target is at every
+  moment takes 1.32 s from there; one that flew straight to where they meet 1.18, and one to where the target stood
+  0.85. With the footman at 270 and the missile at 450, from (303, 186): 1.38 s, where turning all the way gives 1.34;
+  the 0.04 was not explained.
+- **`UNIT_WEAPON_BF_ATTACK_PROJECTILE_HOMING_ENABLED` reads false** on an archer and on a mortar team, and still false
+  after `BlzSetUnitWeaponBooleanField` set it true on an archer, whose missile followed either way (2.28 s both).
+- **An artillery shell doesn't follow.** A mortar team (missile speed 900; `UNIT_WEAPON_RF_ATTACK_AREA_OF_EFFECT_FULL_DAMAGE`,
+  `_MEDIUM_DAMAGE` and `_SMALL_DAMAGE` 25, 150 and 250, `UNIT_WEAPON_RF_ATTACK_DAMAGE_FACTOR_MEDIUM` and `_SMALL` 0.40 and
+  0.10) hit a standing footman 600 away 0.64 s after the launch for 44.6. A footman walking away at 270, 762 away at the
+  launch, was hit 0.82 s later, 983 away, for 4.5. One walking across, at (613, 262) at the launch, 0.73 s later at
+  (624, 460), for 4.5. So the shell flies to where the target stood at the launch (738 / 900 = 0.82, with the 24 ahead
+  that the standing shot gives), and the target, 221 and 198 from there as it landed, took the small factor's tenth.
+- **Storm Bolt follows too.** With `ABILITY_IF_MISSILE_SPEED` set to 300, at a footman 300 away that walks away at 150
+  from the effect event: both hits 1.80 s after the effect, the footman 568 away. A chase at 300 from the caster's
+  place takes 2.00 s; why it was 0.20 s less was not found.
+- Not measured: a target that is moved, dies, hides or is removed while the missile flies; the other weapon types with
+  a missile (mbounce, mline, msplash, aline, alsplash); who else a shell hurts where it lands; a flier or a cliff.

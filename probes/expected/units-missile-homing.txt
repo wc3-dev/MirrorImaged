@@ -1,0 +1,13 @@
+# 3.0.1.24371, 11-19 (lane viewer-missiles): the probe's lines as the game gave them, the same in three runs but for {t}: the time to the hit on the foe that walks closer, 0.75 in two runs and 0.76 in one.
+a mortar team: areas 25, 150 and 250; factors 0.40 and 0.10
+an archer, the foe standing at 400: missile speed 900, homing false; the foe (400, 0) at the launch and (400, 0) at the hit 0.38 s later; damage 44.6
+an archer, the foe walking away at 150: missile speed 900, homing false; the foe (403, 1) at the launch and (472, 2) at the hit 0.46 s later; damage 44.6; closed at 742 a second
+an archer of missile speed 300, the foe walking away at 150: missile speed 300, homing false; the foe (403, 6) at the launch and (745, 27) at the hit 2.28 s later; damage 44.6; closed at 150 a second
+an archer of missile speed 300 with homing set, the foe walking away at 150: missile speed 300, homing false; the foe (403, 2) at the launch and (745, 9) at the hit 2.28 s later; damage 44.6; closed at 150 a second
+an archer of missile speed 300, the foe walking closer at 150: missile speed 300, homing false; the foe (399, 2) at the launch and (287, -12) at the hit {t} s later; damage 44.6; closed at 447 a second
+an archer of missile speed 300, the foe walking across at 150: missile speed 300, homing false; the foe (300, 103) at the launch and (301, 300) at the hit 1.31 s later; damage 44.6
+an archer of missile speed 450, the foe walking across at 270: missile speed 450, homing false; the foe (303, 186) at the launch and (310, 560) at the hit 1.38 s later; damage 44.6
+a mortar team, the foe standing at 600: missile speed 900, homing false; the foe (600, 0) at the launch and (600, 0) at the hit 0.64 s later; damage 44.6
+a mortar team, the foe walking away at 270: missile speed 900, homing false; the foe (762, -3) at the launch and (983, -6) at the hit 0.82 s later; damage 4.5
+a mortar team, the foe walking across at 270: missile speed 900, homing false; the foe (613, 262) at the launch and (624, 460) at the hit 0.73 s later; damage 4.5
+Storm Bolt of missile speed 300, the foe walking away at 150 from 300: order t; hits 0 at 1.80, 100 at 1.80 after the effect; the foe 568 away at the first
