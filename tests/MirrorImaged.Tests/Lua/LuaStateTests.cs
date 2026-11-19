@@ -70,6 +70,21 @@ public sealed class LuaStateTests : IDisposable
         Assert.Equal([false, "war3map.lua:1: no"], _lua.Run("return pcall(function() boom() end)", "war3map.lua"));
     }
 
+    // What the desync check reads for the call that made two games differ
+    [Fact]
+    public void ACSharpFunctionReadsTheLuaStackOfItsCall()
+    {
+        var stacks = new List<string>();
+        _lua.Register("where", _ => []);
+        _lua.Called = () => stacks.Add(_lua.Traceback());
+        _lua.Run("local function inner()\n  where()\nend\ninner()", "war3map.lua");
+
+        var stack = Assert.Single(stacks);
+        Assert.StartsWith("stack traceback:\n\t[C]: in function 'where'\n\twar3map.lua:2: in ", stack);
+        Assert.Contains("\n\twar3map.lua:4: in main chunk", stack);
+        Assert.Equal("", _lua.Traceback());
+    }
+
     [Fact]
     public void PcallOfErrorGivesThePositionOfTheLevel() =>
         Assert.Equal(["", "war3map.lua:2: "], _lua.Run("""
