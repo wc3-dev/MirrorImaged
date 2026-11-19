@@ -1,0 +1,38 @@
+name: Rerun cancelled jobs
+
+# GitHub cancels a job that got no runner in 15 minutes ("The job was not acquired by Runner of type hosted even after
+# multiple attempts"), which the macOS jobs of CI often don't, and the run turns red though nothing was tested. This runs
+# such a run's bad jobs again, three attempts at most. It runs as the default branch's copy of this file, never as a
+# pull request's, and checks out no code.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  actions: write
+
+jobs:
+  rerun:
+    # A run a person cancels ends as cancelled and a green one as success: neither is touched
+    if: github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rerun the bad jobs if one of them never got a runner
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          RUN: ${{ github.event.workflow_run.id }}
+        run: |
+          # Without the attempt's number nothing counts the reruns, so nothing is rerun
+          attempt=$(gh api "repos/$REPOSITORY/actions/runs/$RUN" --jq '.run_attempt')
+          case "$attempt" in '' | *[!0-9]*) echo "Run '$RUN' gave no attempt number: '$attempt'"; exit 1 ;; esac
+          if [ "$attempt" -ge 3 ]; then echo "Attempt $attempt is the last"; exit 0; fi
+          starved=$(gh api --paginate "repos/$REPOSITORY/actions/runs/$RUN/attempts/$attempt/jobs?per_page=100" \
+            --jq '.jobs[] | select(.conclusion == "cancelled" and (.runner_id // 0) == 0) | .name')
+          if [ -z "$starved" ]; then echo "No job of attempt $attempt was cancelled for want of a runner"; exit 0; fi
+          echo "Cancelled without a runner in attempt $attempt:"
+          echo "$starved"
+          gh api --method POST "repos/$REPOSITORY/actions/runs/$RUN/rerun-failed-jobs"
+          echo "Asked for attempt $((attempt + 1))"
