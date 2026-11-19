@@ -6,39 +6,18 @@ using MirrorImaged.Natives;
 
 const double StepsPerSecond = 1024;
 
+// Asked for anywhere on the line, so no command takes --help for its map
+if (args is ["help", ..] || args.Contains("--help") || args.Contains("-h"))
+    return Ui.Help(args.FirstOrDefault(word => word is not ("help" or "--help" or "-h")));
+
 if (args is ["coverage"])
 {
     Ui.Coverage(Coverage.Of(typeof(GameNatives)));
     return 0;
 }
 
-if (args is ["check", var mapPath])
-{
-    try
-    {
-        var script = MirrorImaged.Data.MapArchive.Read(mapPath).Script;
-        var levels = typeof(GameNatives).GetMethods()
-            .Select(method => (method.Name, Level: method.GetCustomAttributes(typeof(NativeAttribute), false).OfType<NativeAttribute>().FirstOrDefault()?.Level))
-            .Where(native => native.Level is not null).ToDictionary(native => native.Name, native => native.Level!.Value);
-        var text = script is null ? "" : System.Text.Encoding.UTF8.GetString(script);
-        var used = System.Text.RegularExpressions.Regex.Matches(text, @"[A-Za-z_][A-Za-z0-9_]*").Select(match => match.Value)
-            .Where(levels.ContainsKey).GroupBy(name => name).Select(group => (Name: group.Key, Count: group.Count(), Level: levels[group.Key]))
-            .OrderByDescending(native => native.Level).ThenBy(native => native.Name, StringComparer.Ordinal).ToList();
-        Ui.Natives(used);
-        var missing = used.Count(native => native.Level == Level.Missing);
-        if (missing > 0) Ui.Line($"{used.Count} natives called, [red]{missing} Missing[/]");
-        else Ui.Line($"{used.Count} natives called, [green]{missing} Missing[/]");
-        return missing > 0 ? 1 : 0;
-    }
-    catch (Exception e)
-    {
-        Ui.Error(e.Message);
-        return 1;
-    }
-}
-
 // The commands that take a map or a recording, then --name value pairs
-if (args is [var command and ("run" or "replay" or "desync" or "bench" or "fuzz" or "test" or "snapshot" or "compare" or "view"), var file, .. var rest])
+if (args is [var command and ("check" or "run" or "replay" or "desync" or "bench" or "fuzz" or "test" or "snapshot" or "compare" or "view"), var file, .. var rest])
 {
     if (Flags(rest) is not { } flags) return Ui.Usage();
     double Number(string name, double fallback) => flags.TryGetValue(name, out var v) && double.TryParse(v, NumberStyles.Float, CultureInfo.InvariantCulture, out var n) ? n : fallback;
@@ -50,12 +29,13 @@ if (args is [var command and ("run" or "replay" or "desync" or "bench" or "fuzz"
     {
         switch (command)
         {
+            case "check": return Check(file);
             case "run": return Run(file, flags, seconds, seed);
             case "replay": return PlayRecording(file, flags, Number("--hash", 0));
             case "desync": return DesyncCheck(file, seconds, seed);
             case "bench": return Bench(file, seconds, seed);
             case "test": return Tests(file, flags.GetValueOrDefault("--junit"));
-            case "snapshot": return Save(file, Number("--at", seconds), seed, flags.GetValueOrDefault("--out") ?? "snapshot.json");
+            case "snapshot": return Save(file, Number("--at", seconds), Number("--back", 0), seed, flags.GetValueOrDefault("--out") ?? "snapshot.json");
             case "view": return View(file, seconds, seed, Number("--every", 0.5), flags.GetValueOrDefault("--out"));
             case "compare": return Compare(file, flags.GetValueOrDefault("--map"));
             default: return Fuzz(file, seconds, seed, (int)Number("--orders", 1));
@@ -83,7 +63,7 @@ static Dictionary<string, string>? Flags(string[] options)
             "--seed" or "--orders" => int.TryParse(options[i + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out _),
             "--record" or "--input" or "--map" or "--junit" or "--out" or "--users" or "--computers" => true,
             "--melee" => options[i + 1] is "true" or "false",
-            "--at" or "--every" => double.TryParse(options[i + 1], NumberStyles.Float, CultureInfo.InvariantCulture, out var at) && at >= 0,
+            "--at" or "--back" or "--every" => double.TryParse(options[i + 1], NumberStyles.Float, CultureInfo.InvariantCulture, out var at) && at >= 0,
             _ => false,
         };
         if (!valid) return null;
@@ -103,6 +83,23 @@ static int Finish(Simulation simulation)
 }
 
 static bool IsError(string line) => line.Split(' ').ElementAtOrDefault(1) == "error:";
+
+static int Check(string map)
+{
+    var script = MirrorImaged.Data.MapArchive.Read(map).Script;
+    var levels = typeof(GameNatives).GetMethods()
+        .Select(method => (method.Name, Level: method.GetCustomAttributes(typeof(NativeAttribute), false).OfType<NativeAttribute>().FirstOrDefault()?.Level))
+        .Where(native => native.Level is not null).ToDictionary(native => native.Name, native => native.Level!.Value);
+    var text = script is null ? "" : System.Text.Encoding.UTF8.GetString(script);
+    var used = System.Text.RegularExpressions.Regex.Matches(text, @"[A-Za-z_][A-Za-z0-9_]*").Select(match => match.Value)
+        .Where(levels.ContainsKey).GroupBy(name => name).Select(group => (Name: group.Key, Count: group.Count(), Level: levels[group.Key]))
+        .OrderByDescending(native => native.Level).ThenBy(native => native.Name, StringComparer.Ordinal).ToList();
+    Ui.Natives(used);
+    var missing = used.Count(native => native.Level == Level.Missing);
+    if (missing > 0) Ui.Line($"{used.Count} natives called, [red]{missing} Missing[/]");
+    else Ui.Line($"{used.Count} natives called, [green]{missing} Missing[/]");
+    return missing > 0 ? 1 : 0;
+}
 
 static int Run(string map, Dictionary<string, string> flags, double seconds, int seed)
 {
@@ -316,7 +313,7 @@ static int Tests(string path, string? junit)
     return results.All(r => r.Passed) ? 0 : 1;
 }
 
-static int Save(string file, double at, int seed, string output)
+static int Save(string file, double at, double back, int seed, string output)
 {
     Simulation simulation;
     if (file.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
@@ -331,6 +328,9 @@ static int Save(string file, double at, int seed, string output)
         try { Ui.Work($"Running {file}", () => simulation.Advance(TimeSpan.FromSeconds(at))); }
         catch (LuaException) when (simulation.Stopped is not null) { }
     }
+    if (back > 0)
+        using (var ahead = simulation)
+            simulation = Ui.Work($"Stepping back {back.ToString("0.###", CultureInfo.InvariantCulture)} s", () => ahead.StepBack((long)(back * StepsPerSecond)));
     using (simulation)
     {
         var snapshot = simulation.Snapshot();
@@ -377,31 +377,20 @@ static int View(string file, double seconds, int seed, double every, string? out
 }
 
 // Who plays: the slots given by --users and --computers, or with --melee true the map's first user slot a person and every other slot of a user or
-// a computer a computer; and a map named War3.w3mod:... is taken from the installed game
+// a computer a computer
 static class Seats
 {
     public static int[]? Users, Computers;
     public static bool Melee;
 
-    public static string Resolve(string file)
+    public static Simulation Open(string path, int seed)
     {
-        if (!file.StartsWith("War3.w3mod:", StringComparison.OrdinalIgnoreCase)) return file;
-        using var storage = MirrorImaged.Data.CascStorage.Open(MirrorImaged.Data.GameInstall.Require());
-        var bytes = storage.Read(file) ?? throw new FileNotFoundException($"{file} is not in the installed game");
-        var path = Path.Combine(Path.GetTempPath(), "mirror-" + Path.GetFileName(file.Replace('/', Path.DirectorySeparatorChar)));
-        File.WriteAllBytes(path, bytes);
-        return path;
-    }
-
-    public static Simulation Open(string file, int seed)
-    {
-        var path = Resolve(file);
         var (users, computers) = (Users, Computers);
         if (Melee && users is null && computers is null)
         {
             var players = MirrorImaged.Data.MapArchive.Read(path).Files.Info?.Players.Where(p => p.Controller is War3Net.Build.Info.PlayerController.User or War3Net.Build.Info.PlayerController.Computer).Select(p => p.Id).ToList() ?? [];
             if (players.Count > 0) (users, computers) = ([players[0]], [.. players.Skip(1)]);
         }
-        return Ui.Work($"Loading {file}", () => Simulation.Load(path, new SimulationOptions { Seed = seed, Users = users, Computers = computers }));
+        return Ui.Work($"Loading {path}", () => Simulation.Load(path, new SimulationOptions { Seed = seed, Users = users, Computers = computers }));
     }
 }
