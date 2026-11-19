@@ -10,8 +10,8 @@
   <PropertyGroup>
     <Authors>mdlsvensson</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/wc3-dev/mirror-imaged</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/wc3-dev/mirror-imaged.git</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/wc3-dev/MirrorImaged</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/wc3-dev/MirrorImaged.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
