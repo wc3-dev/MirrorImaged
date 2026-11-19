@@ -51,7 +51,7 @@ public sealed class ViewerPage : IAsyncLifetime
         if (_browser.Missing is not null) return;
         var file = Path.Combine(_folder, "run.html");
         File.WriteAllText(file, Viewer.Page(Trace));
-        Page = await _browser.Open(file);
+        Page = await _browser.Open(file, "typeof window.mirrorViewer === 'object' && mirrorViewer.frames.length > 0");
     }
 
     public async Task DisposeAsync()
