@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Net.WebSockets;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -9,7 +10,8 @@ namespace MirrorImaged.Tests;
 /// <summary>
 /// A headless browser driven over its debugging port: the one <c>MIRROR_BROWSER</c> names (<c>http://127.0.0.1:9333</c>, an Edge or Chrome
 /// started with <c>--headless=new --remote-debugging-port=9333 --user-data-dir=&lt;a folder&gt;</c>), or an Edge or Chrome started here and closed
-/// again. Where the browser doesn't answer, <see cref="Missing"/> says why.
+/// again. Where the browser doesn't answer, <see cref="Missing"/> says why. On Windows the browser started here runs on a desktop of its own, so
+/// that no window of it is on the desktop the person at the computer sees.
 /// </summary>
 public sealed class Browser : IAsyncLifetime
 {
@@ -29,6 +31,7 @@ public sealed class Browser : IAsyncLifetime
     readonly HttpClient _http = new() { Timeout = TimeSpan.FromSeconds(5) };
     readonly StringBuilder _said = new();
     Process? _process;
+    nint _desktop;
     string? _endpoint;
     bool _started;
 
@@ -49,30 +52,34 @@ public sealed class Browser : IAsyncLifetime
             return;
         }
         // The browser writes the port it listens on into its profile, and says it too. On Windows Edge's first process ends at once and leaves the
-        // browser running, so the file is what says it started there. What it prints is read as it comes: a browser whose output nobody reads
-        // writes into a closed pipe
+        // browser running, so the file is what says it started there. Elsewhere what it prints is read as it comes: a browser whose output nobody
+        // reads writes into a closed pipe
         var profile = Path.Combine(_folder, "profile");
-        var start = new ProcessStartInfo(browser, ["--headless=new", "--disable-gpu", "--no-sandbox", "--no-first-run", "--disable-dev-shm-usage", "--remote-debugging-port=0", $"--user-data-dir={profile}", "about:blank"])
-        {
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-        };
-        void Said(object sender, DataReceivedEventArgs line)
-        {
-            lock (_said) _said.AppendLine(line.Data);
-        }
+        string[] switches = ["--headless=new", "--disable-gpu", "--no-sandbox", "--no-first-run", "--disable-dev-shm-usage", "--remote-debugging-port=0", $"--user-data-dir={profile}", "about:blank"];
         try
         {
-            _process = Process.Start(start);
-            if (_process is not null)
+            if (OperatingSystem.IsWindows()) StartOnItsOwnDesktop(browser, switches);
+            else
             {
-                _process.OutputDataReceived += Said;
-                _process.ErrorDataReceived += Said;
-                _process.BeginOutputReadLine();
-                _process.BeginErrorReadLine();
+                void Said(object sender, DataReceivedEventArgs line)
+                {
+                    lock (_said) _said.AppendLine(line.Data);
+                }
+                _process = Process.Start(new ProcessStartInfo(browser, switches) { RedirectStandardOutput = true, RedirectStandardError = true });
+                if (_process is not null)
+                {
+                    _process.OutputDataReceived += Said;
+                    _process.ErrorDataReceived += Said;
+                    _process.BeginOutputReadLine();
+                    _process.BeginErrorReadLine();
+                }
             }
         }
-        catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException) { lock (_said) _said.AppendLine(e.Message); }
+        catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException)
+        {
+            Missing = $"{browser} didn't start: {e.Message}";
+            return;
+        }
         var file = Path.Combine(profile, "DevToolsActivePort");
         for (var waited = 0; waited < 300 && _endpoint is null; waited++)
         {
@@ -86,6 +93,53 @@ public sealed class Browser : IAsyncLifetime
         if (_endpoint is not null) return;
         lock (_said) Missing = $"{browser} gave no debugging port in 30 s{(_process is { HasExited: true } ? $" and ended with code {_process.ExitCode}" : "")}; it said: {_said.ToString().Trim()}";
     }
+
+    // A headless Edge or Chrome on Windows still makes a top-level window with the page's title: never shown, but on the desktop's list of windows,
+    // and so in Alt-Tab (Sven saw them, 2026-11-19). No switch of the browser's takes it away (--headless, =new and =old, and a place off the screen
+    // all leave it), so the browser is started on a desktop of its own, where its windows are no part of the desktop a person sees. Its output
+    // isn't read there: the port's file says it started
+    void StartOnItsOwnDesktop(string browser, string[] switches)
+    {
+        var name = $"MirrorImaged browser {Path.GetFileName(_folder)}";
+        // DESKTOP_READOBJECTS and DESKTOP_CREATEWINDOW: without the second, CreateDesktop fails
+        _desktop = CreateDesktop(name, 0, 0, 0, 0x1 | 0x2, 0);
+        if (_desktop == 0) throw new System.ComponentModel.Win32Exception();
+        var startup = new StartupInfo { Size = Marshal.SizeOf<StartupInfo>(), Desktop = name };
+        var command = new StringBuilder($"\"{browser}\" {string.Join(' ', switches.Select(s => s.Contains(' ') ? $"\"{s}\"" : s))}");
+        if (!CreateProcess(browser, command, 0, 0, false, 0, 0, null, ref startup, out var started)) throw new System.ComponentModel.Win32Exception();
+        CloseHandle(started.Thread);
+        CloseHandle(started.Process);
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    struct StartupInfo
+    {
+        public int Size;
+        public string? Reserved, Desktop, Title;
+        public int X, Y, Width, Height, CountCharsX, CountCharsY, FillAttribute, Flags;
+        public short ShowWindow, Reserved2Size;
+        public nint Reserved2, StdInput, StdOutput, StdError;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct ProcessInformation
+    {
+        public nint Process, Thread;
+        public int ProcessId, ThreadId;
+    }
+
+    [DllImport("user32", CharSet = CharSet.Unicode, SetLastError = true)]
+    static extern nint CreateDesktop(string name, nint device, nint mode, int flags, uint access, nint attributes);
+
+    [DllImport("user32")]
+    static extern bool CloseDesktop(nint desktop);
+
+    [DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
+    static extern bool CreateProcess(string application, StringBuilder commandLine, nint processAttributes, nint threadAttributes, bool inheritHandles,
+        int flags, nint environment, string? directory, ref StartupInfo startup, out ProcessInformation information);
+
+    [DllImport("kernel32")]
+    static extern bool CloseHandle(nint handle);
 
     async Task<JsonElement?> Version(string endpoint)
     {
@@ -129,6 +183,8 @@ public sealed class Browser : IAsyncLifetime
             if (!_process.WaitForExit(3000)) _process.Kill(true);
             _process.Dispose();
         }
+        // The desktop goes when its last window has
+        if (_desktop != 0) CloseDesktop(_desktop);
         // The browser's processes may hold their profile for a moment more; the folder is the system's temporary one
         for (var tries = 0; tries < 20; tries++)
         {
