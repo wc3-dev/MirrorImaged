@@ -178,7 +178,7 @@ static int PlayReplay(string file, Dictionary<string, string> flags, double hash
     var replay = Replay.Read(file);
     var map = flags.GetValueOrDefault("--map") ?? throw new ArgumentException($"A replay needs the map it was played on ({replay.Map}): --map <map>");
     Ui.Line($"Build {replay.Build}, {TimeSpan.FromMilliseconds(replay.DurationMillis):h\\:mm\\:ss}, on {replay.Map}: {string.Join(", ", replay.Players.Where(p => p.Id > 0).Select(p => $"{p.Name} (slot {p.Slot})"))}");
-    using var simulation = Simulation.Load(map, replay);
+    using var simulation = Simulation.Load(map, replay, graphics: Seats.Graphics);
     var run = simulation.Play(replay);
     try
     {
@@ -198,6 +198,11 @@ static int PlayReplay(string file, Dictionary<string, string> flags, double hash
     // What of the replay reached a unit: the run is as close to the game as MirrorImaged is, and no closer
     Ui.Line($"Orders: {run.Orders}, taken by a unit {run.Taken}, with no unit of the selection in this run {run.Unowned}, refused {run.Refused.Values.Sum()}");
     Ui.Line($"Units the orders named: {run.Named}, found in this run {run.Found}");
+    Ui.Line($"By game minute (orders, taken, share; units named and found so far):");
+    foreach (var minute in run.Minutes)
+        Ui.Line($"  {minute.Minute,3}  {minute.Orders,5} {minute.Taken,5} {100.0 * minute.Taken / minute.Orders,4:0}%  {minute.Named,4} {minute.Found,4}");
+    if (run.FirstMiss is { } miss) Ui.Line($"First order not taken: {miss}");
+    if (run.Dequeued > 0) Ui.Line($"Taken out of a building's queue: {run.Dequeued}");
     if (run.NotPlayed.Count > 0) Ui.Line($"Read and not played: {string.Join(", ", run.NotPlayed.Select(action => $"0x{action.Key:X2} x {action.Value}"))}");
     if (replay.Actions.Count(action => action.Kind == "other") is var unknown and > 0) Ui.Line($"[yellow]Actions not read: {unknown}[/]");
     return Finish(simulation);

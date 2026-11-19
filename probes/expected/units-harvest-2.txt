@@ -1,0 +1,55 @@
+# probes/units-harvest-2.lua on 3.0.1.24371, single player, 11-19 (replay follow): the game's lines, one run. The times of the chops and loads are {t}; the facts give them.
+harvest tree true life 50.0
+rally mine true tree true
+{t} tree 49
+{t} tree 48
+{t} tree 47
+{t} tree 46
+{t} tree 45
+{t} tree 44
+{t} tree 43
+{t} tree 42
+{t} tree 41
+{t} tree 40
+{t} lumber 10
+{t} tree 39
+{t} tree 38
+{t} trained at mine
+{t} trained at tree
+mine +0.5 order 851970 mine taken 0 tree life 50
+tree +0.5 order 851970 mine taken 0 tree life 50
+{t} tree 37
+{t} tree 36
+{t} tree 35
+mine +3.0 order 852017 mine taken 10 tree life 48
+tree +3.0 order 851970 mine taken 10 tree life 48
+{t} tree 34
+{t} tree 33
+mine +6.0 order 852017 mine taken 20 tree life 46
+tree +6.0 order 851970 mine taken 20 tree life 46
+{t} tree 32
+{t} tree 31
+{t} tree 30
+{t} lumber 20
+mine +10.0 order 852018 mine taken 20 tree life 42
+tree +10.0 order 851970 mine taken 20 tree life 42
+{t} tree 29
+{t} tree 28
+{t} tree 27
+{t} lumber 30
+{t} tree 26
+{t} tree 25
+{t} tree 24
+{t} tree 23
+{t} tree 22
+{t} tree 21
+{t} tree 20
+{t} lumber 40
+{t} tree 19
+{t} tree 18
+{t} tree 17
+{t} lumber 50
+{t} tree 16
+{t} tree 15
+{t} tree 14
+{t} tree 13

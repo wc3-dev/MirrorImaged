@@ -21,6 +21,8 @@ public sealed partial class GameNatives
     const int UnitIssuedTargetOrder = 77, PlayerUnitIssuedTargetOrder = 40, SetRally = 851980, Smart = 851971;
 
     // Whether the unit takes orders: not removed, and a dead one only an attack (facts: it answers true)
+    static readonly int RallyAbility = Code("ARal");
+
     static bool Takes(unit u, int order) => !u.Removed && (!u.Dead || order == 851983);
 
     // The order given: current at once, its event fired with the place or target, in the game's three kinds
@@ -30,6 +32,12 @@ public sealed partial class GameNatives
         if (BeetlesOrder(whichUnit, ref order, ref x, ref y, ref target, ref kind) is { } answer) return answer;
         if (ImmolationOff(whichUnit, order) is { } off) return off;
         if (Spell(whichUnit, order, out var spell) && spell is null) return false;
+        // A building that rallies takes smart as its rally point, the order answering false at a place and true at a unit or tree (probe units-harvest)
+        if (order == Smart && Find(whichUnit, RallyAbility) is not null)
+        {
+            (whichUnit.RallyX, whichUnit.RallyY, whichUnit.RallyTarget) = (x, y, target);
+            return target is not null;
+        }
         whichUnit.Given++;
         BreakCast(whichUnit);
         whichUnit.Casting = spell;
@@ -40,6 +48,8 @@ public sealed partial class GameNatives
             if (taken) FireUnit(new(whichUnit, Order: order, PointX: x, PointY: y, Target: target), UnitIssuedOrder, PlayerUnitIssuedOrder);
             return taken;
         }
+        // A worker given another order leaves the building it is making, which goes on without it
+        if (whichUnit.Building is { } site) (site.Builder, whichUnit.Building) = (null, null);
         (whichUnit.Order, whichUnit.OrderX, whichUnit.OrderY, whichUnit.OrderTarget, whichUnit.AttackTarget) = (order == Stop ? 0 : order, x, y, target, null);
         if (order == 851993) (whichUnit.PatrolX, whichUnit.PatrolY) = (whichUnit.X, whichUnit.Y);
         if (order == 851990) (whichUnit.PatrolX, whichUnit.PatrolY) = (whichUnit.X, whichUnit.Y);

@@ -1,0 +1,10 @@
+# probes/units-harvest.lua on 3.0.1.24371, single player, 11-19 (replay follow): the game's lines, one run. When gold was first taken moves with the walk, so it is {t}.
+barracks smart false order 0 rally -1000 600
+hall smart true rally unit true
+train true
+trained order 851970 at mine false
+hpea 1: 10 20 30 30 first {t} hidden 1 lumber 0
+hpea 3: 20 50 70 90 first {t} hidden 1 lumber 0
+hpea 5: 30 70 110 150 first {t} hidden 1 lumber 0
+hpea 8: 30 70 110 150 first {t} hidden 1 lumber 20
+uaco 5: 20 60 100 140 first {t} hidden 0 lumber 0
