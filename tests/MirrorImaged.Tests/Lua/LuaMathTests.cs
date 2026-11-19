@@ -111,6 +111,7 @@ public sealed class LuaMathTests : IDisposable
     [InlineData("0.01", "0.100000001")]
     [InlineData("0.0001", "0.00999999978")]
     [InlineData("1000000", "1000.00006")]
+    [InlineData("3", "1.7320509")]
     public void ACorrectionStepAfterTheRoot(string x, string game) =>
         Assert.Equal(Expected(game), _lua.Bits($"(function(x) local s = math.sqrt(x) return (s + x / s) / 2 end)({x})"));
 
@@ -152,6 +153,15 @@ public sealed class LuaMathTests : IDisposable
     [InlineData("0^-1", "0")]
     [InlineData("1000^10", "0x7149f2c9")]
     [InlineData("(-8)^3", "-512")]
+    [InlineData("math.exp(1)", "0x402df853")]
+    [InlineData("math.exp(0.25)", "0x3fa45af2")]
+    [InlineData("math.exp(10)", "0x46ac14df")]
+    [InlineData("math.exp(88)", "0x7ef881f1")]
+    [InlineData("math.exp(89)", "0x7fa8e0dd")]
+    [InlineData("4^0.5", "0x3ffffffd")]
+    [InlineData("0.25^0.5", "0x3f000002")]
+    [InlineData("10000^0.5", "0x42c7fff1")]
+    [InlineData("40000^0.5", "0x4347fff0")]
     public void Functions(string expression, string game) => Assert.Equal(Expected(game), _lua.Bits(expression));
 
     [Fact]
@@ -172,57 +182,43 @@ public sealed class LuaMathTests : IDisposable
     [Theory]
     [InlineData("math.atan(1, 1) * 4", "3.14159298", "3.1415925")]
     [InlineData("math.atan(1)", "0.785398245", "0.785398126")]
-    [InlineData("math.exp(1)", "2.71828151", "2.71828175")]
     [InlineData("math.log(2)", "0.693147182", "0.693147123")]
     [InlineData("math.log(1000, 10)", "2.99999189", "3")]
-    [InlineData("2^0.5", "0x3fb504f3", "0x3fb504f2")]
-    [InlineData("4^0.5", "1.99999964", "0x3fffffff")]
-    [InlineData("25^0.5", "4.99999523", "0x409fffff")]
-    [InlineData("100^0.5", "9.99998856", "0x411ffffd")]
-    [InlineData("10000^0.5", "99.9998856", "0x42c7fffa")]
-    [InlineData("40000^0.5", "199.999756", "0x4347fffa")]
-    [InlineData("16777216^0.5", "4095.99512", "0x457ffff0")]
-    [InlineData("0.25^0.5", "0.500000119", "0x3f000001")]
-    [InlineData("3^0.5", "1.73205006", "0x3fddb3d6")]
-    [InlineData("1000000^0.5", "999.991516", "0x4479fff9")]
-    [InlineData("0.0001^0.5", "0.00999999791", "0x3c23d70f")]
-    [InlineData("(function(x) local s = math.sqrt(x) return (s + x / s) / 2 end)(3)", "1.7320509", "1.73205078")]
+    [InlineData("2^0.5", "0x3fb504f3", "0x3fb504f1")]
+    [InlineData("25^0.5", "4.99999523", "0x409ffffc")]
+    [InlineData("100^0.5", "9.99998856", "0x411ffff9")]
+    [InlineData("16777216^0.5", "4095.99512", "0x457fffdd")]
+    [InlineData("3^0.5", "1.73205006", "0x3fddb3d4")]
+    [InlineData("1000000^0.5", "999.991516", "0x4479ffea")]
+    [InlineData("0.0001^0.5", "0.00999999791", "0x3c23d717")]
     public void CloseToTheGame(string expression, string game, string model)
     {
         Assert.NotEqual(Expected(game), Expected(model));
         Assert.Equal(Expected(model), _lua.Bits(expression));
     }
 
-    /// <summary>How often a cast or Ceiling of a quotient goes wrong: as often as in the game (decisions D151).</summary>
+    /// <summary>
+    /// How often a cast or Ceiling of a quotient, or a cast of a whole square's root, goes wrong: as often as in the
+    /// game (decisions D151, D480, D481; the roots by probe numbers-squares).
+    /// </summary>
     [Theory]
     [InlineData("for d = 2, 100 do for n = 1, 2000 do if math.floor(n / d) ~= n // d then c = c + 1 end end end", 268)]
     [InlineData("for d = 2, 100 do for n = 1, 2000 do if math.ceil(n / d) ~= -(-n // d) then c = c + 1 end end end", 893)]
+    [InlineData("for n = 1, 4096 do if math.floor(math.sqrt(n * n)) ~= n then c = c + 1 end end", 64)]
     public void CastsGoWrongAsOftenAsInTheGame(string loop, int game) =>
         Assert.Equal(game, _lua.Value($"(function() local c = 0 {loop} return c end)()"));
 
     /// <summary>
-    /// How often a cast of a root goes wrong, with the game's count beside the model's (probe numbers-squares, plain Lua):
-    /// the game's integer root is a step higher for 6 of these squares, by a rule not found (D152).
-    /// </summary>
-    [Theory]
-    [InlineData("for n = 1, 4096 do if math.floor(math.sqrt(n * n)) ~= n then c = c + 1 end end", 64, 70)]
-    public void CastsGoWrongNearlyAsOftenAsInTheGame(string loop, int game, int model)
-    {
-        Assert.NotEqual(game, model);
-        Assert.Equal(model, _lua.Value($"(function() local c = 0 {loop} return c end)()"));
-    }
-
-    /// <summary>
     /// The worst errors in parts in 100,000 over every 64th float of [1, 2) (an even octave) and [2, 4) (odd), with
-    /// the game's from its sweep of 2^-6 to 2^26 beside them (Close). That sweep was coarser: the model, which gives
-    /// 6,156 of the 6,162 roots measured since, finds worse ones, as the probe numbers-fine saw near 1 (D152).
+    /// the game's from its sweep of 2^-6 to 2^26 beside them. That sweep was coarser: math.sqrt, the game's at every
+    /// step measured since (D481), finds worse ones, as the probe numbers-fine saw near 1; x ^ 0.5 is Close.
     /// </summary>
     [Theory]
     [InlineData("math.sqrt(x)", 0x3f800000, -0.0773249492, 1.92854142, -0.11549491821181203, 2.0398912033154426)]
     [InlineData("math.sqrt(x)", 0x40000000, -0.087634936, 1.92324328, -0.1240212441026552, 2.034505208333333)]
-    [InlineData("x ^ 0.5", 0x3f800000, -1.3516643, 0.067014955, -0.012199268590600682, 0)]
-    [InlineData("x ^ 0.5", 0x40000000, -1.3516643, 0.067014955, -0.013059732154122535, 0)]
-    [InlineData("(s + x / s) / 2", 0x3f800000, -0.0115596894, 0.00990830455, -0.014159728811543813, 0.016815356076030196)]
+    [InlineData("x ^ 0.5", 0x3f800000, -1.3516643, 0.067014955, -0.022615023093990327, 0.000690062948214858)]
+    [InlineData("x ^ 0.5", 0x40000000, -1.3516643, 0.067014955, -0.027368041560674072, 0.000142563677578588)]
+    [InlineData("(s + x / s) / 2", 0x3f800000, -0.0115596894, 0.00990830455, -0.014159728811543813, 0.016552161505973145)]
     [InlineData("(s + x / s) / 2", 0x40000000, -0.0115596894, 0.00990830455, -0.011459323429449726, 0.011142766349221933)]
     public void RootErrorsByOctave(string root, int start, double gameLow, double gameHigh, double low, double high)
     {
@@ -250,14 +246,13 @@ public sealed class LuaMathTests : IDisposable
 
     /// <summary>
     /// Sine and cosine of every whole degree, the angle made as the game's probe made it (degrees times pi / 180):
-    /// the game's 720 values (moonwell-maths-numbers.txt, 11-01). The model matches 716; the other four,
-    /// sin 19 degrees and its kin, are a float step off.
+    /// the game's 720 values (moonwell-maths-numbers.txt, 11-01), each one the model's (decisions D482).
     /// </summary>
     static float[] WholeDegreeValues() => string.Join(" ", Sines).Split(' ').Concat(string.Join(" ", Cosines).Split(' '))
         .Select(v => float.Parse(v, CultureInfo.InvariantCulture)).ToArray();
 
     [Fact]
-    public void WholeDegreesCloseToTheGame()
+    public void WholeDegreesAsInTheGame()
     {
         var game = WholeDegreeValues();
         var model = _lua.Run("""
@@ -267,8 +262,7 @@ public sealed class LuaMathTests : IDisposable
             return table.unpack(out)
             """).Cast<float>().ToArray();
         Assert.Equal(720, game.Length);
-        Assert.Equal(716, game.Zip(model).Count(p => p.First == p.Second));
-        Assert.InRange(game.Zip(model).Max(p => Math.Abs(p.First - p.Second)), 2.98e-8, 2.99e-8);
+        Assert.Equal(game, model);
     }
 
     static readonly string[] Sines =

@@ -171,13 +171,6 @@ static float to_float (double d) {
   return flt(s | (uint32_t)(e + 127) << 23 | ((uint32_t)(u >> 29) & 0x7fffff));
 }
 
-static double scale2 (double x, int32_t k) {  /* x * 2^k, k in -1022..1023 */
-  uint64_t u = (uint64_t)(k + 1023) << 52;
-  double p;
-  memcpy(&p, &u, sizeof p);
-  return x * p;
-}
-
 static double sin_d (double x) {  /* x from 0 to pi */
   double k, r, z, ps, pc;
   int32_t n = (int32_t)(x * (2 / PI) + 0.5);
@@ -236,16 +229,6 @@ float mi_tanf (float x) { return mi_div(mi_sinf(x), mi_cosf(x)); }
 ** The rest is not pinned down by the measurements (Close), but for what each says.
 */
 
-static double exp_d (double x) {  /* x of 0 and up */
-  double r, s = 1, t = 1;
-  int32_t k, i;
-  if (!(x <= 91)) return 0x1p200;  /* and nan */
-  k = (int32_t)(x * 1.44269504088896338700e+00 + 0.5);
-  r = (x - k * LN2_HI) - k * LN2_LO;
-  for (i = 1; i <= 17; i++) { t *= r / i; s += t; }
-  return scale2(s, k);
-}
-
 /* log(x) = e ln 2 + log(m), for x > 0 */
 static double log_d (double x) {
   uint64_t u;
@@ -263,15 +246,26 @@ static double log_d (double x) {
   return e * LN2_HI + (2 * sum + e * LN2_LO);
 }
 
-/* exp(x) for x of 0 and up, past the float range packed as a product is (exp(89) is a nan, exp(100) is 0) */
+/* exp(x) for x of 0 and up, in the game's arithmetic: the float nearest e^(1/4) to the power of the whole quarters
+   in x, squaring as it goes (so exp(1) is 402df853, a step under e, and exp(89) a nan, exp(100) 0, as its products
+   are packed), times 1 + r + r^2/2 + ... + r^6/720 for the rest r, worked out from the last term in. Every whole x
+   and k/16 measured is the game's; of other x about 1 in 40 is a step off, the series' own order not being found
+   (Close). */
 static float exp_up (float x) {
-  double d = exp_d(x) * (1.0 + 0x1p-45);
-  uint64_t u;
-  int32_t e;
-  memcpy(&u, &d, sizeof u);
-  e = (int32_t)((u >> 52) & 0x7ff) - 1023 + 127;
-  if ((uint32_t)(e - 1) > 255) return 0.0f;
-  return pack(0, e, (uint32_t)(u >> 29));
+  static const uint32_t inverse[] = { 0x3f000000, 0x3eaaaaaa, 0x3e800000, 0x3e4ccccc, 0x3e2aaaaa };  /* 1/2 to 1/6, cut */
+  float p = 1.0f, b = flt(0x3fa45af2), r, s = 1.0f;
+  uint32_t m;
+  int32_t k;
+  if (!(x < 1024)) return 0.0f;  /* and nan */
+  m = (uint32_t)(x * 4);
+  r = x - m * 0.25f;
+  for (k = 4; k >= 0; k--) s = mi_add(1.0f, mi_mul(mi_mul(r, s), flt(inverse[k])));
+  s = mi_add(1.0f, mi_mul(r, s));
+  for (; m; m >>= 1) {
+    if (m & 1) p = mi_mul(p, b);
+    b = mi_mul(b, b);
+  }
+  return mi_mul(p, s);
 }
 
 /* Below 0 the game's exp is 1 over exp(-x) in its division, so exp(-104) is 2^127, as 1/0 is. */
