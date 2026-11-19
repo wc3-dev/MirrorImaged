@@ -2548,7 +2548,8 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
 
 - **D440 (the corpus tests run in parts):** `ShippedMapTests` and `MeleeCorpusTests` each took longer than the 10 minutes the test run gives a test (35 min 17 s for the 466 shipped maps on 11-19, and
   about 3 h 13 min for the 258 melee maps, worked out from the 136 the old test got through in 5,016 s), so nobody ran them to the end. Each is now a theory of 8 parts (`Corpus.Shards`), a part taking
-  every 8th map of the sorted list, so the long maps, which sort together by their players, are spread over the parts. A part is one test, so the 10 minutes count for each part. The two classes are one
+  every 8th map of the sorted list, so the long maps, which sort together by their players, are spread over the parts. A part is one test, so the 10 minutes count for each part: the longest took 2 min 2 s of the shipped maps' 7 min 35 s and 4 min 33 s of the melee maps'
+  31 min 26 s (with 4 parts the longest melee part took 8 min 57 s, too near the limit). The two classes are one
   xUnit collection, so they never run at once.
 
 - **D441 (a part runs its maps side by side):** on half the PC's processors (`Environment.ProcessorCount / 2`, 6 on the 12 this was measured on), each map its own simulation and file. A map's result
@@ -2559,8 +2560,8 @@ in `probes/expected`, and the workspace's facts' "Presentation" and "Files" soun
 
 - **D443 (JASS is made into Lua one map at a time):** `Jass.ToLua` holds a lock. Once in some 1,500 loads side by side, a map's `war3map.j` failed to become Lua (`NotSupportedException`, on
   `Campaign/Classic/TFT/OrcX02_09.w3x`, which loads alone and loaded in every run since). The inner error wasn't caught, so the cause is not known: it is in the parser, War3Net's transpiler or the
-  renderer, none of which says it may be used from two threads. The lock costs little, as a map's script takes about 0.2 s. This lane's call; the failure has not been seen again in 1,700 loads with it,
-  which is not proof.
+  renderer, none of which says it may be used from two threads. The lock costs little, as a map's script takes about 0.2 s. This lane's call; the failure has not been seen again in the 1,448 loads of the two full runs
+  with it, which is not proof.
 
 - **D444 (the speed-ups, none of which changes a state hash):** a standard object keeps each field it has read (`StandardObject.Cell`: three strings joined and three look-ups a read before); the AI's
   nearest tree is found without sorting every tree, a type's being a tree is kept, and the towns are listed once in a round of worker slots (`AiEconomy.cs`); and a unit's sight is marked explored again
