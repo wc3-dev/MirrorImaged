@@ -44,6 +44,23 @@ public sealed class CliToolsTests : IDisposable
         Assert.Contains("\"Kind\": \"say\"", File.ReadAllText(recording));
     }
 
+    // D680: --graphics gives the run the mode's data, here its game camera, and its recording keeps it
+    [InstallFact]
+    public void A_run_takes_the_graphics_mode_and_its_recording_keeps_it()
+    {
+        var map = Map("print(\"far\", GetCameraField(CAMERA_FIELD_FARZ))");
+        var recording = Path.Combine(_folder, "classic.json");
+
+        var classic = CoverageTests.Mirror("run", map, "--seconds", "1", "--graphics", "classic", "--record", recording);
+        var reforged = CoverageTests.Mirror("run", map, "--seconds", "1");
+        var wrong = CoverageTests.Mirror("run", map, "--graphics", "hd");
+
+        Assert.Contains("far\t5000.0", classic.Output);
+        Assert.Contains("far\t5300.0", reforged.Output);
+        Assert.Equal(GraphicsMode.Classic, Recording.FromJson(File.ReadAllText(recording)).Graphics);
+        Assert.NotEqual(0, wrong.Exit);
+    }
+
     [InstallFact]
     public void Bench_says_how_much_faster_than_real_time_a_run_goes()
     {

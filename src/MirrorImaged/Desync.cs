@@ -31,15 +31,16 @@ public static class Desync
 
     /// <summary>
     /// Runs the map for each person's slot and compares the runs every <paramref name="every"/> (a second, unless given); null when they stay the
-    /// same to the end. When they differ, the games are run twice more to find the step and the calls, so a report costs three runs.
+    /// same to the end. When they differ, the games are run twice more to find the step and the calls, so a report costs three runs. Every
+    /// player's game is in <paramref name="graphics"/>.
     /// </summary>
-    public static DesyncReport? Check(string path, TimeSpan time, int seed = 0, TimeSpan? every = null)
+    public static DesyncReport? Check(string path, TimeSpan time, int seed = 0, TimeSpan? every = null, GraphicsMode graphics = default)
     {
         var slots = UserSlots(path);
         if (slots.Count < 2) return null;
         List<Simulation> Load(Func<int, Action<Simulation>>? called = null) => [.. slots.Select((slot, machine) => Simulation.Load(path, new SimulationOptions
         {
-            Seed = seed, Users = [slot, .. slots.Where(other => other != slot)], Machine = machine, Called = called?.Invoke(machine),
+            Seed = seed, Users = [slot, .. slots.Where(other => other != slot)], Machine = machine, Called = called?.Invoke(machine), Graphics = graphics,
         }))];
         var games = Load();
         try

@@ -204,6 +204,26 @@ public sealed class LuaTestApiTests : IDisposable
         Assert.True(exit == 0, output + error);
     }
 
+    // D680: the graphics mode's data, here its game camera
+    [InstallFact]
+    public void Mirror_load_takes_the_graphics_mode()
+    {
+        var path = Map("""print("far", GetCameraField(CAMERA_FIELD_FARZ))""").Replace('\\', '/');
+        var test = Path.Combine(_folder, "graphics.test.lua");
+        File.WriteAllText(test, $$"""
+            test("classic when said", function()
+              assert_contains(mirror.load([[{{path}}]], {graphics = "classic"}):log(), "far\t5000.0")
+            end)
+            test("reforged unless said", function()
+              assert_contains(mirror.load([[{{path}}]]):log(), "far\t5300.0")
+            end)
+            """);
+
+        var (exit, output, error) = CoverageTests.Mirror("test", test);
+
+        Assert.True(exit == 0, output + error);
+    }
+
     [InstallFact]
     public void Mirror_test_prints_each_result_and_writes_junit()
     {

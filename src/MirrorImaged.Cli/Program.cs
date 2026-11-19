@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using MirrorImaged;
+using MirrorImaged.Data;
 using MirrorImaged.Lua;
 using MirrorImaged.Natives;
 
@@ -25,6 +26,7 @@ if (args is [var command and ("check" or "run" or "replay" or "desync" or "bench
     Seats.Users = flags.TryGetValue("--users", out var users) ? [.. users.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)] : null;
     Seats.Computers = flags.TryGetValue("--computers", out var computers) ? [.. computers.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)] : null;
     Seats.Melee = flags.GetValueOrDefault("--melee") == "true";
+    Seats.Graphics = flags.GetValueOrDefault("--graphics") == "classic" ? GraphicsMode.Classic : GraphicsMode.Reforged;
     try
     {
         switch (command)
@@ -32,7 +34,7 @@ if (args is [var command and ("check" or "run" or "replay" or "desync" or "bench
             case "check": return Check(file);
             case "run": return Run(file, flags, seconds, seed);
             case "replay": return PlayRecording(file, flags, Number("--hash", 0));
-            case "desync": return DesyncCheck(file, seconds, seed);
+            case "desync": return DesyncCheck(file, seconds, seed, Seats.Graphics);
             case "bench": return Bench(file, seconds, seed);
             case "test": return Tests(file, flags.GetValueOrDefault("--junit"));
             case "snapshot": return Save(file, Number("--at", seconds), Number("--back", 0), seed, flags.GetValueOrDefault("--out") ?? "snapshot.json");
@@ -63,6 +65,7 @@ static Dictionary<string, string>? Flags(string[] options)
             "--seed" or "--orders" => int.TryParse(options[i + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out _),
             "--record" or "--input" or "--map" or "--junit" or "--out" or "--users" or "--computers" => true,
             "--melee" => options[i + 1] is "true" or "false",
+            "--graphics" => options[i + 1] is "reforged" or "classic",
             "--at" or "--back" or "--every" => double.TryParse(options[i + 1], NumberStyles.Float, CultureInfo.InvariantCulture, out var at) && at >= 0,
             _ => false,
         };
@@ -136,7 +139,7 @@ static int PlayRecording(string recordingFile, Dictionary<string, string> flags,
     var recording = Recording.FromJson(File.ReadAllText(recordingFile));
     var steps = recording.Steps;
     recording.Steps = 0;
-    using var simulation = Simulation.Load(flags.GetValueOrDefault("--map") ?? recording.Map, new SimulationOptions { Seed = recording.Seed, Users = recording.Users, Computers = recording.Computers });
+    using var simulation = Simulation.Load(flags.GetValueOrDefault("--map") ?? recording.Map, new SimulationOptions { Seed = recording.Seed, Users = recording.Users, Computers = recording.Computers, Graphics = recording.Graphics });
     try
     {
         Ui.Work($"Replaying {recordingFile}", () =>
@@ -205,7 +208,7 @@ static int PlayReplay(string file, Dictionary<string, string> flags, double hash
     return Finish(simulation);
 }
 
-static int DesyncCheck(string map, double seconds, int seed)
+static int DesyncCheck(string map, double seconds, int seed, GraphicsMode graphics)
 {
     var slots = Desync.UserSlots(map);
     if (slots.Count < 2)
@@ -213,7 +216,7 @@ static int DesyncCheck(string map, double seconds, int seed)
         Ui.Line($"[yellow]{map} has {slots.Count} user slot(s): there is no second player's game to compare with[/]");
         return 0;
     }
-    var report = Ui.Work($"Comparing the games of players {string.Join(", ", slots)}", () => Desync.Check(map, TimeSpan.FromSeconds(seconds), seed));
+    var report = Ui.Work($"Comparing the games of players {string.Join(", ", slots)}", () => Desync.Check(map, TimeSpan.FromSeconds(seconds), seed, graphics: graphics));
     if (report is null)
     {
         Ui.Line($"[green]No desync in {seconds.ToString("0.###", CultureInfo.InvariantCulture)} s between the games of players {string.Join(", ", slots)}[/]");
@@ -366,7 +369,7 @@ static int View(string file, double seconds, int seed, double every, string? out
     if (file.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
     {
         var recording = Recording.FromJson(File.ReadAllText(file));
-        simulation = Simulation.Load(recording.Map, new SimulationOptions { Seed = recording.Seed, Users = recording.Users, Computers = recording.Computers });
+        simulation = Simulation.Load(recording.Map, new SimulationOptions { Seed = recording.Seed, Users = recording.Users, Computers = recording.Computers, Graphics = recording.Graphics });
         foreach (var input in recording.Inputs.OrderBy(i => i.Step)) if (input.Step > simulation.Step) { simulation.AdvanceSteps(input.Step - simulation.Step); simulation.Give(input); }
         seconds = Math.Max(seconds, (double)recording.Steps / StepsPerSecond - (double)simulation.Step / StepsPerSecond);
     }
@@ -387,6 +390,7 @@ static class Seats
 {
     public static int[]? Users, Computers;
     public static bool Melee;
+    public static GraphicsMode Graphics;
 
     public static Simulation Open(string path, int seed)
     {
@@ -396,6 +400,6 @@ static class Seats
             var players = MirrorImaged.Data.MapArchive.Read(path).Files.Info?.Players.Where(p => p.Controller is War3Net.Build.Info.PlayerController.User or War3Net.Build.Info.PlayerController.Computer).Select(p => p.Id).ToList() ?? [];
             if (players.Count > 0) (users, computers) = ([players[0]], [.. players.Skip(1)]);
         }
-        return Ui.Work($"Loading {path}", () => Simulation.Load(path, new SimulationOptions { Seed = seed, Users = users, Computers = computers }));
+        return Ui.Work($"Loading {path}", () => Simulation.Load(path, new SimulationOptions { Seed = seed, Users = users, Computers = computers, Graphics = Graphics }));
     }
 }

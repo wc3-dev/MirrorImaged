@@ -6,6 +6,19 @@ using War3Net.Build.Info;
 
 namespace MirrorImaged.Data;
 
+/// <summary>
+/// The player's graphics mode, chosen in the game's options (War3Preferences <c>hd</c>): the game's data answers follow
+/// it, not the map (decisions D680).
+/// </summary>
+public enum GraphicsMode
+{
+    /// <summary>Reforged graphics (<c>hd=2</c>), the default.</summary>
+    Reforged,
+
+    /// <summary>Classic graphics (<c>hd=0</c>).</summary>
+    Classic,
+}
+
 /// <summary>The seven kinds of game object, each with its tables and its object data file.</summary>
 public enum ObjectKind
 {
@@ -53,7 +66,7 @@ public sealed record Field(string Column, PerLevel PerLevel, int Element, string
 /// A standard object: its tables' and text files' values merged, by column (any case), and the values a test gives by
 /// field and level.
 /// </summary>
-sealed class StandardObject(Dictionary<string, string> rows)
+sealed class StandardObject(Dictionary<string, string> rows, GraphicsMode graphics = GraphicsMode.Reforged)
 {
     public Dictionary<(int Field, int Level), string> Values { get; } = [];
 
@@ -72,8 +85,8 @@ sealed class StandardObject(Dictionary<string, string> rows)
 
     /// <summary>
     /// The field's text at a level in the rows; null for none (blank, or the tables' <c>-</c> and <c>_</c>). A key with
-    /// a graphics mode is read as the game reads it in Definitive Edition graphics: <c>:de</c>, else <c>:hd</c>, else the
-    /// plain key (decisions D203).
+    /// a graphics mode is read as the game reads it in the run's mode: in Reforged graphics <c>:de</c>, else <c>:hd</c>,
+    /// else the plain key (decisions D203); in classic graphics <c>:sd</c>, else the plain key (D681).
     /// </summary>
     public string? Cell(Field field, int level)
     {
@@ -94,14 +107,16 @@ sealed class StandardObject(Dictionary<string, string> rows)
         }
     }
 
-    string? Get(string key) => rows.GetValueOrDefault(key + ":de") ?? rows.GetValueOrDefault(key + ":hd") ?? rows.GetValueOrDefault(key);
+    string? Get(string key) => graphics == GraphicsMode.Classic
+        ? rows.GetValueOrDefault(key + ":sd") ?? rows.GetValueOrDefault(key)
+        : rows.GetValueOrDefault(key + ":de") ?? rows.GetValueOrDefault(key + ":hd") ?? rows.GetValueOrDefault(key);
 
     static string? Clean(string? value) => value?.Trim() is { Length: > 0 } text && text is not "-" and not "_" ? text : null;
 }
 
 /// <summary>
 /// The game's standard objects and gameplay constants: from an installed game's tables
-/// (<see cref="Read(Func{string, byte[]}, string?, string?, string)"/>, <see cref="Installed"/>), or, for the tests of
+/// (<see cref="Read(Func{string, byte[]}, string?, string?, string, GraphicsMode)"/>, <see cref="Installed"/>), or, for the tests of
 /// the runtime, empty and filled with what a test needs.
 /// </summary>
 public sealed partial class StandardData
@@ -146,7 +161,7 @@ public sealed partial class StandardData
         [.. new[] { "ability", "ambience", "anim", "cinematic", "dialog", "ui", "unitack", "unitcombat" }.Select(kind => $"ui/soundinfo/{kind}sounds.slk"),
             "ui/soundinfo/ambientmusic.slk", "ui/soundinfo/music.slk"];
 
-    static readonly Dictionary<(GameBuild Build, string Folder, string? Values, string? Objects), StandardData> Cache = [];
+    static readonly Dictionary<(GameBuild Build, string Folder, string? Values, string? Objects, GraphicsMode Graphics), StandardData> Cache = [];
 
     // The storage of each install folder, kept open for the process for the sound files runs read (its tables hold about
     // 58 MB); a new build of the install closes the old build's (decisions D520)
@@ -170,6 +185,9 @@ public sealed partial class StandardData
 
     /// <summary>Each sound label's files (<c>FileNames</c>, a comma list, as written) by label, any case, the first table's first.</summary>
     internal Dictionary<string, string> Sounds { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>The graphics mode the data was read for, whose values and files it gives (decisions D681).</summary>
+    public GraphicsMode Graphics { get; init; }
 
     /// <summary>The installed language (<c>enUS</c>), whose folder holds the speech.</summary>
     internal string Locale { get; set; } = "enUS";
@@ -195,11 +213,12 @@ public sealed partial class StandardData
     /// when there is none, which is passed over. <paramref name="values"/> is the balance set the values come from and
     /// <paramref name="objects"/> the one that says which objects exist (null for the base tables; see
     /// <see cref="Sets"/>): a set's file replaces the base's of the same name, and an object one of the set's tables
-    /// leaves out doesn't exist. Text comes from <paramref name="locale"/>'s strings.
+    /// leaves out doesn't exist. Text comes from <paramref name="locale"/>'s strings, and a value kept per graphics mode
+    /// from <paramref name="graphics"/>'s.
     /// </summary>
-    public static StandardData Read(Func<string, byte[]?> file, string? values, string? objects, string locale)
+    public static StandardData Read(Func<string, byte[]?> file, string? values, string? objects, string locale, GraphicsMode graphics = GraphicsMode.Reforged)
     {
-        var data = new StandardData { Locale = locale };
+        var data = new StandardData { Locale = locale, Graphics = graphics };
         // Abilities and buffs share their text files: each file is read and parsed once.
         var read = new Dictionary<string, byte[]?>();
         var parsed = new Dictionary<string, List<(string Name, Dictionary<string, string> Keys)>>();
@@ -259,7 +278,7 @@ public sealed partial class StandardData
                 foreach (var (key, value) in merged.Where(pair => qualifier is not null && pair.Key.EndsWith(qualifier, StringComparison.OrdinalIgnoreCase)).ToList())
                     merged[key[..^qualifier!.Length]] = value;
             for (var row = 0; row < order.Count; row++)
-                if (order[row] is { Length: 4 } id) (absent.Contains(id) ? data.Absent : data.Objects)[(kind, Ids.Of(id))] = new StandardObject(rows[id]) { Row = row };
+                if (order[row] is { Length: 4 } id) (absent.Contains(id) ? data.Absent : data.Objects)[(kind, Ids.Of(id))] = new StandardObject(rows[id], graphics) { Row = row };
         }
         // An ability's code, the ability whose rules it has (ANsb's is AHtb), has no metadata row
         if (data.Fields.TryGetValue(ObjectKind.Ability, out var abilityFields)) abilityFields.TryAdd(Ids.Of("code"), new Field("code", PerLevel.None, -1));
@@ -302,17 +321,18 @@ public sealed partial class StandardData
     }
 
     /// <summary>
-    /// The standard data of the install in <paramref name="folder"/> for a map with <paramref name="info"/>, read from its
-    /// storage once a process for each folder, build (its locale too) and pair of balance sets (<see cref="Sets"/>). The
-    /// storage stays open for the process, one a folder, for the sound files a run reads (about 58 MB).
+    /// The standard data of the install in <paramref name="folder"/> for a map with <paramref name="info"/> in a graphics
+    /// mode, read from its storage once a process for each folder, build (its locale too), pair of balance sets
+    /// (<see cref="Sets"/>) and mode. The storage stays open for the process, one a folder, for the sound files a run
+    /// reads (about 58 MB).
     /// </summary>
     /// <exception cref="IOException">There is no install there, or its storage can't be read.</exception>
-    public static StandardData Installed(string folder, MapInfo? info)
+    public static StandardData Installed(string folder, MapInfo? info, GraphicsMode graphics = GraphicsMode.Reforged)
     {
         var build = GameInstall.Build(folder);
         var (values, objects) = Sets(info);
         var place = Path.GetFullPath(folder);
-        var key = (build, place, values, objects);
+        var key = (build, place, values, objects, graphics);
         lock (Cache)
         {
             if (!Cache.TryGetValue(key, out var data))
@@ -328,7 +348,7 @@ public sealed partial class StandardData
                     Storages[place] = storage = CascStorage.Open(folder);
                 }
                 byte[]? Stored(string path) { lock (storage) return storage.Read(path); }
-                Cache[key] = data = Read(path => Stored("War3.w3mod:" + path.Replace(".w3mod/", ".w3mod:")), values, objects, build.Locale);
+                Cache[key] = data = Read(path => Stored("War3.w3mod:" + path.Replace(".w3mod/", ".w3mod:")), values, objects, build.Locale, graphics);
                 data.Storage = Stored;
             }
             return data;

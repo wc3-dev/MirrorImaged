@@ -1,3 +1,5 @@
+using MirrorImaged.Data;
+
 namespace MirrorImaged.GameTests;
 
 public sealed class ProbeComparisonTests : IDisposable
@@ -6,22 +8,37 @@ public sealed class ProbeComparisonTests : IDisposable
 
     public void Dispose() => File.Delete(_file);
 
-    public static TheoryData<string> Probes => [.. ProbeComparison.Names.Where(name => !ProbeComparison.ReadsData(name))];
+    // Each probe in each graphics mode it has lines for (decisions D683)
+    static TheoryData<string, GraphicsMode> InModes(Func<string, bool> which)
+    {
+        var data = new TheoryData<string, GraphicsMode>();
+        foreach (var name in ProbeComparison.Names.Where(which))
+            foreach (var mode in ProbeComparison.Modes(name))
+                data.Add(name, mode);
+        return data;
+    }
 
-    public static TheoryData<string> DataProbes => [.. ProbeComparison.Names.Where(ProbeComparison.ReadsData)];
+    public static TheoryData<string, GraphicsMode> Probes => InModes(name => !ProbeComparison.ReadsData(name));
+
+    public static TheoryData<string, GraphicsMode> DataProbes => InModes(ProbeComparison.ReadsData);
 
     // Without the game: MirrorImaged against the game's lines in probes/expected (decisions D120, D121).
     [Theory]
     [MemberData(nameof(Probes))]
-    public void A_probe_gives_the_games_lines_in_MirrorImaged_but_for_its_recorded_differences(string name) =>
-        ProbeComparison.AssertMirror(name);
+    public void A_probe_gives_the_games_lines_in_MirrorImaged_but_for_its_recorded_differences(string name, GraphicsMode mode) =>
+        ProbeComparison.AssertMirror(name, mode);
 
     // The probes that read the game's data, with the install's standard data (decisions D213).
     [Trait("Needs", "Game")]
     [InstallTheory]
     [MemberData(nameof(DataProbes))]
-    public void A_data_probe_gives_the_games_lines_in_MirrorImaged_with_the_installs_data_but_for_its_recorded_differences(string name) =>
-        ProbeComparison.AssertMirror(name);
+    public void A_data_probe_gives_the_games_lines_in_MirrorImaged_with_the_installs_data_but_for_its_recorded_differences(string name, GraphicsMode mode) =>
+        ProbeComparison.AssertMirror(name, mode);
+
+    // Every probe has the game's lines for both graphics modes, in one file or one a mode (decisions D683).
+    [Fact]
+    public void Every_probe_has_lines_for_both_graphics_modes() =>
+        Assert.All(ProbeComparison.Names, name => Assert.Equal(Enum.GetValues<GraphicsMode>(), ProbeComparison.Modes(name)));
 
     List<Difference> Compare(string expected, params string[] run)
     {
@@ -90,7 +107,8 @@ public sealed class ProbeComparisonTests : IDisposable
         var names = ProbeComparison.Names.ToHashSet();
         var records = new[] { "expected", "differences" }
             .SelectMany(folder => Directory.GetFiles(Path.Combine(AppContext.BaseDirectory, "probes", folder), "*.txt"))
-            .Select(Path.GetFileNameWithoutExtension);
+            .Select(file => Path.GetFileNameWithoutExtension(file)!)
+            .Select(name => Enum.GetValues<GraphicsMode>().Select(mode => "." + mode.ToString().ToLowerInvariant()).FirstOrDefault(name.EndsWith) is { } mode ? name[..^mode.Length] : name);
 
         Assert.All(records, name => Assert.Contains(name!, names));
     }

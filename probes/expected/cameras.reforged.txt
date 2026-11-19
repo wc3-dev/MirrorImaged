@@ -1,3 +1,4 @@
+# Reforged graphics (War3Preferences hd=2); the classic lines are in the .classic.txt beside this file (D683).
 # probes/cameras.lua on 3.0.1.24371, single player, 11-08: the game's lines. Two runs, the same but for the setup's
 # camera type (a number of its own each run, which a set doesn't change) and a field half way through its change.
 # The probe map's main sets no camera bounds, so the bounds read 0 and hold the camera's target at (0, 0): the pans

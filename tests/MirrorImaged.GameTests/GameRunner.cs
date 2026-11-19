@@ -94,12 +94,6 @@ public sealed class GameRunner(string game, string documents, string maps)
     /// <param name="jass">The probe is JASS (<see cref="ProbeMap.BuildJass"/>), <paramref name="lua"/> its script.</param>
     public ProbeRun Run(string name, string lua, TimeSpan timeout, bool withComputer = false, Action<War3Net.Build.Map>? change = null, bool jass = false)
     {
-        // Not -hd 2 on the command line: the game keeps it in War3Preferences after the run, and that is Sven's setting (D660).
-        if (GraphicsMode(documents) is { } mode && mode != RecordedMode)
-            throw new InvalidOperationException(
-                $"The game is on {(mode == 0 ? "classic" : $"mode {mode}")} graphics (War3Preferences hd={mode}); the probes' lines were " +
-                $"recorded on Reforged (hd={RecordedMode}). Switch the game to Reforged graphics in its options to run them");
-
         using var one = new Mutex(false, OneRunAtATime);
         bool mine;
         try
@@ -194,13 +188,21 @@ public sealed class GameRunner(string game, string documents, string maps)
     }
 
     /// <summary>
-    /// The graphics mode the probes' lines were recorded in, War3Preferences <c>hd=2</c>: the game's data answers (a unit's
-    /// scale, a deck's height, a sound's length, a camera's target z) follow this setting, not the map (the facts).
+    /// The graphics mode the game runs in, the player's own (War3Preferences <c>hd</c>: 0 classic, 2 Reforged, Reforged
+    /// when there is none), which the game's data answers follow (the facts). The runner never sets it: <c>-hd</c> on the
+    /// command line is kept in War3Preferences after the run (D660, D682).
     /// </summary>
-    public const int RecordedMode = 2;
+    /// <exception cref="InvalidOperationException">The setting is another mode, which MirrorImaged doesn't have.</exception>
+    public GraphicsMode Graphics => Hd(documents) switch
+    {
+        0 => GraphicsMode.Classic,
+        2 or null => GraphicsMode.Reforged,
+        var hd => throw new InvalidOperationException(
+            $"The game is on graphics mode hd={hd} (War3Preferences), which has no probe lines; switch it to classic or Reforged graphics in its options"),
+    };
 
-    /// <summary>The player's graphics mode, the <c>hd</c> line of <c>War3Preferences.txt</c>; null when there is none.</summary>
-    internal static int? GraphicsMode(string documents)
+    /// <summary>The <c>hd</c> line of <c>War3Preferences.txt</c>; null when there is none.</summary>
+    internal static int? Hd(string documents)
     {
         var preferences = Path.Combine(documents, "War3Preferences.txt");
         if (!File.Exists(preferences))
