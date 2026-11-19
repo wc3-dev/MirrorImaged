@@ -1,0 +1,6 @@
+# probes/units-build-reach.lua on 3.0.1.24371, single player, 11-19 (replay follow): the game's lines, one run. The game refused the crypt's order: its site had no blight. The time a building starts moves with the walk, so it is {t}.
+hhou order true
+hbar order true
+usep order false
+hbar start {t} s distance 59 site -960 0 collision 144
+hhou start {t} s distance 64 site -960 -1472 collision 72

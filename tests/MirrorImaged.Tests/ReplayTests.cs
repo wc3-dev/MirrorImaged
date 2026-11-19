@@ -115,6 +115,9 @@ public sealed class ReplayTests : IDisposable
         [0x11, (byte)(queued ? 1 : 0), 0x00, .. BitConverter.GetBytes(order), .. new byte[8], .. BitConverter.GetBytes(x), .. BitConverter.GetBytes(y)];
     static byte[] Target(int order, float x, float y, long target) => [.. Point(order, x, y), .. BitConverter.GetBytes(target)];
     static byte[] At(int order, float x, float y, long target) => [0x12, .. Target(order, x, y, target).Skip(1)];
+    static byte[] Dequeue(byte at, string type) => [0x1E, at, .. BitConverter.GetBytes(Ids.Of(type))];
+    static byte[] AtType(int order, float x, float y, string type) =>
+        [0x14, .. Point(order, x, y).Skip(1), .. BitConverter.GetBytes(Ids.Of(type)), .. new byte[9], .. BitConverter.GetBytes(x), .. BitConverter.GetBytes(y)];
 
     [Fact]
     public void A_replay_gives_its_lobby_and_what_its_players_did_in_order()
@@ -372,6 +375,60 @@ public sealed class ReplayTests : IDisposable
         Assert.Contains(simulation.Recording.Inputs, input => input.Kind == "act");
     }
 
+    // Action 0x1E: the third footman of the queue taken out, its price back
+    [Fact]
+    public void An_item_taken_out_of_a_buildings_queue_gives_its_price_back()
+    {
+        using var simulation = Map("""
+            SetPlayerState(Player(0), PLAYER_STATE_RESOURCE_GOLD, 1000)
+            SetPlayerState(Player(0), PLAYER_STATE_RESOURCE_FOOD_CAP, 10)
+            CreateUnit(Player(0), FourCC("hbar"), 0, 0, 0)
+            """);
+        var barracks = Object(0x100, 0x7005);
+        var replay = Replay.Read(Make(3000,
+            (100, 1, [.. Select(barracks), .. Alone(Ids.Of("hfoo")), .. Alone(Ids.Of("hfoo")), .. Alone(Ids.Of("hfoo"))]),
+            (500, 1, Dequeue(2, "hfoo"))));
+
+        var run = simulation.Follow(replay);
+
+        Assert.Equal(1000 - 2 * 135, simulation.Natives.GetPlayerState(simulation.Natives.Player(0), simulation.Natives.ConvertPlayerState(1)));
+        Assert.Equal(1, run.Dequeued);
+        Assert.Empty(run.NotPlayed);
+    }
+
+    // Action 0x14 names the mine by its type: the worker harvests the mine of that type at the place
+    [Fact]
+    public void An_order_at_a_type_goes_to_the_object_of_that_type_at_the_place()
+    {
+        using var simulation = Map("""
+            CreateUnit(Player(0), FourCC("hpea"), 200, 0, 0)
+            CreateUnit(Player(0), FourCC("htow"), 0, 0, 0)
+            CreateUnit(Player(PLAYER_NEUTRAL_PASSIVE), FourCC("ngol"), 600, 0, 0)
+            """);
+        var peasant = Object(0x100, 0x7005);
+        var replay = Replay.Read(Make(20000, (100, 1, [.. Select(peasant), .. AtType(Smart, 580, 20, "ngol")])));
+
+        var run = simulation.Follow(replay);
+
+        Assert.Equal((1, 1), (run.Orders, run.Taken));
+        Assert.True(simulation.Natives.GetPlayerState(simulation.Natives.Player(0), simulation.Natives.ConvertPlayerState(1)) > 0);
+    }
+
+    [Fact]
+    public void The_run_counts_its_orders_by_game_minute_and_names_the_first_that_failed()
+    {
+        using var simulation = Map("""CreateUnit(Player(0), FourCC("hfoo"), 0, 0, 0)""");
+        var (footman, gone) = (Object(0x100, 0x7005), Object(0x200, 0x7009));
+        var replay = Replay.Read(Make(62000,
+            (1000, 1, [.. Select(footman), .. Point(Move, 300, 0)]),
+            (61000, 1, [.. Deselect(footman), .. Select(gone), .. Point(Move, 0, 0)])));
+
+        var run = simulation.Follow(replay);
+
+        Assert.Equal([new(0, 1, 1, 1, 1), new(1, 1, 0, 2, 1)], run.Minutes);
+        Assert.Equal("1:01, player 0, move: no unit of the selection is in this run", run.FirstMiss);
+    }
+
     // The replay of a game someone played, which is not in the repository: it is read whole and runs to its end on its map
     [ReplayFileFact]
     [Trait("Needs", "Game")]
@@ -387,5 +444,10 @@ public sealed class ReplayTests : IDisposable
         Assert.Equal(run.Steps, simulation.Step);
         Assert.DoesNotContain(simulation.Log, line => line.Contains(" error: ", StringComparison.Ordinal));
         Assert.True(run.Taken > 0 && run.Found > 0);
+        // The share of orders a unit took may not fall: 32.8% on the 31-minute ladder game this test was first run with (decisions D645); a
+        // run of another replay needs its own floor
+        Assert.True(run.Taken >= ShareFloor * run.Orders, $"{run.Taken} of {run.Orders} orders taken, under {ShareFloor:P0}; first not taken: {run.FirstMiss}");
     }
+
+    const double ShareFloor = 0.32;
 }

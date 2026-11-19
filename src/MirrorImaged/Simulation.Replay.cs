@@ -3,6 +3,9 @@ using MirrorImaged.Natives;
 
 namespace MirrorImaged;
 
+/// <summary>A game minute of a replay's run: the orders given in it, those a unit took, and the units the orders named so far and found so far.</summary>
+public sealed record ReplayMinute(int Minute, int Orders, int Taken, int Named, int Found);
+
 /// <summary>
 /// A replay played on its map: each player's selection, groups, orders, chat and leaving, given at the step of its time. A replay names a unit by
 /// the game's own numbers for it, which a run here does not have, so the run works out which unit each number is (decisions D422): a player's
@@ -39,6 +42,17 @@ public sealed class ReplayRun
     /// <summary>How many orders the units here refused, by the order's id.</summary>
     public SortedDictionary<int, int> Refused { get; } = [];
 
+    /// <summary>The items taken out of a building's queue (action 0x1E) that were there to take.</summary>
+    public int Dequeued { get; private set; }
+
+    /// <summary>The run by game minute, those with orders.</summary>
+    public IReadOnlyList<ReplayMinute> Minutes => _minutes;
+
+    /// <summary>The first order no unit took: when, whose, which and why; null while every order was taken.</summary>
+    public string? FirstMiss { get; private set; }
+
+    readonly List<ReplayMinute> _minutes = [];
+
     /// <summary>The units the replay's orders were for.</summary>
     public int Named => _named.Count;
 
@@ -46,8 +60,9 @@ public sealed class ReplayRun
     public int Found => _named.Count(_units.ContainsKey);
 
     /// <summary>
-    /// How many actions of the replay are read and not played, by the replay's number for them: giving and dropping items (0x13, 0x14), taking
-    /// from a building's queue (0x1E, 0x1F), and the escape key (0x61).
+    /// How many actions of the replay are read and not played, by the replay's number for them: giving and dropping items (0x13), since the
+    /// replay names the item by the game's numbers and no action before tells which item of the unit's they are; and the escape key (0x61),
+    /// which changes only the player's own screen.
     /// </summary>
     public SortedDictionary<int, int> NotPlayed { get; } = [];
 
@@ -59,7 +74,7 @@ public sealed class ReplayRun
         (_simulation, _natives, _replay) = (simulation, simulation.Natives, replay);
         _slots = replay.Players.Where(player => player.Id > 0).ToDictionary(player => player.Id, player => player.Slot);
         foreach (var (code, count) in replay.ActionCounts)
-            if (code is 0x13 or 0x14 or 0x1E or 0x1F or 0x61) NotPlayed[code] = count;
+            if (code is 0x13 or 0x61) NotPlayed[code] = count;
     }
 
     static long StepOf(long millis) => (long)Math.Round(millis * 1024.0 / 1000);
@@ -105,6 +120,12 @@ public sealed class ReplayRun
             case "order":
                 Order(action, slot, player, selected);
                 break;
+            case "dequeue":
+                // The building whose queue is shown: the selection's unit of the subgroup's type first
+                if (selected.OrderBy(id => (ulong)id >> 32).Select(id => Unit(id, player, selected.Count > 1)).OfType<unit>()
+                    .OrderBy(u => u.Type.Id == _subgroups.GetValueOrDefault(slot) ? 0 : 1)
+                    .Any(u => _simulation.Act(new(_simulation.Step, "act", slot, [u.Id, action.Code, 4, (int)action.Objects[0], 0])))) Dequeued++;
+                break;
             case "chat":
                 _simulation.Give(new(_simulation.Step, "say", slot, Text: action.Text));
                 break;
@@ -127,9 +148,11 @@ public sealed class ReplayRun
         if (units.Count == 0)
         {
             Unowned++;
+            Count(action, false, "no unit of the selection is in this run");
             return;
         }
-        var (mode, target) = float.IsNaN(action.X) ? (0, 0) : action.Objects is [var named] && named != -1 ? Target(named, action.X, action.Y) : (1, 0);
+        var (mode, target) = float.IsNaN(action.X) ? (0, 0) : action.TargetType != 0 ? OfType(action.TargetType, action.X, action.Y)
+            : action.Objects is [var named] && named != -1 ? Target(named, action.X, action.Y) : (1, 0);
         bool Give(unit u) => _simulation.Act(new(_simulation.Step, "act", slot, [u.Id, action.Code, mode, target, action.Queued ? 1 : 0], mode == 0 ? null : [action.X, action.Y]));
         bool taken;
         if (action.Code is Smart or Stop or Attack or Move or Patrol or Hold) taken = units.Count(Give) > 0;
@@ -137,7 +160,21 @@ public sealed class ReplayRun
         else taken = units.OrderBy(u => u.Type.Id == _subgroups.GetValueOrDefault(slot) ? 0 : 1).Any(Give);
         if (taken) Taken++;
         else Refused[action.Code] = Refused.GetValueOrDefault(action.Code) + 1;
+        Count(action, taken, $"{string.Join(", ", units.Select(u => Simulation.FourCC(u.Type.Id)).Distinct())} refused it");
     }
+
+    void Count(ReplayAction action, bool taken, string why)
+    {
+        var minute = (int)(action.Millis / 60000);
+        var row = _minutes.Count > 0 && _minutes[^1].Minute == minute ? _minutes[^1] : new ReplayMinute(minute, 0, 0, 0, 0);
+        row = row with { Orders = row.Orders + 1, Taken = row.Taken + (taken ? 1 : 0), Named = Named, Found = Found };
+        if (_minutes.Count > 0 && _minutes[^1].Minute == minute) _minutes[^1] = row;
+        else _minutes.Add(row);
+        if (!taken && FirstMiss is null)
+            FirstMiss = $"{TimeSpan.FromMilliseconds(action.Millis):m\\:ss}, player {_slots[action.Player]}, {OrderName(action.Code)}: {why}";
+    }
+
+    string OrderName(int code) => _natives.OrderId2String(code) is { Length: > 0 } name ? name : Simulation.FourCC(code);
 
     // The unit of the player that the replay's numbers name: the one found for them before, or the first of the player's units no numbers have
     // yet, made between the units of the numbers before and after these, of the type the replay told of, if it did
@@ -159,6 +196,14 @@ public sealed class ReplayRun
         if (found is not null) _units[id] = found.Id;
         return found;
     }
+
+    // An order at an object the replay names by its type: the unit of that type nearest the place, or the tree there, or the place
+    (int Mode, int Target) OfType(int type, float x, float y) =>
+        _natives.AllUnits.Where(u => !u.Dead && !u.Removed && u.Type.Id == type && Math.Abs(u.X - x) <= TypeReach && Math.Abs(u.Y - y) <= TypeReach)
+            .OrderBy(u => (u.X - x) * (u.X - x) + (u.Y - y) * (u.Y - y)).ThenBy(u => u.Id).FirstOrDefault() is { } near ? (2, near.Id) : (3, 0);
+
+    // How far from an order's place the unit of the type it names may stand: half a large building's side
+    const float TypeReach = 128;
 
     // What an order with a target is given as: at the unit the target's numbers name, known or standing where the order says; or at the tree or
     // the ground there
@@ -210,24 +255,30 @@ public sealed partial class Simulation
         return run;
     }
 
-    static readonly int[] GoldAbilities = [.. new[] { "Ahar", "Aaha", "Awha" }.Select(Ids.Of)], LumberAbilities = [.. new[] { "Ahar", "Ahrl", "Awha" }.Select(Ids.Of)];
-
-    bool Harvests(unit u, widget target) =>
-        (target is destructable ? LumberAbilities : target is unit mine && _natives.GetResourceAmount(mine) > 0 ? GoldAbilities : []).Any(ability => _natives.GetUnitAbilityLevel(u, ability) > 0);
-
     // An order of a replay, given as the game gives a person's: Ints are the unit, the order, how it is given (0 alone, 1 at the place, 2 at the
-    // unit, 3 at the tree at the place or else the place), the target unit, and 1 when it is queued; true when the unit took it
+    // unit, 3 at the tree at the place or else the place, 4 the type the order names taken out of the building's queue at the place the
+    // fourth number gives), the target unit, and 1 when it is queued; true when the unit took it
+    static readonly int Rally = Ids.Of("ARal");
+
     internal bool Act(Input input, bool record = true)
     {
         if (record) _recording.Inputs.Add(input);
         var (order, mode, queued) = (input.Ints![1], input.Ints[2], input.Ints[4] != 0);
         if (_natives.Player(input.Player) is not { } player || _natives.UnitById(input.Ints[0]) is not { } u || u.Owner != player) return false;
+        if (mode == 4) return _natives.Dequeue(u, input.Ints[3], order);
         var (x, y) = input.Floats is [var px, var py] ? (px, py) : (0f, 0f);
         var builds = mode != 0 && _natives.Data.Object(ObjectKind.Unit, order) is not null;
         if (builds) return queued ? _natives.BlzQueueBuildOrderById(u, order, x, y) : _natives.IssueBuildOrderById(u, order, x, y);
         widget? target = mode switch { 2 => _natives.UnitById(input.Ints[3]), 3 => _natives.TreeAt(x, y), _ => null };
         // A person's smart order of a worker at a mine or a tree is the game's harvest order (decisions D424)
-        if (order == 851971 && target is not null && Harvests(u, target)) order = 852018;
+        if (order == 851971 && target is not null && _natives.CanHarvest(u, target)) order = 852018;
+        // A building's smart is its rally point, which the game sets though the order answers false at a place: it took the order (decisions D644)
+        if (order == 851971 && _natives.GetUnitAbilityLevel(u, Rally) > 0)
+        {
+            if (target is not null) _natives.IssueTargetOrderById(u, order, target);
+            else _natives.IssuePointOrderById(u, order, x, y);
+            return true;
+        }
         if (target is not null) return queued ? _natives.BlzQueueTargetOrderById(u, order, target) : _natives.IssueTargetOrderById(u, order, target);
         if (mode != 0) return queued ? _natives.BlzQueuePointOrderById(u, order, x, y) : _natives.IssuePointOrderById(u, order, x, y);
         if (_natives.Data.Object(ObjectKind.Ability, order) is not null)

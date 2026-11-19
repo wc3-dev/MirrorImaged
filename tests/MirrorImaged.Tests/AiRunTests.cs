@@ -40,7 +40,7 @@ public sealed class AiRunTests(Xunit.Abstractions.ITestOutputHelper output) : ID
                 end)
             end
             """), "", data: data);
-        simulation.Advance(TimeSpan.FromSeconds(300));
+        simulation.Advance(TimeSpan.FromSeconds(600));
 
         Assert.Null(simulation.Stopped);
         Assert.DoesNotContain(simulation.Log, line => line.Contains("error", StringComparison.OrdinalIgnoreCase));

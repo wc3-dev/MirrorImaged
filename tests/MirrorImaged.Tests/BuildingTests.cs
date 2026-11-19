@@ -17,6 +17,8 @@ public sealed class BuildingTests : IDisposable
         .Add(ObjectKind.Unit, "hbar", Values("unam=Barracks;uhpm=1500;ubdg=1;ugol=160;ulum=60;ubld=10;utra=hfoo;ures=Rhme;ucol=80;umvs=0"))
         .Add(ObjectKind.Unit, "hhou", Values("unam=Farm;uhpm=500;ubdg=1;ugol=80;ulum=20;ubld=5;ufma=6;umvs=0"))
         .Add(ObjectKind.Unit, "hfoo", Values("unam=Footman;uhpm=420;umvs=270;ugol=135;ufoo=2;ubld=20;uaen=0;ucol=31"))
+        .Add(ObjectKind.Unit, "halt", Values("unam=Altar of Kings;uhpm=900;ubdg=1;utra=Hamg;ucol=80;umvs=0"))
+        .Add(ObjectKind.Unit, "Hamg", Values("unam=Archmage;uhpm=450;umvs=320;ugol=425;ulum=100;ufoo=5;ubld=55;uaen=0;ucol=32"))
         .Add(ObjectKind.Upgrade, "Rhme", Values("glvl=3;gglb=100;gglm=75;glmb=50;glmm=75;gtib=60;gtim=60"));
 
     List<string> Run(string main, double seconds)
@@ -58,6 +60,47 @@ public sealed class BuildingTests : IDisposable
             """, 20);
 
         Assert.Equal(["true\tfalse\t500/200/0/10", "start\tBarracks\t340/140/0/10", "busy\ttrue", "finish\tBarracks\ttrue"], lines);
+    }
+
+    // A worker ordered elsewhere while its building goes up is free to build again (decisions D640)
+    [Fact]
+    public void A_worker_sent_away_from_its_building_builds_the_next_one()
+    {
+        var lines = Run("""
+            money(1000, 500, 20)
+            local w = make("hpea")
+            IssueBuildOrder(w, "hhou", 300, 0)
+            TimerStart(CreateTimer(), 3, false, function() IssuePointOrder(w, "move", -300, 0) end)
+            TimerStart(CreateTimer(), 4, false, function() print(IssueBuildOrder(w, "hhou", 0, 300)) end)
+            TimerStart(CreateTimer(), 15, false, function()
+                local g = CreateGroup()
+                GroupEnumUnitsOfPlayer(g, p, nil)
+                local farms = 0
+                ForGroup(g, function() if GetUnitTypeId(GetEnumUnit()) == FourCC("hhou") then farms = farms + 1 end end)
+                print(farms, state())
+            end)
+            """, 16);
+
+        Assert.Equal(["true", "2	840/460/0/32"], lines);
+    }
+
+    // A melee player's hero token pays for a hero: no gold or lumber, and a cancel gives the token back (decisions D641)
+    [Fact]
+    public void A_hero_token_pays_for_a_hero_and_comes_back_when_it_is_cancelled()
+    {
+        var lines = Run("""
+            money(0, 0, 10)
+            SetPlayerState(p, PLAYER_STATE_RESOURCE_HERO_TOKENS, 1)
+            local a = make("halt")
+            local function tokens() return GetPlayerState(p, PLAYER_STATE_RESOURCE_HERO_TOKENS) end
+            print(IssueImmediateOrderById(a, FourCC("Hamg")), state(), tokens())
+            IssueImmediateOrderById(a, 851976)
+            print(state(), tokens())
+            money(1000, 1000, 10)
+            print(IssueImmediateOrderById(a, FourCC("Hamg")), state(), tokens())
+            """, 1);
+
+        Assert.Equal(["true	0/0/5/10	0", "0/0/0/10	1", "true	1000/1000/5/10	0"], lines);
     }
 
     [Fact]

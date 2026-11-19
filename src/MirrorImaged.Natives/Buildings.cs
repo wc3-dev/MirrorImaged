@@ -10,7 +10,7 @@ sealed class Training(bool research, int id, int gold, int lumber, int food, dou
     public readonly int Id = id, Gold = gold, Lumber = lumber, Food = food;
     public readonly double Seconds = seconds;
     public long Done;   // the step it finishes at once it has started, 0 until then
-    public bool Started;
+    public bool Started, Token;   // Token: paid for with a hero token, not with gold and lumber
 }
 
 public partial class unit
@@ -32,7 +32,7 @@ public sealed partial class GameNatives
     const int UnitConstructStart = 9063, UnitConstructCancel = 64, UnitConstructFinish = 65, PlayerConstructStart = 26, PlayerConstructCancel = 27, PlayerConstructFinish = 28;
     const int UnitTrainStart = 69, UnitTrainCancel = 70, UnitTrainFinish = 71, PlayerTrainStart = 32, PlayerTrainCancel = 33, PlayerTrainFinish = 34;
     const int UnitResearchStart = 72, UnitResearchCancel = 73, UnitResearchFinish = 74, PlayerResearchStart = 35, PlayerResearchCancel = 36, PlayerResearchFinish = 37;
-    const int QueueLength = 7;
+    const int QueueLength = 7, HeroTokens = 3;
     const float StartLifeShare = 0.1f, CancelRefund = 0.75f;
 
     static readonly int Cost = Code("ugol"), LumberCost = Code("ulum"), BuildTime = Code("ubld"), Trains = Code("utra"), Researches = Code("ures"), FoodMadeField = Code("ufma"), Revives = Code("urev");
@@ -146,8 +146,10 @@ public sealed partial class GameNatives
         }
         else if (Listed(building, Trains, order) && Data.Object(ObjectKind.Unit, order) is { } unitType)
         {
-            item = new Training(false, order, unitType.Integer(Cost), unitType.Integer(LumberCost), unitType.Integer(FoodUsed), Math.Max(unitType.Real(BuildTime), 0.1));
             var p = building.Owner;
+            // A hero trained while the player has a hero token costs the token and no gold or lumber
+            var token = IsHero(order) && p.States[HeroTokens] > 0;
+            item = new Training(false, order, token ? 0 : unitType.Integer(Cost), token ? 0 : unitType.Integer(LumberCost), unitType.Integer(FoodUsed), Math.Max(unitType.Real(BuildTime), 0.1)) { Token = token };
             // A hero is one a player has once: alive, dead (then it is revived) or in training
             if (IsHero(order) && (_units.Values.Any(h => h.Owner == p && h.Type.Id == order && !h.Removed) || _units.Values.Any(b => b.Owner == p && b.Train.Any(t => !t.Research && !t.Revive && t.Id == order)))) return false;
             if (!CanPay(p, item.Gold, item.Lumber) || p.States[FoodUsedState] + item.Food > Math.Min(p.States[FoodCap], p.States[FoodCapCeiling])) return false;
@@ -170,6 +172,7 @@ public sealed partial class GameNatives
         else return false;
         if (building.Train.Count > 0 && building.Train[0].Upgrade) return false;
         Pay(building.Owner, item.Gold, item.Lumber);
+        if (item.Token) building.Owner.States[HeroTokens]--;
         building.Train.Add(item);
         if (building.Train.Count == 1) StartTraining(building);
         return true;
@@ -205,23 +208,26 @@ public sealed partial class GameNatives
             building.Owner.States[FoodUsedState] -= item.Food;
             if (made is not null)
             {
+                // A worker made with its rally at a mine or a tree harvests it (probe units-harvest-2)
                 if (building.RallyX != 0 || building.RallyY != 0 || building.RallyTarget is not null)
-                    Give(made, Smart, building.RallyX, building.RallyY, building.RallyTarget, building.RallyTarget is not null ? 2 : 1);
+                    Give(made, building.RallyTarget is { } at && CanHarvest(made, at) ? OrderHarvest : Smart, building.RallyX, building.RallyY, building.RallyTarget, building.RallyTarget is not null ? 2 : 1);
                 FireUnit(new(building, TypeId: item.Id, Other: made), UnitTrainFinish, PlayerTrainFinish);
             }
         }
         StartTraining(building);
     }
 
-    // The newest queued item gone with its cost back (all of it); false when nothing is queued
-    bool CancelQueue(unit building)
+    // A queued item gone with its cost back (all of it), the newest unless the place in the queue is given; false when there is none there
+    bool CancelQueue(unit building, int at = -1)
     {
-        if (building.Train.Count == 0) return false;
-        var item = building.Train[^1];
-        building.Train.RemoveAt(building.Train.Count - 1);
+        if (at < 0) at = building.Train.Count - 1;
+        if (at < 0 || at >= building.Train.Count) return false;
+        var item = building.Train[at];
+        building.Train.RemoveAt(at);
         SetPlayerState(building.Owner, Convert<playerstate>(Gold), building.Owner.States[Gold] + item.Gold);
         SetPlayerState(building.Owner, Convert<playerstate>(Lumber), building.Owner.States[Lumber] + item.Lumber);
         building.Owner.States[FoodUsedState] -= item.Food;
+        if (item.Token) building.Owner.States[HeroTokens]++;
         FireUnit(new(building, TypeId: item.Id), item.Research ? UnitResearchCancel : UnitTrainCancel, item.Research ? PlayerResearchCancel : PlayerTrainCancel);
         if (item.Started) StartTraining(building);
         return true;
@@ -243,6 +249,11 @@ public sealed partial class GameNatives
         }
         return false;
     }
+
+    // A person taking the item at a place of the building's queue out of it, as a replay's action 0x1E does: the item there if it is of the
+    // type, else the newest of the type
+    internal bool Dequeue(unit building, int at, int type) =>
+        CancelQueue(building, at < building.Train.Count && building.Train[at].Id == type ? at : building.Train.FindLastIndex(t => t.Id == type) is var last and >= 0 ? last : int.MaxValue);
 
     bool Cancelled(unit building)
     {

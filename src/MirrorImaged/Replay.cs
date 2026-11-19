@@ -19,21 +19,24 @@ public sealed record ReplayPlayer(int Slot, int Id, string Name, bool Computer, 
 /// <param name="Kind">
 /// What it was: <c>order</c>, <c>select</c> (adding to the selection or taking from it), <c>group</c> (the selection kept under a number),
 /// <c>pick</c> (a kept group selected), <c>subgroup</c> (the type of the selection that takes its orders), <c>ability</c> (a button of a unit
-/// pressed, which the order follows), <c>chat</c>, <c>leave</c> or <c>other</c> (an action this reader does not know).
+/// pressed, which the order follows), <c>item</c> (an item given to a unit or dropped), <c>dequeue</c> (taken out of a building's queue), <c>chat</c>,
+/// <c>leave</c> or <c>other</c> (an action this reader does not know).
 /// </param>
 /// <param name="Code">
 /// The order's id; 1 for adding to the selection and 2 for taking from it; the group's number; the subgroup's unit type; the ability; the
-/// result the game gave a leaving player; or the replay's own number of an action that is not known.
+/// result the game gave a leaving player; the type taken out of a building's queue; or the replay's own number of an action that is not known.
 /// </param>
 /// <param name="X">The place of an order; not a number for an order with none.</param>
 /// <param name="Y">The place of an order; not a number for an order with none.</param>
 /// <param name="Objects">
 /// The object an order targets (-1 for the ground), or those a selection, group, subgroup or ability names. The game names an object by two
-/// numbers, here the first in the low half and the second, which it counts up as it makes objects, in the high half.
+/// numbers, here the first in the low half and the second, which it counts up as it makes objects, in the high half. An item action names the
+/// unit it is given to (-1 for the ground) and the item; a dequeue the place in the queue, from 0.
 /// </param>
 /// <param name="Text">A chat message.</param>
 /// <param name="Queued">Whether an order was given to be done after the unit's others (shift held).</param>
-public sealed record ReplayAction(long Millis, int Player, string Kind, int Code, float X, float Y, IReadOnlyList<long> Objects, string? Text = null, bool Queued = false);
+/// <param name="TargetType">The type of the object an order targets when the replay names it by its type (action 0x14); 0 otherwise.</param>
+public sealed record ReplayAction(long Millis, int Player, string Kind, int Code, float X, float Y, IReadOnlyList<long> Objects, string? Text = null, bool Queued = false, int TargetType = 0);
 
 /// <summary>
 /// A replay (<c>.w3g</c>) read: its lobby, and what each player did, in time order. A replay holds the players' input only, so a map run with
@@ -238,8 +241,17 @@ public sealed class Replay
                     Actions.Add(new(millis, player, "order", Int(at + 3), Float(at + 15), Float(at + 19), [Long(at + 23)], Queued: (data[at + 1] & 1) != 0));
                     size = 31;
                     break;
-                case 0x13 when at + 39 <= end: size = 39; break;
-                case 0x14 when at + 44 <= end: size = 44; break;
+                // An item given to a unit or dropped: the order, its place, the unit it is given to (-1 for the ground) and the item
+                case 0x13 when at + 39 <= end:
+                    Actions.Add(new(millis, player, "item", Int(at + 3), Float(at + 15), Float(at + 19), [Long(at + 23), Long(at + 31)], Queued: (data[at + 1] & 1) != 0));
+                    size = 39;
+                    break;
+                // An order at an object the replay names by its type, not its numbers (a tree, a mine or a shop under the fog): the order, its
+                // place and the type
+                case 0x14 when at + 44 <= end:
+                    Actions.Add(new(millis, player, "order", Int(at + 3), Float(at + 15), Float(at + 19), [], Queued: (data[at + 1] & 1) != 0, TargetType: Int(at + 23)));
+                    size = 44;
+                    break;
                 case 0x16 or 0x17 when at + 4 <= end:
                 {
                     var count = BitConverter.ToUInt16(data, at + 2);
@@ -259,7 +271,11 @@ public sealed class Replay
                 case 0x1A: size = 1; break;
                 case 0x1B or 0x1C: size = 10; break;
                 case 0x1D: size = 9; break;
-                case 0x1E: size = 6; break;
+                // A unit or an upgrade taken out of a building's queue: its place in the queue and its type
+                case 0x1E when at + 6 <= end:
+                    Actions.Add(new(millis, player, "dequeue", Int(at + 2), 0, 0, [data[at + 1]]));
+                    size = 6;
+                    break;
                 case 0x01 or 0x02 or 0x04 or 0x05 or 0x07 or 0x61 or 0x66 or 0x67 or 0x29 or 0x2A or 0x2B or 0x2C: size = 1; break;
                 case 0x03: size = 2; break;
                 case 0x06: size = 1 + Array.IndexOf(data, (byte)0, at + 1) - at; break;
