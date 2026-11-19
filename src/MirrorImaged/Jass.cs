@@ -44,6 +44,12 @@ static class Jass
     /// </summary>
     internal static string ToLua(IReadOnlyList<JassCompilationUnitSyntax> declarations, string jass, bool rules)
     {
+        // One at a time: among maps loading side by side, one in some 1,500 failed here, in the parser or the transpiler (decisions D443)
+        lock (Helpers) return OneToLua(declarations, jass, rules);
+    }
+
+    static string OneToLua(IReadOnlyList<JassCompilationUnitSyntax> declarations, string jass, bool rules)
+    {
         JassCompilationUnitSyntax unit;
         try { unit = JassSyntaxFactory.ParseCompilationUnit(jass); }
         catch (Exception e) when (e is not OutOfMemoryException) { throw new InvalidDataException($"it doesn't parse: {e.Message}", e); }
