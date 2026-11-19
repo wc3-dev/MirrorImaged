@@ -94,14 +94,19 @@ public sealed class Browser : IAsyncLifetime
     }
 
     /// <summary>Opens the file in a tab of its own, 1100 by 700 at one pixel a pixel, and waits until the page has loaded.</summary>
-    public async Task<BrowserPage> Open(string file)
+    /// <param name="file">The page's file.</param>
+    /// <param name="ready">What must hold in the page, beside its load, before it is handed over: an expression of its script.</param>
+    public async Task<BrowserPage> Open(string file, string ready = "true")
     {
-        var response = await _http.PutAsync($"{_endpoint}/json/new?{new Uri(file).AbsoluteUri}", null);
+        // A new tab starts on an empty document that is complete at once, so the tab is sized first, then sent to the page, and the wait is for
+        // the page's own document: a wait for a complete document alone can be over before the page has begun to load
+        var response = await _http.PutAsync($"{_endpoint}/json/new?about:blank", null);
         var tab = JsonDocument.Parse(await response.Content.ReadAsStringAsync()).RootElement;
         var page = new BrowserPage(tab.GetProperty("id").GetString()!, _endpoint!, _http);
         await page.Connect(tab.GetProperty("webSocketDebuggerUrl").GetString()!);
         await page.Send("Emulation.setDeviceMetricsOverride", new { width = 1100, height = 700, deviceScaleFactor = 1, mobile = false });
-        for (var waited = 0; waited < 100 && await page.Read("document.readyState") != "complete"; waited++) await Task.Delay(100);
+        await page.Send("Page.navigate", new { url = new Uri(file).AbsoluteUri });
+        await page.Until($"location.href !== 'about:blank' && document.readyState === 'complete' && ({ready})", TimeSpan.FromSeconds(30));
         return page;
     }
 
@@ -177,6 +182,30 @@ public sealed class BrowserPage(string id, string endpoint, HttpClient http) : I
         var result = await Send("Runtime.evaluate", new { expression = $"(function () {{ var v = ({expression}); return typeof v === 'string' ? v : JSON.stringify(v); }})()", returnByValue = true });
         if (result.TryGetProperty("exceptionDetails", out var thrown)) throw new InvalidOperationException($"{expression}: {thrown}");
         return result.GetProperty("result").TryGetProperty("value", out var value) ? value.GetString() ?? "" : "";
+    }
+
+    /// <summary>
+    /// Waits until the expression holds in the page, looking again as soon as the page has answered. A look that throws counts as not yet: the
+    /// document it ran in may have just been replaced.
+    /// </summary>
+    /// <exception cref="TimeoutException">It didn't hold in the time; the message says where the page was.</exception>
+    public async Task Until(string condition, TimeSpan within)
+    {
+        var (clock, last) = (System.Diagnostics.Stopwatch.StartNew(), "");
+        while (clock.Elapsed < within)
+        {
+            try
+            {
+                if (await Read($"!!({condition})") == "true") return;
+                last = "";
+            }
+            catch (InvalidOperationException e) { last = e.Message; }
+            await Task.Yield();
+        }
+        string state;
+        try { state = await Read("'at ' + location.href + ', ' + document.readyState"); }
+        catch (InvalidOperationException e) { state = $"not answering ({e.Message})"; }
+        throw new TimeoutException($"The page didn't get ready in {within.TotalSeconds} s: {condition} never held. It is {state}.{(last.Length > 0 ? $" The last look threw: {last}" : "")}");
     }
 
     /// <summary>What the expression gives in the page, read from its JSON.</summary>
