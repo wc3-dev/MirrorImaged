@@ -4,8 +4,8 @@ namespace MirrorImaged.Natives;
 
 // The economy natives of the computer players' AI (common.ai): what the AI player has and can do about its units, upgrades and workers, on the
 // buildings, training queue and harvesting of wave 3. The AI player is the one the AI script runs for (the lobby's computer, or the local player
-// where no AI runs). Close: towns are the AI player's town halls in the order they were made, a mine belongs to the town it stands within 1,000
-// of, and wood isn't harvested yet (docs/decisions.md, D357).
+// where no AI runs). Close: a town is a place, where a town hall or a mine of the AI player's own first stood away from its other towns; it
+// stays when its hall dies, and a mine belongs to the town it stands within 1,000 of (docs/decisions.md, D357, D490).
 public sealed partial class GameNatives
 {
     /// <summary>The player the AI natives act for while an AI script runs (the local player where none does).</summary>
@@ -33,7 +33,8 @@ public sealed partial class GameNatives
     [Native(Level.Close)] public int GetUnitCount(int unitid) => CountOf(Ai, unitid, false);
     [Native(Level.Close)] public int GetUnitCountDone(int unitid) => CountOf(Ai, unitid, true);
     [Native(Level.Close)] public int GetPlayerUnitTypeCount(player? p, int unitid) => p is null ? 0 : CountOf(p, unitid, false);
-    [Native(Level.Close)] public int GetGoldOwned() => Ai.States[Gold];
+    /// <summary>The gold left in the mines the AI player works; the script expands when it runs low.</summary>
+    [Native(Level.Close)] public int GetGoldOwned() => Towns().Sum(town => WorkedMine(town) is { } mine ? GetResourceAmount(mine) : 0);
     [Native(Level.Close)] public int GetUnitGoldCost(int unitid) => Data.Object(ObjectKind.Unit, unitid)?.Integer(Cost) ?? 0;
     [Native(Level.Close)] public int GetUnitWoodCost(int unitid) => Data.Object(ObjectKind.Unit, unitid)?.Integer(LumberCost) ?? 0;
     [Native(Level.Close)] public int GetUnitBuildTime(int unitid) => (int)(Data.Object(ObjectKind.Unit, unitid)?.Real(BuildTime) ?? 0);
@@ -46,21 +47,39 @@ public sealed partial class GameNatives
     [Native(Level.Close)] public int GetUpgradeGoldCost(int id) => UpgradeCost(id, Code("gglb"), Code("gglm"));
     [Native(Level.Close)] public int GetUpgradeWoodCost(int id) => UpgradeCost(id, Code("glmb"), Code("glmm"));
 
-    // The town halls of the AI player, the first made first; a town is its index
-    List<unit> Towns() => [.. Mine(Ai).Where(u => !u.Constructing && (BlzGetUnitIntegerField(u, Convert<unitintegerfield>(Classification)) & TownHallKind) != 0).OrderBy(u => u.Id)];
+    readonly Dictionary<player, List<(float X, float Y)>> _towns = [];
 
-    unit? MineNear(unit hall) =>
-        _units.Values.Where(m => !m.Dead && GetResourceAmount(m) > 0 && Distance2(m.X - hall.X, m.Y - hall.Y) <= TownReach * TownReach).OrderBy(m => Distance2(m.X - hall.X, m.Y - hall.Y)).FirstOrDefault();
+    bool Within((float X, float Y) town, unit u) => Distance2(u.X - town.X, u.Y - town.Y) <= TownReach * TownReach;
 
-    [Native(Level.Close)] public bool TownHasHall(int townid) => townid >= 0 && townid < Towns().Count;
-    [Native(Level.Close)] public bool TownHasMine(int townid) => TownHasHall(townid) && MineNear(Towns()[townid]) is not null;
-    [Native(Level.Close)] public int GetMinesOwned() => Towns().Count(hall => MineNear(hall) is not null);
-    [Native(Level.Close)] public int TownWithMine() => Towns().FindIndex(hall => MineNear(hall) is not null);
+    // The towns of the AI player, a town its index: its town halls and its own mines (an undead's haunted one) each make a town where they
+    // stand away from the towns it has, the halls first and the first made first
+    List<(float X, float Y)> Towns()
+    {
+        if (!_towns.TryGetValue(Ai, out var towns)) _towns[Ai] = towns = [];
+        foreach (var u in Mine(Ai).Where(u => IsTownHall(u) || GetResourceAmount(u) > 0).OrderBy(u => IsTownHall(u) ? 0 : 1).ThenBy(u => u.Id))
+            if (!towns.Any(town => Within(town, u))) towns.Add((u.X, u.Y));
+        return towns;
+    }
+
+    unit? HallAt((float X, float Y) town) => Mine(Ai).Where(u => !u.Constructing && IsTownHall(u) && Within(town, u)).OrderBy(u => u.Id).FirstOrDefault();
+
+    // The nearest mine with gold the AI player may take: nobody's, or its own
+    unit? MineNear((float X, float Y) town) =>
+        _units.Values.Where(m => !m.Dead && !m.Removed && !m.Constructing && GetResourceAmount(m) > 0 && (m.Owner == Ai || GetPlayerId(m.Owner) >= 24) && Within(town, m))
+            .OrderBy(m => Distance2(m.X - town.X, m.Y - town.Y)).FirstOrDefault();
+
+    // The town's mine when the AI player has it: its own, or one beside its town hall
+    unit? WorkedMine((float X, float Y) town) => MineNear(town) is { } mine && (mine.Owner == Ai || HallAt(town) is not null) ? mine : null;
+
+    [Native(Level.Close)] public bool TownHasHall(int townid) => townid >= 0 && Towns() is var towns && townid < towns.Count && HallAt(towns[townid]) is not null;
+    [Native(Level.Close)] public bool TownHasMine(int townid) => townid >= 0 && Towns() is var towns && townid < towns.Count && MineNear(towns[townid]) is not null;
+    [Native(Level.Close)] public int GetMinesOwned() => Towns().Count(town => WorkedMine(town) is not null);
+    [Native(Level.Close)] public int TownWithMine() => Towns().FindIndex(town => WorkedMine(town) is not null);
 
     [Native(Level.Close)]
     public int GetTownUnitCount(int id, int tn, bool dn) =>
-        Towns() is var towns && tn >= 0 && tn < towns.Count && towns[tn] is var hall
-            ? Mine(Ai).Count(u => u.Type.Id == id && (!dn || !u.Constructing) && Distance2(u.X - hall.X, u.Y - hall.Y) <= TownReach * TownReach) : 0;
+        Towns() is var towns && tn >= 0 && tn < towns.Count && towns[tn] is var town
+            ? Mine(Ai).Count(u => u.Type.Id == id && (!dn || !u.Constructing) && Within(town, u)) : 0;
 
     /// <summary>A building of the player (the first made), nil for none.</summary>
     [Native(Level.Close)]
@@ -94,10 +113,10 @@ public sealed partial class GameNatives
     [Native(Level.Close)]
     public void ClearHarvestAI() => _slots.Clear();
 
-    // The tree nearest the hall that stands, within the reach of the town and a little beyond
-    destructable? TreeNear(unit hall) =>
-        _destructables.Where(d => !d.Dead && d.Life > 0.405f && Distance2(d.X - hall.X, d.Y - hall.Y) <= 1500 * 1500 && IsTree(d.Type))
-            .MinBy(d => Distance2(d.X - hall.X, d.Y - hall.Y));
+    // The tree nearest the town that stands, within the reach of the town and a little beyond
+    destructable? TreeNear((float X, float Y) town) =>
+        _destructables.Where(d => !d.Dead && d.Life > 0.405f && Distance2(d.X - town.X, d.Y - town.Y) <= 1500 * 1500 && IsTree(d.Type))
+            .MinBy(d => Distance2(d.X - town.X, d.Y - town.Y));
 
     // Whether a destructable of the type is a tree, kept by type: a map has thousands of them and the AI looks every round
     readonly Dictionary<GameObject, bool> _trees = [];
@@ -153,30 +172,30 @@ public sealed partial class GameNatives
 
     bool IsWorker(unit u) => (BlzGetUnitIntegerField(u, Convert<unitintegerfield>(Classification)) & 16) != 0;
 
-    // The AI builds what is missing: a worker that can build it, idle or mining, is sent to a site near the town's hall; true when one was sent
+    // The AI builds what is missing: a worker that can build it, idle or mining, is sent to a site in the town; true when one was sent
     bool BuildFor(player p, int id, int missing, int town)
     {
         var sent = false;
-        var hall = Towns() is var halls && town >= 0 && town < halls.Count ? halls[town] : halls.FirstOrDefault();
-        if (hall is null || Data.Object(ObjectKind.Unit, id) is not { } type) return false;
+        if (Towns() is not { Count: > 0 } towns || Data.Object(ObjectKind.Unit, id) is not { } type) return false;
+        var hall = town >= 0 && town < towns.Count ? towns[town] : towns[0];
         for (; missing > 0; missing--)
         {
             var worker = Mine(p).Where(w => !w.Constructing && w.Building is null && w.Order is 0 or OrderHarvest or OrderReturn && Listed(w, Code("ubui"), id))
                 .OrderBy(w => w.Order == 0 ? 0 : 1).ThenBy(w => Distance2(w.X - hall.X, w.Y - hall.Y)).FirstOrDefault();
-                if (worker is null || !CanPay(p, type.Integer(Cost), type.Integer(LumberCost)) || Site(hall, type) is not var (x, y)) break;
+            if (worker is null || !CanPay(p, type.Integer(Cost), type.Integer(LumberCost)) || Site(hall, type) is not var (x, y)) break;
             sent |= IssueBuildOrderById(worker, id, x, y);
         }
         return sent;
     }
 
-    // A place near the hall for the building: rings of places round it, the first whose ground can be built on and which no building, worker
+    // A place in the town for the building: rings of places round it, the first whose ground can be built on and which no building, worker
     // order or mine crowds
-    (float, float)? Site(unit hall, GameObject type)
+    (float, float)? Site((float X, float Y) hall, GameObject type)
     {
         var half = type.Real(Collision);
         var buildings = _units.Values.Where(b => !b.Dead && !b.Removed && IsBuildingNow(b)).ToList();
         var orders = _units.Values.Where(w => w.Order != 0 && !OrderNames.ContainsKey(w.Order) && Data.Object(ObjectKind.Unit, w.Order) is not null).ToList();
-        for (var radius = hall.Type.Real(Collision) + half + 60; radius <= 900; radius += 64)
+        for (var radius = (HallAt(hall)?.Type.Real(Collision) ?? 0) + half + 60; radius <= 900; radius += 64)
             for (var step = 0; step < 16; step++)
             {
                 var angle = (step * 2 * MathF.PI / 16) + radius * 0.01f;

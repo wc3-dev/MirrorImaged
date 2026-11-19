@@ -20,7 +20,7 @@ public sealed partial class GameNatives
     const float AtGoalReach = 600, HomeReach = 700;
     const int OrderMoveId = 851986, OrderAttackId = 851983;
 
-    War WarOf(player p) => _wars.TryGetValue(p, out var war) ? war : _wars[p] = new War { Home = Towns() is [var hall, ..] ? (hall.X, hall.Y) : (0, 0) };
+    War WarOf(player p) => _wars.TryGetValue(p, out var war) ? war : _wars[p] = new War { Home = Towns() is [var town, ..] ? town : (0, 0) };
 
     // The units of the wave that stand in the captain: those already in it, then the others of the types asked for, up to the numbers asked for
     List<unit> Captain()
@@ -151,7 +151,7 @@ public sealed partial class GameNatives
     [Native(Level.Close)]
     public unit? GetEnemyBase()
     {
-        var from = Towns() is [var hall, ..] ? (hall.X, hall.Y) : WarOf(Ai).Home;
+        var from = Towns() is [var town, ..] ? town : WarOf(Ai).Home;
         return _units.Values.Where(b => !b.Dead && !b.Removed && IsBuildingNow(b) && b.Owner != Ai && GetPlayerId(b.Owner) < 24 && IsPlayerEnemy(Ai, b.Owner))
             .OrderBy(b => (BlzGetUnitIntegerField(b, Convert<unitintegerfield>(Classification)) & TownHallKind) != 0 ? 0 : 1)
             .ThenBy(b => Distance2(b.X - from.Item1, b.Y - from.Item2)).FirstOrDefault();
@@ -165,12 +165,12 @@ public sealed partial class GameNatives
     public int GetEnemyPower() =>
         _units.Values.Count(u => !u.Dead && !u.Removed && !IsBuildingNow(u) && u.Owner != Ai && GetPlayerId(u.Owner) < 24 && IsPlayerEnemy(Ai, u.Owner) && u.Type.Integer(WeaponsOn) != 0);
 
-    // The gold mine nearest the AI player first town hall that no town hall stands within reach of, or none
+    // The gold mine nearest the AI player's first town that is nobody's and that no town hall stands within reach of, or none
     unit? FreeMine()
     {
-        var home = Towns() is [var hall, ..] ? (hall.X, hall.Y) : WarOf(Ai).Home;
-        var halls = _units.Values.Where(h => !h.Dead && !h.Removed && (BlzGetUnitIntegerField(h, Convert<unitintegerfield>(Classification)) & TownHallKind) != 0).ToList();
-        return _units.Values.Where(m => !m.Dead && !m.Removed && GetResourceAmount(m) > 0 && !halls.Any(h => Distance2(h.X - m.X, h.Y - m.Y) <= TownReach * TownReach))
+        var home = Towns() is [var town, ..] ? town : WarOf(Ai).Home;
+        var halls = _units.Values.Where(h => !h.Dead && !h.Removed && IsTownHall(h)).ToList();
+        return _units.Values.Where(m => !m.Dead && !m.Removed && GetResourceAmount(m) > 0 && GetPlayerId(m.Owner) >= 24 && !halls.Any(h => Distance2(h.X - m.X, h.Y - m.Y) <= TownReach * TownReach))
             .OrderBy(m => Distance2(m.X - home.Item1, m.Y - home.Item2)).FirstOrDefault();
     }
 
@@ -200,7 +200,7 @@ public sealed partial class GameNatives
     {
         if (peon is null || FreeMine() is not { } mine || Data.Object(ObjectKind.Unit, id) is not { } type) return false;
         if (Mine(Ai).Any(w => w.Order == id)) return true; // a worker is on its way to build it
-        var from = Towns() is [var hall, ..] ? (hall.X, hall.Y) : WarOf(Ai).Home;
+        var from = Towns() is [var town, ..] ? town : WarOf(Ai).Home;
         var (dx, dy) = (from.Item1 - mine.X, from.Item2 - mine.Y);
         var length = MathF.Max(MathF.Sqrt(dx * dx + dy * dy), 1);
         var away = mine.Type.Real(Collision) + type.Real(Collision) + 60;
@@ -211,7 +211,7 @@ public sealed partial class GameNatives
     [Native(Level.Close)]
     public unit? GetCreepCamp(int min, int max, bool flyers_ok)
     {
-        var home = Towns() is [var hall, ..] ? (hall.X, hall.Y) : WarOf(Ai).Home;
+        var home = Towns() is [var town, ..] ? town : WarOf(Ai).Home;
         return CreepsNear(home.Item1, home.Item2, 100000).OrderBy(c => Distance2(c.X - home.Item1, c.Y - home.Item2))
             .Select(c => (Creep: c, Camp: CreepsNear(c.X, c.Y, 600)))
             .Where(c => c.Camp.Sum(u => Math.Max(GetUnitLevel(u), 1)) is var level && level >= min && level <= max && (flyers_ok || !c.Camp.Any(Flies)))

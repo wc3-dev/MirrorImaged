@@ -2698,3 +2698,31 @@ are this lane's; D458 to D469 are not used.
 - **D457 (Mirror Image's summon events, measured):** the game fires a summon event for each image and one more whose summoned unit is none: 2, 3 and 4 events at levels 1 to 3, the first DataD (0.5 s)
   after the effect and the last 0.16 to 0.18 s later, which of them is the one without a unit changing from run to run. Here the images' events come at DataD and the one without a unit 0.18 s later,
   `GetSummoningUnit` the caster in each; the order and the 0.18 are this lane's choice, so the times are Close. This closes the difference D415 left.
+
+- **D490 (an AI's town is a place):** a town was a standing town hall, so a computer whose hall died had no town: `TownHasMine(0)` read false, the race scripts' `MeleeTownHall` never asked for a new
+  hall, and it lived on with its other buildings and no income. A town is now a place, kept per AI player: each of its town halls, and each mine that is its own (an undead's haunted one), makes a town
+  where it stands more than 1,000 from the towns the player has, halls before mines and the first made first; a town is never dropped. `TownHasHall` asks for a finished hall of the player's within
+  1,000 of the place, `TownHasMine` for a mine with gold there that is nobody's or the player's, and a building asked for in a town is sited round the place. `GetMinesOwned`, `TownWithMine` and
+  `GetGoldOwned` count a town's mine only while the player has it: its own mine, or one with a finished hall of the player's beside it. `TownThreatened` stays on the standing halls, as before: counted
+  from the places, a computer whose expansion had been destroyed read threatened for as long as the winner's army stood there and never attacked again (seen on Echo Isles). Close: the game's own rule
+  for a town is not measured; this is the least that lets the scripts' `MeleeTownHall( 1, NECROPOLIS_1 )` (a mine with no hall) and their hall rebuilding work.
+
+- **D491 (`GetGoldOwned` is the gold in the mines, not the player's):** it answered the player's own gold. The race scripts read it as the gold left to mine ("if we have low gold in our mines then we need
+  to expand": `c_gold_owned < 2000`, and a third mine under 10,000), and read the player's gold through `GetGold`. It is now the gold left in the mines of the player's towns that it has (D490). Not
+  measured in the game: read from the scripts.
+
+- **D492 (a haunted mine is made of the gold mine):** the undead script expands with `SetExpansion(peon, UNDEAD_MINE)`, and the model built the Haunted Gold Mine beside the gold mine as it does a town
+  hall: the gold mine stayed free, the new building held no gold, and the computer paid 225 gold and 210 lumber for another every two minutes for the rest of the game. This was why no undead computer
+  ever had a second mine, and every two-player map's computer is undead with the corpus's one seed. A building whose type has the haunted mine's ability (`Abgm`) is now made of the nearest gold mine
+  that is nobody's and has gold, within 300 of the site: it stands where the mine stood and keeps its gold, and the gold mine is removed, as `BlightGoldMineForPlayerBJ` makes the one a player starts
+  with. Where no such mine stands nothing is made or paid for. This is in `Place`, so a person's or a replay's build order gets it too. Not modelled (a shortcut, named in the code): the gold mine
+  doesn't come back when the haunted one dies or is cancelled; the 300 is this lane's choice (the AI's site is 160 from the mine).
+
+- **D493 (`BlzGetPlayerTownHallCount`):** the player's living units with the town hall classification, of any race and tier, one under construction too. It answered 0, so the game's melee script
+  called every player crippled: "You will be revealed ..." at 2 s and "Revealing ..." at 122 s on every map. Close: that a hall being built counts is this lane's reading of the function it replaced
+  in `blizzard.j` (`GetPlayerTypedUnitCount` with incomplete ones included), not a measurement.
+
+- **D494 (what the melee corpus asserts, and its parts):** `Every_melee_map_runs_30_minutes_with_computers_without_a_script_error` looked only at the computers' units added together. It now looks at the
+  game each minute and fails a map where a computer never had more units than it began with, where no computer had two town halls at once, or where no unit was seen dead (a unit that is gone with no
+  body was taken away, as a defeated player's are, and is not counted). It is not loosened for the maps that fail; they are listed in the pull request. The corpus theories run in 24 parts, not 8: a
+  part took 6 to 15 minutes with other work running, against the 10 minutes the test run gives a test, and a third of that fits.

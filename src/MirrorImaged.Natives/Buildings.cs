@@ -54,14 +54,29 @@ public sealed partial class GameNatives
 
     // ---- Construction
 
-    // A worker at the site: the building made and paid for, the construct events fired; false when the player can't pay
+    const float HauntReach = 300;
+
+    // A worker at the site: the building made and paid for, the construct events fired; false when the player can't pay. A haunted mine is
+    // made of the gold mine beside the site and keeps its gold, as BlightGoldMineForPlayerBJ makes one, and is not made where none stands.
+    // shortcut: the gold mine doesn't come back when the haunted one dies or is cancelled; model that when a map is seen to need it
     bool Place(unit worker, int id, float x, float y)
     {
         if (Data.Object(ObjectKind.Unit, id) is not { } type) return false;
         var (gold, lumber) = (type.Integer(Cost), type.Integer(LumberCost));
+        var haunts = (type.Text(Code("uabi")) ?? "").Split(',', StringSplitOptions.TrimEntries).Contains("Abgm");
+        var under = !haunts ? null : _units.Values.Where(m => !m.Dead && !m.Removed && GetPlayerId(m.Owner) >= 24 && GetResourceAmount(m) > 0 && Distance2(m.X - x, m.Y - y) <= HauntReach * HauntReach)
+            .OrderBy(m => Distance2(m.X - x, m.Y - y)).ThenBy(m => m.Id).FirstOrDefault();
+        if (haunts && under is null) return false;
         if (!CanPay(worker.Owner, gold, lumber)) return false;
         Pay(worker.Owner, gold, lumber);
+        var left = GetResourceAmount(under);
+        if (under is not null)
+        {
+            (x, y) = (under.X, under.Y);
+            RemoveUnit(under);
+        }
         if (Create(worker.Owner, id, x, y, 270, id) is not { } building) return false;
+        if (under is not null) SetResourceAmount(building, left);
         building.Constructing = true;
         building.Builder = worker;
         worker.Building = building;

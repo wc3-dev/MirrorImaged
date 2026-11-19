@@ -66,7 +66,9 @@ public sealed partial class GameNatives
     [Native(Level.Close)] public int BlzGetLocalClientHeight() => 1080;
     [Native(Level.Close)] public string? BlzGetLocale() => "enUS";
     [Native(Level.Close)] public bool BlzIsLocalClientActive() => true;
-    [Native(Level.Close)] public int BlzGetPlayerTownHallCount(player? whichPlayer) => 0;
+
+    /// <summary>The player's living town halls of any race and tier, one being built too; the melee script reveals a player that has none.</summary>
+    [Native(Level.Close)] public int BlzGetPlayerTownHallCount(player? whichPlayer) => whichPlayer is null ? 0 : Mine(whichPlayer).Count(IsTownHall);
 
     [Native(Level.Recorded, Reason = SettingsNote)] public void BlzEnableCursor(bool enable) { }
     [Native(Level.Recorded, Reason = SettingsNote)] public void BlzEnableUIAutoPosition(bool enable) { }

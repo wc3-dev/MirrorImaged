@@ -15,7 +15,7 @@ public sealed partial class GameNatives
     /// <summary>Whether an armed unit of an enemy player stands within reach of one of the AI player's town halls; the script then keeps its army home.</summary>
     [Native(Level.Close)]
     public bool TownThreatened() =>
-        Towns() is { Count: > 0 } halls && _units.Values.Any(u => AiFoe(u) && !IsBuildingNow(u) && u.Type.Integer(WeaponsOn) != 0
+        Mine(Ai).Where(u => !u.Constructing && IsTownHall(u)).ToList() is { Count: > 0 } halls && _units.Values.Any(u => AiFoe(u) && !IsBuildingNow(u) && u.Type.Integer(WeaponsOn) != 0
             && halls.Any(hall => Distance2(u.X - hall.X, u.Y - hall.Y) <= TownReach * TownReach));
 
     /// <summary>Whether a finished building of an enemy that attacks stands near the unit; the script then waits for siege before it goes there.</summary>

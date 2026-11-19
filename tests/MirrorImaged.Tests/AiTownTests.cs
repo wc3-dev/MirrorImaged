@@ -22,6 +22,9 @@ public sealed class AiTownTests : IDisposable
         .Add(ObjectKind.Unit, "Hpal", Values("unam=Paladin;uhpm=100;ustr=22;uint=17;umvs=270;ugol=425;ubld=20;ufoo=5"))
         .Add(ObjectKind.Unit, "ngol", Values("unam=Gold Mine;ubdg=1;uhpm=2000;uabi=Agld;umvs=0;ucol=80"))
         .Add(ObjectKind.Ability, "Agld", Values("anam=Gold Mine;alev=1;Gld1:1=12500"))
+        .Add(ObjectKind.Unit, "uaco", Values("unam=Acolyte;uhpm=220;umvs=235;umvt=foot;utyp=peon;ucol=16;ugol=75;ufoo=1;ubld=15;ubui=ugol"))
+        .Add(ObjectKind.Unit, "ugol", Values("unam=Haunted Gold Mine;ubdg=1;uhpm=800;uabi=Abgm;umvs=0;ucol=80;ugol=225;ulum=210;ubld=5"))
+        .Add(ObjectKind.Ability, "Abgm", Values("anam=Blighted Gold Mine;alev=1"))
         .Add(ObjectKind.Unit, "hfoo", Values("unam=Footman;uhpm=100000;umvs=200;ucol=31;ugol=135;ufoo=2;ubld=20;" + Armed))
         .Add(ObjectKind.Unit, "hwtw", Values("unam=Guard Tower;uhpm=500;ubdg=1;umvs=0;ucol=60;" + Armed))
         .Add(ObjectKind.Unit, "ngno", Values("unam=Gnoll;uhpm=1000;umvs=300;ucol=31;" + Armed))
@@ -111,7 +114,7 @@ public sealed class AiTownTests : IDisposable
             print(MergeUnits(1, id("earc"), id("ehip"), id("ehpr")), GetUnitCount(id("ehpr")), GetUnitCount(id("earc")), GetUnitCount(id("ehip")))
             print(MergeUnits(1, id("earc"), id("ehip"), id("ehpr")))
             for i = 1, 3 do CreateUnit(p, id("uobs"), 400, i * 100, 0) end
-            print(ConvertUnits(3, id("uobs")), GetUnitCount(id("ubsp")), GetUnitCount(id("uobs")), GetGoldOwned(), GetPlayerState(p, PLAYER_STATE_RESOURCE_LUMBER))
+            print(ConvertUnits(3, id("uobs")), GetUnitCount(id("ubsp")), GetUnitCount(id("uobs")), GetPlayerState(p, PLAYER_STATE_RESOURCE_GOLD), GetPlayerState(p, PLAYER_STATE_RESOURCE_LUMBER))
             print(ConvertUnits(1, id("uobs")), ConvertUnits(1, id("hpea")), ConvertUnits(1, id("earc")))
             """);
 
@@ -180,7 +183,7 @@ public sealed class AiTownTests : IDisposable
             local hall = CreateUnit(p, id("htow"), 0, 0, 0)
             CreateUnit(p, id("hpea"), 200, 0, 0)
             print(SetProduce(1, id("hfoo"), -1), GetUnitCount(id("hfoo")))
-            print(SetProduce(1, id("hkee"), 0), GetGoldOwned())
+            print(SetProduce(1, id("hkee"), 0), GetPlayerState(p, PLAYER_STATE_RESOURCE_GOLD))
             TimerStart(CreateTimer(), 12, false, function() print(GetUnitTypeId(hall) == id("hkee"), GetUnitCount(id("hkee")), GetUnitCount(id("htow"))) end)
             """, 13);
 
@@ -210,7 +213,7 @@ public sealed class AiTownTests : IDisposable
         var lines = Run("""
             SetPlayerState(p, PLAYER_STATE_RESOURCE_GOLD, 1000)
             CreateUnit(p, id("htow"), 0, 0, 0)
-            local mine = CreateUnit(Player(PLAYER_NEUTRAL_PASSIVE), id("ngol"), 3000, 0, 0)
+            local mine = CreateUnit(Player(PLAYER_NEUTRAL_PASSIVE), id("ngol"), 1500, 0, 0)
             SetResourceAmount(mine, 5000)
             local a, b = CreateUnit(p, id("hpea"), 200, 0, 0), CreateUnit(p, id("hpea"), 200, 100, 0)
             print(SetExpansion(a, id("htow")), GetUnitCurrentOrder(a) == id("htow"))
@@ -218,5 +221,76 @@ public sealed class AiTownTests : IDisposable
             """);
 
         Assert.Equal(["true\ttrue", "true\tfalse"], lines);
+    }
+
+    [Fact]
+    public void A_town_stays_where_its_hall_died_and_its_gold_is_what_its_mines_hold()
+    {
+        var lines = Run("""
+            SetPlayerState(p, PLAYER_STATE_RESOURCE_GOLD, 1000)
+            local hall = CreateUnit(p, id("htow"), 0, 0, 0)
+            SetResourceAmount(CreateUnit(Player(PLAYER_NEUTRAL_PASSIVE), id("ngol"), 500, 0, 0), 4000)
+            SetResourceAmount(CreateUnit(Player(PLAYER_NEUTRAL_PASSIVE), id("ngol"), 5000, 0, 0), 7000)
+            CreateUnit(p, id("hpea"), 200, 0, 0)
+            print(TownHasHall(0), TownHasMine(0), GetMinesOwned(), GetGoldOwned(), TownWithMine())
+            KillUnit(hall)
+            print(TownHasHall(0), TownHasMine(0), GetMinesOwned(), GetGoldOwned(), TownWithMine())
+            print(SetProduce(1, id("htow"), 0))
+            TimerStart(CreateTimer(), 20, false, function() print(TownHasHall(0), TownHasHall(1), GetMinesOwned(), GetGoldOwned(), GetUnitCount(id("htow"))) end)
+            """, 21);
+
+        Assert.Equal([
+            "true\ttrue\t1\t4000\t0",   // the mine beside the hall is the one it has; the far one is nobody's
+            "false\ttrue\t0\t0\t-1",    // the hall gone, the town is still town 0 and still has a mine, which the player no longer works
+            "true",                        // so a hall is built there again, as the scripts ask (MeleeTownHall)
+            "true\tfalse\t1\t4000\t1",
+        ], lines);
+    }
+
+    [Fact]
+    public void A_haunted_mine_is_made_of_the_gold_mine_and_is_a_town_of_its_own()
+    {
+        var lines = Run("""
+            SetPlayerState(p, PLAYER_STATE_RESOURCE_GOLD, 1000)
+            SetPlayerState(p, PLAYER_STATE_RESOURCE_LUMBER, 1000)
+            CreateUnit(p, id("htow"), 0, 0, 0)
+            local mine = CreateUnit(Player(PLAYER_NEUTRAL_PASSIVE), id("ngol"), 1500, 0, 0)
+            SetResourceAmount(mine, 5000)
+            local a, b = CreateUnit(p, id("uaco"), 1300, 0, 0), CreateUnit(p, id("uaco"), -200, -1400, 0)
+            print(GetNextExpansion(), SetExpansion(a, id("ugol")), IssueBuildOrderById(b, id("ugol"), -200, -1500))
+            TimerStart(CreateTimer(), 10, false, function()
+                local g = CreateGroup()
+                GroupEnumUnitsOfPlayer(g, p, nil)
+                local haunted
+                for i = 0, BlzGroupGetSize(g) - 1 do if GetUnitTypeId(BlzGroupUnitAt(g, i)) == id("ugol") then haunted = BlzGroupUnitAt(g, i) end end
+                print(GetUnitCount(id("ugol")), GetUnitX(haunted), GetResourceAmount(haunted), GetUnitTypeId(mine), GetPlayerState(p, PLAYER_STATE_RESOURCE_GOLD))
+                print(TownHasHall(1), TownHasMine(1), GetMinesOwned(), GetGoldOwned(), GetNextExpansion())
+            end)
+            """, 11);
+
+        Assert.Equal([
+            "0\ttrue\ttrue",
+            "1\t1500.0\t5000\t0\t775",   // one haunted mine, on the gold mine, with its gold, the gold mine gone; none was made or paid for where no mine stands
+            "false\ttrue\t1\t5000\t-1",  // town 1 is the mine with no hall, the player's own, so it counts, and no mine is left to expand to
+        ], lines);
+    }
+
+    [Fact]
+    public void A_player_s_town_halls_are_counted_whatever_their_tier_and_while_they_are_built()
+    {
+        var lines = Run("""
+            SetPlayerState(p, PLAYER_STATE_RESOURCE_GOLD, 1000)
+            local hall = CreateUnit(p, id("htow"), 0, 0, 0)
+            CreateUnit(p, id("hkee"), 1500, 0, 0)
+            CreateUnit(p, id("halt"), 0, 1500, 0)
+            print(BlzGetPlayerTownHallCount(p), BlzGetPlayerTownHallCount(e), BlzGetPlayerTownHallCount(nil))
+            IssueBuildOrderById(CreateUnit(p, id("hpea"), -1500, 0, 0), id("htow"), -1500, 50)
+            TimerStart(CreateTimer(), 1, false, function()
+                KillUnit(hall)
+                print(BlzGetPlayerTownHallCount(p), GetUnitCountDone(id("htow")))
+            end)
+            """, 2);
+
+        Assert.Equal(["2\t0\t0", "2\t0"], lines);
     }
 }

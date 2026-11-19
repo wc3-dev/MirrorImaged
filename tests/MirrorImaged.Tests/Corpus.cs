@@ -4,14 +4,14 @@ namespace MirrorImaged.Tests;
 
 /// <summary>
 /// How the tests that run every map of the install share the work: each test is a theory of <see cref="Shards"/> parts, so a part ends inside
-/// the 10 minutes the test run gives a test (tests/Tests.runsettings), and a part runs its maps side by side on half the PC's processors
-/// (decisions D440, D441). The two corpus classes are one collection, so they never run at once.
+/// the 10 minutes the test run gives a test (tests/Tests.runsettings) on a PC that is busy with other work too, and a part runs its maps side by
+/// side on half the PC's processors (decisions D440, D441, D494). The two corpus classes are one collection, so they never run at once.
 /// </summary>
 [CollectionDefinition(Name)]
 public sealed class Corpus
 {
     public const string Name = "Corpus";
-    public const int Shards = 8;
+    public const int Shards = 24;
 
     public static TheoryData<int> Parts => [.. Enumerable.Range(0, Shards)];
 

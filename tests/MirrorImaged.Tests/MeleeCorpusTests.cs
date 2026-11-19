@@ -7,9 +7,10 @@ using Xunit.Abstractions;
 namespace MirrorImaged.Tests;
 
 /// <summary>
-/// A4 and A10 on the installed game's melee maps: a person in the first slot and computers in the others play 30 simulated minutes without a
-/// script error, the computers train units, and a 4-player map goes through 30 game minutes in under 60 seconds. Set MIRROR_MELEE to a part of a
-/// map's name to run only the maps with it. The whole set runs in parts (<see cref="Corpus"/>).
+/// A4 and A10 on the installed game's melee maps: a person in the first slot, who gives no orders, and computers in the others play 30 simulated
+/// minutes without a script error; each computer trains units, and on each map a computer takes a second town hall and a unit is killed. A 4-player
+/// map goes through 30 game minutes in under 60 seconds. Set MIRROR_MELEE to a part of a map's name to run only the maps with it. The whole set
+/// runs in parts (<see cref="Corpus"/>).
 /// </summary>
 [Trait("Needs", "Game")]
 [Collection(Corpus.Name)]
@@ -75,19 +76,36 @@ public sealed class MeleeCorpusTests(ITestOutputHelper output) : IDisposable
                 File.WriteAllBytes(path, Corpus.Read(storage, name));
                 if (Seats(path) is not { } seats) return;
                 using var simulation = Simulation.Load(path, new SimulationOptions { Users = [seats.User], Computers = seats.Computers });
-                int Units(int player) => simulation.Units(player).Count;
-                var before = seats.Computers.Select(Units).ToArray();
-                var (creeps, person) = (Units(24), Units(seats.User));
+                // Looked at each game minute: a player's units, a computer's town halls, and the units that lie dead, which a fight killed (one
+                // that is gone without a body was taken away: a defeated player's, a worker that became its building)
+                int[] sides = [24, seats.User, .. seats.Computers];
+                var (first, most, halls, killed, last) = (new int[sides.Length], new int[sides.Length], new int[sides.Length], new int[sides.Length], new int[sides.Length]);
+                var alive = new Dictionary<int, int>(); // each living unit's side, as it was when last looked at
                 var clock = Stopwatch.StartNew();
-                try { simulation.Advance(TimeSpan.FromMinutes(30)); }
-                catch (LuaException) when (simulation.Stopped is not null) { }
-                var after = seats.Computers.Select(Units).ToArray();
-                // Each computer's units at the start and the end and its town halls at the end; the creeps and the person's units tell of the fighting
-                lines[at] = $"{name}: {clock.Elapsed.TotalSeconds:0.0} s, creeps {creeps} to {Units(24)}, the person's units {person} to {Units(seats.User)}, computers "
-                    + string.Join(", ", seats.Computers.Select((player, n) => $"{player}: {before[n]} to {after[n]} units, {simulation.Units(player).Count(u => Halls.Contains(u.Type))} halls"));
+                for (var minute = 0; minute <= 30 && simulation.Stopped is null; minute++)
+                {
+                    if (minute > 0)
+                        try { simulation.Advance(TimeSpan.FromMinutes(1)); }
+                        catch (LuaException) when (simulation.Stopped is not null) { }
+                    var now = sides.Select(side => simulation.Units(side)).ToArray();
+                    var ids = now.SelectMany((units, side) => units.Select(u => (u.Id, side))).ToDictionary(u => u.Id, u => u.side);
+                    foreach (var (id, side) in alive)
+                        if (!ids.ContainsKey(id) && simulation.Unit(id) is { Dead: true }) killed[side]++;
+                    alive = ids;
+                    for (var n = 0; n < sides.Length; n++)
+                    {
+                        if (minute == 0) first[n] = now[n].Count;
+                        (most[n], halls[n], last[n]) = (Math.Max(most[n], now[n].Count), Math.Max(halls[n], now[n].Count(u => Halls.Contains(u.Type))), now[n].Count);
+                    }
+                }
+                lines[at] = $"{name}: {clock.Elapsed.TotalSeconds:0.0} s, creeps {first[0]} to {last[0]} ({killed[0]} killed), the person's units {first[1]} to {last[1]} ({killed[1]} killed), computers "
+                    + string.Join(", ", seats.Computers.Select((player, n) => $"{player}: {first[n + 2]} to {last[n + 2]} units, {most[n + 2]} at most, {halls[n + 2]} halls at most, {killed[n + 2]} killed"));
                 if (simulation.Stopped is not null) problems.Add($"{name}: stopped: {simulation.Stopped.Message.Split('\n')[0]}");
                 foreach (var line in simulation.Log.Where(l => l.Split(' ').ElementAtOrDefault(1) == "error:").Take(1)) problems.Add($"{name}: {line}");
-                if (after.Sum() <= before.Sum()) problems.Add($"{name}: the computers trained no units ({before.Sum()} to {after.Sum()})");
+                for (var n = 2; n < sides.Length; n++)
+                    if (most[n] <= first[n]) problems.Add($"{name}: computer {sides[n]} trained no units ({first[n]} at the start, {most[n]} at most)");
+                if (halls.Skip(2).All(count => count < 2)) problems.Add($"{name}: no computer took a second town hall");
+                if (killed.Sum() == 0) problems.Add($"{name}: no unit was killed");
             }
             catch (Exception e) { problems.Add($"{name}: {e.GetType().Name}: {e.Message.Split('\n')[0]}"); }
             finally { File.Delete(path); }
