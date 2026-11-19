@@ -1,0 +1,43 @@
+name: Chrome start probe
+
+# Temporary: measures how long headless Chrome takes to open its debugging port on the Linux runner, idle and while the test suite runs beside it.
+on:
+  push:
+    branches: [task/linux-browser]
+  workflow_dispatch:
+    inputs:
+      switches:
+        description: Extra switches for Chrome
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    strategy:
+      fail-fast: false
+      matrix:
+        load: [idle, suite]
+        copy: [1, 2]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        if: matrix.load == 'suite'
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build
+        if: matrix.load == 'suite'
+        run: dotnet build MirrorImaged.slnx
+
+      - name: Start Chrome 40 times
+        shell: bash
+        env:
+          EXTRA: ${{ inputs.switches }}
+          LOAD: ${{ matrix.load }}
+        run: bash tools/chrome-start-probe.sh
