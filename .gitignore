@@ -4,3 +4,7 @@ obj/
 .idea/
 *.user
 TestResults/
+node_modules/
+examples/typescript/*/war3map.lua
+examples/csharp/*/build/
+examples/csharp/*/map.w3x/

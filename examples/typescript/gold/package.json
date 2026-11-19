@@ -1,0 +1,11 @@
+{
+  "name": "gold",
+  "private": true,
+  "scripts": {
+    "build": "tstl"
+  },
+  "devDependencies": {
+    "typescript": "6.0.2",
+    "typescript-to-lua": "1.37.2"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "moonwell.cli": {
+      "version": "0.20.1",
+      "commands": ["moonwell"]
+    }
+  }
+}
