@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
+    <!-- The corpus tests run six maps at once in one process: with the workstation collector each waits on the others' garbage (decisions D442) -->
+    <ServerGarbageCollector>true</ServerGarbageCollector>
   </PropertyGroup>
 
   <ItemGroup>

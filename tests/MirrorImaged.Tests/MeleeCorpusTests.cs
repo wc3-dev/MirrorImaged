@@ -9,9 +9,10 @@ namespace MirrorImaged.Tests;
 /// <summary>
 /// A4 and A10 on the installed game's melee maps: a person in the first slot and computers in the others play 30 simulated minutes without a
 /// script error, the computers train units, and a 4-player map goes through 30 game minutes in under 60 seconds. Set MIRROR_MELEE to a part of a
-/// map's name to run only the maps with it (the whole set takes a while).
+/// map's name to run only the maps with it. The whole set runs in parts (<see cref="Corpus"/>).
 /// </summary>
 [Trait("Needs", "Game")]
+[Collection(Corpus.Name)]
 public sealed class MeleeCorpusTests(ITestOutputHelper output) : IDisposable
 {
     readonly string _folder = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())).FullName;
@@ -50,37 +51,50 @@ public sealed class MeleeCorpusTests(ITestOutputHelper output) : IDisposable
         Assert.True(clock.Elapsed < TimeSpan.FromSeconds(60), $"{clock.Elapsed.TotalSeconds:0.0} s");
     }
 
-    [InstallFact]
-    public void Every_melee_map_runs_30_minutes_with_computers_without_a_script_error()
+    // The town halls of the four races, each with what it upgrades to: more than one is a computer that expanded
+    static readonly HashSet<string> Halls = ["htow", "hkee", "hcas", "ogre", "ostr", "ofrt", "etol", "etoa", "etoe", "unpl", "unp1", "unp2"];
+
+    [InstallTheory]
+    [MemberData(nameof(Corpus.Parts), MemberType = typeof(Corpus))]
+    public void Every_melee_map_runs_30_minutes_with_computers_without_a_script_error(int part)
     {
         using var storage = CascStorage.Open(GameInstall.Require());
         var only = Environment.GetEnvironmentVariable("MIRROR_MELEE");
-        var maps = storage.Names
+        var maps = Corpus.Part(storage.Names
             .Where(name => name.StartsWith("War3.w3mod:Maps/", StringComparison.OrdinalIgnoreCase) && Path.GetExtension(name).ToLowerInvariant() is ".w3x" or ".w3m")
             .Where(name => only is null || name.Contains(only, StringComparison.OrdinalIgnoreCase))
-            .Order(StringComparer.Ordinal).ToList();
-        var problems = new List<string>();
-        foreach (var name in maps)
+            .Order(StringComparer.Ordinal), part);
+        var lines = new string?[maps.Count];
+        var found = new List<string>[maps.Count];
+        Corpus.Each(maps, (at, name) =>
         {
-            var path = Extract(storage, name);
+            var problems = found[at] = [];
+            var path = Path.Combine(_folder, at + Path.GetExtension(name));
             try
             {
-                if (Seats(path) is not { } seats) continue;
+                File.WriteAllBytes(path, Corpus.Read(storage, name));
+                if (Seats(path) is not { } seats) return;
                 using var simulation = Simulation.Load(path, new SimulationOptions { Users = [seats.User], Computers = seats.Computers });
-                var before = simulation.Units().Count(u => seats.Computers.Contains(u.Player));
+                int Units(int player) => simulation.Units(player).Count;
+                var before = seats.Computers.Select(Units).ToArray();
+                var (creeps, person) = (Units(24), Units(seats.User));
                 var clock = Stopwatch.StartNew();
                 try { simulation.Advance(TimeSpan.FromMinutes(30)); }
                 catch (LuaException) when (simulation.Stopped is not null) { }
-                var after = simulation.Units().Count(u => seats.Computers.Contains(u.Player));
-                output.WriteLine($"{name}: {clock.Elapsed.TotalSeconds:0.0} s, computers' units {before} to {after}");
+                var after = seats.Computers.Select(Units).ToArray();
+                // Each computer's units at the start and the end and its town halls at the end; the creeps and the person's units tell of the fighting
+                lines[at] = $"{name}: {clock.Elapsed.TotalSeconds:0.0} s, creeps {creeps} to {Units(24)}, the person's units {person} to {Units(seats.User)}, computers "
+                    + string.Join(", ", seats.Computers.Select((player, n) => $"{player}: {before[n]} to {after[n]} units, {simulation.Units(player).Count(u => Halls.Contains(u.Type))} halls"));
                 if (simulation.Stopped is not null) problems.Add($"{name}: stopped: {simulation.Stopped.Message.Split('\n')[0]}");
                 foreach (var line in simulation.Log.Where(l => l.Split(' ').ElementAtOrDefault(1) == "error:").Take(1)) problems.Add($"{name}: {line}");
-                if (after <= before) problems.Add($"{name}: the computers trained no units ({before} to {after})");
+                if (after.Sum() <= before.Sum()) problems.Add($"{name}: the computers trained no units ({before.Sum()} to {after.Sum()})");
             }
             catch (Exception e) { problems.Add($"{name}: {e.GetType().Name}: {e.Message.Split('\n')[0]}"); }
             finally { File.Delete(path); }
-        }
+        });
 
-        Assert.True(problems.Count == 0, string.Join('\n', problems));
+        foreach (var line in lines.OfType<string>()) output.WriteLine(line);
+        var all = found.SelectMany(problems => problems).ToList();
+        Assert.True(all.Count == 0, string.Join('\n', all));
     }
 }
