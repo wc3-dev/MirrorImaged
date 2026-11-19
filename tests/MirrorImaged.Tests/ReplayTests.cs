@@ -354,6 +354,7 @@ public sealed class ReplayTests : IDisposable
         using var simulation = Simulation.Load(path, "", options, Standard());
 
         Assert.Equal([0, 1], options.Users);
+        Assert.Equal((GraphicsMode.Reforged, GraphicsMode.Classic), (options.Graphics, Simulation.Seats(path, replay, graphics: GraphicsMode.Classic).Graphics));
         Assert.Equal(["0\t3\t1\ttrue", "1\t1\t0\ttrue", "false"], simulation.Log.Select(line => line[(line.IndexOf(": ", StringComparison.Ordinal) + 2)..]));
     }
 
