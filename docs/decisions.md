@@ -2698,3 +2698,26 @@ are this lane's; D458 to D469 are not used.
 - **D457 (Mirror Image's summon events, measured):** the game fires a summon event for each image and one more whose summoned unit is none: 2, 3 and 4 events at levels 1 to 3, the first DataD (0.5 s)
   after the effect and the last 0.16 to 0.18 s later, which of them is the one without a unit changing from run to run. Here the images' events come at DataD and the one without a unit 0.18 s later,
   `GetSummoningUnit` the caster in each; the order and the 0.18 are this lane's choice, so the times are Close. This closes the difference D415 left.
+
+- **D510 (folder maps):** a folder named as a map (`x.w3x`, `x.w3m`) that holds the map's files, the form Moonwell builds and the game loads, is read wherever an archive is: `MapArchive.Read` takes
+  it, and its files go by the names they have in an archive, in any case and with either slash (`scripts\war3map.j` finds `Scripts/War3Map.j`). The folder's files are listed once, as the map is
+  read: a file put there later isn't found by `MapArchive.File`. Its `_Locales` folders are read no more than an archive's are.
+
+- **D511 (a map named from the install is read in the one place):** `War3.w3mod:Maps/...` is read from the install's storage in `MapArchive.Read`, the one place a map is opened, so the C# API, the
+  Lua tests and every command take it. The command line's own copy to a temporary file is gone, and `mirror check` reads its arguments as the other commands do. A recording or a snapshot of such a
+  map names it as the install does, where it named the temporary file. A path with nothing at it says "There is no map at ..." in place of War3Net's "Failed to open the MpqArchive". This lane's
+  choice: the map's bytes are kept while the run lives, and the storage is opened anew at each read.
+
+- **D512 (help):** `--help` or `-h` anywhere on the line, or `mirror help <command>`, prints that command's line of the usage and what it does, on standard output, and exits 0; with no command,
+  every command. Asked of a command there isn't, the usage is an error (exit 2). It is printed from the table the usage is printed from, so a command can't be in one and not the other. This lane's
+  choice: Spectre.Console, which the command line uses, has no help of its own, and Spectre.Console.Cli, which has, is a second package that reads the arguments itself, so every command would be
+  written again while three other lanes change `Program.cs`.
+
+- **D513 (stepping back on the command line):** this lane reads the plan's section 7 as naming no command for stepping back: the rows that are commands are written `mirror ...`, and "Stepping
+  back" is a row beside "Snapshots" and "C# API", which is `Simulation.StepBack`. But the acceptance line A11 is checked by the CLI tests, so `mirror snapshot` takes `--back n`: it runs to `--at`,
+  steps back n seconds and saves the world there. The test saves the run forward to the same step too and finds the same hash, and `mirror compare` the same world. No command of its own.
+
+- **D514 (the corpus of test maps):** `TestMapCorpusTests` runs every map in this computer's `Documents\Warcraft III\Maps`, map files and folder maps, but for its `amai` and `Download` folders
+  (others' maps), for 60 simulated seconds, and fails for one that stops or logs a script error. `Needs=Game`; skipped where there is no install or no such folder. This lane's choices: the maps are
+  found, not named, so a new test map is checked with nothing changed, and none is in the repository; "runs to its end" is a minute, as the audit's run by hand was; nothing is compared with the
+  game's output, as none is recorded for these maps. On 2026-11-19 all 24 ran: 17 map files and 7 folder maps.

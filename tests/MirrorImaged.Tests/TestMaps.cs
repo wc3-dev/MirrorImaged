@@ -32,5 +32,21 @@ public sealed class TestMaps : IDisposable
         return path;
     }
 
+    /// <summary>The map at <paramref name="packed"/> as a folder map: a folder named as a map that holds the map's files.</summary>
+    public string Unpack(string packed)
+    {
+        var folder = Path.Combine(_folder, Path.GetRandomFileName() + ".w3x");
+        using var archive = MpqArchive.Open(packed, true);
+        foreach (var name in archive.Select(entry => entry.FileName).OfType<string>().ToList())
+        {
+            var file = Path.Combine(folder, name.Replace('\\', Path.DirectorySeparatorChar));
+            Directory.CreateDirectory(Path.GetDirectoryName(file)!);
+            using var from = archive.OpenFile(name);
+            using var to = File.Create(file);
+            from.CopyTo(to);
+        }
+        return folder;
+    }
+
     public void Dispose() => Directory.Delete(_folder, true);
 }
