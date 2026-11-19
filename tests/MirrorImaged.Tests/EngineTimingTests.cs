@@ -40,6 +40,8 @@ public sealed class EngineTimingTests : IDisposable
             .Add(ObjectKind.Unit, "Hpal", Values("unam=Paladin;uhpm=650;umpm=0;ustr=22;uagi=13;uint=17;umvs=270;umvt=foot;uacq=600;uaen=1;ua1w=normal;ua1t=hero;ua1g=ground;ua1b=10;ua1d=0;ua1s=1;ua1c=2.2;ua1r=100;udp1=0.433;ucol=32;udef=0"))
             .Add(ObjectKind.Unit, "earc", Values("unam=Archer;uhpm=245;umvs=270;umvt=foot;uacq=700;uaen=1;ua1w=missile;ua1z=900;ulpy=62;ua1t=pierce;ua1g=ground;ua1b=10;ua1d=0;ua1s=1;ua1c=1.5;ua1r=700;udp1=0.72;ucol=16;udef=0"))
             .Add(ObjectKind.Unit, "hmpr", Values("unam=Priest;uhpm=290;umpm=200;umpi=0;umpr=0.67;umvs=270;umvt=foot;uaen=0;ucol=16;udef=0;ucpt=0.5;ucbs=0.67"))
+            .Add(ObjectKind.Unit, "hmtm", Values("unam=Mortar Team;uhpm=360;umvs=270;umvt=foot;uacq=1150;uaen=1;ua1w=artillery;ua1z=900;ua1t=siege;ua1g=ground;ua1b=49;ua1d=1;ua1s=1;ua1c=3.5;ua1r=1150;udp1=0.5;ua1f=25;ua1h=150;ua1q=250;uhd1=0.4;uqd1=0.1;ucol=16;udef=0"))
+            .Add(ObjectKind.Unit, "hwlk", Values("unam=Walker;uhpm=50000;umvs=150;umvt=foot;uaen=0;ucol=31;udef=0"))
             .Add(ObjectKind.Unit, "hfoo", Values("unam=Footman;uhpm=50000;umvs=0;umvt=foot;uaen=0;ucol=31;udef=0"));
     }
 
@@ -222,6 +224,101 @@ public sealed class EngineTimingTests : IDisposable
             """, 6);
 
         Assert.Equal([$"{landed}\t1.50"], lines);
+    }
+
+    // The Lua of a fight whose foe starts to walk (dx, dy) at the attacker's first swing, as probe units-missile-homing has it: it prints the time from
+    // the launch (the damage point after the attacked event) to the first hit, the hit's damage, and how fast the missile closed on the foe
+    static string Chase(string attacker, int distance, int dx, int dy, int walk, int speed, double point, int ahead) => $$"""
+        local shooter, foe = make("{{attacker}}"), make("hwlk", 1, {{distance}}, 0)
+        SetUnitMoveSpeed(foe, {{walk}})
+        if {{speed}} > 0 then BlzSetUnitWeaponRealField(shooter, UNIT_WEAPON_RF_ATTACK_PROJECTILE_SPEED, 0, {{speed}}) end
+        local attacked, launched, way, t
+        t = CreateTrigger()
+        TriggerRegisterUnitEvent(t, foe, EVENT_UNIT_ATTACKED)
+        TriggerAddAction(t, function()
+            if attacked then return end
+            attacked = true
+            if {{walk}} > 0 then IssuePointOrder(foe, "move", GetUnitX(foe) + 3000 * {{dx}}, GetUnitY(foe) + 3000 * {{dy}}) end
+            at({{point.ToString(System.Globalization.CultureInfo.InvariantCulture)}}, function() launched, way = TimerGetElapsed(clock), math.sqrt(GetUnitX(foe) ^ 2 + GetUnitY(foe) ^ 2) end)
+        end)
+        t = CreateTrigger()
+        TriggerRegisterUnitEvent(t, foe, EVENT_UNIT_DAMAGED)
+        TriggerAddAction(t, function()
+            if not launched then return end
+            local flight = TimerGetElapsed(clock) - launched
+            launched = nil
+            print(string.format("%.2f", flight), string.format("%.1f", GetEventDamage()), string.format("%.0f", (way - {{ahead}}) / flight))
+            PauseUnit(shooter, true)
+        end)
+        IssueTargetOrder(shooter, "attack", foe)
+        """;
+
+    // The game's archer (missile 62 ahead) at a footman that walks at 150 from its first swing: away from 300 the hit came 0.46 s after the launch
+    // (closing at 742 a second, to 0.01 s), at missile speed 300 2.28 s (150); closer from 500 at 300, 0.75 s (447). So the missile follows, and closes
+    // at the difference of the speeds. The times differ from the game's as the foe had walked 113 here by the launch, and 103 there
+    [Theory]
+    [InlineData(300, 1, 0, "0.47", "749")]
+    [InlineData(300, 1, 300, "2.34", "150")]
+    [InlineData(500, -1, 300, "0.72", "450")]
+    public void A_missile_follows_a_target_that_walks_away_or_closer(int distance, int way, int speed, string flight, string closing)
+    {
+        var lines = Run(Chase("earc", distance, way, 0, 150, speed, 0.72, 62), 6);
+
+        Assert.Equal([$"{flight}	10.0	{closing}"], lines);
+    }
+
+    // Across the archer's line the game's missile (speed 300) took 1.31 s to a footman 300 away walking at 150, where flying straight to where it
+    // would meet it takes 1.18 and to where it stood 0.85: the missile turns to where its target is as it flies. From this run's launch, the foe 113
+    // along, a missile that turns all the time takes 1.35
+    [Fact]
+    public void A_missile_turns_after_a_target_that_walks_across()
+    {
+        var lines = Run(Chase("earc", 300, 0, 1, 150, 300, 0.72, 62), 6);
+
+        Assert.Equal(["1.36	10.0	190"], lines);
+    }
+
+    // A mortar team's shell lands where its target stood as it left (areas 25, 150 and 250, factors 0.40 and 0.10): the game's footman took all of
+    // the damage standing and a tenth 221 away, walking at 270. Here a foe that walks 115 in the flight takes 0.40 of it, 208 a tenth, and one that
+    // gets further than 250 none
+    [Theory]
+    [InlineData(0, 0, "0.67	50.0	900")]
+    [InlineData(150, 0, "0.75	20.0	900")]
+    [InlineData(270, 0, "0.82	5.0	900")]
+    [InlineData(270, 300, null)]
+    public void A_shell_lands_where_its_target_stood_and_hurts_it_by_how_far_it_got(int walk, int speed, string? hit)
+    {
+        var lines = Run(Chase("hmtm", 600, 1, 0, walk, speed, 0.5, 0), 8);
+
+        Assert.Equal(hit is null ? [] : [hit], lines);
+    }
+
+    // An archer's missile at a foe 500 away is in the world from the damage point (0.72 s) for its flight of 0.49 s: 62 ahead of the archer at first,
+    // then further each step, and gone when it has landed
+    [Fact]
+    public void A_missile_in_flight_is_read_with_its_place_at_each_step()
+    {
+        using var simulation = Simulation.Load(_maps.Build("""
+            function config() end
+            function main()
+                archer, foe = CreateUnit(Player(0), FourCC("earc"), 0, 0, 0), CreateUnit(Player(1), FourCC("hfoo"), 500, 0, 0)
+                IssueTargetOrder(archer, "attack", foe)
+            end
+            """), "", data: Standard());
+        Assert.True(simulation.Until(() => simulation.Missiles().Count > 0, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(1.0 / 1024)));
+
+        var first = Assert.Single(simulation.Missiles());
+        Assert.Equal((0, simulation.Units(1)[0].Id, 62f, 0f), (first.Player, first.Target, first.X, first.Y));
+        var places = new List<float>();
+        for (var step = 0; step < 100; step++)
+        {
+            simulation.AdvanceSteps(1);
+            places.Add(Assert.Single(simulation.Missiles()).X);
+        }
+        Assert.Equal(places.Order(), places);
+        Assert.Equal(62 + 900 * 100 / 1024.0, places[^1], 0.01);
+        simulation.Advance(TimeSpan.FromSeconds(0.4));
+        Assert.Empty(simulation.Missiles());
     }
 
     // Storm Bolt (missile speed 1000) from a Priest (cast point 0.50): its two hits 0.40 s after the effect at 400, and 0.80 with the speed set to 500

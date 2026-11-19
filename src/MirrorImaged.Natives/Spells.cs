@@ -155,18 +155,16 @@ public sealed partial class GameNatives
                 SetLife(ally, ally.Life + amount);
                 break;
             case var id when id == Code("AHtb") && target is unit foe && !foe.Dead:
-                // Storm Bolt: its missile flies as an attack's does, at the ability's missile speed (probe abilities-cast-timing: 0.40 s to a foe
-                // 400 away at 1000, 0.80 at 500), then a hit of 0 of unknown type and the damage of type sonic (facts, Damage)
-                void Land()
+                // Storm Bolt: its missile flies as an attack's does and follows the foe, at the ability's missile speed (probe abilities-cast-timing:
+                // 0.40 s to a foe 400 away at 1000, 0.80 at 500), then a hit of 0 of unknown type and the damage of type sonic (facts, Damage)
+                void Land(Missile _)
                 {
                     if (foe.Dead || foe.Removed) return;
                     UnitDamageTarget(caster, foe, 0, false, false, Convert<attacktype>(0), Convert<damagetype>(0), Convert<weapontype>(0));
                     UnitDamageTarget(caster, foe, amount, false, false, Convert<attacktype>(0), Convert<damagetype>(15), Convert<weapontype>(0));
                     if (!foe.Dead) Apply(foe, caster, StunBuff, Lasts(a, foe), false, b => b.Stun = true);
                 }
-                var flight = Game.Steps(Flight(caster, foe, BlzGetAbilityIntegerField(a, Convert<abilityintegerfield>(Code("amsp")))));
-                if (flight > 0) _game.At(_game.Step + flight, Land);
-                else Land();
+                Fire(caster, foe, BlzGetAbilityIntegerField(a, Convert<abilityintegerfield>(Code("amsp"))), true, Land);
                 break;
             case var id when id == Code("Aslo") && target is unit slowed && !slowed.Dead:
                 Apply(slowed, caster, SlowBuff, Lasts(a, slowed), false, b => (b.SpeedFactor, b.AttackSpeedBonus) = (1 - amount, -TagValue(a.Type, "DataB" + a.Level)));
