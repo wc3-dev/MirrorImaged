@@ -1,6 +1,19 @@
+using System.Diagnostics;
+using MirrorImaged.Data;
+
 namespace MirrorImaged.Tests;
 
-/// <summary>A14: the worked examples of the guide run: each map is built from its script and its Lua tests pass with <c>mirror test</c>.</summary>
+/// <summary>A fact that compiles TypeScript: skipped when there is no Warcraft III install or no <c>npm</c> on the path.</summary>
+public sealed class NodeFactAttribute : FactAttribute
+{
+    public NodeFactAttribute()
+    {
+        if (GameInstall.Find() is null) Skip = $"No Warcraft III install in {GameInstall.Place()}; set {GameInstall.Variable} to run it";
+        else if (ExamplesTests.OnPath(ExamplesTests.Npm) is null) Skip = "No npm on the path; install Node.js to run it";
+    }
+}
+
+/// <summary>A14: the worked examples of the guide run: each map is built from its source by its own tools and its Lua tests pass with <c>mirror test</c>.</summary>
 [Trait("Needs", "Game")]
 public sealed class ExamplesTests : IDisposable
 {
@@ -13,6 +26,12 @@ public sealed class ExamplesTests : IDisposable
         Directory.Delete(_folder, true);
     }
 
+    internal static string Npm => OperatingSystem.IsWindows() ? "npm.cmd" : "npm";
+
+    internal static string? OnPath(string file) =>
+        (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
+            .Select(folder => Path.Combine(folder, file)).FirstOrDefault(File.Exists);
+
     static string Examples()
     {
         for (var folder = new DirectoryInfo(AppContext.BaseDirectory); folder is not null; folder = folder.Parent)
@@ -20,21 +39,75 @@ public sealed class ExamplesTests : IDisposable
         throw new DirectoryNotFoundException("No examples folder above " + AppContext.BaseDirectory);
     }
 
-    [InstallTheory]
-    [InlineData("lua/gold", "war3map.lua", false)]
-    [InlineData("jass/gold", "war3map.j", true)]
-    [InlineData("typescript/gold", "../../lua/gold/war3map.lua", false)]
-    public void An_example_map_passes_its_lua_tests(string example, string script, bool jass)
+    // A copy of the example to build in, so the repository's folder gets no build output
+    string Copy(string example)
     {
-        var source = Path.Combine(Examples(), example);
-        var text = File.ReadAllText(Path.GetFullPath(Path.Combine(source, script)));
-        var map = _maps.Build(text, jass ? War3Net.Build.Info.ScriptLanguage.Jass : War3Net.Build.Info.ScriptLanguage.Lua);
-        File.Copy(map, Path.Combine(_folder, "gold.w3x"));
-        File.Copy(Path.Combine(source, "gold.test.lua"), Path.Combine(_folder, "gold.test.lua"));
+        var from = Path.Combine(Examples(), example);
+        var to = Path.Combine(_folder, "copy");
+        foreach (var file in Directory.GetFiles(from, "*", SearchOption.AllDirectories))
+        {
+            var name = Path.GetRelativePath(from, file);
+            if (name.Split(Path.DirectorySeparatorChar).Any(part => part is "node_modules" or "bin" or "obj" or "build" or "map.w3x")) continue;
+            Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(to, name))!);
+            File.Copy(file, Path.Combine(to, name));
+        }
+        return to;
+    }
 
-        var (exit, output, error) = CoverageTests.Mirror("test", _folder);
+    static void Run(string folder, string file, params string[] arguments)
+    {
+        using var process = Process.Start(new ProcessStartInfo(file, arguments) { WorkingDirectory = folder, RedirectStandardOutput = true, RedirectStandardError = true })!;
+        var error = process.StandardError.ReadToEndAsync();
+        var output = process.StandardOutput.ReadToEnd();
+        process.WaitForExit();
+        Assert.True(process.ExitCode == 0, $"{file} {string.Join(' ', arguments)}: {output}{error.Result}");
+    }
+
+    void Passes(string folder)
+    {
+        var (exit, output, error) = CoverageTests.Mirror("test", folder);
 
         Assert.True(exit == 0, output + error);
         Assert.Contains("PASS gold.test.lua", output);
+    }
+
+    void Passes(string script, bool jass, string test)
+    {
+        var map = _maps.Build(File.ReadAllText(script), jass ? War3Net.Build.Info.ScriptLanguage.Jass : War3Net.Build.Info.ScriptLanguage.Lua);
+        var folder = Directory.CreateDirectory(Path.Combine(_folder, "run")).FullName;
+        File.Copy(map, Path.Combine(folder, "gold.w3x"));
+        File.Copy(test, Path.Combine(folder, "gold.test.lua"));
+        Passes(folder);
+    }
+
+    [InstallTheory]
+    [InlineData("lua/gold", "war3map.lua", false)]
+    [InlineData("jass/gold", "war3map.j", true)]
+    public void An_example_map_passes_its_lua_tests(string example, string script, bool jass)
+    {
+        var source = Path.Combine(Examples(), example);
+        Passes(Path.Combine(source, script), jass, Path.Combine(source, "gold.test.lua"));
+    }
+
+    [NodeFact]
+    public void The_typescript_example_compiles_to_a_map_that_passes_its_lua_tests()
+    {
+        var copy = Copy("typescript/gold");
+        Run(copy, OnPath(Npm)!, "ci");
+        Run(copy, OnPath(Npm)!, "run", "build");
+
+        Passes(Path.Combine(copy, "war3map.lua"), false, Path.Combine(copy, "gold.test.lua"));
+    }
+
+    [InstallFact]
+    public void The_csharp_example_builds_with_moonwell_into_a_map_that_passes_its_lua_tests()
+    {
+        var copy = Copy("csharp/gold");
+        // The terrain a Moonwell project keeps in map.w3x, which World Editor saves and the repository holds no copy of
+        Directory.Move(_maps.Unpack(_maps.Build("")), Path.Combine(copy, "map.w3x"));
+        Run(copy, "dotnet", "tool", "restore");
+        Run(copy, "dotnet", "moonwell", "build");
+
+        Passes(copy);
     }
 }

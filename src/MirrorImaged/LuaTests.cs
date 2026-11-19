@@ -32,6 +32,7 @@ public sealed class LuaTestHost : IDisposable
         _lua.Register("__advance", args => With(args, simulation => simulation.Advance(TimeSpan.FromSeconds(Number(args, 1)))));
         _lua.Register("__advance_steps", args => With(args, simulation => simulation.AdvanceSteps((long)Number(args, 1))));
         _lua.Register("__step", args => [(double)Sim(args).Step]);
+        _lua.Register("__ticks", args => [(double)TimeSpan.FromSeconds(Number(args, 0)).Ticks]);
         _lua.Register("__hash", args => [Sim(args).StateHash()]);
         _lua.Register("__stopped", args => [Sim(args).Stopped?.Message]);
         _lua.Register("__log", args => [string.Join('\n', Sim(args).Log)]);
@@ -186,12 +187,13 @@ public sealed class LuaTestHost : IDisposable
           function sim:say(player, text) __say(h, player, text) end
           function sim:wait_until(check, within, every)
             every = every or 0.1
-            local spent = 0
+            -- counted in .NET ticks, as Until counts: added up as numbers, ten 0.1 s fall short of 1 s and an eleventh runs
+            local slice, limit, spent = __ticks(every), __ticks(within), 0
             while true do
               if check() then return true end
-              if spent >= within then return false end
+              if spent >= limit then return false end
               __advance(h, every)
-              spent = spent + every
+              spent = spent + slice
             end
           end
           function sim:close() __close(h) end

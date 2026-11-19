@@ -1,5 +1,7 @@
-// The same map in TypeScript, for TypeScriptToLua (tstl): `npx tstl` writes war3map.lua, and the tests are the Lua tests of the Lua example.
-export function main(): void {
+// The gold map in TypeScript. `npm run build` (TypeScriptToLua) writes war3map.lua from it.
+function config(): void {}
+
+function main(): void {
   TimerStart(CreateTimer(), 2, true, () => {
     SetPlayerState(Player(0), PLAYER_STATE_RESOURCE_GOLD, GetPlayerState(Player(0), PLAYER_STATE_RESOURCE_GOLD) + 10);
   });
