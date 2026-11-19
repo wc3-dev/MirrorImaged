@@ -17,9 +17,10 @@ public partial class unit
 // Movement and combat for units with orders and for idle ones that acquire enemies: a 1/32 s step in which a unit walks toward the
 // place or target of its order at its speed, attacks in range with its weapon (a swing, the damage at the damage point, then the cooldown)
 // and acquires the nearest enemy it may attack in its acquisition range when it has no order, holds position or attack-moves. Close:
-// units walk straight lines (no pathfinding or collision, only the unwalkable cells and the world's edge stop them), a missile's flight
-// is worked out as it leaves, and the facts' orders and events of waves 3 are the ones kept (docs/decisions.md, D352). Attacks come a
-// cooldown apart to the clock's step, and a hero's agility quickens them (probe units-attack-timing, D452 to D454).
+// units walk straight lines (no pathfinding or collision, only the unwalkable cells and the world's edge stop them), a missile flies
+// level, and the facts' orders and events of waves 3 are the ones kept (docs/decisions.md, D352). Attacks come a
+// cooldown apart to the clock's step, and a hero's agility quickens them (probe units-attack-timing, D452 to D454). A missile is a thing in
+// flight that follows its target, and an artillery shell one that lands where its target stood (probe units-missile-homing, D620 to D622).
 public sealed partial class GameNatives
 {
     const double TickSeconds = 1.0 / 32;
@@ -240,27 +241,123 @@ public sealed partial class GameNatives
 
     static readonly int LaunchAhead = Code("ulpy");
 
-    // How long a missile flies from the unit to the target (probe units-attack-timing): the way between them, less how far ahead of the unit
-    // its missiles start (launchY: an archer's 62, an Archmage's 0), at the missile's speed. A short way lands at once: an archer's 88 did and
-    // an Archmage's 100 flew, and the middle is taken here
-    // shortcut: worked out as the missile leaves, so a target that walks is hit as if it stood; upgrade by flying the missile step by step
-    double Flight(unit from, unit to, float speed) => Distance(from, to) - from.Type.Real(LaunchAhead) is >= 94 and var way && speed > 0 ? way / speed : 0;
+    /// <summary>A missile in flight: where it is, what it follows or where it lands, and what its landing does.</summary>
+    internal sealed class Missile
+    {
+        public int Id, Player;             // the run's own count of missiles, and the player of the unit it left
+        public unit? Target;               // the unit it follows; none for a shell, which flies to a place
+        public float Speed, ToX, ToY;      // where it flies to: the target's place when last looked at, or the shell's place
+        public double X, Y, Vx, Vy;        // where it was at the step Seen, and how far it flies a second
+        public double FromX, FromY;        // where it left
+        public long Seen, Left;
+        public (float X, float Y)? Was;    // the target's place a look ago
+        public required Action<Missile> Land;
 
-    // The damage point: a missile leaves and lands after its flight, any other attack lands now
+        public (double X, double Y) Place(long step) => (X + Vx * (step - Seen) / Game.StepsPerSecond, Y + Vy * (step - Seen) / Game.StepsPerSecond);
+    }
+
+    readonly List<Missile> _missiles = [];
+    int _missilesMade;
+
+    /// <summary>The missiles in flight, the first to leave first.</summary>
+    internal IReadOnlyList<Missile> Missiles => _missiles;
+
+    /// <summary>The flights that landed, each as <see cref="Flight"/> gives it; kept only once a recorder set a list here.</summary>
+    internal List<double[]>? Flights;
+
+    /// <summary>A missile's flight so far: when it left and now in seconds, its player, and where it left and is.</summary>
+    internal double[] Flight(Missile m)
+    {
+        var (x, y) = m.Place(_game.Step);
+        return [(double)m.Left / Game.StepsPerSecond, (double)_game.Step / Game.StepsPerSecond, m.Player, Math.Round(m.FromX, 1), Math.Round(m.FromY, 1), Math.Round(x, 1), Math.Round(y, 1)];
+    }
+
+    // A missile leaves the unit for the target (probes units-attack-timing and units-missile-homing): it starts as far ahead of the unit as its
+    // missiles do (launchY: an archer's 62, an Archmage's 0), flies at the speed, and lands when it reaches the target, which it follows, or
+    // the place the target stood at as it left when it doesn't follow. A short way lands at once: an archer's 88 did and an Archmage's 100
+    // flew, and the middle is taken here
+    void Fire(unit from, unit to, float speed, bool follows, Action<Missile> land)
+    {
+        var (dx, dy) = (to.X - from.X, to.Y - from.Y);
+        var (between, ahead) = (Distance(from, to), from.Type.Real(LaunchAhead));
+        var missile = new Missile { Player = GetPlayerId(from.Owner), Target = follows ? to : null, Speed = speed, ToX = to.X, ToY = to.Y, X = to.X, Y = to.Y, Seen = _game.Step, Left = _game.Step, Land = land };
+        if (between - ahead < 94 || speed <= 0) { land(missile); return; }
+        (missile.X, missile.Y) = (from.X + dx / between * ahead, from.Y + dy / between * ahead);
+        (missile.FromX, missile.FromY, missile.Id) = (missile.X, missile.Y, ++_missilesMade);
+        _missiles.Add(missile);
+        Fly(missile);
+    }
+
+    // The missile's look at its target, every step of the engine: it turns to where the target is now, and lands in this step's time when
+    // it gets there in it, the target counted as walking on as it did since the last look (the game's archer closed on a footman walking
+    // away at the difference of their speeds). A target moved faster than the missile flies was put somewhere, not walking, and counts as standing
+    void Fly(Missile m)
+    {
+        var (vx, vy) = (0.0, 0.0);
+        if (m.Target is { Removed: false } t)
+        {
+            if (m.Was is var (wasX, wasY)) (vx, vy) = ((t.X - wasX) / TickSeconds, (t.Y - wasY) / TickSeconds);
+            if (vx * vx + vy * vy >= m.Speed * m.Speed) (vx, vy) = (0, 0);
+            (m.ToX, m.ToY, m.Was) = (t.X, t.Y, (t.X, t.Y));
+        }
+        var (dx, dy) = (m.ToX - m.X, m.ToY - m.Y);
+        // The time t at which the way to the target, walking, is what the missile flies in t: (d + v t)^2 = (speed t)^2
+        var (a, b, c) = ((double)m.Speed * m.Speed - vx * vx - vy * vy, dx * vx + dy * vy, dx * dx + dy * dy);
+        var reach = (b + Math.Sqrt(b * b + a * c)) / a;
+        m.Seen = _game.Step;
+        if (reach <= TickSeconds)
+        {
+            (m.Vx, m.Vy) = reach > 0 ? ((dx + vx * reach) / reach, (dy + vy * reach) / reach) : (0, 0);
+            void Lands()
+            {
+                (m.X, m.Y, m.Vx, m.Vy, m.Seen) = m.Target is { Removed: false } hit ? (hit.X, hit.Y, 0, 0, _game.Step) : (m.ToX, m.ToY, 0, 0, _game.Step);
+                _missiles.Remove(m);
+                Flights?.Add(Flight(m));
+                m.Land(m);
+            }
+            if (Game.Steps(reach) > 0) _game.At(_game.Step + Game.Steps(reach), Lands);
+            else Lands();
+            return;
+        }
+        var left = Math.Sqrt(c);
+        (m.Vx, m.Vy) = (dx / left * m.Speed, dy / left * m.Speed);
+        _game.At(_game.Step + Game.Steps(TickSeconds), () =>
+        {
+            (m.X, m.Y) = m.Place(_game.Step);
+            Fly(m);
+        });
+    }
+
+    static readonly int FullArea = Code("ua1f"), MediumArea = Code("ua1h"), SmallArea = Code("ua1q"), MediumFactor = Code("uhd1"), SmallFactor = Code("uqd1");
+
+    // The share of a shell's damage a unit takes that far from where it landed (probe units-missile-homing: a mortar team's areas of 25, 150 and
+    // 250 with factors 0.40 and 0.10 gave a footman 221 away a tenth)
+    float Share(unit u, int weapon, float away)
+    {
+        float Field(int code) => BlzGetUnitWeaponRealField(u, Convert<unitweaponrealfield>(code), weapon);
+        return away <= Field(FullArea) ? 1 : away <= Field(MediumArea) ? Field(MediumFactor) : away <= Field(SmallArea) ? Field(SmallFactor) : 0;
+    }
+
+    // The damage point: a missile leaves and lands on its target, a shell leaves and lands where the target stood, any other attack lands now
+    // shortcut: a shell hits its target alone, by how far it got from where the shell landed; upgrade when area damage is modelled
     void Launch(unit u, unit t, int weapon)
     {
-        var flight = u.Type.Text(Code($"ua{weapon + 1}w")) is "missile" or "mbounce" or "mline" or "msplash" or "artillery" or "aline" or "alsplash"
-            ? Game.Steps(Flight(u, t, BlzGetUnitWeaponRealField(u, Convert<unitweaponrealfield>(Code("ua1z")), weapon))) : 0;
-        if (flight > 0) _game.At(_game.Step + flight, () => Hit(u, t, weapon));
-        else Hit(u, t, weapon);
+        var speed = BlzGetUnitWeaponRealField(u, Convert<unitweaponrealfield>(Code("ua1z")), weapon);
+        switch (u.Type.Text(Code($"ua{weapon + 1}w")))
+        {
+            case "missile" or "mbounce" or "mline" or "msplash": Fire(u, t, speed, true, _ => Hit(u, t, weapon)); break;
+            case "artillery" or "aline" or "alsplash": Fire(u, t, speed, false, m => Hit(u, t, weapon, Share(u, weapon, MathF.Sqrt(Distance2(t.X - m.ToX, t.Y - m.ToY))))); break;
+            default: Hit(u, t, weapon); break;
+        }
     }
 
     // The attack lands: base damage and the dice, as the weapon's type and sound give them, through the damage events of a real attack
-    void Hit(unit u, unit t, int weapon)
+    void Hit(unit u, unit t, int weapon, float share = 1)
     {
-        if (u.Dead || t.Dead || t.Removed || u.Removed) return;
+        if (u.Dead || t.Dead || t.Removed || u.Removed || share <= 0) return;
         var damage = (float)BlzGetUnitBaseDamage(u, weapon);
         for (var die = 0; die < BlzGetUnitDiceNumber(u, weapon); die++) damage += _game.RandomInt(1, Math.Max(BlzGetUnitDiceSides(u, weapon), 1));
+        damage *= share;
         var attackType = BlzGetUnitWeaponIntegerField(u, Convert<unitweaponintegerfield>(Code("ua1t")), weapon);
         var sound = BlzGetUnitWeaponIntegerField(u, Convert<unitweaponintegerfield>(Code("ucs1")), weapon);
         var kind = u.Type.Text(Code($"ua{weapon + 1}w")) ?? "normal";

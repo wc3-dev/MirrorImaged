@@ -1,22 +1,14 @@
-using System.Diagnostics;
 using System.Text.Json;
 using MirrorImaged.Data;
 
 namespace MirrorImaged.Tests;
 
-/// <summary>The viewer: a trace of a run with its units over time and its log, the page that holds it, and the page opened in a headless browser.</summary>
+/// <summary>The viewer: a trace of a run with its units over time, its missiles and its log, and the page that holds it; <see cref="ViewerBrowserTests"/> opens the page.</summary>
 public sealed class ViewerTests : IDisposable
 {
     readonly TestMaps _maps = new();
-    readonly string _folder = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())).FullName;
 
-    public void Dispose()
-    {
-        _maps.Dispose();
-        // A browser's own processes may still hold their profile for a moment; the folder is the system's temporary one
-        try { Directory.Delete(_folder, true); }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
-    }
+    public void Dispose() => _maps.Dispose();
 
     static Dictionary<string, string> Values(string pairs) =>
         pairs.Split(';', StringSplitOptions.TrimEntries).Select(pair => pair.Split('=', 2)).ToDictionary(pair => pair[0], pair => pair[1]);
@@ -69,31 +61,17 @@ public sealed class ViewerTests : IDisposable
         Assert.Equal(13, JsonDocument.Parse(json).RootElement.GetProperty("frames").GetArrayLength());
     }
 
-    // The page opens in a browser, reads the trace and shows how many frames it has (when Edge is installed)
+    // The archer of the browser tests' fight shoots at a mark 600 away every 1.5 s: each arrow leaves 62 ahead of it, 0.75 s in the first, and lands
+    // on the mark 0.6 s later
     [Fact]
-    public async Task The_page_opens_in_a_headless_browser()
+    public void A_trace_has_each_missiles_flight()
     {
-        var edge = new[] { @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe", @"C:\Program Files\Microsoft\Edge\Application\msedge.exe", "/usr/bin/microsoft-edge", "/usr/bin/google-chrome", "/usr/bin/chromium" }
-            .FirstOrDefault(File.Exists);
-        if (edge is null) return;
-        var file = Path.Combine(_folder, "run.html");
-        File.WriteAllText(file, Viewer.Page(Run()));
+        var trace = ViewerPage.Record(_maps);
 
-        var start = new ProcessStartInfo(edge, ["--headless=new", "--disable-gpu", "--no-sandbox", $"--user-data-dir={Path.Combine(_folder, "profile")}", "--virtual-time-budget=3000", "--dump-dom", new Uri(file).AbsoluteUri])
-        {
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-        };
-        using var process = Process.Start(start)!;
-        var error = process.StandardError.ReadToEndAsync();
-        var dom = await process.StandardOutput.ReadToEndAsync();
-        process.WaitForExit(30000);
-        if (!process.HasExited) process.Kill(true);
-
-        // Some machines start no headless browser from here (it prints nothing and ends): then there is nothing to check
-        // or the page was read before its script ran, which a loaded machine does
-        if (!dom.Contains(" frames, ")) return;
-        Assert.True(dom.Contains("13 frames, 1 log lines"), $"{dom}{await error}");
-        Assert.Contains("two seconds", dom);
+        Assert.Equal(4, trace.Missiles.Count);
+        Assert.All(trace.Missiles, flight => Assert.Equal([0, -138, 800, 400, 800], flight[2..]));
+        Assert.Equal([0.75, 2.25, 3.75, 5.25], trace.Missiles.Select(flight => Math.Round(flight[0], 2)));
+        Assert.All(trace.Missiles, flight => Assert.Equal(538.0 / 900, flight[1] - flight[0], 0.001));
+        Assert.Contains("\"missiles\":[[", Viewer.Page(trace));
     }
 }
