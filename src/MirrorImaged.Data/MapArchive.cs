@@ -11,7 +11,9 @@ using War3Net.IO.Mpq;
 namespace MirrorImaged.Data;
 
 /// <summary>
-/// A map's files, read from its archive (a <c>.w3x</c> or <c>.w3m</c>) with War3Net into <see cref="Files"/>: the info
+/// A map's files, read from its archive (a <c>.w3x</c> or <c>.w3m</c>), from a folder map (a folder named as a map that
+/// holds the map's files, the form the game also loads) or from the installed game's storage (a map named
+/// <c>War3.w3mod:Maps/...</c>), with War3Net into <see cref="Files"/>: the info
 /// (<c>war3map.w3i</c>), strings (<c>war3map.wts</c>), object data and its skin files, terrain (<c>w3e</c>), pathing
 /// (<c>wpm</c>), doodads and destructables (<c>war3map.doo</c>), placed units (<c>war3mapUnits.doo</c>), regions
 /// (<c>w3r</c>), cameras (<c>w3c</c>), sounds (<c>w3s</c>) and the import list (<c>imp</c>); a file the map lacks is null.
@@ -23,12 +25,12 @@ namespace MirrorImaged.Data;
 /// </summary>
 public sealed class MapArchive
 {
-    readonly string _path;
+    readonly Func<string, byte[]?> _file;
     readonly Dictionary<uint, string> _strings = [];
 
-    MapArchive(string path, Map map, (byte[]? Script, bool Jass) script, byte[]? misc, IReadOnlyList<string> unread)
+    MapArchive(Func<string, byte[]?> file, Map map, (byte[]? Script, bool Jass) script, byte[]? misc, IReadOnlyList<string> unread)
     {
-        _path = path;
+        _file = file;
         Files = map;
         (Script, Jass) = script;
         Misc = misc;
@@ -59,15 +61,54 @@ public sealed class MapArchive
     // Ground or Doodads reads is left out too (D258, D270).
     static readonly string[] LeftOut = ["war3map.w3e", "war3map.doo", "war3mapUnits.doo"];
 
-    /// <summary>Reads the map at <paramref name="path"/>.</summary>
+    /// <summary>
+    /// Reads the map at <paramref name="path"/>: an archive, a folder map, or a map of the installed game by its name in
+    /// the storage (<c>War3.w3mod:Maps/(4)Adrenaline.w3m</c>). Every reader of a map comes through here (decisions D510, D511).
+    /// </summary>
+    /// <exception cref="FileNotFoundException">There is no file or folder at <paramref name="path"/>, or the install has no such map.</exception>
     /// <exception cref="InvalidDataException">A file other than those <see cref="Unread"/> may name can't be read; the message names it.</exception>
     public static MapArchive Read(string path)
     {
-        using var archive = MpqArchive.Open(path, false);
+        if (Directory.Exists(path))
+        {
+            var folder = Folder(path);
+            return Read(path, folder, folder);
+        }
+
+        var stored = Installed(path);
+        if (stored is null && !System.IO.File.Exists(path)) throw new FileNotFoundException($"There is no map at {path}", path);
+        MpqArchive Open() => stored is null ? MpqArchive.Open(path, false) : MpqArchive.Open(new MemoryStream(stored), false);
+        using var archive = Open();
+        return Read(path, name => Bytes(archive, name), name =>
+        {
+            using var again = Open();
+            return Bytes(again, name);
+        });
+    }
+
+    // A folder map's files by the names they have in an archive: in any case, their folders parted by a backslash
+    static Func<string, byte[]?> Folder(string folder)
+    {
+        var files = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var file in Directory.EnumerateFiles(folder, "*", SearchOption.AllDirectories))
+            files[Path.GetRelativePath(folder, file).Replace('/', '\\')] = file;
+        return name => files.TryGetValue(name.Replace('/', '\\'), out var file) ? System.IO.File.ReadAllBytes(file) : null;
+    }
+
+    static byte[]? Installed(string path)
+    {
+        if (!path.StartsWith("War3.w3mod:", StringComparison.OrdinalIgnoreCase)) return null;
+        using var storage = CascStorage.Open(GameInstall.Require());
+        return storage.Read(path) ?? throw new FileNotFoundException($"{path} is not in the installed game", path);
+    }
+
+    // file reads the map's files now; later reads them once this has returned
+    static MapArchive Read(string path, Func<string, byte[]?> file, Func<string, byte[]?> later)
+    {
         var unread = new List<string>();
         T? Read<T>(string name, Func<BinaryReader, T> read, Func<byte[], byte[]>? mend = null) where T : class
         {
-            if (Bytes(archive, name) is not { } bytes) return null;
+            if (file(name) is not { } bytes) return null;
             // A file is mended only when War3Net can't read it whole as it is (D300)
             try { return mend is not null && Whole(read, bytes) is { } plain ? plain : read(new BinaryReader(new MemoryStream(mend?.Invoke(bytes) ?? bytes))); }
             catch (Exception e) when (e is not OutOfMemoryException)
@@ -122,18 +163,14 @@ public sealed class MapArchive
             UpgradeSkinObjectData = Read("war3mapSkin.w3q", reader => reader.ReadUpgradeObjectData()),
         };
         // With both, war3map.w3i's script language chooses (decisions D130; not measured)
-        var (lua, jass) = (Bytes(archive, "war3map.lua"), Bytes(archive, "war3map.j") ?? Bytes(archive, @"scripts\war3map.j"));
+        var (lua, jass) = (file("war3map.lua"), file("war3map.j") ?? file(@"scripts\war3map.j"));
         (byte[]? Script, bool Jass) script = lua is not null && (jass is null || map.Info?.ScriptLanguage != ScriptLanguage.Jass) ? (lua, false)
             : jass is not null ? (jass, true) : (null, false);
-        return new MapArchive(path, map, script, Bytes(archive, "war3mapMisc.txt"), unread);
+        return new MapArchive(later, map, script, file("war3mapMisc.txt"), unread);
     }
 
     /// <summary>A file of the map by its name in the archive (<c>war3mapImported\ui.toc</c>); null when it has none.</summary>
-    public byte[]? File(string name)
-    {
-        using var archive = MpqArchive.Open(_path, false);
-        return Bytes(archive, name);
-    }
+    public byte[]? File(string name) => _file(name);
 
     /// <summary>
     /// <paramref name="text"/> with a <c>TRIGSTR_n</c> replaced by string n of <c>war3map.wts</c>, n read as C's
