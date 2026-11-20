@@ -108,6 +108,7 @@ public sealed partial class GameNatives
         finally
         {
             _enumUnit = outer;
+            _loops++;
             Release(callback);
         }
     }
