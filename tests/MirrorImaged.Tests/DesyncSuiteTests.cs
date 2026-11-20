@@ -109,6 +109,108 @@ public sealed class DesyncSuiteTests : IDisposable
         Assert.Contains(report.Stacks, stack => stack?.Contains($"'{native}'") == true);
     }
 
+    const string Gold = "SetPlayerState(Player(0), PLAYER_STATE_RESOURCE_GOLD, ";
+
+    // Moonwell's MW0004: pairs visits keys that are objects in the order of their addresses, which differ between machines (D740)
+    [InstallTheory]
+    [InlineData("local keys = {} for i = 1, 12 do keys[{}] = i end local n = 0 for _, v in pairs(keys) do n = n * 3 + v end", "")]
+    [InlineData("local keys = {} for i = 1, 12 do keys[T[i]] = i end local n = 0 for _, v in pairs(keys) do n = n * 3 + v end",
+        "T = {} for i = 1, 12 do T[i] = CreateTrigger() end")]
+    public void A_loop_over_a_table_keyed_by_objects_is_found(string loop, string setup)
+    {
+        var report = Desync.Check(Map(everyone: $"{loop} {Gold}n % 100000)", setup: setup), TimeSpan.FromSeconds(8));
+
+        Assert.NotNull(report);
+        Assert.Equal("player 0", report.Part);
+        Assert.Equal(2 * 1024, report.Step);
+        Assert.Contains(report.Stacks, stack => stack?.Contains("'SetPlayerState'") == true);
+    }
+
+    // A loop over keys that are numbers or strings has one order on every machine
+    [InstallFact]
+    public void A_loop_over_a_table_keyed_by_numbers_and_strings_is_not_a_desync()
+    {
+        Assert.Null(Desync.Check(Map(everyone: $"local keys = {{}} for i = 1, 12 do keys[i * 7] = i keys['k' .. i] = i end local n = 0 for _, v in pairs(keys) do n = n * 3 + v end {Gold}n % 100000)"),
+            TimeSpan.FromSeconds(8)));
+    }
+
+    // A machine's layout and clock make its run its own, the same every time, and the first machine's is a lone run's (D740, D741)
+    [InstallFact]
+    public void A_machines_layout_and_clock_do_not_change_one_players_run()
+    {
+        var path = Map(everyone: $"local keys = {{}} for i = 1, 12 do keys[{{}}] = i end local n = 0 for _, v in pairs(keys) do n = n * 3 + v end math.randomseed(os.time()) {Gold}n % 100000)");
+        string Hash(int? machine)
+        {
+            using var game = Simulation.Load(path, new SimulationOptions { Users = [0, 1], Machine = machine ?? 0 });
+            game.Advance(TimeSpan.FromSeconds(8));
+            return game.StateHash();
+        }
+
+        Assert.Equal(Hash(null), Hash(0));
+        Assert.Equal(Hash(1), Hash(1));
+        Assert.NotEqual(Hash(0), Hash(1));
+    }
+
+    // Moonwell's MW0006: a blizzard.j function that compares GetLocalPlayer() and then changes the game desyncs wherever it runs
+    [InstallTheory]
+    [InlineData("SelectGroupForPlayerBJ(G, Player(1))", "ForGroup")]
+    [InlineData("if GetLocalPlayer() == Player(1) then ForGroup(G, function() end) end", "ForGroup")]
+    [InlineData("if GetLocalPlayer() == Player(1) then ForForce(bj_FORCE_ALL_PLAYERS, function() end) end", "ForForce")]
+    public void A_blizzard_function_that_runs_a_loop_in_a_local_block_is_found(string everyone, string native)
+    {
+        var report = Desync.Check(Map(everyone: everyone,
+            setup: "U = CreateUnit(Player(0), FourCC('hfoo'), 0, 0, 0) G = CreateGroup() GroupAddUnit(G, U)"), TimeSpan.FromSeconds(8));
+
+        Assert.NotNull(report);
+        Assert.Equal("group and force loops", report.Part);
+        Assert.Equal(2 * 1024, report.Step);
+        Assert.Contains(report.Stacks, stack => stack?.Contains($"'{native}'") == true);
+    }
+
+    // A loop every machine runs, and a selection made one unit at a time, stay the same (game-facts, Desyncs)
+    [InstallTheory]
+    [InlineData("ForGroup(G, function() end)")]
+    [InlineData("if GetLocalPlayer() == Player(1) then SelectUnit(U, true) end")]
+    public void A_loop_every_machine_runs_is_not_a_desync(string everyone)
+    {
+        Assert.Null(Desync.Check(Map(everyone: everyone,
+            setup: "U = CreateUnit(Player(0), FourCC('hfoo'), 0, 0, 0) G = CreateGroup() GroupAddUnit(G, U)"), TimeSpan.FromSeconds(8)));
+    }
+
+    // Moonwell's MW0038: a generator seeded from the machine's clock gives each machine its own numbers, and the game's generator is shared
+    [InstallTheory]
+    [InlineData("math.randomseed(os.time())")]
+    [InlineData("math.randomseed(os.clock() * 1000)")]
+    public void A_generator_seeded_from_the_machines_clock_is_found(string everyone)
+    {
+        var report = Desync.Check(Map(everyone: everyone), TimeSpan.FromSeconds(8));
+
+        Assert.NotNull(report);
+        Assert.Equal("random numbers", report.Part);
+        Assert.Contains(report.Stacks, stack => stack?.Contains("'math.randomseed'") == true);
+    }
+
+    // The seed every machine shares is not a desync
+    [InstallFact]
+    public void A_generator_seeded_the_same_on_every_machine_is_not_a_desync()
+    {
+        Assert.Null(Desync.Check(Map(everyone: "math.randomseed(42)"), TimeSpan.FromSeconds(8)));
+    }
+
+    // Moonwell's MW0048: a value every machine reads, changed on one machine only
+    [InstallTheory]
+    [InlineData("Shared = (Shared or 0) + 1")]
+    [InlineData("Shared = {} Shared[1] = 5")]
+    public void A_shared_value_changed_in_a_local_block_is_found_where_everyone_uses_it(string local)
+    {
+        var report = Desync.Check(Map(local, everyone: $"{Gold}type(Shared) == 'table' and 5 or Shared or 0)", setup: "Shared = 0"), TimeSpan.FromSeconds(8));
+
+        Assert.NotNull(report);
+        Assert.Equal("player 0", report.Part);
+        Assert.Equal(2 * 1024, report.Step);
+        Assert.Contains(report.Stacks, stack => stack?.Contains("'SetPlayerState'") == true);
+    }
+
     // A change made as the map loads is found at step 0
     [InstallFact]
     public void A_change_in_main_is_found_at_the_first_step()

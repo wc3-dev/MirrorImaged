@@ -68,10 +68,14 @@ public sealed partial class GameNatives
         foreach (var (player, prefix, _) in _syncEvents) { Add(player.Number); hash.AppendData(System.Text.Encoding.UTF8.GetBytes(prefix)); }
         foreach (var frame in _frames)
             if (!frame.Destroyed) Add(frame.Id);
+        if (_loops > 0) Add(_loops);
         return System.Convert.ToHexString(hash.GetHashAndReset())[..16];
     }
 
     Dictionary<int, string>? _stateNames;
+
+    // ForGroup and ForForce calls so far: the game runs them in step between machines, whatever the callback does (D742)
+    long _loops;
 
     /// <summary>
     /// What <see cref="Hash"/> is made of, a value at a time: the part of the world it is in (the time, a player, a unit), what it is, and the value
@@ -116,6 +120,7 @@ public sealed partial class GameNatives
             yield return ("sync events", $"registration {n + 1}", $"player {player.Number}, prefix \"{prefix}\"");
         foreach (var frame in _frames)
             if (!frame.Destroyed) yield return ($"frame {frame.Id} ({frame.Name})", "frame", "there");
+        if (_loops > 0) yield return ("group and force loops", "loops run", Whole(_loops));
     }
 
     /// <summary>
