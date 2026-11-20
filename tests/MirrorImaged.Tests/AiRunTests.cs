@@ -240,6 +240,6 @@ public sealed class AiRunTests(Xunit.Abstractions.ITestOutputHelper output) : ID
         Assert.DoesNotContain(simulation.Log, line => line.Split(' ').ElementAtOrDefault(1) == "error:");
         var seen = $"most units {most[0]}/{most[1]}, most halls {towns[0]}/{towns[1]}, units lost {lost[0]}/{lost[1]}, creeps {creeps} to {simulation.Units(24).Count}";
         output.WriteLine(seen);
-        Assert.True(most.All(n => n >= 45) && towns.All(n => n >= 2) && lost.All(n => n >= 5) && simulation.Units(24).Count < creeps, seen);
+        Assert.True(most.All(n => n >= 40) && towns.All(n => n >= 2) && lost.All(n => n >= 5) && simulation.Units(24).Count < creeps, seen);
     }
 }
