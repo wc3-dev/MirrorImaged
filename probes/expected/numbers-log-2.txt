@@ -1,0 +1,17 @@
+# probes/numbers-log-2.lua on 3.0.1.24371, single player, 11-20: the game's lines. Two runs gave the same.
+log 23 1 33ffffff 347ffffe 34bffffe 34fffffb 351ffffd 353ffffb 355ffffa 357ffff7 358ffffb 359ffff9 35affff8 35bffff5 35cffff6 35dffff2 35effff1 35fffff0
+log 23 17 3607fff7 360ffff5 3617fff4 361ffff3 3627fff2 362ffff0 3637ffee 363fffed 3647ffed 364fffe9 3657ffe8 365fffe7 3667ffe6 366fffe3 3677ffe2 367fffdf
+log 23 33 3683ffef 3687ffed 368bffec 368fffeb 3693ffea 3697ffe9 369bffe8 369fffe6 36a3ffe6 36a7ffe4 36abffe3 36afffe1 36b3ffe0 36b7ffde 36bbffdc 36bfffdb
+log 23 49 36c3ffdb 36c7ffd7 36cbffd7 36cfffd4 36d3ffd3 36d7ffd2 36dbffd1 36dfffce 36e3ffce 36e7ffca 36ebffca 36efffc6 36f3ffc6 36f7ffc2 36fbffc2 36ffffc0
+log 23 65 3701ffdf 3703ffdd 3705ffdc 3707ffdb 3709ffda 370bffd9 370dffd8 370fffd7 3711ffd6 3713ffd4 3715ffd4 3717ffd2 3719ffd1 371bffd0 371dffcf 371fffcd
+log 23 81 3721ffcd 3723ffcb 3725ffca 3727ffc8 3729ffc7 372bffc5 372dffc5 372fffc3 3731ffc2 3733ffc0 3735ffbe 3737ffbc 3739ffbc 373bffba 373dffb9 373fffb7
+log 23 97 3741ffb6 3743ffb4 3745ffb2 3747ffb0 3749ffb0 374bffae 374dffad 374fffab 3751ffaa 3753ffa8 3755ffa6 3757ffa4 3759ffa2 375bffa0 375dff9f 375fff9c
+log 23 113 3761ff9d 3763ff99 3765ff99 3767ff95 3769ff95 376bff93 376dff92 376fff8f 3771ff8e 3773ff8b 3775ff8a 3777ff87 3779ff86 377bff82 377dff82 377fff80
+log 22 1 347ffffe 34fffffb 353ffffb 357ffff7 359ffff9 35bffff5 35dffff2 35fffff0 360ffff5 361ffff3 362ffff0 363fffed 364fffe9 365fffe7 366fffe3 367fffdf
+log 22 17 3687ffed 368fffeb 3697ffe9 369fffe6 36a7ffe4 36afffe1 36b7ffde 36bfffdb 36c7ffd7 36cfffd4 36d7ffd2 36dfffce 36e7ffca 36efffc6 36f7ffc2 36ffffc0
+log 22 33 3703ffdd 3707ffdb 370bffd9 370fffd7 3713ffd4 3717ffd2 371bffd0 371fffcd 3723ffcb 3727ffc8 372bffc5 372fffc3 3733ffc0 3737ffbc 373bffba 373fffb7
+log 22 49 3743ffb4 3747ffb0 374bffae 374fffab 3753ffa8 3757ffa4 375bffa0 375fff9c 3763ff99 3767ff95 376bff93 376fff8f 3773ff8b 3777ff87 377bff82 377fff80
+log 12 1 397ff801 39fff003 3a3fee03 3a7fe007 3a9fe705 3abfdc0b 3adfcf11 3affc014 3b0fd78e 3b1fce15 3b2fc39d 3b3fb824 3b4fabaf 3b5f9e39 3b6f8fc4 3b7f8054
+log 12 17 3b87b7f2 3b8faf3d 3b97a607 3b9f9c54 3ba79220 3baf876f 3bb77c3e 3bbf708c 3bc76463 3bcf57b8 3bd74a8d 3bdf3ce5 3be72ebe 3bef2019 3bf710f4 3bff0153
+log 12 33 3c03789a 3c07704d 3c0b67bf 3c0f5ef2 3c1355e6 3c174c9c 3c1b4313 3c1f394b 3c232f44 3c272501 3c2b1a7c 3c2f0fb9 3c3304b9 3c36f977 3c3aedf7 3c3ee238
+log 12 49 3c42d63f 3c46ca06 3c4abd8c 3c4eb0d8 3c52a3e0 3c5696ae 3c5a893a 3c5e7b89 3c626d9b 3c665f71 3c6a5105 3c6e425b 3c723374 3c76244f 3c7a14e7 3c7e0546

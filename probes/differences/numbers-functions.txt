@@ -1,16 +1,12 @@
 # Where MirrorImaged differs from the game's lines in expected/numbers-functions.txt, in order, with why (decisions D121): a line
 # starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
-
-# asin and acos inside -1 to 1 are the double model's (D32, D152, Close; D484, not fitted: a table in the game).
-- asin k/64 -16 be815f4e be7240e0 be61d378 be517523 be4124a7 be30e0d5 be20a886 be107a98 be0055f0 bde072f4 bdc04849 bda029c8 bd80155f bd401204 bd000556 bc800155 00000000 3c800156 3d000556 3d401205 3d80155f 3da029c8 3dc04849 3de072f4
-+ asin k/64 -16 be815f4e be7240e0 be61d378 be517523 be4124a7 be30e0d5 be20a886 be107a98 be0055f0 bde072f4 bdc04849 bda029c8 bd80155e bd401204 bd000555 bc800155 00000000 3c800155 3d000555 3d401204 3d80155e 3da029c8 3dc04849 3de072f4
-- acos k/64 -64 40490fdb 403dbbc2 4039051c 4035637e 403250a2 402f9896 402d20be 402ad951 4028b807 4026b5bd 4024cd43 4022faaf 40213af7 401f8bb1 401deae6 401c56fa 401ace93 4019508e 4017dbf0 40166fe3 40150baa 4013aea1 40125837 401107eb
-+ acos k/64 -64 40490fdb 403dbbc2 4039051c 4035637e 403250a2 402f9896 402d20be 402ad951 4028b807 4026b5bd 4024cd43 4022faaf 40213af7 401f8bb1 401deae6 401c56fa 401ace93 4019508e 4017dbf0 40166fe3 40150baa 4013aea1 40125837 401107ea
-- acos k/64 -40 400fbd48 400e77e7 400d376b 400bfb7f 400ac3d5 40099027 40086033 400733be 40060a91 4004e479 4003c146 4002a0cb 400182df 4000675c 3ffe9c3a 3ffc6dfe 3ffa43c4 3ff81d4e 3ff5fa62 3ff3dac9 3ff1be4d 3fefa4bb 3fed8de4 3feb7999
-+ acos k/64 -40 400fbd48 400e77e7 400d376b 400bfb7f 400ac3d5 40099027 40086033 400733be 40060a91 4004e479 4003c145 4002a0cb 400182df 4000675c 3ffe9c3a 3ffc6dfe 3ffa43c4 3ff81d4e 3ff5fa62 3ff3dac9 3ff1be4d 3fefa4bb 3fed8de4 3feb7999
-
+# asin and acos from 0 to 1 less 2^-13 (acos 2^-10) are the table of D712 (Close); beyond that, the double model's (D32, D152, D484).
 # atan is the double model's, a float step or two off; the game's is x (1 - 2^-20) near 0 (D32, D152, Close; D484,
 # not fitted).
+# atan(y, x) off the axes is the double model's (D32, D152, Close).
+# log is the double model's (D32, D152, Close; D484, D711, not fitted): the game's is right near 1 and off from 1.5 up
+# (log(1000) by 41 float steps).
+# A power that isn't whole is exp(y log x), so off as log is (D32, D152, D484, Close); whole powers match.
 - atan k/16 -64 bfa9b465 bfa93a20 bfa8bc28 bfa83a51 bfa7b46f bfa72a52 bfa69bc6 bfa60896 bfa57087 bfa4d35f bfa430db bfa388b5 bfa2daa4 bfa2265a bfa16b83 bfa0a9c3 bf9fe0bc bf9f1006 bf9e3733 bf9d55cd bf9c6b54 bf9b7740 bf9a78fe bf996ff1
 + atan k/16 -64 bfa9b464 bfa93a20 bfa8bc27 bfa83a51 bfa7b46f bfa72a51 bfa69bc6 bfa60895 bfa57087 bfa4d35f bfa430da bfa388b4 bfa2daa4 bfa22659 bfa16b82 bfa0a9c2 bf9fe0bb bf9f1005 bf9e3732 bf9d55cc bf9c6b53 bf9b773f bf9a78fd bf996ff0
 - atan k/16 -40 bf985b6c bf973ab9 bf960d12 bf94d1a0 bf93877a bf922da8 bf90c317 bf8f46a3 bf8db70c bf8c12f8 bf8a58ee bf888758 bf869c79 bf849672 bf827339 bf80309a bf7b985f bf7686cc bf7126eb bf6b72be bf6563e2 bf5ef386 bf581a78 bf50d130
@@ -25,17 +21,12 @@
 + atan k/16 56 3fa57087 3fa60895 3fa69bc6 3fa72a51 3fa7b46f 3fa83a51 3fa8bc27 3fa93a20 3fa9b464
 - atan bits 3fc7c82f 3fc90c94 3fc90fdb 3fc90fdb 3a831264 358637b4 bfc7c82f
 + atan bits 3fc7c82f 3fc90c93 3fc90fda 3fc90fda 3a83126c 358637bc bfc7c82f
-
-# atan(y, x) off the axes is the double model's (D32, D152, Close).
 - atan2 grid 0 c016cbe4 c0023455 bfe86b51 bfc90fdb bfa9b465 bf8db70c bf490fdc c02b6373 c016cbe4 c0023455 bfc90fdb bf8db70c bf490fdc beed6339 c0396220 c02b6373 c016cbe4 bfc90fdb bf490fdc beed6339 be7adbb0 40490fdb 40490fdb 40490fdb
 + atan2 grid 0 c016cbe3 c0023454 bfe86b50 bfc90fdb bfa9b464 bf8db70c bf490fda c02b6373 c016cbe3 c0023454 bfc90fdb bf8db70c bf490fda beed6338 c039621f c02b6373 c016cbe3 bfc90fdb bf490fda beed6338 be7adbaf 40490fdb 40490fdb 40490fdb
 - atan2 grid 24 3fc90fdb 00000000 00000000 00000000 40396220 402b6373 4016cbe4 3fc90fdb 3f490fdc 3eed6339 3e7adbb0 402b6373 4016cbe4 40023455 3fc90fdb 3f8db70c 3f490fdc 3eed6339 4016cbe4 40023455 3fe86b51 3fc90fdb 3fa9b465 3f8db70c
 + atan2 grid 24 3fc90fdb 00000000 00000000 00000000 4039621f 402b6373 4016cbe3 3fc90fdb 3f490fda 3eed6338 3e7adbaf 402b6373 4016cbe3 40023454 3fc90fdb 3f8db70c 3f490fda 3eed6338 4016cbe3 40023454 3fe86b50 3fc90fdb 3fa9b464 3f8db70c
 - atan2 grid 48 3f490fdc
 + atan2 grid 48 3f490fda
-
-# log is the double model's (D32, D152, Close; D484, not fitted): the game's is right near 1 and off from 1.5 up
-# (log(1000) by 41 float steps).
 - log 1+k/256 0 00000000 3b7f8054 3bff0153 3c3ee238 3c7e0546 3c9e7522 3cbdc8d7 3cdcfe01 3cfc14d7 3d0d86cb 3d1cf43c 3d2c52dd 3d3ba2c7 3d4ae417 3d5a16eb 3d693b5c 3d785184 3d83acc0 3d8b29b6 3d929fb1 3d9a0ebc 3da176e4 3da8d838 3db032c3
 + log 1+k/256 0 00000000 3b7f8055 3bff0153 3c3ee23a 3c7e0545 3c9e7522 3cbdc8d8 3cdcfe01 3cfc14d8 3d0d86cc 3d1cf43d 3d2c52dd 3d3ba2c7 3d4ae418 3d5a16eb 3d693b5c 3d785186 3d83acc1 3d8b29b7 3d929fb1 3d9a0ebc 3da176e5 3da8d839 3db032c5
 - log 1+k/256 24 3db78693 3dbed3b2 3dc61a2d 3dcd5a11 3dd49369 3ddbc640 3de2f2a4 3dea189c 3df1383b 3df85186 3dff648a 3e0338a7 3e06bbf2 3e0a3c2b 3e0db955 3e113377 3e14aa97 3e181eb8 3e1b8fde 3e1efe15 3e22695b 3e25d1b6 3e29372e 3e2c99c7
@@ -76,8 +67,6 @@
 + log k 3 1 00000000 3f21849d 3f800000 3fa1849d 3fbb8441 3fd0c24f 3fe2b81e 3ff246eb 40000000 40062347 400bb0ad 4010c24e 40156c03 4019bd36 401dc220 4021849d 40250cbb 40286127 402b877b 402e846f 40315c0f 403411d4 4036a8c1 40392376
 - log k 3 25 403b8442 403dcd28 403ffff8 40421e4f 40442998 4046231e 40480c0d 4049e5ca 404bb0b2 404d6de6 404f1e35 4050c254 40525af0 4053e8a7 40556c09 4056e59c 405855db 4059bd3c 405b1c27 405c7300 405dc226 405f09ed 40604aa7 406184a0
 + log k 3 25 403b8441 403dcd2b 40400000 40421e5e 404429b2 40462348 40480c4a 4049e5c4 404bb0ad 404d6de3 404f1e30 4050c24f 40525aec 4053e8a2 40556c04 4056e596 405855d7 4059bd37 405b1c22 405c72fc 405dc221 405f09e8 40604aa3 4061849d
-
-# A power that isn't whole is exp(y log x), so off as log is (D32, D152, D484, Close); whole powers match.
 - pow grid 0 417ffff9 407ffffb 3ffffffd 3f000002 3f21451a 3e000003 3d800000 3d000004 3c800000 35800000 3f800000 407ffffb 3ffffffd 3fb504f3 3f3504f5 3f4b2ff8 3eb504f8 3e800000 3e3504f9 3e000000 3a800000 3f800000 3ee38e4c 3f2aaab2
 + pow grid 0 417ffff6 407ffffa 3ffffffd 3f000002 3f21451a 3e000005 3d800000 3d000008 3c800000 35800000 3f800000 407ffffa 3ffffffd 3fb504f1 3f3504f7 3f4b2ff8 3eb504f9 3e800000 3e3504fc 3e000000 3a800000 3f800000 3ee38e3c 3f2aaaac
 - pow grid 24 3f5105f3 3f9cc46d 3f9285fd 3feb269a 40100000 40305cec 40580000 4266a900 3f800000 3e800003 3f000002 3f3504f5 3fb504f3 3fa14517 403504f0 40800000 40b504ef 41000000 44800000 3f800000 3de38e51 3eaaaab4 3f13cd40 3fddb3d1
