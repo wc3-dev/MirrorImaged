@@ -71,10 +71,11 @@ TimerStart(poll, 0.05, true, guard(function()
         if not now and playing[i] then stopped[entry[1]] = time end
         playing[i] = now
     end
-    if time > 5.99 then
+    -- 5.6 s: past where the short ones stopped (up to 5.25 s) and before pitch 0.5 does (from 5.95 s)
+    if time > 5.59 then
         PauseTimer(poll)
         for i, entry in ipairs(sounds) do
-            if playing[i] then out(entry[1] .. ' plays at 6') end
+            if playing[i] then out(entry[1] .. ' plays at 5.6') end
         end
         -- stopped with a fade 0.5 s in, whether it played on to about its end, as plain did
         out('faded 0.5 stops within 0.1 s of plain ' .. tostring(stopped['faded 0.5'] ~= nil and stopped.plain ~= nil and math.abs(stopped['faded 0.5'] - stopped.plain) < 0.11))
@@ -88,8 +89,10 @@ TimerStart(CreateTimer(), 6.5, false, guard(function()
         local clock = CreateTimer()
         TimerStart(clock, 1000.0, false, nil)
         local last = 0
-        local function waited(name)
-            out(string.format('wait %s %.1f', name, TimerGetElapsed(clock) - last))
+        -- whole: the wait in whole seconds, for one that came out 1.4 to 1.6 s (on the edge of a tenth's rounding)
+        local function waited(name, whole)
+            local took = TimerGetElapsed(clock) - last
+            out(whole and string.format('wait %s %d', name, math.floor(took)) or string.format('wait %s %.1f', name, took))
             last = TimerGetElapsed(clock)
         end
         local s = make()
@@ -105,7 +108,7 @@ TimerStart(CreateTimer(), 6.5, false, guard(function()
         s = set('wait set 3000', 3000)
         StartSound(s)
         TriggerWaitForSound(s, 0)
-        waited('set 3000')
+        waited('set 3000', true)
         TriggerWaitForSound(make(), 0)
         waited('idle')
         TriggerWaitForSound(make(), 2)

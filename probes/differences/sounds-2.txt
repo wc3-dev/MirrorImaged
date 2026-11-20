@@ -81,9 +81,9 @@
 + label HeroPaladinPissed 0
 
 # The game never read the 3D sound playing (at the origin, stopping out of range, with no distances set), and read the
-# others a while past their length (D522, Close): here pitch 0.5's 2.576 s and QuestNew's 3.75 s end before 6 s.
-- pitch 0.5 plays at 6
+# others a while past their length (D522, Close): here pitch 0.5's 2.576 s and QuestNew's 3.75 s end before 5.6 s.
+- pitch 0.5 plays at 5.6
 + 3D stops at 1.30
-- label QuestNew plays at 6
+- label QuestNew plays at 5.6
 + pitch 0.5 stops at 2.60
 + label QuestNew stops at 3.75
