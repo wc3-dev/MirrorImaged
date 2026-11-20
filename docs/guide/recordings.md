@@ -61,7 +61,7 @@ map, a clean check one.
 
 ### What it finds
 
-The patterns are those `docs/game-facts.md` ("Desyncs") and Moonwell's analyzer rules (MW0001, MW0002) name, as far as a simulator can show them. Each is a
+The patterns are those `docs/game-facts.md` ("Desyncs") and Moonwell's analyzer rules (MW0001 to MW0004, MW0006, MW0038, MW0048) name, as far as a simulator can show them. Each is a
 test in `DesyncSuiteTests`.
 
 | The map does this in one player's game only | The part reported |
@@ -72,11 +72,17 @@ test in `DesyncSuiteTests`.
 | Disables, enables or destroys a trigger | The trigger |
 | Destroys a frame | The frame |
 | Registers a sync event for the local player (`BlzTriggerRegisterPlayerSyncEvent(t, GetLocalPlayer(), ...)`) | `sync events` |
+| Runs `ForGroup` or `ForForce` (also through `SelectGroupForPlayerBJ`) | `group and force loops` |
 
 A value only one machine has, used outside a local-player block, is found the same way, by what it changes: each game is run as its own machine. In each
 game `GetLocalPlayer()` is that game's player, the camera's target and eye (`GetCameraTargetPositionX`, `GetCameraEyePositionY`, the `Loc` forms) read 64
 further along x and y for each next player, and the window (`BlzGetLocalClientWidth`, `BlzGetLocalClientHeight`) is 16 by 9 larger. So gold set from the
 camera's x differs between the games and is reported.
+
+Two more things differ per machine, so the rules about them are shown too. Each game's memory is laid out its own way (the first machine's is the arena's own), so
+`pairs` over a table keyed by tables or handles visits them in another order in each game (MW0004). Each game's clock runs a second ahead of the one
+before, so `math.randomseed(os.time())` or `os.clock()` seeds the shared generator differently (MW0038). A change one game makes to a global
+that every game then reads (MW0048) shows in what it changes. A lone run is the first machine's, so it is unchanged.
 
 What only one player's screen shows is not a difference: text, the camera, music, a frame hidden or given text for one player.
 
@@ -86,10 +92,10 @@ What only one player's screen shows is not a difference: text, the camera, music
   or on an animated walkable destructable; an upgrade with attack dice above 14; a timer of 0.01 s or less started at the map's start; frames made while a
   player is alt-tabbed, or in `main`; a frame destroyed for everyone that desyncs at random; a location made at the Lua root whose handle id drifts with
   the collector.
-- **`ForGroup` or `ForForce` in a local-player block that changes nothing.** The facts say it desyncs whatever the callback does. Here it is found only
-  through what it changes (a group made there, a state).
-- **The order of `pairs` over handles**, which differs between machines. Here both games run on one machine and went through a table of 40 locations
-  in the same order when tried, so it is not reported.
+- **How the game breaks on `ForGroup` or `ForForce` in a local-player block** is a claim (Hive thread 317486), not measured. Here each call counts as
+  a step every game must make alike, so a game that runs one the others don't differs, whatever the callback does.
+- **A real `pairs` order and clock.** The layout and clock are made-up differences between the games, not the game's: they show that a map's result
+  depends on them, and a table of only a few keys may still come out in the same order. Loops over numbers and strings are the same in every game.
 - **Other values only one machine has**: a name or tooltip in the player's language, the keys and mouse, a sound's length, what a frame reads back, the
   camera's fields. They read the same in every game here, so a change made from one is missed.
 - **Sync data, a false alarm.** Each game gets only its own player's `BlzSendSyncData`, so a map whose sync event changes the game is reported as a
