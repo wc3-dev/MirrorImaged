@@ -69,4 +69,36 @@ public sealed class PathingTests : IDisposable
 
         Assert.Equal(["end\t600\t0\ttrue"], lines);
     }
+
+    [Fact]
+    public void A_walker_sets_out_round_a_building_at_once_and_loses_next_to_no_time()
+    {
+        // 1000 straight at 320 is 3.1 s; the way round the barracks's 108 circle at the start costs a little more, but not the stop and turn at its edge
+        var lines = Run("""
+            local b = CreateUnit(Player(0), FourCC("hbar"), 500, 0, 0)
+            local u = CreateUnit(Player(0), FourCC("hfoo"), 0, 0, 0)
+            IssuePointOrder(u, "move", 1000, 0)
+            local t, bendsAt = 0, nil
+            TimerStart(CreateTimer(), 0.05, true, function()
+              t = t + 1
+              if bendsAt == nil and math.abs(GetUnitY(u)) > 5 then bendsAt = GetUnitX(u) end
+            end)
+            TimerStart(CreateTimer(), 3.4, false, function() print("end", f0(GetUnitX(u)), f0(GetUnitY(u)), bendsAt < 200) end)
+            """, 4);
+
+        Assert.Equal(["end	1000	0	true"], lines);
+    }
+
+    [Fact]
+    public void Unwalkable_ground_set_in_a_map_with_no_pathing_file_leaves_a_walker_at_the_nearest_ground_that_can_be_reached()
+    {
+        var lines = Run("""
+            for i = -4, 3 do for j = -4, 3 do SetTerrainPathable(300 + i * 32 + 16, j * 32 + 16, PATHING_TYPE_WALKABILITY, false) end end
+            local u = CreateUnit(Player(0), FourCC("hfoo"), 0, 0, 0)
+            IssuePointOrder(u, "move", 300, 0)
+            TimerStart(CreateTimer(), 8, false, function() print("end", math.abs(GetUnitY(u)) >= 128, GetUnitCurrentOrder(u)) end)
+            """, 9);
+
+        Assert.Equal(["end	true	0"], lines);
+    }
 }

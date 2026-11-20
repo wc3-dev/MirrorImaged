@@ -1,0 +1,6 @@
+# probes/units-path-gap.lua on 3.0.1.24371, single player, classic graphics, 11-20: the game's lines, one run. The seconds a walk takes move by a tick or two, so they are {t}; so does the one footman of 4 that never comes.
+centres 128 apart: 4 of 4 arrived, first {t} s, last {t} s, left the lane by 160
+centres 160 apart: 4 of 4 arrived, first {t} s, last {t} s, left the lane by 112
+centres 192 apart: 3 of 4 arrived, first {t} s, last never s, left the lane by 144
+centres 256 apart: 4 of 4 arrived, first {t} s, last {t} s, left the lane by 112
+centres 320 apart: 3 of 4 arrived, first {t} s, last never s, left the lane by 112

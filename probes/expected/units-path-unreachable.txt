@@ -1,0 +1,27 @@
+# probes/units-path-unreachable.lua on 3.0.1.24371, single player, classic graphics, 11-20: the game's lines, one run. Both footmen walk up to the nearest ground they can reach and the order ends there; the second it ends moves by a tick or two.
+order a true, order b true
+ 1 s: a -736 -496 order 851986, b -744 440 order 851986
+ 2 s: a -472 -496 order 851986, b -480 384 order 851986
+ 3 s: a -200 -496 order 851986, b -216 320 order 851986
+ 4 s: a -160 -496 order 0, b 8 304 order 0
+ 5 s: a -160 -496 order 0, b 8 304 order 0
+ 6 s: a -160 -496 order 0, b 8 304 order 0
+ 7 s: a -160 -496 order 0, b 8 304 order 0
+ 8 s: a -160 -496 order 0, b 8 304 order 0
+ 9 s: a -160 -496 order 0, b 8 304 order 0
+10 s: a -160 -496 order 0, b 8 304 order 0
+11 s: a -160 -496 order 0, b 8 304 order 0
+12 s: a -160 -496 order 0, b 8 304 order 0
+13 s: a -160 -496 order 0, b 8 304 order 0
+14 s: a -160 -496 order 0, b 8 304 order 0
+15 s: a -160 -496 order 0, b 8 304 order 0
+16 s: a -160 -496 order 0, b 8 304 order 0
+17 s: a -160 -496 order 0, b 8 304 order 0
+18 s: a -160 -496 order 0, b 8 304 order 0
+19 s: a -160 -496 order 0, b 8 304 order 0
+20 s: a -160 -496 order 0, b 8 304 order 0
+21 s: a -160 -496 order 0, b 8 304 order 0
+22 s: a -160 -496 order 0, b 8 304 order 0
+23 s: a -160 -496 order 0, b 8 304 order 0
+24 s: a -160 -496 order 0, b 8 304 order 0
+idle at: a {t}, b {t}

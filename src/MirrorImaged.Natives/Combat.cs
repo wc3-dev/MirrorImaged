@@ -106,7 +106,7 @@ public sealed partial class GameNatives
         {
             // A build order: walk to the site, then make the building and stay with it until it is done
             if (u.Building is { Constructing: true }) return true;
-            if (Distance2(u.OrderX - u.X, u.OrderY - u.Y) > 100 * 100) return Walk(u, u.OrderX, u.OrderY, follow: true);
+            if (Distance2(u.OrderX - u.X, u.OrderY - u.Y) > BuildReach * BuildReach) return Walk(u, u.OrderX, u.OrderY, follow: true);
             return Place(u, order, u.OrderX, u.OrderY) || Finish(u);
         }
         if (order == 0 || order == OrderHold)
@@ -186,7 +186,7 @@ public sealed partial class GameNatives
             var (minX, minY, maxX, maxY) = terrain.Bounds;
             if (x < minX || x > maxX || y < minY || y > maxY) return true;
         }
-        if (type is 1 or 4 && Data.Map?.Files.PathingMap is not null && IsTerrainPathable(x, y, Convert<pathingtype>(1))) return true;
+        if (type is 1 or 4 && (Data.Map?.Files.PathingMap is not null || _cells is not null) && IsTerrainPathable(x, y, Convert<pathingtype>(1))) return true;
         return type is not 2 && BlockedByBuilding(u, x, y);
     }
 

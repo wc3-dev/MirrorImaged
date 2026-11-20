@@ -42,10 +42,20 @@ public sealed partial class GameNatives
     // The cell the point falls in, or -1 outside the grid
     int CellAt(float x, float y)
     {
-        if (Data.Terrain is not { } terrain || Data.Map?.Files.PathingMap is not { } pathing) return -1;
+        if (Data.Terrain is not { } terrain || PathSize(terrain) is not var (width, height)) return -1;
         var (_, _, left, bottom) = terrain.Grid;
         int column = (int)MathF.Floor((x - left) / PathCell), row = (int)MathF.Floor((y - bottom) / PathCell);
-        return column < 0 || row < 0 || column >= pathing.Width || row >= pathing.Height ? -1 : (int)(row * pathing.Width + column);
+        return column < 0 || row < 0 || column >= width || row >= height ? -1 : row * width + column;
+    }
+
+    // The pathing grid's size in cells: the map's file's, or, once SetTerrainPathable has made a grid for a map with none, four to a tile
+    (int Width, int Height)? PathSize(MirrorImaged.Data.Terrain terrain) =>
+        Data.Map?.Files.PathingMap is { } pathing ? ((int)pathing.Width, (int)pathing.Height) : _cells is not null ? ((terrain.Grid.Columns - 1) * 4, (terrain.Grid.Rows - 1) * 4) : null;
+
+    // SetTerrainPathable on a map with no pathing file starts an open grid, so the change holds (D721)
+    void StartGrid()
+    {
+        if (_cells is null && Data.Map?.Files.PathingMap is null && Data.Terrain is { } terrain) _cells = new byte[(terrain.Grid.Columns - 1) * 4 * (terrain.Grid.Rows - 1) * 4];
     }
 
     /// <summary>
@@ -67,6 +77,7 @@ public sealed partial class GameNatives
     [Native(Level.Exact, Fact = GroundFacts)]
     public void SetTerrainPathable(float x, float y, pathingtype? t, bool flag)
     {
+        StartGrid();
         var cell = CellAt(x, y);
         if (t is null || cell < 0 || Cells() is not { } cells) return;
         var mask = Mask(t);
