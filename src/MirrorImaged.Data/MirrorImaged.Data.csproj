@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Decks.txt" LogicalName="Decks.txt" />
+    <EmbeddedResource Include="DecksClassic.txt" LogicalName="DecksClassic.txt" />
   </ItemGroup>
 
 </Project>

@@ -19,14 +19,14 @@ public sealed class DestructableTests : IDisposable
 
     public void Dispose() => _maps.Dispose();
 
-    static readonly StandardData Standard = Data();
+    static readonly StandardData Standard = Data(), ClassicStandard = Data(GraphicsMode.Classic);
 
-    static StandardData Data()
+    static StandardData Data(GraphicsMode graphics = GraphicsMode.Reforged)
     {
         static Dictionary<string, string> Type(string? life = null, string? rotation = null, string? texture = null, string? name = null, string? occluder = null) =>
             new[] { ("bhps", life), ("bfxr", rotation), ("bptx", texture), ("bnam", name), ("boch", occluder) }
                 .Where(field => field.Item2 is not null).ToDictionary(field => field.Item1, field => field.Item2!);
-        var data = new StandardData()
+        var data = new StandardData { Graphics = graphics }
             .Add(ObjectKind.Destructable, "LTlt", Type("50", "270", @"PathTextures\4x4Default.tga", "WESTRING_DEST_SUMMER_TREE_WALL", "230"))
             .Add(ObjectKind.Destructable, "LTbr", Type("20", "-1", @"PathTextures\2x2Default.tga", "WESTRING_DEST_BARREL"))
             .Add(ObjectKind.Destructable, "YT16", Type("2500", "0", @"PathTextures\CityBridgeLarge0.tga", "WESTRING_DEST_LONG_STONE_CLIFF_1_VERTICAL"))
@@ -70,8 +70,9 @@ public sealed class DestructableTests : IDisposable
         end
         """;
 
-    Simulation Load(string main, Action<Map>? map = null, IReadOnlyDictionary<string, string>? files = null) =>
-        Simulation.Load(_maps.Build($"function config() end\nfunction main()\n{Helpers}\n{main}\nend\n", map: map, files: files), "", data: Standard);
+    Simulation Load(string main, Action<Map>? map = null, IReadOnlyDictionary<string, string>? files = null, GraphicsMode graphics = GraphicsMode.Reforged) =>
+        Simulation.Load(_maps.Build($"function config() end\nfunction main()\n{Helpers}\n{main}\nend\n", map: map, files: files), "", new SimulationOptions { Graphics = graphics },
+            graphics == GraphicsMode.Classic ? ClassicStandard : Standard);
 
     // What a run printed, without the time and source
     static IEnumerable<string> Printed(Simulation simulation) => simulation.Log.Select(entry => Regex.Replace(entry, @"^[0-9.]+ print: ", ""));
@@ -456,6 +457,24 @@ public sealed class DestructableTests : IDisposable
             "deck restored " + fallen,
             "deck restored 0.5 s " + standing,
         ], Printed(simulation));
+    }
+
+    // Classic graphics (D770; game-facts, "Units"): a bridge's deck is not there in the instant it is made, and reads from 0.1 s on
+    // with classic's own shape (YT16's place 275 where Reforged's read 287), which a restore keeps.
+    [Fact]
+    public void In_classic_graphics_a_bridges_deck_comes_0_1_s_after_it_is_made()
+    {
+        using var simulation = Load("""
+            local where = Location(0, 0)
+            local bridge = make("bridge", "YT16", 0, -1280)
+            local function z() MoveLocation(where, GetDestructableX(bridge), GetDestructableY(bridge)) return string.format("%.1f", GetLocationZ(where)) end
+            print("made " .. z())
+            TimerStart(CreateTimer(), 0.09, false, function() print("0.09 s " .. z()) end)
+            TimerStart(CreateTimer(), 0.1, false, function() print("0.1 s " .. z()) end)
+            """, graphics: GraphicsMode.Classic);
+        simulation.Advance(TimeSpan.FromSeconds(1));
+
+        Assert.Equal(["made 0.0", "0.09 s 0.0", "0.1 s 275.0"], Printed(simulation));
     }
 
     // A war3map.doo of Summer trees in each state, one off the grid, one at half life, and two Long Stone Bridges facing
