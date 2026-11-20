@@ -66,7 +66,8 @@ public sealed partial class GameNatives
             u.Path.Clear();
             u.PathGoal = (x, y);
             // The game's unit sets out round what stands between it and the place, not when it reaches it (probe units-path-footprint)
-            if (Seconds >= u.ReplanAt && LineBlocked(u, u.X, u.Y, x, y))
+            // (not toward a place that is itself blocked, as one past the world's edge: the walk goes straight on until it is stopped)
+                        if (Seconds >= u.ReplanAt && !Blocked(u, x, y) && LineBlocked(u, u.X, u.Y, x, y))
             {
                 u.ReplanAt = Seconds + 0.5;
                 var ahead = FindPath(u, x, y);

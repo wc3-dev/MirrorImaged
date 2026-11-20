@@ -1,14 +1,12 @@
-# A place that can't be reached (D722, Close): both go to the ground nearest the place and stop, the second they stop within a second of the game's (3.25 and 4.00 s; here 3.95 and 4.00 s). The game's second footman stops at (8, 304) and here at (16, 312); the first stops in the game where its straight line meets the block (-160, -496), here at the block's nearest edge (8, -376): the game takes no way round.
--  1 s: a -736 -496 order 851986, b -744 440 order 851986
-+  1 s: a -744 -464 order 851986, b -744 440 order 851986
+# A place that can't be reached (D722, Close): the second footman goes to the ground nearest the place and stops, at (16, 312) where the game's stops at (8, 304). The first walks straight at the block as the game's does (to (-200, -496) at 3 s), then, unlike the game's, which stops there at 3.25 s, searches and goes on to the block's nearest edge (8, -376), stopping a few seconds later.
 -  2 s: a -472 -496 order 851986, b -480 384 order 851986
-+  2 s: a -472 -416 order 851986, b -488 376 order 851986
++  2 s: a -472 -496 order 851986, b -488 376 order 851986
 -  3 s: a -200 -496 order 851986, b -216 320 order 851986
-+  3 s: a -208 -376 order 851986, b -224 304 order 851986
++  3 s: a -200 -496 order 851986, b -224 304 order 851986
 -  4 s: a -160 -496 order 0, b 8 304 order 0
-+  4 s: a 8 -376 order 0, b 16 312 order 0
++  4 s: a -88 -368 order 851986, b 16 312 order 0
 -  5 s: a -160 -496 order 0, b 8 304 order 0
-+  5 s: a 8 -376 order 0, b 16 312 order 0
++  5 s: a 8 -376 order 851986, b 16 312 order 0
 -  6 s: a -160 -496 order 0, b 8 304 order 0
 +  6 s: a 8 -376 order 0, b 16 312 order 0
 -  7 s: a -160 -496 order 0, b 8 304 order 0
