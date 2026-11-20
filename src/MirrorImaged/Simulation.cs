@@ -100,6 +100,8 @@ public sealed partial class Simulation : IDisposable
             var (users, computers, others) = Lineup(info, options);
             foreach (var file in data.Map.Unread) _game.Write("map", "left out, as it can't be read: " + file);
             _natives.Place();
+            // Each machine's memory is laid out its own way (D740): the first machine's is the arena's own, so a lone run is unchanged
+            if (options.Machine > 0) _lua.Run($"local t = {{}} for i = 1, {options.Machine * 37} do t[i] = {{i}} end", "layout");
             foreach (var native in NativeMethods.OrderBy(method => method.Name, StringComparer.Ordinal))
                 _lua.Register(native.Name, Bind(native));
             foreach (var (name, value) in _natives.Globals())
@@ -286,7 +288,8 @@ public sealed partial class Simulation : IDisposable
     // Runs Lua with os.clock and os.time on the game's clock; an error goes in the log, unless it stops the run.
     void Protect(Action run)
     {
-        _lua.Clock = TimeSpan.FromMilliseconds(_game.Step * 1000 / Game.StepsPerSecond);
+        // Each machine's wall clock runs a second ahead of the one before (D741)
+        _lua.Clock = TimeSpan.FromMilliseconds(_game.Step * 1000 / Game.StepsPerSecond) + TimeSpan.FromSeconds(_natives.Machine);
         try { run(); }
         catch (LuaException e) when (_lua.Halted is null)
         {
