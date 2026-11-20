@@ -15,7 +15,7 @@ public partial class unit
 public sealed partial class GameNatives
 {
     const float SearchCell = 32;
-    const int PathNodes = 3000;
+    const int PathNodes = 40000;
     // The search leans toward the goal, finding a way sooner at the cost of a way a little longer than the shortest
     const float HeuristicWeight = 2f;
     bool _lastReached;
