@@ -1,10 +1,11 @@
 using System.Text;
+using MirrorImaged.Data;
 
 namespace MirrorImaged.Natives;
 
 // How long a unit's animations last, read from the sequences of its model in the installed game (a model file's SEQS chunk: each a name and the
-// time it starts and ends, in milliseconds). Close: the game reads the model it draws, which may be the high-definition one; the classic
-// model's is read here, and a unit whose model isn't in the install has no animations (decisions D377).
+// time it starts and ends, in milliseconds). Close: classic graphics read the classic model, Reforged the Definitive Edition's, else the
+// high-definition one's, else the classic (D687); a unit whose model isn't in the install has no animations (D377).
 public sealed partial class GameNatives
 {
     static readonly int ModelFile = Code("umdl");
@@ -15,10 +16,12 @@ public sealed partial class GameNatives
     {
         var path = u.Type.Text(ModelFile);
         if (string.IsNullOrEmpty(path)) return [];
-        var file = "War3.w3mod:" + path.Replace('\\', '/').ToLowerInvariant() + (path.EndsWith(".mdx", StringComparison.OrdinalIgnoreCase) ? "" : ".mdx");
-        if (_sequences.TryGetValue(file, out var known)) return known;
+        var file = path.Replace('\\', '/').ToLowerInvariant() + (path.EndsWith(".mdx", StringComparison.OrdinalIgnoreCase) ? "" : ".mdx");
+        var key = Data.Graphics + file;
+        if (_sequences.TryGetValue(key, out var known)) return known;
         var list = new List<(string, double)>();
-        if (Data.InstallFile(file) is { Length: > 8 } bytes && Encoding.ASCII.GetString(bytes, 0, 4) == "MDLX")
+        string[] layers = Data.Graphics == GraphicsMode.Classic ? [""] : ["_DE.w3mod:", "_HD.w3mod:", ""];
+        if (layers.Select(layer => Data.InstallFile("War3.w3mod:" + layer + file)).FirstOrDefault(found => found is not null) is { Length: > 8 } bytes &&Encoding.ASCII.GetString(bytes, 0, 4) == "MDLX")
             for (var at = 4; at + 8 <= bytes.Length;)
             {
                 var (tag, size) = (Encoding.ASCII.GetString(bytes, at, 4), BitConverter.ToInt32(bytes, at + 4));
@@ -31,7 +34,7 @@ public sealed partial class GameNatives
                     }
                 at += 8 + size;
             }
-        return _sequences[file] = list;
+        return _sequences[key] = list;
     }
 
     /// <summary>How long the animation of the unit's model with this name lasts, in seconds: the first whose name begins with it, ignoring case; 0 for none.</summary>
