@@ -1,4 +1,4 @@
-# Where MirrorImaged differs from the game's lines in expected/heroes-store.txt, in order, with why (decisions D121): a
+# Where MirrorImaged differs from the game's lines in expected/heroes-store.reforged.txt, in order, with why (decisions D121): a
 # line starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts
 # "# ".
 
@@ -9,8 +9,3 @@
 # The game moves a building made where others stand, by its pathing (wave 3), as CreateUnit's note says (D347, Close).
 - building restored unit hbar player 0 at -768.0 -1152.0 face 0.0 life 1500.0/1500 mana 0.0/0 data 0 name Barracks dead false abilities 5
 + building restored unit hbar player 0 at -1000.0 -1200.0 face 0.0 life 1500.0/1500 mana 0.0/0 data 0 name Barracks dead false abilities 5
-
-# A restored footman reads scale 1.0 in the game, not its type's 0.8; not known why (D347, Close). It reads 1.0 in classic
-# graphics too, where its type's is 1.0, so the line differs only here (D683).
-- flags false hidden false AHhb 0 abilities 4 6 speed 270.0 scale 1.0 color 0
-+ flags false hidden false AHhb 0 abilities 4 6 speed 270.0 scale 0.8 color 0
