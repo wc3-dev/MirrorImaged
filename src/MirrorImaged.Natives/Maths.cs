@@ -33,11 +33,14 @@ public sealed partial class GameNatives
     [Native(Level.Close)]
     public float Acos(float x) => x is > 1 or < -1 ? 0 : Native.mi_acosf(x);
 
-    [Native(Level.Close)]
+    const string AtanFact = "facts, The game's atan (probes numbers-atan, numbers-atan-2, numbers-functions, numbers-fine-2, "
+        + "strings): all 262,144 values at every 2^-17 from 0 to 2 and every measured pair of atan(y, x), from D800's rational form";
+
+    [Native(Level.Exact, Fact = AtanFact)]
     public float Atan(float x) => Native.mi_atan2f(x, 1);
 
     /// <summary>As math.atan(y, x); Atan2(0, 0) is 0.</summary>
-    [Native(Level.Close)]
+    [Native(Level.Exact, Fact = AtanFact)]
     public float Atan2(float y, float x) => y == 0 && x == 0 ? 0 : Native.mi_atan2f(y, x);
 
     /// <summary>As Lua's x ^ power.</summary>

@@ -301,6 +301,29 @@ float mi_powf (float x, float y) {
   return mi_expf(mi_mul(y, mi_logf(flt(bits(x) & 0x7fffffff))));
 }
 
+/* The game's atan from 0 to 1 (decision D800): x (K + a z) / (1 + b z) with z = x x, and above 2 - sqrt 3 pi/6 plus that of
+   (x - 1/sqrt 3) / (1 + x / sqrt 3), every step in the game's arithmetic in this order (all 131,072 values at every 2^-17). */
+static float atan_rational (float x) {
+  float z = mi_mul(x, x);
+  return mi_div(mi_mul(x, mi_add(flt(0x3f7ffff0), mi_mul(flt(0x3e8415a6), z))), mi_add(1.0f, mi_mul(flt(0x3f17592e), z)));
+}
+
+static float atan_01 (float t) {
+  if (t < flt(0x3e8930a3)) return atan_rational(t);
+  return mi_add(flt(0x3f060a92), atan_rational(mi_div(mi_sub(t, flt(0x3f13cd3a)), mi_add(1.0f, mi_mul(t, flt(0x3f13cd3a))))));
+}
+
+/* |y| over |x| in the game's division, and above 1 pi/2 less the atan of its inverse (1 over it, a second division); then pi
+   less it for x below 0, and its sign from y. */
+static float atan2_game (float y, float x) {
+  float ay = flt(bits(y) & 0x7fffffff), ax = flt(bits(x) & 0x7fffffff), a;
+  float q = mi_div(ay, ax);
+  if (q <= 1.0f) a = atan_01(q);
+  else a = mi_sub(flt(0x3fc90fdb), atan_01(mi_div(1.0f, q)));
+  if (x < 0) a = mi_sub(flt(0x40490fdb), a);
+  return y < 0 ? flt(bits(a) | 0x80000000u) : a;
+}
+
 static double atan_d (double t) {  /* t >= 0 */
   int inv = t > 1, off;
   double z, p, s = 0;
@@ -328,7 +351,7 @@ static double atan2_d (double y, double x) {
 float mi_atan2f (float y, float x) {
   if (y == 0) return x < 0 ? flt(0x40490fdb) : x > 0 ? 0.0f : flt(0x3fc90fdb);
   if (x == 0) return flt(y < 0 ? 0xbfc90fdb : 0x3fc90fdb);
-  return to_float(atan2_d(y, x));
+  return atan2_game(y, x);
 }
 
 /* The game's asin, from x = 0 to just short of 1 (Close, decision D712): a table of 1025 whole numbers in 2^-29 radians, at
