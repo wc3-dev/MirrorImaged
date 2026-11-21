@@ -40,8 +40,8 @@ public static class ProbeComparison
     /// </summary>
     public const string Closes = "! the game closes";
 
-    /// <summary>The most simulated time a probe runs in MirrorImaged, as the game runner gives a probe two minutes.</summary>
-    public static readonly TimeSpan Longest = TimeSpan.FromMinutes(2);
+    /// <summary>The most simulated time a probe runs in MirrorImaged, as the game runner gives a probe three minutes (units-suspend-decay needs 100 s after a load of about 20).</summary>
+    public static readonly TimeSpan Longest = TimeSpan.FromMinutes(3);
 
     // In place of the game's blizzard.j, which the comparison runs without (decisions D120, D150): what blizzard.j does
     // that the probe maps and the probes read, as blizzard.j does it. Its handle globals, the slot functions config

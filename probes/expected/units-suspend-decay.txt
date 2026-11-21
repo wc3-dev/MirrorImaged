@@ -1,5 +1,5 @@
 # probes/units-suspend-decay.lua on 3.0.1.24371, single player, 11-21 (L-mirror-trust-levels, D793, Close): the game's lines, one run, on Reforged
-# graphics (hd=2); a footman's decay doesn't differ between the modes, and a classic run wasn't made, so one file serves both. Eight footmen killed
+# graphics (hd=2); a classic run (11-21) gave the same lines, so one file serves both. Eight footmen killed
 # together, each given UnitSuspendDecay in a way of its own: all decayed at 3.14 s, and all but two were gone at 93.25 s as the one never suspended;
 # the one suspended in the bone stage (4 s) and never let go, and the one suspended before its death and let go at 20 s, were there at 100 s.
 never death 0.10
