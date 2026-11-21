@@ -5,13 +5,16 @@
 # place 316 away for a Wand of Negation and a Staff of Silence (casting from beside it, with ranges of 500 and 700), and to an enemy footman 141 away for a Wand of
 # Lightning Shield (range 600), where here they are cast at once from within the ability's range; and for a Scroll of Town Portal on a building 424 away it kept
 # to the channel event, where the cast range of 99999 here fires its cast and effect at once.
+# Target far (D783 to D786, not traced): 1.5 s later the paladin has not reached the far footman's range and stands 85 short of its mate; the game's has used the item. Alone, a paladin walks round a footman in its way in 0.3 s.
 - point wneg answer false inside 76:852008:nil order 852008 charges 3 mana 360
 + point wneg answer false inside 76:852008:nil 289:0:AIdi 290:0:AIdi 291:0:AIdi 292:0:AIdi 293:0:AIdi 87:0:nil order 0 charges 2 mana 360
 - point ssil answer false inside 76:852008:nil order 852008 charges 0 mana 360
 + point ssil answer false inside 76:852008:nil 289:0:AIse 290:0:AIse 291:0:AIse 292:0:AIse 293:0:AIse 87:0:nil order 0 charges 0 mana 360
+- target far wlsd later events 77:852008:nil 289:0:AIls 290:0:AIls 291:0:AIls 292:0:AIls 293:0:AIls 87:0:nil order 0 charges 2 carried true mana 360 mate life {t} at {t}
++ target far wlsd later events 77:852008:nil order 852008 charges 3 carried true mana 360 mate life 200 at -85
 - target an enemy wlsd answer true inside 77:852008:nil order 852008 charges 3 mana 360
 + target an enemy wlsd answer true inside 77:852008:nil 289:0:AIls 290:0:AIls 291:0:AIls 292:0:AIls 293:0:AIls 87:0:nil order 0 charges 2 mana 360
 - target a building stwp answer true inside 77:852008:nil order 852008 charges 1 mana 360
 + target a building stwp answer true inside 77:852008:nil 289:0:AItp 290:0:AItp order 852008 charges 1 mana 360
 - target a building stwp later events 77:852008:nil 289:0:AItp order 852008 charges 1 carried true mana 360 mate life {t} at {t}
-+ target a building stwp later events 77:852008:nil 289:0:AItp 290:0:AItp 291:0:AItp order 852008 charges 1 carried true mana 360 mate life 200 at -150
++ target a building stwp later events 77:852008:nil 289:0:AItp 290:0:AItp 291:0:AItp order 852008 charges 1 carried true mana 360 mate life 200 at -126

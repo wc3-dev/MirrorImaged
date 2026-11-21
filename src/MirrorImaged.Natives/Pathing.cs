@@ -9,6 +9,7 @@ public partial class unit
     internal double NoWayUntil, ReplanAt;
     internal (float X, float Y)? PathGoal;                  // where that path leads
     internal double WaitingSince = -1;                      // when another unit stopped its walk, -1 while it walks
+    internal int Side;                                      // the side it steps aside to while held up, 0 while it walks
     internal (float X, float Y)? SpotFor;                   // the place another unit stood on, for which it makes for the nearest clear one
 }
 
@@ -132,7 +133,7 @@ public sealed partial class GameNatives
         if (!Blocked(u, nx, ny))
         {
             if (UnitInTheWay(u, nx, ny) is { } other) return GoRound(u, other, dx / left, dy / left, step, x, y);
-            u.WaitingSince = -1;
+            if (u.WaitingSince < 0 || UnitInTheWay(u, nx, ny, strict: true) is null) (u.WaitingSince, u.Side) = (-1, 0);
             if (left > 0) u.Facing.Go(MathF.Atan2(dy, dx), Seconds, 0);
             Move(u, nx, ny);
             return true;
@@ -172,7 +173,7 @@ public sealed partial class GameNatives
 
     // The unit whose room the step would enter, stepping toward it (a unit may always step aside or away from one it overlaps); null for none.
     // The grid is listed once a tick and the places read as they are, as no two units keep more room than a square
-    unit? UnitInTheWay(unit u, float x, float y)
+    unit? UnitInTheWay(unit u, float x, float y, bool strict = false)
     {
         if (!Collides(u) || Flies(u)) return null;
         if (_unitGridAt != _ticks)
@@ -188,7 +189,7 @@ public sealed partial class GameNatives
                 }
         }
         // A walker held up a second passes units that walk, two seconds all of them: the game's group goes through a gap one by one
-        var waited = u.WaitingSince < 0 ? 0 : Seconds - u.WaitingSince;
+        var waited = u.WaitingSince < 0 || strict ? 0 : Seconds - u.WaitingSince;
         if (waited > 2) return null;
         var (sx, sy) = ((int)MathF.Floor(x / UnitSquare), (int)MathF.Floor(y / UnitSquare));
         for (var cx = sx - 1; cx <= sx + 1; cx++)
@@ -196,7 +197,7 @@ public sealed partial class GameNatives
                 if (_unitGrid.TryGetValue((cx, cy), out var near))
                     foreach (var o in near)
                     {
-                        if (o == u || o == u.OrderTarget || o == u.AttackTarget || !Collides(o) || waited > 1 && o.Order != 0) continue;
+                        if (o == u || o == u.OrderTarget || o == u.AttackTarget || !Collides(o) || waited > 1 && !Standing(o)) continue;
                         if (Apart(o, x, y) < Room(u, o) && (o.X - u.X) * (x - u.X) + (o.Y - u.Y) * (y - u.Y) > 0.01f) return o;
                     }
         return null;
@@ -207,13 +208,13 @@ public sealed partial class GameNatives
     bool GoRound(unit u, unit other, float ux, float uy, float step, float x, float y)
     {
         // A unit standing on the way's next point, which the search doesn't see: the walker goes on to the point after it
-        if (other.Order == 0 && u.Path.Count > 0 && Apart(other, u.Path[0].X, u.Path[0].Y) < Room(u, other))
+        if (Standing(other) && u.Path.Count > 0 && Apart(other, u.Path[0].X, u.Path[0].Y) < Room(u, other))
         {
             u.Path.RemoveAt(0);
             return true;
         }
         // A unit standing on the place: the walker makes for the nearest place clear of it, and ends there
-        if (other.Order == 0 && Apart(other, x, y) < Room(u, other))
+        if (Standing(other) && Apart(other, x, y) < Room(u, other))
         {
             if (u.SpotFor == (x, y)) return Finish(u);
             var (fx, fy) = Clear(u, x, y);
@@ -223,7 +224,9 @@ public sealed partial class GameNatives
             u.Path.Add((fx, fy));
             return true;
         }
-        var away = (other.X - u.X) * uy - (other.Y - u.Y) * ux > 0 ? 1 : -1;
+        // The side away from the first unit in the way, kept while held up, so that a walker goes along a row of them
+        if (u.Side == 0) u.Side = (other.X - u.X) * uy - (other.Y - u.Y) * ux > 0 ? 1 : -1;
+        var away = u.Side;
         foreach (var (c, sine) in SideTurns)
             foreach (var side in new[] { away, -away })
             {
@@ -242,6 +245,9 @@ public sealed partial class GameNatives
     // The room two ground units keep, across or up: 16 for each of their cells and 32 more (probe units-path-room: two footmen 64, two knights
     // 96, two abominations 128); a walker passes an idle unit as wide, give or take 12 (probe units-path-spacing)
     static float Room(unit u, unit o) => 16 * (Cells(u) + Cells(o)) + 32;
+
+    // A unit that stays where it is: idle or holding its place
+    static bool Standing(unit o) => o.Order is 0 or 851993;
 
     static int Cells(unit u) => Math.Max(1, (int)(u.Type.Real(Collision) / 16));
 

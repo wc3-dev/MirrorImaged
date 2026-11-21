@@ -3,9 +3,10 @@
 # "# ".
 
 # The game reads a restored facing through its own conversion (90 reads 89.99999); MirrorImaged keeps the facing given (D347, Close).
+# A restored building stands on the build grid (D782): at -960 -1152, the game's at -768 -1152.
 - restored unit same false hfoo player 1 at 300.5 -400.25 face 89.99999 life 420.0/420 mana 0.0/0 data 0 name Footman dead false abilities 4
 + restored unit same false hfoo player 1 at 300.5 -400.25 face 90.0 life 420.0/420 mana 0.0/0 data 0 name Footman dead false abilities 4
 
 # The game moves a building made where others stand, by its pathing (wave 3), as CreateUnit's note says (D347, Close).
 - building restored unit hbar player 0 at -768.0 -1152.0 face 0.0 life 1500.0/1500 mana 0.0/0 data 0 name Barracks dead false abilities 5
-+ building restored unit hbar player 0 at -1000.0 -1200.0 face 0.0 life 1500.0/1500 mana 0.0/0 data 0 name Barracks dead false abilities 5
++ building restored unit hbar player 0 at -960.0 -1152.0 face 0.0 life 1500.0/1500 mana 0.0/0 data 0 name Barracks dead false abilities 5

@@ -2,6 +2,7 @@
 # starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
 
 # The cast's events by cast point, backswing and casting time, Storm Bolt's missile, Mirror Image's summon events and a paused unit's buff (decisions D450, D451, D453, D456, D457; 2026-11-19). What differs: a unit turns at once here, where the game's Archmage took 0.21 s to turn round before its cast began and so walked 134 of 150 in the half second after a move order; the game gives Storm Bolt's target a third hit of 0, 5.02 s after the first two, which is not modelled; and its missile reached the foe 600 away 0.02 s early.
+# Units made beside each other stand apart by their room (D786), so storm bolt's distances move a little: hits at 0.57 and 0.18 s where the game's are 0.58 and 0.20.
 - silence, move 1 s after the order: move t, 0.5 s later it is 134 from its place
 + silence, move 1 s after the order: move t, 0.5 s later it is 150 from its place
 - storm bolt at 200, missile speed 1000: order t: channel in the call +0.00, cast in the call +0.00, effect +0.40, finish +0.90, end cast +0.90; mana spent 75; hits after the effect 3: 0.0 +0.20, 100.0 +0.20, 0.0 +5.22
@@ -9,10 +10,10 @@
 - storm bolt at 400, missile speed 1000: order t: channel in the call +0.00, cast in the call +0.00, effect +0.40, finish +0.90, end cast +0.90; mana spent 75; hits after the effect 3: 0.0 +0.40, 100.0 +0.40, 0.0 +5.42
 + storm bolt at 400, missile speed 1000: order t: channel in the call +0.00, cast in the call +0.00, effect +0.40, finish +0.90, end cast +0.90; mana spent 75; hits after the effect 2: 0.0 +0.40, 100.0 +0.40
 - storm bolt at 600, missile speed 1000: order t: channel in the call +0.00, cast in the call +0.00, effect +0.40, finish +0.90, end cast +0.90; mana spent 75; hits after the effect 3: 0.0 +0.58, 100.0 +0.58, 0.0 +5.60
-+ storm bolt at 600, missile speed 1000: order t: channel in the call +0.00, cast in the call +0.00, effect +0.40, finish +0.90, end cast +0.90; mana spent 75; hits after the effect 2: 0.0 +0.60, 100.0 +0.60
++ storm bolt at 600, missile speed 1000: order t: channel in the call +0.00, cast in the call +0.00, effect +0.40, finish +0.90, end cast +0.90; mana spent 75; hits after the effect 2: 0.0 +0.57, 100.0 +0.57
 - storm bolt at 400, missile speed 500: order t: channel in the call +0.00, cast in the call +0.00, effect +0.40, finish +0.90, end cast +0.90; mana spent 75; hits after the effect 3: 0.0 +0.80, 100.0 +0.80, 0.0 +5.82
 + storm bolt at 400, missile speed 500: order t: channel in the call +0.00, cast in the call +0.00, effect +0.40, finish +0.90, end cast +0.90; mana spent 75; hits after the effect 2: 0.0 +0.80, 100.0 +0.80
 - storm bolt at 400, missile speed 2000: order t: channel in the call +0.00, cast in the call +0.00, effect +0.40, finish +0.90, end cast +0.90; mana spent 75; hits after the effect 3: 0.0 +0.20, 100.0 +0.20, 0.0 +5.22
-+ storm bolt at 400, missile speed 2000: order t: channel in the call +0.00, cast in the call +0.00, effect +0.40, finish +0.90, end cast +0.90; mana spent 75; hits after the effect 2: 0.0 +0.20, 100.0 +0.20
++ storm bolt at 400, missile speed 2000: order t: channel in the call +0.00, cast in the call +0.00, effect +0.40, finish +0.90, end cast +0.90; mana spent 75; hits after the effect 2: 0.0 +0.18, 100.0 +0.18
 - silence, the place behind it, cast point 0.30 backswing 2.40: order t: channel +0.21, cast +0.21, effect +0.51, finish +2.91, end cast +2.91; mana spent 75
 + silence, the place behind it, cast point 0.30 backswing 2.40: order t: channel in the call +0.00, cast in the call +0.00, effect +0.30, finish +2.70, end cast +2.70; mana spent 75

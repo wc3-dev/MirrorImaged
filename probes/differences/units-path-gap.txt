@@ -1,11 +1,11 @@
 # Where MirrorImaged differs from the game's lines in expected/units-path-gap.txt, in order, with why (decisions D121): a line
 # starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
 
-# A group through a gap (D782 to D786, Close): the houses at centres 128 to 192 touch, as the game snaps them, and the group goes round; units keep a square room (64 for two footmen) and the four lanes are 48 apart, so at the end two of four stand where they stop, 48 to 64 from their places (the game's all came within 40 at 128, 160 and 256). The game holds one of four up for good at 192 and 320; MirrorImaged's held-up walkers pass after 2 s (D784).
+# A group through a gap (D782 to D786, Close): the houses at centres 128 to 192 touch, as the game snaps them, and the group goes round; units keep a square room (64 for two footmen) and the four lanes are 48 apart, so at the end one or two of four stand where they stop, 48 to 64 from their places (the game's all came within 40 at 128, 160 and 256). The game holds one of four up for good at 192 and 320; MirrorImaged's held-up walkers pass after 2 s (D784).
 - centres 128 apart: 4 of 4 arrived, first {t} s, last {t} s, left the lane by 160
 + centres 128 apart: 2 of 4 arrived, first 7.35 s, last never s, left the lane by 144
 - centres 160 apart: 4 of 4 arrived, first {t} s, last {t} s, left the lane by 112
-+ centres 160 apart: 2 of 4 arrived, first 7.35 s, last never s, left the lane by 80
++ centres 160 apart: 3 of 4 arrived, first 7.35 s, last never s, left the lane by 64
 - centres 192 apart: 3 of 4 arrived, first {t} s, last never s, left the lane by 144
 + centres 192 apart: 2 of 4 arrived, first 7.35 s, last never s, left the lane by 144
 - centres 256 apart: 4 of 4 arrived, first {t} s, last {t} s, left the lane by 112
