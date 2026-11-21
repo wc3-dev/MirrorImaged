@@ -351,37 +351,37 @@ public sealed partial class GameNatives
 
     /// <summary>The target's x as the step before left it.</summary>
     [Native(Level.Close)]
-    public float GetCameraTargetPositionX() => TargetX + Aside;
+    public float GetCameraTargetPositionX() => TargetX + Aside + Shake(_targetNoise, 0);
 
     [Native(Level.Close)]
-    public float GetCameraTargetPositionY() => TargetY + Aside;
+    public float GetCameraTargetPositionY() => TargetY + Aside + Shake(_targetNoise, 1);
 
     /// <summary>
     /// The ground's height there and the z offset, or a pan's z. Close: measured on flat ground; on a hill, inferred.
     /// </summary>
     [Native(Level.Close)]
-    public float GetCameraTargetPositionZ() => TargetZ;
+    public float GetCameraTargetPositionZ() => TargetZ + Shake(_targetNoise, 2);
 
     /// <summary>
     /// The eye, the distance back from the target along the angle of attack and the rotation as the step before saw
     /// them. Close: the game's sums are a float step or so off.
     /// </summary>
     [Native(Level.Close)]
-    public float GetCameraEyePositionX() => Eye().X + Aside;
+    public float GetCameraEyePositionX() => Eye().X + Aside + EyeShake(0);
 
     [Native(Level.Close)]
-    public float GetCameraEyePositionY() => Eye().Y + Aside;
+    public float GetCameraEyePositionY() => Eye().Y + Aside + EyeShake(1);
 
     [Native(Level.Close)]
-    public float GetCameraEyePositionZ() => Eye().Z;
+    public float GetCameraEyePositionZ() => Eye().Z + EyeShake(2);
 
     /// <summary>A new location each call at the target's x and y.</summary>
     [Native(Level.Close)]
-    public location? GetCameraTargetPositionLoc() => Location(TargetX + Aside, TargetY + Aside);
+    public location? GetCameraTargetPositionLoc() => Location(GetCameraTargetPositionX(), GetCameraTargetPositionY());
 
     /// <summary>A new location each call at the eye's x and y.</summary>
     [Native(Level.Close)]
-    public location? GetCameraEyePositionLoc() => Location(Eye().X + Aside, Eye().Y + Aside);
+    public location? GetCameraEyePositionLoc() => Location(GetCameraEyePositionX(), GetCameraEyePositionY());
 
     [Native(Level.Exact, Fact = Cameras)]
     public camerasetup? CreateCameraSetup()
@@ -486,19 +486,51 @@ public sealed partial class GameNatives
     public void SetCameraQuickPosition(float x, float y) { }
 
     const string NoiseFacts = "probes cameras-noise and cameras-noise-2 (11-21, D794)";
-    const string NoiseReason = "The game shakes what the camera reads by a random amount on each axis every read, mostly up to about the magnitude (a quarter of it on average, the height mostly below), faster for a bigger velocity, nothing for a velocity or magnitude of 0 or once set to 0 again; not reproduced, so the target and the eye read as still";
+    const string NoiseReason = "The shake's sizes match the game's and its values don't: each axis moves smoothly at random by up to the magnitude, a quarter of it on average (over 40 reads), from nothing at the start, at a rate that goes with the velocity, none for a magnitude or velocity of 0, a negative magnitude as its size; the game's values are its own random, and its height read mostly below, which isn't kept here";
+
+    // A camera noise: its magnitude, velocity and whether it shakes the height alone, from the step it was set, and its own number for its random
+    (float Magnitude, float Velocity, bool Vertical, long Start, ulong Seed)? _sourceNoise, _targetNoise;
+    ulong _noises;
+
+    void SetNoise(ref (float Magnitude, float Velocity, bool Vertical, long Start, ulong Seed)? noise, float magnitude, float velocity, bool vertical) =>
+        noise = magnitude == 0 || velocity == 0 ? null : (Math.Abs(magnitude), Math.Abs(velocity), vertical, _game.Step, ++_noises * 0x9E3779B97F4A7C15UL + (ulong)Machine);
+
+    // A number in -1 to 1 of the noise's random for an axis and a lattice point: its own splitmix, never the game's random numbers (the camera is local)
+    static double Lattice(ulong seed, int axis, long point)
+    {
+        var z = seed + (ulong)axis * 0xBF58476D1CE4E5B9UL + (ulong)point * 0x94D049BB133111EBUL;
+        z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9UL;
+        z = (z ^ (z >> 27)) * 0x94D049BB133111EBUL;
+        return ((z ^ (z >> 31)) >> 11) / (double)(1UL << 52) - 1;
+    }
+
+    // How far the noise has moved a camera position on the axis (0 x, 1 y, 2 height): a value noise on lattice points 0.4 a second of the velocity apart, none at
+    // the start, curved to the third power so that it averages a quarter of the magnitude and goes near it at its peaks
+    float Shake((float Magnitude, float Velocity, bool Vertical, long Start, ulong Seed)? noise, int axis)
+    {
+        if (noise is not { } n || n.Vertical && axis != 2) return 0;
+        var at = (_game.Step - n.Start) / (double)Game.StepsPerSecond * 0.4 * n.Velocity;
+        var (point, along) = ((long)Math.Floor(at), at - Math.Floor(at));
+        double Value(long p) => p == 0 ? 0 : Lattice(n.Seed, axis, p);
+        var (a, b, blend) = (Value(point), Value(point + 1), along * along * (3 - 2 * along));
+        var u = a + (b - a) * blend;
+        return (float)(n.Magnitude * Math.Sign(u) * Math.Abs(u * u * u));
+    }
+
+    // The eye moves with the target's shake and by its own
+    float EyeShake(int axis) => Shake(_targetNoise, axis) + Shake(_sourceNoise, axis);
 
     [Native(Level.Close, Fact = NoiseFacts, Reason = NoiseReason + ": the eye alone for a source noise")]
-    public void CameraSetSourceNoise(float mag, float velocity) { }
+    public void CameraSetSourceNoise(float mag, float velocity) => SetNoise(ref _sourceNoise, mag, velocity, false);
 
     [Native(Level.Close, Fact = NoiseFacts, Reason = NoiseReason + ": the eye alone for a source noise, the height alone for vertOnly")]
-    public void CameraSetSourceNoiseEx(float mag, float velocity, bool vertOnly) { }
+    public void CameraSetSourceNoiseEx(float mag, float velocity, bool vertOnly) => SetNoise(ref _sourceNoise, mag, velocity, vertOnly);
 
     [Native(Level.Close, Fact = NoiseFacts, Reason = NoiseReason + ": the target and the eye with it for a target noise")]
-    public void CameraSetTargetNoise(float mag, float velocity) { }
+    public void CameraSetTargetNoise(float mag, float velocity) => SetNoise(ref _targetNoise, mag, velocity, false);
 
     [Native(Level.Close, Fact = NoiseFacts, Reason = NoiseReason + ": the target and the eye with it for a target noise, the height alone for vertOnly")]
-    public void CameraSetTargetNoiseEx(float mag, float velocity, bool vertOnly) { }
+    public void CameraSetTargetNoiseEx(float mag, float velocity, bool vertOnly) => SetNoise(ref _targetNoise, mag, velocity, vertOnly);
 
     [Native(Level.Recorded, Reason = "Smooths the view's moves: at a factor of 1 a pan's target read as without it (units-camera-2)")]
     public void CameraSetSmoothingFactor(float factor) { }

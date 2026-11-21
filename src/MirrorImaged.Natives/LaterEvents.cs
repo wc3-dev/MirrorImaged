@@ -9,14 +9,6 @@ public sealed partial class GameNatives
     // ---- Spells and the orders that come with them (wave 4)
 
 
-    const string ItemUseFacts = "probe items-use-at (11-21, D794)";
-
-    [Native(Level.Close, Fact = ItemUseFacts, Reason = "Not modelled: refused, no order. The game answered false in all of 20 calls, but gave the order of the item's slot (852008 for the first) as a point order for an item whose ability takes a place (a Wand of Negation, a Staff of Silence), cast its ability, firing the cast events and the use event and spending a charge, at once for a place in range and after the walk for one out of it; nothing for another item")]
-    public bool UnitUseItemPoint(unit? whichUnit, item? whichItem, float x, float y) => false;
-
-    [Native(Level.Close, Fact = ItemUseFacts, Reason = "Not modelled: refused, no order. The game answered true and gave the slot's order as a target order for a target the item's ability takes (a Wand of Lightning Shield on another unit, near, far or an enemy; a Scroll of Town Portal on a building), casting at once or after the walk, and false, with no order, for one it doesn't (the hero itself, a footman for Town Portal) and for an item whose ability takes none")]
-    public bool UnitUseItemTarget(unit? whichUnit, item? whichItem, widget? target) => false;
-
     [Native(Level.Close)]
     public @event? TriggerRegisterCommandEvent(trigger? whichTrigger, int whichAbility, string? order) => whichTrigger is null ? null : Register(whichTrigger);
 
