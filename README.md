@@ -23,9 +23,9 @@ MirrorImaged loads `.w3x` archives (aka. maps), runs its script against C# copie
 
 | Level    | Meaning                                                 | Count | Share                      |
 | -------- | ------------------------------------------------------- | ----- | -------------------------- |
-| Exact    | Matches the game on every case a probe measured         | 446   | `█████░░░░░░░░░░░░░░░` 24% |
-| Close    | A documented model, not fully measured                  | 1,045 | `███████████░░░░░░░░░` 57% |
-| Recorded | Changes nothing a map can read back; the call is logged | 344   | `████░░░░░░░░░░░░░░░░` 19% |
+| Exact    | Matches the game on every case a probe measured         | 471   | `█████░░░░░░░░░░░░░░░` 26% |
+| Close    | A documented model, not fully measured                  | 1,008 | `███████████░░░░░░░░░` 55% |
+| Recorded | Changes nothing a map can read back; the call is logged | 356   | `████░░░░░░░░░░░░░░░░` 19% |
 | Missing  | Stops the run with the native's name                    | 0     | `░░░░░░░░░░░░░░░░░░░░` 0%  |
 
 ## Licence
