@@ -10,9 +10,11 @@ public sealed partial class GameNatives
     const int UnitSummon = 84, PlayerUnitSummon = 47;
 
     /// <summary>The unit the summon event is about: the one that was called.</summary>
+    /// <remarks>Close: the event fires as each unit is made, with the caster as the summoner; the game's timing of it is not measured (D381).</remarks>
     [Native(Level.Close)] public unit? GetSummonedUnit() => Response(UnitSummon, PlayerUnitSummon)?.Other;
 
     /// <summary>The unit that called it: the caster.</summary>
+    /// <remarks>Close: the event fires as each unit is made, with the caster as the summoner; the game's timing of it is not measured (D381).</remarks>
     [Native(Level.Close)] public unit? GetSummoningUnit() => Response(UnitSummon, PlayerUnitSummon)?.Unit;
 
     // The unit types an ability summons, as its data lists them by level

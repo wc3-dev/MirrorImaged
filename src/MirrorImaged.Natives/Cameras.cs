@@ -209,6 +209,8 @@ public sealed partial class GameNatives
         if (pan) MoveCamera(setup.X, setup.Y, duration is { } d ? CameraSteps(d) : timed ? CameraSteps(setup.Duration) : PanSteps(setup.X, setup.Y), z);
     }
 
+    /// <summary>The margin of the camera's view: 512 for left and right, 256 for top and bottom, 0 for another.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Cameras: probes cameras, cameras-2 and cameras-3 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Cameras)]
     public float GetCameraMargin(int whichMargin) => whichMargin switch
     {
@@ -218,20 +220,28 @@ public sealed partial class GameNatives
     };
 
     /// <summary>The four corners, held as given; the bounds start at 0 until the script sets them.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Cameras: probes cameras, cameras-2 and cameras-3 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Cameras)]
     public void SetCameraBounds(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4) =>
         (_bounds[0], _bounds[1], _bounds[2], _bounds[3], _bounds[4], _bounds[5], _bounds[6], _bounds[7]) = (x1, y1, x2, y2, x3, y3, x4, y4);
 
     /// <summary>The least x of the four corners.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Cameras: probes cameras, cameras-2 and cameras-3 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Cameras)]
     public float GetCameraBoundMinX() => Bound(0, false);
 
+    /// <summary>The least y of the four corners.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Cameras: probes cameras, cameras-2 and cameras-3 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Cameras)]
     public float GetCameraBoundMinY() => Bound(1, false);
 
+    /// <summary>The greatest x of the four corners.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Cameras: probes cameras, cameras-2 and cameras-3 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Cameras)]
     public float GetCameraBoundMaxX() => Bound(0, true);
 
+    /// <summary>The greatest y of the four corners.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Cameras: probes cameras, cameras-2 and cameras-3 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Cameras)]
     public float GetCameraBoundMaxY() => Bound(1, true);
 
@@ -239,6 +249,7 @@ public sealed partial class GameNatives
     /// The field, read at once, the angles in radians. Close: the game reads 0.0004 off at times, and while a change
     /// over a time goes on its value is a frame or so ahead.
     /// </summary>
+    /// <remarks>Close: the game reads 0.0004 off at times, and while a change over a time goes on its value is a frame or so ahead.</remarks>
     [Native(Level.Close)]
     public float GetCameraField(camerafield? whichField) =>
         whichField is { Id: >= 0 and < CameraFields } f ? IsAngle(f.Id) ? (float)Radians(Field(f.Id, _game.Step)) : Field(f.Id, _game.Step) : 0;
@@ -247,12 +258,15 @@ public sealed partial class GameNatives
     /// Sets the field in degrees or game units, held in its limits; over a time it moves there in a straight line.
     /// Close: the game's change over a time is a frame or so ahead of this one.
     /// </summary>
+    /// <remarks>Close: the game's change over a time is a frame or so ahead of this one.</remarks>
     [Native(Level.Close)]
     public void SetCameraField(camerafield? whichField, float value, float duration)
     {
         if (whichField is { Id: >= 0 and < CameraFields }) SetCameraField(whichField.Id, value, duration);
     }
 
+    /// <summary>Adds the offset to the field's value now and sets the sum as SetCameraField does, over the time.</summary>
+    /// <remarks>Close: built on SetCameraField, so its frame or so of difference holds; not measured on its own.</remarks>
     [Native(Level.Close)]
     public void AdjustCameraField(camerafield? whichField, float offset, float duration)
     {
@@ -263,6 +277,7 @@ public sealed partial class GameNatives
     /// Puts the game camera's fields back but CAMERA_FIELD_ZABSOLUTE; the target stays, and the rotate mode, a follow and a
     /// pan's height end (units-camera, units-camera-2).
     /// </summary>
+    /// <remarks>Close: the game's change over a time is a frame or so ahead, as SetCameraField's, and the classic camera's far clip and z offset are read from the install's data (D685).</remarks>
     [Native(Level.Close)]
     public void ResetToGameCamera(float duration)
     {
@@ -277,6 +292,7 @@ public sealed partial class GameNatives
     /// sweep (units-camera-2). Close: the game's lands after a frame, and at the game's start 0.2 to 0.25 s later
     /// (cameras-3); its bounds' hold isn't always the box (cameras).
     /// </summary>
+    /// <remarks>Close: the game's lands a frame later, and at the game's start 0.2 to 0.25 s later, and its hold in the bounds isn't always the box.</remarks>
     [Native(Level.Close)]
     public void SetCameraPosition(float x, float y)
     {
@@ -285,16 +301,22 @@ public sealed partial class GameNatives
     }
 
     /// <summary>A pan at 3000 a second, as the game's, measured to a frame or so (cameras-3).</summary>
+    /// <remarks>Close: measured to a frame or so of the game's.</remarks>
     [Native(Level.Close)]
     public void PanCameraTo(float x, float y) => MoveCamera(x, y, PanSteps(x, y));
 
+    /// <summary>A pan over the seconds given, in a straight line.</summary>
+    /// <remarks>Close: a straight line over the time given, as PanCameraTo's; the game's timing is not measured on its own.</remarks>
     [Native(Level.Close)]
     public void PanCameraToTimed(float x, float y, float duration) => MoveCamera(x, y, CameraSteps(duration));
 
     /// <summary>The target's height becomes the z given, the z offset field stays (cameras-2).</summary>
+    /// <remarks>Close: as PanCameraTo's, a frame or so off the game's.</remarks>
     [Native(Level.Close)]
     public void PanCameraToWithZ(float x, float y, float zOffsetDest) => MoveCamera(x, y, PanSteps(x, y), zOffsetDest);
 
+    /// <summary>A pan over the seconds given, the target's height going to the z with it.</summary>
+    /// <remarks>Close: as PanCameraToTimed, with the height as PanCameraToWithZ's; the game's timing is not measured on its own.</remarks>
     [Native(Level.Close)]
     public void PanCameraToTimedWithZ(float x, float y, float zOffsetDest, float duration) => MoveCamera(x, y, CameraSteps(duration), zOffsetDest);
 
@@ -302,6 +324,7 @@ public sealed partial class GameNatives
     /// Stops a pan where it is (cameras-2), its height going back to the z offset from the next step, and the rotate
     /// mode's sweep, the mode going on (units-camera-2); a field's change goes on (not measured).
     /// </summary>
+    /// <remarks>Close: a field's change goes on, which is not measured in the game.</remarks>
     [Native(Level.Close)]
     public void StopCamera()
     {
@@ -317,6 +340,7 @@ public sealed partial class GameNatives
     /// dropped (units-camera-2). Close: the game's turn is a frame or so ahead; a new rotate mode in one starting from
     /// where the target is is the model's.
     /// </summary>
+    /// <remarks>Close: the game's turn is a frame or so ahead, and a new rotate mode in one starting from where the target is is the model's.</remarks>
     [Native(Level.Close)]
     public void SetCameraRotateMode(float x, float y, float radiansToSweep, float duration)
     {
@@ -332,10 +356,12 @@ public sealed partial class GameNatives
     /// later. Neither inheritOrientation nor the unit's facing changes the rotation field (units-camera); what they turn
     /// in the view isn't simulated.
     /// </summary>
+    /// <remarks>Close: the game follows a move a frame later, and a nil unit ending a follow is the model's, not measured.</remarks>
     [Native(Level.Close)]
     public void SetCameraTargetController(unit? whichUnit, float xoffset, float yoffset, bool inheritOrientation) => Follow(whichUnit, xoffset, yoffset);
 
     /// <summary>As SetCameraTargetController with these offsets: the target went to the unit at them (units-camera).</summary>
+    /// <remarks>Close: as SetCameraTargetController's, a frame or so behind the game; what the orientation turns in the view isn't simulated.</remarks>
     [Native(Level.Close)]
     public void SetCameraOrientController(unit? whichUnit, float xoffset, float yoffset) => Follow(whichUnit, xoffset, yoffset);
 
@@ -350,15 +376,19 @@ public sealed partial class GameNatives
     float Aside => Machine * 64f;
 
     /// <summary>The target's x as the step before left it.</summary>
+    /// <remarks>Close: with a target noise its shake is the model's, not the game's values.</remarks>
     [Native(Level.Close)]
     public float GetCameraTargetPositionX() => TargetX + Aside + Shake(_targetNoise, 0);
 
+    /// <summary>The target's y as the step before left it.</summary>
+    /// <remarks>Close: with a target noise its shake is the model's, not the game's values.</remarks>
     [Native(Level.Close)]
     public float GetCameraTargetPositionY() => TargetY + Aside + Shake(_targetNoise, 1);
 
     /// <summary>
     /// The ground's height there and the z offset, or a pan's z. Close: measured on flat ground; on a hill, inferred.
     /// </summary>
+    /// <remarks>Close: measured on flat ground, inferred on a hill; with a target noise its shake is the model's.</remarks>
     [Native(Level.Close)]
     public float GetCameraTargetPositionZ() => TargetZ + Shake(_targetNoise, 2);
 
@@ -366,23 +396,32 @@ public sealed partial class GameNatives
     /// The eye, the distance back from the target along the angle of attack and the rotation as the step before saw
     /// them. Close: the game's sums are a float step or so off.
     /// </summary>
+    /// <remarks>Close: the game's sums are a float step or so off, and with a noise its shake is the model's.</remarks>
     [Native(Level.Close)]
     public float GetCameraEyePositionX() => Eye().X + Aside + EyeShake(0);
 
+    /// <summary>The eye's y, from the step before.</summary>
+    /// <remarks>Close: as GetCameraEyePositionX.</remarks>
     [Native(Level.Close)]
     public float GetCameraEyePositionY() => Eye().Y + Aside + EyeShake(1);
 
+    /// <summary>The eye's height, from the step before.</summary>
+    /// <remarks>Close: as GetCameraEyePositionX.</remarks>
     [Native(Level.Close)]
     public float GetCameraEyePositionZ() => Eye().Z + EyeShake(2);
 
     /// <summary>A new location each call at the target's x and y.</summary>
+    /// <remarks>Close: as GetCameraTargetPositionX and Y, whose values the model's noise may shake.</remarks>
     [Native(Level.Close)]
     public location? GetCameraTargetPositionLoc() => Location(GetCameraTargetPositionX(), GetCameraTargetPositionY());
 
     /// <summary>A new location each call at the eye's x and y.</summary>
+    /// <remarks>Close: as GetCameraEyePositionX and Y, whose sums are a float step or so off the game's.</remarks>
     [Native(Level.Close)]
     public location? GetCameraEyePositionLoc() => Location(GetCameraEyePositionX(), GetCameraEyePositionY());
 
+    /// <summary>A new setup with its fields at their starts, the far clip 5400 in Reforged graphics and 5000 in classic, and its place at (0, 0).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Cameras: probes cameras, cameras-2 and cameras-3 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Cameras)]
     public camerasetup? CreateCameraSetup()
     {
@@ -392,6 +431,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Kept as given, in degrees for an angle, a length below 0 as 0; its time is the field's when the setup is applied.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Cameras: probes cameras, cameras-2 and cameras-3 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Cameras)]
     public void CameraSetupSetField(camerasetup? whichSetup, camerafield? whichField, float value, float duration)
     {
@@ -400,39 +440,56 @@ public sealed partial class GameNatives
         whichSetup.Durations[f.Id] = duration;
     }
 
+    /// <summary>The field as the setup keeps it, in degrees for an angle; 0 for a null setup or a field that isn't one.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Cameras: probes cameras, cameras-2 and cameras-3 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Cameras)]
     public float CameraSetupGetField(camerasetup? whichSetup, camerafield? whichField) =>
         whichSetup is not null && whichField is { Id: >= 0 and < CameraFields } f ? whichSetup.Fields[f.Id] : 0;
 
+    /// <summary>Keeps the setup's destination place and the time of the pan to it; nothing for a null setup.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Cameras: probes cameras, cameras-2 and cameras-3 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Cameras)]
     public void CameraSetupSetDestPosition(camerasetup? whichSetup, float x, float y, float duration)
     {
         if (whichSetup is not null) (whichSetup.X, whichSetup.Y, whichSetup.Duration) = (x, y, duration);
     }
 
+    /// <summary>The setup's destination x; 0 for a null setup.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Cameras: probes cameras, cameras-2 and cameras-3 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Cameras)]
     public float CameraSetupGetDestPositionX(camerasetup? whichSetup) => whichSetup?.X ?? 0;
 
+    /// <summary>The setup's destination y; 0 for a null setup.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Cameras: probes cameras, cameras-2 and cameras-3 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Cameras)]
     public float CameraSetupGetDestPositionY(camerasetup? whichSetup) => whichSetup?.Y ?? 0;
 
     /// <summary>A new location each call at the setup's destination; nil for nil (as the Loc natives of W2-6).</summary>
+    /// <remarks>Close: read from the other Loc natives, not measured in the game.</remarks>
     [Native(Level.Close)]
     public location? CameraSetupGetDestPositionLoc(camerasetup? whichSetup) =>
         whichSetup is null ? null : Location(whichSetup.X, whichSetup.Y);
 
+    /// <summary>Keeps the label on the setup; nothing for a null setup.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Cameras: probes cameras, cameras-2 and cameras-3 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Cameras)]
     public void BlzCameraSetupSetLabel(camerasetup? whichSetup, string? label)
     {
         if (whichSetup is not null) whichSetup.Label = label;
     }
 
+    /// <summary>The setup's label, empty until set; nil for a null setup.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Cameras: probes cameras, cameras-2 and cameras-3 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Cameras)]
     public string? BlzCameraSetupGetLabel(camerasetup? whichSetup) => whichSetup?.Label;
 
+    /// <summary>Always 0: the setup keeps no camera type.</summary>
+    /// <remarks>Close: The game gives a number of its own each run (1367777792, -1842721280, ...), the same before and after BlzCameraSetupSetCameraType and no number a script can use; 0 here.</remarks>
     [Native(Level.Close, Fact = Cameras, Reason = "The game gives a number of its own each run (1367777792, -1842721280, ...), the same before and after BlzCameraSetupSetCameraType and no number a script can use; 0 here")]
     public int BlzCameraSetupGetCameraType(camerasetup? whichSetup) => 0;
 
+    /// <summary>Changes nothing; the setup keeps no camera type.</summary>
+    /// <remarks>Recorded: The game's getter doesn't read it back (cameras); what it changes in the view isn't simulated.</remarks>
     [Native(Level.Recorded, Reason = "The game's getter doesn't read it back (cameras); what it changes in the view isn't simulated")]
     public void BlzCameraSetupSetCameraType(camerasetup? whichSetup, int cameraType) { }
 
@@ -440,48 +497,67 @@ public sealed partial class GameNatives
     /// Sets every field over its own time from the setup and pans to its place if asked: over the place's time when
     /// timed, else at 3000 a second.
     /// </summary>
+    /// <remarks>Close: its fields and its pan are as SetCameraField's and PanCameraTo's, a frame or so off the game's.</remarks>
     [Native(Level.Close)]
     public void CameraSetupApply(camerasetup? whichSetup, bool doPan, bool panTimed) => Apply(whichSetup, doPan, panTimed);
 
     /// <summary>Pans as CameraSetupApply's that isn't timed; the z isn't read back (cameras-2, cameras-4).</summary>
+    /// <remarks>Close: the z isn't read back, and the pan is as PanCameraTo's, a frame or so off the game's.</remarks>
     [Native(Level.Close)]
     public void CameraSetupApplyWithZ(camerasetup? whichSetup, float zDestOffset) => Apply(whichSetup, true, false);
 
     /// <summary>The fields and the pan over the time given.</summary>
+    /// <remarks>Close: as CameraSetupApply's over the time given, a frame or so off the game's.</remarks>
     [Native(Level.Close)]
     public void CameraSetupApplyForceDuration(camerasetup? whichSetup, bool doPan, float forceDuration) => Apply(whichSetup, doPan, true, forceDuration);
 
     /// <summary>Pans over the time given, the target's height going to the z with it (cameras-4); over 0 s the z isn't read back (cameras-2).</summary>
+    /// <remarks>Close: over 0 s the z isn't read back; the rest is a frame or so off the game's.</remarks>
     [Native(Level.Close)]
     public void CameraSetupApplyForceDurationWithZ(camerasetup? whichSetup, float zDestOffset, float forceDuration) =>
         Apply(whichSetup, true, true, forceDuration, forceDuration > 0 ? zDestOffset : null);
 
     /// <summary>As CameraSetupApplyForceDuration; the easing isn't modelled.</summary>
+    /// <remarks>Close: the easing isn't modelled: it runs as CameraSetupApplyForceDuration does, whatever the ease times and factor.</remarks>
     [Native(Level.Close)]
     public void BlzCameraSetupApplyForceDurationSmooth(camerasetup? whichSetup, bool doPan, float forcedDuration, float easeInDuration, float easeOutDuration, float smoothFactor) =>
         Apply(whichSetup, doPan, true, forcedDuration);
 
+    /// <summary>True until set; false for a null field or one that isn't a camera field.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Cameras: probes cameras, cameras-2 and cameras-3 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Cameras)]
     public bool GetCameraFieldControlledByInput(camerafield? whichField) => whichField is { Id: >= 0 and < CameraFields } f && _byInput[f.Id];
 
+    /// <summary>Sets whether input controls the field; nothing for a null field or one that isn't a camera field.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Cameras: probes cameras, cameras-2 and cameras-3 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Cameras)]
     public void SetCameraFieldControlledByInput(camerafield? whichField, bool controlled)
     {
         if (whichField is { Id: >= 0 and < CameraFields }) _byInput[whichField.Id] = controlled;
     }
 
+    /// <summary>The camera type last set; 0 until set.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Cameras: probes cameras, cameras-2 and cameras-3 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Cameras)]
     public int BlzCameraGetCameraType() => _cameraType;
 
+    /// <summary>Keeps the camera type for BlzCameraGetCameraType.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Cameras: probes cameras, cameras-2 and cameras-3 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Cameras)]
     public void BlzCameraSetCameraType(int cameraType) => _cameraType = cameraType;
 
+    /// <summary>Whether the camera allows the hotkey target lock; true until set.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Cameras: probes cameras, cameras-2 and cameras-3 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Cameras)]
     public bool BlzGetCameraAllowsHotkeyTargetLock() => _hotkeyLock;
 
+    /// <summary>Keeps whether the camera allows the hotkey target lock.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Cameras: probes cameras, cameras-2 and cameras-3 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Cameras)]
     public void BlzSetCameraAllowsHotkeyTargetLock(bool allows) => _hotkeyLock = allows;
 
+    /// <summary>Changes nothing; the quick position isn't kept.</summary>
+    /// <remarks>Recorded: Where the space key takes the camera; no native reads it back.</remarks>
     [Native(Level.Recorded, Reason = "Where the space key takes the camera; no native reads it back")]
     public void SetCameraQuickPosition(float x, float y) { }
 
@@ -520,26 +596,38 @@ public sealed partial class GameNatives
     // The eye moves with the target's shake and by its own
     float EyeShake(int axis) => Shake(_targetNoise, axis) + Shake(_sourceNoise, axis);
 
+    /// <summary>Shakes the eye by the magnitude at the velocity; no shake for a magnitude or velocity of 0.</summary>
+    /// <remarks>Close: The shake's sizes match the game's and its values don't: each axis moves smoothly at random by up to the magnitude, a quarter of it on average (over 40 reads), from nothing at the start, at a rate that goes with the velocity, none for a magnitude or velocity of 0, a negative magnitude as its size; the game's values are its own random, and its height read mostly below, which isn't kept here: the eye alone for a source noise.</remarks>
     [Native(Level.Close, Fact = NoiseFacts, Reason = NoiseReason + ": the eye alone for a source noise")]
     public void CameraSetSourceNoise(float mag, float velocity) => SetNoise(ref _sourceNoise, mag, velocity, false);
 
+    /// <summary>As CameraSetSourceNoise, shaking only the height when <paramref name="vertOnly"/> is true.</summary>
+    /// <remarks>Close: The shake's sizes match the game's and its values don't: each axis moves smoothly at random by up to the magnitude, a quarter of it on average (over 40 reads), from nothing at the start, at a rate that goes with the velocity, none for a magnitude or velocity of 0, a negative magnitude as its size; the game's values are its own random, and its height read mostly below, which isn't kept here: the eye alone for a source noise, the height alone for vertOnly.</remarks>
     [Native(Level.Close, Fact = NoiseFacts, Reason = NoiseReason + ": the eye alone for a source noise, the height alone for vertOnly")]
     public void CameraSetSourceNoiseEx(float mag, float velocity, bool vertOnly) => SetNoise(ref _sourceNoise, mag, velocity, vertOnly);
 
+    /// <summary>Shakes the target, and the eye with it, by the magnitude at the velocity; no shake for a magnitude or velocity of 0.</summary>
+    /// <remarks>Close: The shake's sizes match the game's and its values don't: each axis moves smoothly at random by up to the magnitude, a quarter of it on average (over 40 reads), from nothing at the start, at a rate that goes with the velocity, none for a magnitude or velocity of 0, a negative magnitude as its size; the game's values are its own random, and its height read mostly below, which isn't kept here: the target and the eye with it for a target noise.</remarks>
     [Native(Level.Close, Fact = NoiseFacts, Reason = NoiseReason + ": the target and the eye with it for a target noise")]
     public void CameraSetTargetNoise(float mag, float velocity) => SetNoise(ref _targetNoise, mag, velocity, false);
 
+    /// <summary>As CameraSetTargetNoise, shaking only the height when <paramref name="vertOnly"/> is true.</summary>
+    /// <remarks>Close: The shake's sizes match the game's and its values don't: each axis moves smoothly at random by up to the magnitude, a quarter of it on average (over 40 reads), from nothing at the start, at a rate that goes with the velocity, none for a magnitude or velocity of 0, a negative magnitude as its size; the game's values are its own random, and its height read mostly below, which isn't kept here: the target and the eye with it for a target noise, the height alone for vertOnly.</remarks>
     [Native(Level.Close, Fact = NoiseFacts, Reason = NoiseReason + ": the target and the eye with it for a target noise, the height alone for vertOnly")]
     public void CameraSetTargetNoiseEx(float mag, float velocity, bool vertOnly) => SetNoise(ref _targetNoise, mag, velocity, vertOnly);
 
+    /// <summary>Changes nothing; the view's smoothing isn't simulated.</summary>
+    /// <remarks>Recorded: Smooths the view's moves: at a factor of 1 a pan's target read as without it (units-camera-2).</remarks>
     [Native(Level.Recorded, Reason = "Smooths the view's moves: at a factor of 1 a pan's target read as without it (units-camera-2)")]
     public void CameraSetSmoothingFactor(float factor) { }
 
     /// <summary>Sets CAMERA_FIELD_DEPTH_OF_FIELD_DISTANCE at once; below 0 it is held at 0 as the field is (inferred).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Cameras: probe units-camera-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Cameras5)]
     public void CameraSetFocalDistance(float distance) => SetCameraField(11, distance, 0);
 
     /// <summary>Sets CAMERA_FIELD_DEPTH_OF_FIELD_SCALE at once; below 0 it is held at 0 as the field is (inferred).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Cameras: probe units-camera-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Cameras5)]
     public void CameraSetDepthOfFieldScale(float scale) => SetCameraField(12, scale, 0);
 
@@ -547,6 +635,7 @@ public sealed partial class GameNatives
     /// The rect keeps the target out: a pan stops where its path enters it, a position set inside it lands past it along
     /// the move (units-camera-2). Close: the two cases measured, with the rect as it is when the target moves.
     /// </summary>
+    /// <remarks>Close: measured for the two cases only, with the rect as it is when the target moves.</remarks>
     [Native(Level.Close)]
     public void AddCameraBlocker(rect? where)
     {
@@ -554,6 +643,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Turns an added blocker off and on again; off, the target goes in (units-camera-2).</summary>
+    /// <remarks>Close: turned off, the target goes in (units-camera-2); not measured otherwise.</remarks>
     [Native(Level.Close)]
     public void EnableCameraBlocker(rect? r, bool flag)
     {

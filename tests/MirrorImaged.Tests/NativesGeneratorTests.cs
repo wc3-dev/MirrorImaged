@@ -91,9 +91,13 @@ public sealed class NativesGeneratorTests : IDisposable
 
             namespace MirrorImaged.Natives;
 
+            /// <summary>The game's <c>handle</c>, the type every other handle type extends.</summary>
             public partial class handle;
+            /// <summary>The game's <c>agent</c> handle, a kind of <c>handle</c>.</summary>
             public partial class agent : handle;
+            /// <summary>The game's <c>event</c> handle, a kind of <c>agent</c>.</summary>
             public partial class @event : agent;
+            /// <summary>The game's <c>unit</c> handle, a kind of <c>agent</c>.</summary>
             public partial class unit : agent;
 
             """.ReplaceLineEndings("\n"), types);

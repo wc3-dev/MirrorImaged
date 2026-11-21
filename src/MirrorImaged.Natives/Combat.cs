@@ -382,10 +382,12 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The unit that attacks in an attacked event, the event's own unit being the one attacked.</summary>
+    /// <remarks>Close: nil outside an attacked event; not measured in the game.</remarks>
     [Native(Level.Close)]
     public unit? GetAttacker() => Response(UnitAttacked, PlayerUnitAttacked)?.Other;
 
     /// <summary>The unit an acquired-target or target-in-range event is about; nil outside one.</summary>
+    /// <remarks>Close: nil outside an acquired-target event, and the target-in-range event is never fired here; not measured in the game.</remarks>
     [Native(Level.Close)]
     public unit? GetEventTargetUnit() => Response(UnitAcquiredTarget, UnitTargetInRange)?.Other;
 }

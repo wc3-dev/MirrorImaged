@@ -13,26 +13,31 @@ public sealed partial class GameNatives
     bool AiFoe(unit u) => !u.Dead && !u.Removed && !u.Hidden && u.Owner != Ai && GetPlayerId(u.Owner) < 24 && IsPlayerEnemy(Ai, u.Owner);
 
     /// <summary>Whether an armed unit of an enemy player stands within reach of one of the AI player's town halls; the script then keeps its army home.</summary>
+    /// <remarks>Close: an armed unit within 1000 of a finished town hall counts; the game's own test is not measured (D432 to D434).</remarks>
     [Native(Level.Close)]
     public bool TownThreatened() =>
         Mine(Ai).Where(u => !u.Constructing && IsTownHall(u)).ToList() is { Count: > 0 } halls && _units.Values.Any(u => AiFoe(u) && !IsBuildingNow(u) && u.Type.Integer(WeaponsOn) != 0
             && halls.Any(hall => Distance2(u.X - hall.X, u.Y - hall.Y) <= TownReach * TownReach));
 
     /// <summary>Whether a finished building of an enemy that attacks stands near the unit; the script then waits for siege before it goes there.</summary>
+    /// <remarks>Close: a finished armed building within 900 of the unit counts; the game's own test is not measured (D432 to D434).</remarks>
     [Native(Level.Close)]
     public bool IsTowered(unit? target) =>
         target is not null && _units.Values.Any(t => AiFoe(t) && !t.Constructing && IsBuildingNow(t) && t.Type.Integer(WeaponsOn) != 0
             && Distance2(t.X - target.X, t.Y - target.Y) <= TowerReach * TowerReach);
 
     /// <summary>Whether a buff hides the unit, whoever looks.</summary>
+    /// <remarks>Close: any buff that hides the unit counts; the game's own test is not measured (D432 to D434).</remarks>
     [Native(Level.Close)]
     public bool UnitInvis(unit? id) => id is not null && id.Buffs.Any(b => b.Invisible);
 
     /// <summary>Whether a creep lives.</summary>
+    /// <remarks>Close: a living unit of the neutral aggressive player that is no building counts; the game's own test is not measured (D432 to D434).</remarks>
     [Native(Level.Close)]
     public bool CreepsOnMap() => _units.Values.Any(c => !c.Dead && !c.Removed && GetPlayerId(c.Owner) == GetPlayerNeutralAggressive() && !IsBuildingNow(c));
 
     /// <summary>Tells the AI player's allies what it goes to attack; nil takes it back.</summary>
+    /// <remarks>Close: kept for the AI player alone; how the game shares it with allies is not measured (D432 to D434).</remarks>
     [Native(Level.Close)]
     public void SetAllianceTarget(unit? id)
     {
@@ -41,6 +46,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>What an allied AI player said it goes to attack, while it lives (the lowest slot's first); nil for none.</summary>
+    /// <remarks>Close: the lowest slot's first is the model's pick, not measured in the game (D432 to D434).</remarks>
     [Native(Level.Close)]
     public unit? GetAllianceTarget() =>
         _allianceTargets.Where(told => told.Key != Ai && IsPlayerAlly(told.Key, Ai) && !told.Value.Dead && !told.Value.Removed)
@@ -60,6 +66,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Makes units of the last type out of pairs of the first two (an archer mounts a hippogryph) until the AI player has the number; true when it has.</summary>
+    /// <remarks>Close: it pays the new type's price once and removes both units; the game's own rule is not measured (D432 to D434).</remarks>
     [Native(Level.Close)]
     public bool MergeUnits(int qty, int a, int b, int make)
     {
@@ -77,6 +84,7 @@ public sealed partial class GameNatives
         u.Abilities.Select(a => (a.Type.Text(Code("Emeu"), 1) ?? a.Type.Text(Code("Emeu"))) is { Length: 4 } id ? Data.Object(ObjectKind.Unit, Code(id)) : null).FirstOrDefault(form => form is not null && form.Id != u.Type.Id);
 
     /// <summary>Turns units of the type into what their ability makes of them until the AI player has the number of those; true when it has.</summary>
+    /// <remarks>Close: it pays the new form's price; the game's own rule is not measured (D432 to D434).</remarks>
     [Native(Level.Close)]
     public bool ConvertUnits(int qty, int id)
     {

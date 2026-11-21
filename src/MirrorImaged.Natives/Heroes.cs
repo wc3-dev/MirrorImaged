@@ -101,12 +101,17 @@ public sealed partial class GameNatives
     static bool IsHeroUnit(unit? u) => u is not null && IsHero(u.Type.Id);
 
     /// <summary>The hero's level; 0 for nil and for a unit that isn't a hero (probes heroes-nonhero and heroes-nonhero-level).</summary>
+    /// <remarks>Close: the level follows the model's constants formula; only the probed cases are measured.</remarks>
     [Native(Level.Close)]
     public int GetHeroLevel(unit? whichHero) => IsHeroUnit(whichHero) ? whichHero!.HeroLevel : 0;
 
+    /// <summary>The hero's experience; 0 for nil and for a unit that isn't a hero.</summary>
+    /// <remarks>Close: the experience follows the model's constants formula, cut to a whole number; only the probed cases are measured.</remarks>
     [Native(Level.Close)]
     public int GetHeroXP(unit? whichHero) => IsHeroUnit(whichHero) ? whichHero!.Xp : 0;
 
+    /// <summary>The hero's unspent skill points; 0 for nil and for a unit that isn't a hero.</summary>
+    /// <remarks>Close: the model gives one point at creation and one per level gained; the game's other ways to give points are not measured.</remarks>
     [Native(Level.Close)]
     public int GetHeroSkillPoints(unit? whichHero) => IsHeroUnit(whichHero) ? whichHero!.SkillPoints : 0;
 
@@ -115,6 +120,7 @@ public sealed partial class GameNatives
     /// level reached fires one level event inside the call, reading the final level, experience and skill points. None
     /// while the hero's experience is suspended (probe heroes, game-facts "Heroes").
     /// </summary>
+    /// <remarks>Close: the eye candy flag is ignored, since nothing is drawn.</remarks>
     [Native(Level.Close)]
     public void SetHeroXP(unit? whichHero, int newXpVal, bool showEyeCandy)
     {
@@ -123,6 +129,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>As SetHeroXP for the sum, but a negative amount lowers the experience, not the level; the experience stays from 0 to the last level's.</summary>
+    /// <remarks>Close: the eye candy flag is ignored, since nothing is drawn.</remarks>
     [Native(Level.Close)]
     public void AddHeroXP(unit? whichHero, int xpToAdd, bool showEyeCandy)
     {
@@ -137,6 +144,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The level, only raised and up to the last one, with the experience of that level; none while the experience is suspended.</summary>
+    /// <remarks>Close: the eye candy flag is ignored, since nothing is drawn.</remarks>
     [Native(Level.Close)]
     public void SetHeroLevel(unit? whichHero, int level, bool showEyeCandy)
     {
@@ -149,6 +157,7 @@ public sealed partial class GameNatives
     /// Takes the levels off, down to level 1: no event, the experience that of the level now, the skill points
     /// the levels' (probe heroes). True for a hero.
     /// </summary>
+    /// <remarks>Close: the skill points go with the levels, down to 0, as the heroes probe showed; other cases are not measured.</remarks>
     [Native(Level.Close)]
     public bool UnitStripHeroLevel(unit? whichHero, int howManyLevels)
     {
@@ -158,6 +167,8 @@ public sealed partial class GameNatives
         return true;
     }
 
+    /// <summary>Stops or allows changes to the hero's experience; nothing for a unit that isn't a hero.</summary>
+    /// <remarks>Close: kept per hero and checked by the experience natives and an item's experience; the game's other experience gains are not measured.</remarks>
     [Native(Level.Close)]
     public void SuspendHeroXP(unit? whichHero, bool flag)
     {
@@ -165,6 +176,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>True for a unit that isn't a hero, before any suspend (probe heroes-nonhero).</summary>
+    /// <remarks>Close: the answer for a null unit (false) is the model's, not measured.</remarks>
     [Native(Level.Close)]
     public bool IsSuspendedXP(unit? whichHero) => whichHero is not null && (!IsHero(whichHero.Type.Id) || whichHero.XpSuspended);
 
@@ -196,12 +208,17 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The whole part of the hero's strength, its gains per level included, or with the bonus of what it carries; 0 for a unit that isn't a hero (probe heroes-nonhero-str).</summary>
+    /// <remarks>Close: the whole part is read with a small tolerance for float error, and the carried bonus follows the model's item data; only the cited probe is measured.</remarks>
     [Native(Level.Close)]
     public int GetHeroStr(unit? whichHero, bool includeBonuses) => AttributeOf(whichHero, 0, includeBonuses);
 
+    /// <summary>As <c>GetHeroStr</c>, for agility.</summary>
+    /// <remarks>Close: as <c>GetHeroStr</c>; the whole part and the carried bonus are measured only in the probes cited there.</remarks>
     [Native(Level.Close)]
     public int GetHeroAgi(unit? whichHero, bool includeBonuses) => AttributeOf(whichHero, 1, includeBonuses);
 
+    /// <summary>As <c>GetHeroStr</c>, for intelligence.</summary>
+    /// <remarks>Close: as <c>GetHeroStr</c>; the whole part and the carried bonus are measured only in the probes cited there.</remarks>
     [Native(Level.Close)]
     public int GetHeroInt(unit? whichHero, bool includeBonuses) => AttributeOf(whichHero, 2, includeBonuses);
 
@@ -209,18 +226,23 @@ public sealed partial class GameNatives
     /// Sets the strength, at once (0 and -5 too); the most life moves by the constants' bonus for the difference and the
     /// life with it. The permanent flag changes nothing (probe items-carried: a set with a bonus carried sets the base, whichever it is); the bonus of what the hero carries stays on top.
     /// </summary>
+    /// <remarks>Close: the permanent flag is ignored (probe items-carried); the life moved by the difference is the model's, from the constants.</remarks>
     [Native(Level.Close)]
     public void SetHeroStr(unit? whichHero, int newStr, bool permanent)
     {
         if (IsHeroUnit(whichHero)) SetAttribute(whichHero!, 0, newStr);
     }
 
+    /// <summary>As <c>SetHeroStr</c>, for agility; nothing for a unit that isn't a hero.</summary>
+    /// <remarks>Close: the permanent flag is ignored, as for strength; not measured for agility.</remarks>
     [Native(Level.Close)]
     public void SetHeroAgi(unit? whichHero, int newAgi, bool permanent)
     {
         if (IsHeroUnit(whichHero)) SetAttribute(whichHero!, 1, newAgi);
     }
 
+    /// <summary>As <c>SetHeroStr</c>, for intelligence, moving the most mana; nothing for a unit that isn't a hero.</summary>
+    /// <remarks>Close: the permanent flag is ignored, as for strength; not measured for intelligence.</remarks>
     [Native(Level.Close)]
     public void SetHeroInt(unit? whichHero, int newInt, bool permanent)
     {
@@ -230,6 +252,7 @@ public sealed partial class GameNatives
     // ---- Skills
 
     /// <summary>Raises the skill points by the amount, to 0 at the least; true for a hero (probe heroes).</summary>
+    /// <remarks>Close: the clamp at 0 is the model's, not measured.</remarks>
     [Native(Level.Close)]
     public bool UnitModifySkillPoints(unit? whichHero, int skillPointDelta)
     {
@@ -243,6 +266,7 @@ public sealed partial class GameNatives
     /// ability's required level, then 2 more for each level after the first (or its level skip, which the data reads 0 for Holy Light); the skill event fires before
     /// the point is spent (probe heroes: the points read the same inside it). The hero gets the ability at that level (probe heroes-store: AHhb read 1, and the unit had one ability more).
     /// </summary>
+    /// <remarks>Close: the level rule is the model's, from the ability data; only the cited probes are measured.</remarks>
     [Native(Level.Close)]
     public void SelectHeroSkill(unit? whichHero, int abilcode)
     {
@@ -257,21 +281,30 @@ public sealed partial class GameNatives
         whichHero.SkillPoints = Math.Max(0, whichHero.SkillPoints - 1);
     }
 
+    /// <summary>Changes nothing; no unit has talents.</summary>
+    /// <remarks>Recorded: No unit of the game's data has talents: ATal and ATua can't be given (UnitAddAbility false), and the game changed nothing on a level 10 Paladin with 10 skill points, with or without the call (probe heroes-talents, D793).</remarks>
     [Native(Level.Recorded, Reason = "No unit of the game's data has talents: ATal and ATua can't be given (UnitAddAbility false), and the game changed nothing on a level 10 Paladin with 10 skill points, with or without the call (probe heroes-talents, D793)")]
     public void BlzResetUnitTalents(unit? whichUnit)
     {
     }
 
+    /// <summary>The hero learning a skill in a skill event; null outside one.</summary>
+    /// <remarks>Close: null outside a skill event is the model's answer, not measured.</remarks>
     [Native(Level.Close)]
     public unit? GetLearningUnit() => Response(HeroSkillEvent, PlayerHeroSkill)?.Unit;
 
+    /// <summary>The hero that gained a level in a level event; null outside one.</summary>
+    /// <remarks>Close: null outside a level event is the model's answer, not measured.</remarks>
     [Native(Level.Close)]
     public unit? GetLevelingUnit() => Response(HeroLevelEvent, PlayerHeroLevel)?.Unit;
 
     /// <summary>The skill's id in a skill event; 0 outside one.</summary>
+    /// <remarks>Close: 0 outside a skill event is the model's answer, not measured.</remarks>
     [Native(Level.Close)]
     public int GetLearnedSkill() => Response(HeroSkillEvent, PlayerHeroSkill)?.Skill ?? 0;
 
+    /// <summary>The level the skill reached in a skill event; 0 outside one.</summary>
+    /// <remarks>Close: 0 outside a skill event is the model's answer, not measured.</remarks>
     [Native(Level.Close)]
     public int GetLearnedSkillLevel() => Response(HeroSkillEvent, PlayerHeroSkill)?.SkillLevel ?? 0;
 
@@ -282,6 +315,7 @@ public sealed partial class GameNatives
     /// fires first with the hero dead where it died, then it lives with its most life and its type's starting mana
     /// (100 of 255, not its full mana), and the finish event fires (probe heroes), all inside the call.
     /// </summary>
+    /// <remarks>Close: the eye candy flag is ignored, and the type's starting mana is the model's reading of the probe.</remarks>
     [Native(Level.Close)]
     public bool ReviveHero(unit? whichHero, float x, float y, bool doEyecandy)
     {
@@ -296,9 +330,13 @@ public sealed partial class GameNatives
         return true;
     }
 
+    /// <summary>As <c>ReviveHero</c>, at a location's place; false for a null location.</summary>
+    /// <remarks>Close: as <c>ReviveHero</c>; a null location is not measured.</remarks>
     [Native(Level.Close)]
     public bool ReviveHeroLoc(unit? whichHero, location? loc, bool doEyecandy) => loc is not null && ReviveHero(whichHero, loc.X, loc.Y, doEyecandy);
 
+    /// <summary>The hero being revived, in a revive start or finish event; null outside one.</summary>
+    /// <remarks>Close: null outside a revive event is the model's answer, not measured.</remarks>
     [Native(Level.Close)]
     public unit? GetRevivingUnit() => Response(HeroReviveStart, HeroReviveFinish, PlayerHeroReviveStart, PlayerHeroReviveFinish)?.Unit;
 
@@ -306,6 +344,7 @@ public sealed partial class GameNatives
     /// The unit of a revivable event, which never fires here: the game fires it long after a hero died and was revived,
     /// for a unit that isn't the hero (probe heroes' last line, recorded in probes/differences/heroes.txt).
     /// </summary>
+    /// <remarks>Close: the game fires the event long after a revival, for a unit that is not the hero; here it never fires, so the answer is null.</remarks>
     [Native(Level.Close)]
     public unit? GetRevivableUnit() => Response(80, 43)?.Unit;
 
@@ -333,9 +372,12 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The hero's proper name, drawn at creation; "" for nil and for a unit that isn't a hero.</summary>
+    /// <remarks>Close: the draw uses a generator of its own (D523), so the names it picks need not match the game's.</remarks>
     [Native(Level.Close)]
     public string? GetHeroProperName(unit? whichHero) => IsHeroUnit(whichHero) ? whichHero!.ProperName : "";
 
+    /// <summary>Sets the hero's proper name; nothing for a unit that isn't a hero or a null name.</summary>
+    /// <remarks>Close: the name is kept as given, with no numeral added; the game's handling of a name already taken is not measured.</remarks>
     [Native(Level.Close)]
     public void BlzSetHeroProperName(unit? whichUnit, string? heroProperName)
     {

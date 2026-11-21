@@ -17,6 +17,7 @@ public sealed partial class GameNatives
     /// removed this step still is kept, one already gone (nil) is not (probe heroes-store). Close: the cache is one run's
     /// memory, as SaveGameCache keeps it.
     /// </summary>
+    /// <remarks>Close: measured in part (facts, Stored units (W2-3): probe heroes-store (11-15)); the cache is one run's memory, as SaveGameCache keeps it.</remarks>
     [Native(Level.Close, Fact = StoredProbe)]
     public bool StoreUnit(gamecache? cache, string? missionKey, string? key, unit? whichUnit)
     {
@@ -27,12 +28,18 @@ public sealed partial class GameNatives
         return false;
     }
 
+    /// <summary>Whether a unit is stored in the cache under the mission key and key.</summary>
+    /// <remarks>Close: measured in part (facts, Stored units (W2-3): probe heroes-store (11-15)); the cache is one run's memory, as SaveGameCache keeps it.</remarks>
     [Native(Level.Close, Fact = StoredProbe)]
     public bool HaveStoredUnit(gamecache? cache, string? missionKey, string? key) => CacheGet(cache, 'u', missionKey, key) is not null;
 
+    /// <summary>Forgets the unit stored under the mission key and key.</summary>
+    /// <remarks>Close: measured in part (facts, Stored units (W2-3): probe heroes-store (11-15)); the cache is one run's memory, as SaveGameCache keeps it.</remarks>
     [Native(Level.Close, Fact = StoredProbe)]
     public void FlushStoredUnit(gamecache? cache, string? missionKey, string? key) => CacheFlush(cache, 'u', missionKey, key);
 
+    /// <summary>Changes nothing; the stored unit already reads the same after it.</summary>
+    /// <remarks>Recorded: Sends the local player's value to the other machines, and a run has one, whose caches are every player's; on a single machine the game read the value the same after it (probes files and heroes-store, D793).</remarks>
     [Native(Level.Recorded, Reason = SyncReason)]
     public void SyncStoredUnit(gamecache? cache, string? missionKey, string? key) { }
 
@@ -42,6 +49,7 @@ public sealed partial class GameNatives
     /// one level event when it is above level 1 (probe heroes-store). Nil where nothing is stored and for no player.
     /// Close: the level event's count was measured for one hero.
     /// </summary>
+    /// <remarks>Close: measured in part (facts, Stored units (W2-3): probe heroes-store (11-15)); the level event's count was measured for one hero.</remarks>
     [Native(Level.Close, Fact = StoredProbe)]
     public unit? RestoreUnit(gamecache? cache, string? missionKey, string? key, player? forWhichPlayer, float x, float y, float facing)
     {

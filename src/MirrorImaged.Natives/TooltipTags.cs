@@ -16,6 +16,7 @@ public sealed partial class GameNatives
     /// <c>HP</c>, <c>realHP</c> and the two attacks' <c>mindmg</c> and <c>maxdmg</c> (the facts: <c>spd</c>, <c>dmgplus1</c> and
     /// <c>cool1</c> read 0; why isn't separated, so Close).
     /// </summary>
+    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: tooltip tags and ParseTags (10-29, 11-08); MirrorImaged probe data-tags); a unit's columns other than those listed are not measured, and why spd, dmgplus1 and cool1 read 0 is not separated.</remarks>
     [Native(Level.Close, Fact = TagFacts)]
     public string? ParseTags(string? taggedString)
     {

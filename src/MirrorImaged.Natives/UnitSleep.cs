@@ -63,10 +63,12 @@ public sealed partial class GameNatives
     /// units-more and units-more-2). Close: the game wakes and sleeps them 0.2 to 0.25 s after dawn and dusk, here at
     /// the hour.
     /// </summary>
+    /// <remarks>Close: the game wakes and sleeps them 0.2 to 0.25 s after dawn and dusk, here at the hour.</remarks>
     [Native(Level.Close)]
     public bool UnitIsSleeping(unit? whichUnit) => whichUnit is not null && Asleep(whichUnit);
 
     /// <summary>Wakes it at once; it sleeps again just over 2 s later at night (probe units-more-2).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probes units-more and units-more-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = MoreProbe)]
     public void UnitWakeUp(unit? whichUnit)
     {
@@ -77,10 +79,12 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Its type's canSleep, or what UnitAddSleep set, whoever owns it (probe units-more).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probes units-more and units-more-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = MoreProbe)]
     public bool UnitCanSleep(unit? whichUnit) => whichUnit?.CanSleep ?? false;
 
     /// <summary>Lets it sleep or not: false wakes it at once, true at night puts it to sleep at once (probes units-more and units-more-2).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probes units-more and units-more-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = MoreProbe)]
     public void UnitAddSleep(unit? whichUnit, bool add)
     {
@@ -95,10 +99,12 @@ public sealed partial class GameNatives
     }
 
     /// <summary>False, also after UnitAddSleepPerm true (probe units-more).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probes units-more and units-more-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = MoreProbe)]
     public bool UnitCanSleepPerm(unit? whichUnit) => false;
 
     /// <summary>Changes nothing UnitCanSleepPerm or the unit's sleep reads, true or false (probe units-more).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probes units-more and units-more-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = MoreProbe)]
     public void UnitAddSleepPerm(unit? whichUnit, bool add)
     {

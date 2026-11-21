@@ -9,6 +9,7 @@ public sealed partial class GameNatives
     unit? _choosing;
 
     /// <summary>Gives the function that names the skill a hero learns, for the AI player; heroes it has with a skill point learn at once.</summary>
+    /// <remarks>Close: the function is asked at once for each skill point a hero has, up to 12 in a row; when the game asks is not measured (D383).</remarks>
     [Native(Level.Close)]
     public void SetHeroLevels(Func<int>? func)
     {
@@ -18,9 +19,11 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The type of the hero whose skill is being chosen, in the function that chooses it.</summary>
+    /// <remarks>Close: 0 outside the choosing function is the model's answer, not measured.</remarks>
     [Native(Level.Close)] public int GetHeroId() => _choosing?.Type.Id ?? 0;
 
     /// <summary>The level the hero whose skill is being chosen has reached.</summary>
+    /// <remarks>Close: 0 outside the choosing function is the model's answer, not measured.</remarks>
     [Native(Level.Close)] public int GetHeroLevelAI() => _choosing?.HeroLevel ?? 0;
 
     // A hero of a player that has a chooser learns what it names for each skill point, until a point is not spent

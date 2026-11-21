@@ -18,14 +18,18 @@ public sealed partial class GameNatives
     const float Dropped = 24;
 
     /// <summary>Six for a hero, 0 for any other unit (probe items). Close: a unit with the inventory ability has the size its data gives.</summary>
+    /// <remarks>Close: A unit that isn't a hero has no inventory here, whatever abilities it has.</remarks>
     [Native(Level.Close)]
     public int UnitInventorySize(unit? whichUnit) => whichUnit is null ? 0 : Size(whichUnit);
 
     /// <summary>The item in the slot 0 to 5, nil for an empty one and for a slot out of range (probe items).</summary>
+    /// <remarks>Close: Read from the six slots of a hero; the slots of another unit are not modelled.</remarks>
     [Native(Level.Close)]
     public item? UnitItemInSlot(unit? whichUnit, int itemSlot) =>
         whichUnit is not null && itemSlot >= 0 && itemSlot < Size(whichUnit) ? whichUnit.Slots[itemSlot] : null;
 
+    /// <summary>Whether the unit holds the item in a slot, not in its bag or equipped; false for nil and for a removed item.</summary>
+    /// <remarks>Close: An item in a bag or equipped is not counted; the game's answer for those is not measured.</remarks>
     [Native(Level.Close)]
     public bool UnitHasItem(unit? whichUnit, item? whichItem) => whichUnit is not null && Live(whichItem) is { Where: 0 } i && i.Holder == whichUnit;
 
@@ -89,6 +93,7 @@ public sealed partial class GameNatives
     /// the pickup events with it in place (the player's first); a powerup is picked up and dropped at once and gone two
     /// steps on. False for no room, and for a unit with no inventory (probe items).
     /// </summary>
+    /// <remarks>Close: Modelled on the items probe; a unit that isn't a hero has no inventory here.</remarks>
     [Native(Level.Close)]
     public bool UnitAddItem(unit? whichUnit, item? whichItem) =>
         whichUnit is not null && Live(whichItem) is { } i && !whichUnit.Dead && Add(whichUnit, i);
@@ -97,6 +102,7 @@ public sealed partial class GameNatives
     /// Makes the item at the unit's place and adds it: the item, or nil when there is no room, the item then lying where
     /// the unit is; a powerup is returned (probe items).
     /// </summary>
+    /// <remarks>Close: Modelled on the items probe; a unit that isn't a hero has no inventory here.</remarks>
     [Native(Level.Close)]
     public item? UnitAddItemById(unit? whichUnit, int itemId)
     {
@@ -105,6 +111,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Makes the item and puts it in the slot if that is 0 to 5 and free; true if it did (probe items).</summary>
+    /// <remarks>Close: Modelled on the items probe; a unit that isn't a hero has no slots here.</remarks>
     [Native(Level.Close)]
     public bool UnitAddItemToSlotById(unit? whichUnit, int itemId, int itemSlot)
     {
@@ -115,6 +122,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Lets the item go, the drop events firing after it is out; nothing for an item the unit doesn't carry.</summary>
+    /// <remarks>Close: Modelled on the items probe; a unit that isn't a hero has no slots here.</remarks>
     [Native(Level.Close)]
     public void UnitRemoveItem(unit? whichUnit, item? whichItem)
     {
@@ -122,6 +130,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Takes the item in the slot out, as UnitRemoveItem, and gives it; nil for an empty slot or one out of range.</summary>
+    /// <remarks>Close: Modelled on the items probe; a unit that isn't a hero has no slots here.</remarks>
     [Native(Level.Close)]
     public item? UnitRemoveItemFromSlot(unit? whichUnit, int itemSlot)
     {
@@ -131,6 +140,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Moves the unit's item to the slot, swapping with what is there, with no event; false for an item it doesn't carry or a slot out of range (probe items).</summary>
+    /// <remarks>Close: Modelled on the items probe; a unit that isn't a hero has no slots here.</remarks>
     [Native(Level.Close)]
     public bool UnitDropItemSlot(unit? whichUnit, item? whichItem, int slot)
     {
@@ -144,10 +154,12 @@ public sealed partial class GameNatives
     /// Answers true for an item the unit carries and does nothing: the game walks the unit to the place and drops it
     /// there some time after (probe items), which comes with orders and movement (wave 3). Close.
     /// </summary>
+    /// <remarks>Close: Answers without moving the unit or dropping the item: the walk and the later drop come with orders and movement (wave 3).</remarks>
     [Native(Level.Close)]
     public bool UnitDropItemPoint(unit? whichUnit, item? whichItem, float x, float y) => UnitHasItem(whichUnit, whichItem);
 
     /// <summary>As UnitDropItemPoint, to a widget.</summary>
+    /// <remarks>Close: Only a pawn to a shop that buys the item does anything; the walk to a unit and the drop to it are not modelled (wave 3).</remarks>
     [Native(Level.Close)]
     public bool UnitDropItemTarget(unit? whichUnit, item? whichItem, widget? target) =>
         UnitHasItem(whichUnit, whichItem) && target is not null && (target is unit shop && Pawns(shop, whichItem!) ? Pawn(whichUnit!, whichItem!, shop) : true);
@@ -156,6 +168,7 @@ public sealed partial class GameNatives
     /// Uses a carried item: one charge less, the use event with it still in its slot, and an item out of charges that
     /// perishes dropped and gone after the step; a heal first (ItemBonuses), refused at full life or mana and for a dead unit.
     /// </summary>
+    /// <remarks>Close: What an item does when used beyond a heal is not modelled here.</remarks>
     [Native(Level.Close)]
     public bool UnitUseItem(unit? whichUnit, item? whichItem)
     {
@@ -166,9 +179,12 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The item of a pickup, drop or use event; nil outside one.</summary>
+    /// <remarks>Close: Modelled on the items probe's pickup, drop and use events; other events that name an item are not covered.</remarks>
     [Native(Level.Close)]
     public item? GetManipulatedItem() => ItemResponse()?.Item;
 
+    /// <summary>The unit of a pickup, drop or use event; nil outside one.</summary>
+    /// <remarks>Close: Modelled on the items probe's pickup, drop and use events; other events that name a unit are not covered.</remarks>
     [Native(Level.Close)]
     public unit? GetManipulatingUnit() => ItemResponse()?.Unit;
 
@@ -176,12 +192,18 @@ public sealed partial class GameNatives
 
     const string NoStacking = "Items don't stack here, as they didn't in the game (probe items: two potions stayed two; facts, Items: stacking was never seen), so no stack event fires and every read is outside one: nil and 0 (probe natives-test-run)";
 
+    /// <summary>Nil: no stack event fires here.</summary>
+    /// <remarks>Close: Items don't stack here, as they didn't in the game (probe items: two potions stayed two; facts, Items: stacking was never seen), so no stack event fires and every read is outside one: nil and 0 (probe natives-test-run).</remarks>
     [Native(Level.Close, Fact = TestRunProbe, Reason = NoStacking)]
     public item? BlzGetStackingItemSource() => null;
 
+    /// <summary>Nil: no stack event fires here.</summary>
+    /// <remarks>Close: Items don't stack here, as they didn't in the game (probe items: two potions stayed two; facts, Items: stacking was never seen), so no stack event fires and every read is outside one: nil and 0 (probe natives-test-run).</remarks>
     [Native(Level.Close, Fact = TestRunProbe, Reason = NoStacking)]
     public item? BlzGetStackingItemTarget() => null;
 
+    /// <summary>0: no stack event fires here.</summary>
+    /// <remarks>Close: Items don't stack here, as they didn't in the game (probe items: two potions stayed two; facts, Items: stacking was never seen), so no stack event fires and every read is outside one: nil and 0 (probe natives-test-run).</remarks>
     [Native(Level.Close, Fact = TestRunProbe, Reason = NoStacking)]
     public int BlzGetStackingItemTargetPreviousCharges() => 0;
 }

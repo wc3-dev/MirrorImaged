@@ -48,6 +48,8 @@ public sealed partial class GameNatives
 
     int HeroScore(player p) => p.HeroExperience * 8;
 
+    /// <summary>One score of the player, kept for the kinds the probe measured; the other kinds and a nil argument read 0.</summary>
+    /// <remarks>Close: Counts what the probe measured (units made, kills, razed structures, hero experience from kills, gold mined, food); technology, items, mercenaries, trade, upkeep and lumber read 0, and what a unit trained by an order or a structure built by a worker counts, and when, isn't measured.</remarks>
     [Native(Level.Close, Fact = ScoreProbe, Reason = "Counts what the probe measured (units made, kills, razed structures, hero experience from kills, gold mined, food); technology, items, mercenaries, trade, upkeep and lumber read 0, and what a unit trained by an order or a structure built by a worker counts, and when, isn't measured")]
     public int GetPlayerScore(player? whichPlayer, playerscore? whichPlayerScore) => whichPlayer is null || whichPlayerScore is null ? 0 : whichPlayerScore.Id switch
     {

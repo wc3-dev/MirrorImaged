@@ -27,10 +27,13 @@ public sealed partial class GameNatives
 
     double Seconds => _game.Step / (double)Game.StepsPerSecond;
 
+    /// <summary>A new timer, not started.</summary>
+    /// <remarks>Close: a new timer reads 0 for its timeout and remaining time; the game's reading is not measured.</remarks>
     [Native(Level.Close)]
     public timer? CreateTimer() => Make(new timer());
 
     /// <summary>Stops the timer and lets go of its callback; Lua's handle then reads as null to the natives.</summary>
+    /// <remarks>Close: what the game's reads of a destroyed timer give is not measured.</remarks>
     [Native(Level.Close)]
     public void DestroyTimer(timer? whichTimer)
     {
@@ -45,6 +48,7 @@ public sealed partial class GameNatives
     /// Starts the timer over. A timeout below 0 counts as 0; a periodic timer runs at most once a step, so a periodic
     /// 0 s timer runs every step. A callback given with no timer is let go of.
     /// </summary>
+    /// <remarks>Close: a timeout below a step is not measured, and the game ran some timers 0.0001 s early, which here run on time (D153).</remarks>
     [Native(Level.Close)]
     public void TimerStart(timer? whichTimer, float timeout, bool periodic, Action? handlerFunc)
     {
@@ -64,20 +68,26 @@ public sealed partial class GameNatives
     /// The timeout less the remaining time, both cut toward zero to single floats, as the facts infer from the game's
     /// steps: 0.0625 s steps at 604800 s, exact at 10 s. The timeout once a one-shot has expired; 0 before a start.
     /// </summary>
+    /// <remarks>Close: inferred from the game's steps at two timeouts only; the game reads the clock a hair off whole timeouts, which is not matched (D153).</remarks>
     [Native(Level.Close)]
     public float TimerGetElapsed(timer? whichTimer) =>
         whichTimer is null ? 0 : TowardZero((double)whichTimer.Timeout - TimerGetRemaining(whichTimer));
 
     /// <summary>The time to the next expiry, cut toward zero to a single float; frozen while paused, 0 once a one-shot has expired.</summary>
+    /// <remarks>Close: the game reads the clock a hair off whole timeouts, which is not matched (D153).</remarks>
     [Native(Level.Close)]
     public float TimerGetRemaining(timer? whichTimer) =>
         whichTimer is null ? 0
         : whichTimer.Running ? TowardZero(Math.Max(0, Expiry(whichTimer) - Seconds))
         : whichTimer.Remaining;
 
+    /// <summary>The timeout of the last start, as given; 0 for a timer never started and for nil.</summary>
+    /// <remarks>Close: a negative timeout reads back as given; the game's reading is not measured.</remarks>
     [Native(Level.Close)]
     public float TimerGetTimeout(timer? whichTimer) => whichTimer?.Timeout ?? 0;
 
+    /// <summary>Stops a running timer with its remaining time kept; nothing for one not running.</summary>
+    /// <remarks>Close: a timeout below a step is not measured.</remarks>
     [Native(Level.Close)]
     public void PauseTimer(timer? whichTimer)
     {
@@ -92,6 +102,7 @@ public sealed partial class GameNatives
     /// Runs a paused timer on for its remaining time, then a periodic one for whole timeouts again. One paused in the
     /// step it was due, before it ran, runs as soon as it is resumed.
     /// </summary>
+    /// <remarks>Close: its place among timers due in one step comes from the resume (D153); a timeout below a step is not measured.</remarks>
     [Native(Level.Close)]
     public void ResumeTimer(timer? whichTimer)
     {
@@ -100,6 +111,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The timer whose callback is running; null outside one (the game may crash there, a claim).</summary>
+    /// <remarks>Close: outside a callback the game may crash, only a claim, and not matched here.</remarks>
     [Native(Level.Close)]
     public timer? GetExpiredTimer() => _expired;
 

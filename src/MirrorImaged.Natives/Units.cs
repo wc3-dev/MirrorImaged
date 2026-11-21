@@ -108,10 +108,12 @@ public sealed partial class GameNatives
     /// where the game's goes is not that place, it moves one near the map's edge off it, and keeps a facing outside 0 to 360 a
     /// little otherwise (decisions D223, D224, D273).
     /// </summary>
+    /// <remarks>Close: near the map's edge the game moves a unit off the place the model puts it, and a facing outside 0 to 360 differs a little (D223, D224, D273).</remarks>
     [Native(Level.Close)]
     public unit? CreateUnit(player? id, int unitid, float x, float y, float face) => Scored(Create(id, unitid, x, y, face, unitid));
 
     /// <summary>As CreateUnit, with the skin's id kept for BlzGetUnitSkin; its data stay the type's (probe units).</summary>
+    /// <remarks>Close: as CreateUnit, whose differences near the map's edge and for a facing outside 0 to 360 hold here too (D223, D224, D273).</remarks>
     [Native(Level.Close)]
     public unit? BlzCreateUnitWithSkin(player? id, int unitid, float x, float y, float face, int skinId) => Scored(Create(id, unitid, x, y, face, skinId));
 
@@ -120,6 +122,7 @@ public sealed partial class GameNatives
     /// Defend gives it undefend (852056), inside the call; it is gone DecayTime plus BoneDecayTime later, as a body at
     /// its decay is, with undefend again (probes units-decay, units-more, units-bones: 90 s). A hero's stays (inferred).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units-bones (11-08); facts, Units: probes units-more and units-more-2 (11-08); facts, Units: probe units-decay (11-08)).</remarks>
     [Native(Level.Exact, Fact = BonesProbe + "; " + MoreProbe + "; " + DecayProbe)]
     public unit? CreateCorpse(player? whichPlayer, int unitid, float x, float y, float face) =>
         Create(whichPlayer, unitid, x, y, face, unitid, corpse: true);
@@ -130,6 +133,7 @@ public sealed partial class GameNatives
     /// dead, life 0 and unpaused, gives its food back and gets undefend (852056) twice for each Defend if it lived, once
     /// if dead (probe units-more).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probes units-more and units-more-2 (11-08); facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = MoreProbe + "; " + UnitsProbe)]
     public void RemoveUnit(unit? whichUnit)
     {
@@ -176,6 +180,7 @@ public sealed partial class GameNatives
     /// reads dead with life 0 and gives its food back, then a unit with Defend gets undefend (852056) on its owner's and
     /// its own order events, then the death events (probes units-more and units-more-2).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probes units-more and units-more-2 (11-08); facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = MoreProbe + "; " + UnitsProbe)]
     public void KillUnit(unit? whichUnit)
     {
@@ -237,6 +242,7 @@ public sealed partial class GameNatives
     bool IsBuildingNow(unit u) => BlzGetUnitBooleanField(u, Convert<unitbooleanfield>(IsBuilding));
 
     /// <summary>An exploded unit's death fires as any other, but it leaves no body and is gone after the step (probe units-decay).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units-decay (11-08)).</remarks>
     [Native(Level.Exact, Fact = DecayProbe)]
     public void SetUnitExploded(unit? whichUnit, bool exploded)
     {
@@ -245,15 +251,20 @@ public sealed partial class GameNatives
 
     // Not modelled: of 8 footmen suspended and let go in each way, 6 decayed at 3.14 s and were gone at 93.25 s as one never suspended, but the one suspended in
     // the bone stage (4 s) and never let go, and the one suspended before its death and let go at 20 s, were still there at 100 s (probe units-suspend-decay, one run)
+    /// <summary>Does nothing; no body is held back from decaying.</summary>
+    /// <remarks>Close: Nothing is held back here; the game held a body in the bone stage back when it was suspended there and not let go, and one suspended before its death let go at 20 s, past 100 s, and no other of 8 ways (one run).</remarks>
     [Native(Level.Close, Fact = "probes units-decay, units-bones and units-suspend-decay (11-21, D793)", Reason = "Nothing is held back here; the game held a body in the bone stage back when it was suspended there and not let go, and one suspended before its death let go at 20 s, past 100 s, and no other of 8 ways (one run)")]
     public void UnitSuspendDecay(unit? whichUnit, bool suspend)
     {
     }
 
     /// <summary>The unit's type id; 0 for nil and once the unit is gone.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public int GetUnitTypeId(unit? whichUnit) => whichUnit?.Type.Id ?? 0;
 
+    /// <summary>Whether the unit type with the id is a hero.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public bool IsHeroUnitId(int unitId) => IsHero(unitId);
 
@@ -262,14 +273,17 @@ public sealed partial class GameNatives
     /// one the map's balance set leaves out; "Default string" for anything else, a buff's and a destructable's name too,
     /// as the units probe and the facts' "Object data" read them. Not the name BlzSetUnitName gives one unit.
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08); facts, The game's data: probes data-objects and data-sets-melee; game-facts.md, Object data: GetObjectName (10-18)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe + "; facts, The game's data: probes data-objects and data-sets-melee; game-facts.md, Object data: GetObjectName (10-18)")]
     public string? GetObjectName(int objectId) => Data.Name(objectId) ?? "Default string";
 
     /// <summary>The name BlzSetUnitName gave the unit, else its type's: a hero's type name, not its proper name (facts, Units).</summary>
+    /// <remarks>Exact: matches the game wherever measured (game-facts.md, Units: GetUnitName and BlzSetUnitName (10-21, 10-28); facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = "game-facts.md, Units: GetUnitName and BlzSetUnitName (10-21, 10-28); " + UnitsProbe)]
     public string? GetUnitName(unit? whichUnit) => whichUnit is null ? null : whichUnit.Name ?? whichUnit.Type.Text(UnitName) ?? "";
 
     /// <summary>Renames the one unit: neither its type's GetObjectName nor the next unit of the type (facts, Units).</summary>
+    /// <remarks>Exact: matches the game wherever measured (game-facts.md, Units: BlzSetUnitName changes that one unit's name (10-21); facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = "game-facts.md, Units: BlzSetUnitName changes that one unit's name (10-21); " + UnitsProbe)]
     public void BlzSetUnitName(unit? whichUnit, string? name)
     {
@@ -279,9 +293,12 @@ public sealed partial class GameNatives
     /// <summary>
     /// Alive, for a unit that hasn't died, also once removed in its step (facts, Units).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (game-facts.md, Units: a removed living unit reads alive for the rest of the frame (11-06); facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = "game-facts.md, Units: a removed living unit reads alive for the rest of the frame (11-06); " + UnitsProbe)]
     public bool UnitAlive(unit? id) => id is { Dead: false };
 
+    /// <summary>As <c>UnitAlive</c>.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public bool BlzUnitIsAlive(unit? whichUnit) => UnitAlive(whichUnit);
 }

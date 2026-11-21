@@ -17,6 +17,7 @@ public sealed partial class GameNatives
     /// changes of <c>ALLIANCE_PASSIVE</c>; <c>EVENT_PLAYER_STATE_LIMIT</c> never fires here, nor <c>EVENT_PLAYER_LEAVE</c>
     /// for RemovePlayer. The input events wait for input (wave 6).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Player and game events: probe events (11-08)).</remarks>
     [Native(Level.Exact, Fact = Events)]
     public @event? TriggerRegisterPlayerEvent(trigger? whichTrigger, player? whichPlayer, playerevent? whichPlayerEvent)
     {
@@ -30,6 +31,7 @@ public sealed partial class GameNatives
     /// Fires inside SetPlayerState when the player's state changes to a value that meets the comparison, NOT_EQUAL
     /// included, with the event id <c>EVENT_PLAYER_STATE_LIMIT</c>, the player and the state.
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Player and game events: probe events (11-08)).</remarks>
     [Native(Level.Exact, Fact = Events)]
     public @event? TriggerRegisterPlayerStateEvent(trigger? whichTrigger, player? whichPlayer, playerstate? whichState, limitop? opcode, float limitval)
     {
@@ -43,6 +45,7 @@ public sealed partial class GameNatives
     /// Fires inside SetPlayerAlliance when the player's alliance of this type with anyone changes, after its
     /// <c>EVENT_PLAYER_ALLIANCE_CHANGED</c>, with that event id and no trigger player.
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (game-facts.md, Orders and events: an alliance change fires on the giving player's registration only (11-06); facts, Player and game events: probe events (11-08)).</remarks>
     [Native(Level.Exact, Fact = "game-facts.md, Orders and events: an alliance change fires on the giving player's registration only (11-06); " + Events)]
     public @event? TriggerRegisterPlayerAllianceChange(trigger? whichTrigger, player? whichPlayer, alliancetype? whichAlliance)
     {
@@ -57,15 +60,18 @@ public sealed partial class GameNatives
     /// RemovePlayer's victory or EndGame. Close: the game fires <c>EVENT_GAME_LOADED</c> once a saved game has loaded
     /// (facts, "Initialisation"), which a run doesn't do.
     /// </summary>
+    /// <remarks>Close: None of the 16 game events fired in the events probe, so none does here; the game fires EVENT_GAME_LOADED after a saved game loads, which a run doesn't do.</remarks>
     [Native(Level.Close)]
     public @event? TriggerRegisterGameEvent(trigger? whichTrigger, gameevent? whichGameEvent) =>
         whichTrigger is null || whichGameEvent is null ? null : Register(whichTrigger);
 
     /// <summary>The player of the event that fired the trigger; nil in alliance events, game state events and outside one.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Player and game events: probe events (11-08)).</remarks>
     [Native(Level.Exact, Fact = Events)]
     public player? GetTriggerPlayer() => Current.Player;
 
     /// <summary>The state of the player state event that fired the trigger; outside one, the state with id 0.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Player and game events: probe events (11-08)).</remarks>
     [Native(Level.Exact, Fact = Events)]
     public playerstate? GetEventPlayerState() => Current.PlayerState ?? Convert<playerstate>(0);
 

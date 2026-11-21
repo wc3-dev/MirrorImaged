@@ -90,6 +90,7 @@ public sealed partial class GameNatives
     /// and skipped, priority, the button places (the type's, BlzSetAbilityPosX's too), missile speed and the attachment
     /// counts (1 where the data has none); 0 for a field of another kind (probes abilities-fields and abilities-columns).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probes abilities-fields, abilities-columns and abilities-sets (11-08)).</remarks>
     [Native(Level.Exact, Fact = FieldsProbe)]
     public int BlzGetAbilityIntegerField(ability? whichAbility, abilityintegerfield? whichField)
     {
@@ -104,6 +105,7 @@ public sealed partial class GameNatives
     /// Sets it for this ability and answers true; the level count lets SetUnitAbilityLevel go to it (probe
     /// abilities-fields). The level skip and attachment counts refuse a set (false; probe abilities-sets).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probes abilities-fields, abilities-columns and abilities-sets (11-08)).</remarks>
     [Native(Level.Exact, Fact = FieldsProbe)]
     public bool BlzSetAbilityIntegerField(ability? whichAbility, abilityintegerfield? whichField, int value)
     {
@@ -113,10 +115,14 @@ public sealed partial class GameNatives
         return true;
     }
 
+    /// <summary>A real field without levels: the value set for this ability, else the type's; 0 for nil and for a field of another kind.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probes abilities-fields, abilities-columns and abilities-sets (11-08)).</remarks>
     [Native(Level.Exact, Fact = FieldsProbe)]
     public float BlzGetAbilityRealField(ability? whichAbility, abilityrealfield? whichField) =>
         whichAbility is not { } a || whichField is not { } f || !Declares(f) ? 0 : a.Sets.TryGetValue((f.Id, -1), out var set) ? (float)set : a.Type.Real(f.Id);
 
+    /// <summary>Sets it for this ability and answers true; false for nil and for a field of another kind.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probes abilities-fields, abilities-columns and abilities-sets (11-08)).</remarks>
     [Native(Level.Exact, Fact = FieldsProbe)]
     public bool BlzSetAbilityRealField(ability? whichAbility, abilityrealfield? whichField, float value)
     {
@@ -129,12 +135,14 @@ public sealed partial class GameNatives
     /// Whether it is a hero skill and whether it checks its requirements, from the data, and whether an item carries it:
     /// false for one added to a unit (probe abilities-fields; game-facts: true on Claws of Attack's carrier, W2-3's).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probes abilities-fields, abilities-columns and abilities-sets (11-08); game-facts.md, Spells and abilities: ABILITY_BF_HERO_ABILITY (11-02)).</remarks>
     [Native(Level.Exact, Fact = FieldsProbe + "; game-facts.md, Spells and abilities: ABILITY_BF_HERO_ABILITY (11-02)")]
     public bool BlzGetAbilityBooleanField(ability? whichAbility, abilitybooleanfield? whichField) =>
         whichAbility is { } a && whichField is { } f && Declares(f)
         && (a.Sets.TryGetValue((f.Id, -1), out var set) ? (bool)set : f.Id != ItemAbility && a.Type.Integer(f.Id) != 0);
 
     /// <summary>Sets it for this ability and answers true; being a hero skill refuses a set (probes abilities-fields and abilities-sets).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probes abilities-fields, abilities-columns and abilities-sets (11-08)).</remarks>
     [Native(Level.Exact, Fact = FieldsProbe)]
     public bool BlzSetAbilityBooleanField(ability? whichAbility, abilitybooleanfield? whichField, bool value)
     {
@@ -147,6 +155,7 @@ public sealed partial class GameNatives
     /// Its name, sounds ("" without) and the activated and research icons (the type's, BTNTemp without); "" for nil
     /// (probes abilities-fields and abilities-types).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probes abilities-fields, abilities-columns and abilities-sets (11-08); facts, Abilities: probe abilities-types).</remarks>
     [Native(Level.Exact, Fact = FieldsProbe + "; facts, Abilities: probe abilities-types")]
     public string? BlzGetAbilityStringField(ability? whichAbility, abilitystringfield? whichField)
     {
@@ -156,6 +165,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Sets it for this ability and answers true, the type's staying; the name refuses a set (probe abilities-sets).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probes abilities-fields, abilities-columns and abilities-sets (11-08)).</remarks>
     [Native(Level.Exact, Fact = FieldsProbe)]
     public bool BlzSetAbilityStringField(ability? whichAbility, abilitystringfield? whichField, string? value)
     {
@@ -168,16 +178,22 @@ public sealed partial class GameNatives
     /// The level's value (from 0); 0 outside the ability's levels, for a field of another kind, and where the column holds
     /// another type for this ability (Blizzard's waves read as a real) (probes abilities-fields and abilities-columns).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probes abilities-fields, abilities-columns and abilities-sets (11-08)).</remarks>
     [Native(Level.Exact, Fact = FieldsProbe)]
     public int BlzGetAbilityIntegerLevelField(ability? whichAbility, abilityintegerlevelfield? whichField, int level) => Read(whichAbility, whichField, level, 0);
 
     /// <summary>Sets the level's value for this ability, the column then holding an integer; false outside its levels (probes abilities-fields and abilities-columns).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probes abilities-fields, abilities-columns and abilities-sets (11-08)).</remarks>
     [Native(Level.Exact, Fact = FieldsProbe)]
     public bool BlzSetAbilityIntegerLevelField(ability? whichAbility, abilityintegerlevelfield? whichField, int level, int value) => Write(whichAbility, whichField, level, value);
 
+    /// <summary>The level's value (from 0), as the integer one reads it; 0 outside the ability's levels, for a field of another kind, and where the column holds another type.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probes abilities-fields, abilities-columns and abilities-sets (11-08)).</remarks>
     [Native(Level.Exact, Fact = FieldsProbe)]
     public float BlzGetAbilityRealLevelField(ability? whichAbility, abilityreallevelfield? whichField, int level) => Read(whichAbility, whichField, level, 0f);
 
+    /// <summary>Sets the level's value for this ability, the column then holding a real; false outside its levels.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probes abilities-fields, abilities-columns and abilities-sets (11-08)).</remarks>
     [Native(Level.Exact, Fact = FieldsProbe)]
     public bool BlzSetAbilityRealLevelField(ability? whichAbility, abilityreallevelfield? whichField, int level, float value) => Write(whichAbility, whichField, level, value);
 
@@ -185,6 +201,7 @@ public sealed partial class GameNatives
     /// As the other kinds; a boolean a set put in a column closes the game when read back (probe abilities-boolean:
     /// inferred, as the game closed after the set answered true and before the read's line came).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probes abilities-fields, abilities-columns and abilities-sets (11-08); facts, Abilities: probe abilities-boolean).</remarks>
     [Native(Level.Exact, Fact = FieldsProbe + "; facts, Abilities: probe abilities-boolean")]
     public bool BlzGetAbilityBooleanLevelField(ability? whichAbility, abilitybooleanlevelfield? whichField, int level) => Read(whichAbility, whichField, level, false);
 
@@ -193,6 +210,7 @@ public sealed partial class GameNatives
     /// the other kinds (probe abilities-boolean); on one holding a boolean the game closes: Divine Shield's
     /// can-deactivate (probe abilities-columns), a Paladin's inventory's drop-items-on-death (game-facts).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probes abilities-columns and abilities-boolean; game-facts.md, Orders and events: ABILITY_BLF_DROP_ITEMS_ON_DEATH (11-02)).</remarks>
     [Native(Level.Exact, Fact = "facts, Abilities: probes abilities-columns and abilities-boolean; game-facts.md, Orders and events: ABILITY_BLF_DROP_ITEMS_ON_DEATH (11-02)")]
     public bool BlzSetAbilityBooleanLevelField(ability? whichAbility, abilitybooleanlevelfield? whichField, int level, bool value) => Write(whichAbility, whichField, level, value);
 
@@ -201,6 +219,7 @@ public sealed partial class GameNatives
     /// one's was set; a table column as the other kinds do (probes abilities-fields, abilities-columns and abilities-types).
     /// Close: an extended tooltip's <c>&lt;id,column&gt;</c> tags stay as written, which the game fills (W2-8).
     /// </summary>
+    /// <remarks>Close: an extended tooltip's <c>&lt;id,column&gt;</c> tags stay as written here, where the game fills them.</remarks>
     [Native(Level.Close)]
     public string? BlzGetAbilityStringLevelField(ability? whichAbility, abilitystringlevelfield? whichField, int level) => Read(whichAbility, whichField, level, "");
 
@@ -208,6 +227,7 @@ public sealed partial class GameNatives
     /// Sets this ability's own; a text field answers true but keeps only a level within its entries, none where the data
     /// has none (a turn-off tooltip Blizzard lacks) (probes abilities-fields and abilities-columns).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probes abilities-fields, abilities-columns and abilities-sets (11-08)).</remarks>
     [Native(Level.Exact, Fact = FieldsProbe)]
     public bool BlzSetAbilityStringLevelField(ability? whichAbility, abilitystringlevelfield? whichField, int level, string? value) =>
         value is not null && Write(whichAbility, whichField, level, value);
@@ -217,34 +237,72 @@ public sealed partial class GameNatives
     // No ability field held anything as a level array: each of the 860 ids common.j names and ten the object data keeps lists in (buffs, effects,
     // targets, arts, requirements), read as each of the four kinds at levels 0 and 1 and indexes -1 to 3 on four abilities, read the empty default, and every
     // set, add and remove answered false (probe abilities-array-fields, D792).
+    /// <summary>Always 0: no ability field held a level array in the game.</summary>
+    /// <remarks>Exact: matches the game wherever measured (probe abilities-array-fields (11-21, D792); probes abilities-fields and abilities-columns).</remarks>
     [Native(Level.Exact, Fact = ArrayFieldsProbe)] public int BlzGetAbilityIntegerLevelArrayField(ability? whichAbility, abilityintegerlevelarrayfield? whichField, int level, int index) => 0;
+    /// <summary>Always 0: no ability field held a level array in the game.</summary>
+    /// <remarks>Exact: matches the game wherever measured (probe abilities-array-fields (11-21, D792); probes abilities-fields and abilities-columns).</remarks>
     [Native(Level.Exact, Fact = ArrayFieldsProbe)] public float BlzGetAbilityRealLevelArrayField(ability? whichAbility, abilityreallevelarrayfield? whichField, int level, int index) => 0;
+    /// <summary>Always false: no ability field held a level array in the game.</summary>
+    /// <remarks>Exact: matches the game wherever measured (probe abilities-array-fields (11-21, D792); probes abilities-fields and abilities-columns).</remarks>
     [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzGetAbilityBooleanLevelArrayField(ability? whichAbility, abilitybooleanlevelarrayfield? whichField, int level, int index) => false;
+    /// <summary>Always an empty string: no ability field held a level array in the game.</summary>
+    /// <remarks>Exact: matches the game wherever measured (probe abilities-array-fields (11-21, D792); probes abilities-fields and abilities-columns).</remarks>
     [Native(Level.Exact, Fact = ArrayFieldsProbe)] public string? BlzGetAbilityStringLevelArrayField(ability? whichAbility, abilitystringlevelarrayfield? whichField, int level, int index) => "";
+    /// <summary>Keeps nothing and answers false, as the game did for every set tried.</summary>
+    /// <remarks>Exact: matches the game wherever measured (probe abilities-array-fields (11-21, D792); probes abilities-fields and abilities-columns).</remarks>
     [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzSetAbilityIntegerLevelArrayField(ability? whichAbility, abilityintegerlevelarrayfield? whichField, int level, int index, int value) => false;
+    /// <summary>Keeps nothing and answers false, as the game did for every set tried.</summary>
+    /// <remarks>Exact: matches the game wherever measured (probe abilities-array-fields (11-21, D792); probes abilities-fields and abilities-columns).</remarks>
     [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzSetAbilityRealLevelArrayField(ability? whichAbility, abilityreallevelarrayfield? whichField, int level, int index, float value) => false;
+    /// <summary>Keeps nothing and answers false, as the game did for every set tried.</summary>
+    /// <remarks>Exact: matches the game wherever measured (probe abilities-array-fields (11-21, D792); probes abilities-fields and abilities-columns).</remarks>
     [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzSetAbilityBooleanLevelArrayField(ability? whichAbility, abilitybooleanlevelarrayfield? whichField, int level, int index, bool value) => false;
+    /// <summary>Keeps nothing and answers false, as the game did for every set tried.</summary>
+    /// <remarks>Exact: matches the game wherever measured (probe abilities-array-fields (11-21, D792); probes abilities-fields and abilities-columns).</remarks>
     [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzSetAbilityStringLevelArrayField(ability? whichAbility, abilitystringlevelarrayfield? whichField, int level, int index, string? value) => false;
+    /// <summary>Adds nothing and answers false, as the game did for every add tried.</summary>
+    /// <remarks>Exact: matches the game wherever measured (probe abilities-array-fields (11-21, D792); probes abilities-fields and abilities-columns).</remarks>
     [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzAddAbilityIntegerLevelArrayField(ability? whichAbility, abilityintegerlevelarrayfield? whichField, int level, int value) => false;
+    /// <summary>Adds nothing and answers false, as the game did for every add tried.</summary>
+    /// <remarks>Exact: matches the game wherever measured (probe abilities-array-fields (11-21, D792); probes abilities-fields and abilities-columns).</remarks>
     [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzAddAbilityRealLevelArrayField(ability? whichAbility, abilityreallevelarrayfield? whichField, int level, float value) => false;
+    /// <summary>Adds nothing and answers false, as the game did for every add tried.</summary>
+    /// <remarks>Exact: matches the game wherever measured (probe abilities-array-fields (11-21, D792); probes abilities-fields and abilities-columns).</remarks>
     [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzAddAbilityBooleanLevelArrayField(ability? whichAbility, abilitybooleanlevelarrayfield? whichField, int level, bool value) => false;
+    /// <summary>Adds nothing and answers false, as the game did for every add tried.</summary>
+    /// <remarks>Exact: matches the game wherever measured (probe abilities-array-fields (11-21, D792); probes abilities-fields and abilities-columns).</remarks>
     [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzAddAbilityStringLevelArrayField(ability? whichAbility, abilitystringlevelarrayfield? whichField, int level, string? value) => false;
+    /// <summary>Removes nothing and answers false, as the game did for every remove tried.</summary>
+    /// <remarks>Exact: matches the game wherever measured (probe abilities-array-fields (11-21, D792); probes abilities-fields and abilities-columns).</remarks>
     [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzRemoveAbilityIntegerLevelArrayField(ability? whichAbility, abilityintegerlevelarrayfield? whichField, int level, int value) => false;
+    /// <summary>Removes nothing and answers false, as the game did for every remove tried.</summary>
+    /// <remarks>Exact: matches the game wherever measured (probe abilities-array-fields (11-21, D792); probes abilities-fields and abilities-columns).</remarks>
     [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzRemoveAbilityRealLevelArrayField(ability? whichAbility, abilityreallevelarrayfield? whichField, int level, float value) => false;
+    /// <summary>Removes nothing and answers false, as the game did for every remove tried.</summary>
+    /// <remarks>Exact: matches the game wherever measured (probe abilities-array-fields (11-21, D792); probes abilities-fields and abilities-columns).</remarks>
     [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzRemoveAbilityBooleanLevelArrayField(ability? whichAbility, abilitybooleanlevelarrayfield? whichField, int level, bool value) => false;
+    /// <summary>Removes nothing and answers false, as the game did for every remove tried.</summary>
+    /// <remarks>Exact: matches the game wherever measured (probe abilities-array-fields (11-21, D792); probes abilities-fields and abilities-columns).</remarks>
     [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzRemoveAbilityStringLevelArrayField(ability? whichAbility, abilitystringlevelarrayfield? whichField, int level, string? value) => false;
 
     /// <summary>The unit's ability's cooldown at the level (from 0), as ABILITY_RLF_COOLDOWN reads it; 0 past its levels and for one the unit lacks.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probes abilities-fields, abilities-columns and abilities-sets (11-08); game-facts.md, Spells and abilities: count levels from 0 (10-14)).</remarks>
     [Native(Level.Exact, Fact = FieldsProbe + "; game-facts.md, Spells and abilities: count levels from 0 (10-14)")]
     public float BlzGetUnitAbilityCooldown(unit? whichUnit, int abilId, int level) => Read(Find(whichUnit, abilId), Convert<abilityreallevelfield>(Cooldown), level, 0f);
 
     /// <summary>Sets the unit's ability's cooldown at the level, as ABILITY_RLF_COOLDOWN does; past its levels, nothing.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probes abilities-fields, abilities-columns and abilities-sets (11-08)).</remarks>
     [Native(Level.Exact, Fact = FieldsProbe)]
     public void BlzSetUnitAbilityCooldown(unit? whichUnit, int abilId, int level, float cooldown) => Write(Find(whichUnit, abilId), Convert<abilityreallevelfield>(Cooldown), level, cooldown);
 
+    /// <summary>The unit's ability's mana cost at the level (from 0), as ABILITY_ILF_MANA_COST reads it; 0 past its levels and for one the unit lacks.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probes abilities-fields, abilities-columns and abilities-sets (11-08); game-facts.md, Spells and abilities: count levels from 0 (10-14)).</remarks>
     [Native(Level.Exact, Fact = FieldsProbe + "; game-facts.md, Spells and abilities: count levels from 0 (10-14)")]
     public int BlzGetUnitAbilityManaCost(unit? whichUnit, int abilId, int level) => Read(Find(whichUnit, abilId), Convert<abilityintegerlevelfield>(ManaCost), level, 0);
 
+    /// <summary>Sets the unit's ability's mana cost at the level, as ABILITY_ILF_MANA_COST does; past its levels, nothing.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probes abilities-fields, abilities-columns and abilities-sets (11-08)).</remarks>
     [Native(Level.Exact, Fact = FieldsProbe)]
     public void BlzSetUnitAbilityManaCost(unit? whichUnit, int abilId, int level, int manaCost) => Write(Find(whichUnit, abilId), Convert<abilityintegerlevelfield>(ManaCost), level, manaCost);
 
@@ -259,15 +317,18 @@ public sealed partial class GameNatives
     }
 
     /// <summary>What is left of the unit's ability's cooldown; 0 with none running and for one the unit lacks.</summary>
+    /// <remarks>Close: the game's read carries its frames' float error (4.999999 for 5), which isn't modelled.</remarks>
     [Native(Level.Close)]
     public float BlzGetUnitAbilityCooldownRemaining(unit? whichUnit, int abilId) => Find(whichUnit, abilId) is { } a ? CooldownLeft(a) : 0;
 
     /// <summary>The share of the cooldown gone, 1 less what is left over its length: below 0 when something added to it; 0 with none running.</summary>
+    /// <remarks>Close: the game's read carries its frames' float error (a share of 1.192093e-07 at the start), which isn't modelled.</remarks>
     [Native(Level.Close)]
     public float BlzGetUnitAbilityCooldownPercent(unit? whichUnit, int abilId) =>
         Find(whichUnit, abilId) is { } a && CooldownLeft(a) is > 0 and var left ? 1 - left / (float)a.Cooldown : 0;
 
     /// <summary>Starts a cooldown of that length, also over one running; one of 0 or less, and on an ability the unit lacks, none.</summary>
+    /// <remarks>Close: the cast that starts a cooldown is not modelled here, and the game's float error in reads of it is not either.</remarks>
     [Native(Level.Close)]
     public void BlzStartUnitAbilityCooldown(unit? whichUnit, int abilCode, float cooldown)
     {
@@ -276,6 +337,8 @@ public sealed partial class GameNatives
         a.CooldownEnd = Seconds + cooldown;
     }
 
+    /// <summary>Ends a cooldown at once, so none is left; nothing for an ability the unit lacks.</summary>
+    /// <remarks>Close: the game's float error in reads of cooldowns is not modelled, and this call is not measured apart from them.</remarks>
     [Native(Level.Close)]
     public void BlzEndUnitAbilityCooldown(unit? whichUnit, int abilCode)
     {
@@ -283,19 +346,23 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Sets what is left of a cooldown running, its length kept; with none running, nothing.</summary>
+    /// <remarks>Close: the game's float error in reads of cooldowns is not modelled.</remarks>
     [Native(Level.Close)]
     public void BlzSetUnitAbilityCooldownRemaining(unit? whichUnit, int abilId, float duration) => Running(whichUnit, abilId, a => a.CooldownEnd = Seconds + duration);
 
     /// <summary>Adds to what is left of a cooldown running, which then has at least 0.01 s left; with none running, nothing.</summary>
+    /// <remarks>Close: the game's float error in reads of cooldowns is not modelled.</remarks>
     [Native(Level.Close)]
     public void BlzAdjustUnitAbilityCooldownRemaining(unit? whichUnit, int abilId, float duration) =>
         Running(whichUnit, abilId, a => a.CooldownEnd = Seconds + Math.Max(CooldownLeft(a) + duration, 0.01));
 
     /// <summary>Leaves that share of the cooldown's length to go (0.25 of 8 leaves 2); with none running, nothing.</summary>
+    /// <remarks>Close: the game's float error in reads of cooldowns is not modelled.</remarks>
     [Native(Level.Close)]
     public void BlzSetUnitAbilityCooldownPercent(unit? whichUnit, int abilId, float percent) => Running(whichUnit, abilId, a => a.CooldownEnd = Seconds + a.Cooldown * percent);
 
     /// <summary>Adds that share of the cooldown's length to what is left (0.5 of 4 left 2, then 0.25 left 3); with none running, nothing.</summary>
+    /// <remarks>Close: the game's float error in reads of cooldowns is not modelled.</remarks>
     [Native(Level.Close)]
     public void BlzAdjustUnitAbilityCooldownPercent(unit? whichUnit, int abilId, float percent) =>
         Running(whichUnit, abilId, a => a.CooldownEnd = Seconds + Math.Max(CooldownLeft(a) + a.Cooldown * percent, 0.01));

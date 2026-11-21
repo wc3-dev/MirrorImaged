@@ -46,11 +46,13 @@ public sealed partial class GameNatives
     }
 
     /// <summary>How long the animation of the unit's model with this name lasts, in seconds: the first whose name begins with it, ignoring case; 0 for none.</summary>
+    /// <remarks>Close: Read from the model file in the installed game, chosen by the graphics mode (D687); a unit with no model there has none (D377), and how the game matches a name is not measured.</remarks>
     [Native(Level.Close)]
     public float BlzGetUnitAnimationDuration(unit? whichUnit, string? whichAnimation) =>
         whichUnit is null || whichAnimation is null ? 0 : (float)(Sequences(whichUnit).FirstOrDefault(s => s.Name.StartsWith(whichAnimation, StringComparison.OrdinalIgnoreCase)).Seconds);
 
     /// <summary>How long the unit model's animation of this number lasts, in seconds; 0 for a number the model has no animation of.</summary>
+    /// <remarks>Close: Read from the model file as above (D687, D377); whether the game numbers the sequences in the file's order is not measured.</remarks>
     [Native(Level.Close)]
     public float BlzGetUnitAnimationDurationByIndex(unit? whichUnit, int index) =>
         whichUnit is not null && Sequences(whichUnit) is var list && index >= 0 && index < list.Count ? (float)list[index].Seconds : 0;

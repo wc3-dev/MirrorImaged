@@ -87,6 +87,8 @@ public sealed partial class GameNatives
         return (x + px * cos - py * sin, y + px * sin + py * cos, ground + pz + ZOffset);
     }
 
+    /// <summary>Starts the first camera of the model file as the cinematic camera, playing at the camera's target from now; nothing for nil or a model with no camera.</summary>
+    /// <remarks>Close: Only CameraZoomOut's eye was measured: its path translation as the game gave it (units-camera-2), the other models' tracks and a pan or a position set while one plays are read as the model gives them, not measured.</remarks>
     [Native(Level.Close, Fact = "probe units-camera-2 (11-08), D794", Reason = "Only CameraZoomOut's eye was measured: its path translation as the game gave it (units-camera-2), the other models' tracks and a pan or a position set while one plays are read as the model gives them, not measured")]
     public void SetCinematicCamera(string? cameraModelFile)
     {

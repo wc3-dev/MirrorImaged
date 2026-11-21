@@ -57,13 +57,18 @@ public sealed partial class GameNatives
             else thread.Dispose();
         });
 
+    /// <summary>Starts the AI script for the player in a thread of its own; nothing for a null player or script, or one that doesn't load.</summary>
+    /// <remarks>Close: the script runs on game timers in a thread of its own (D361); the game's own pacing of its AI is not measured.</remarks>
     [Native(Level.Close)]
     public void StartMeleeAI(player? num, string? script) => StartAi(num, script);
 
+    /// <summary>Starts the AI script for the player in a thread of its own, as StartMeleeAI does.</summary>
+    /// <remarks>Close: the same as StartMeleeAI (D361); how the game tells a campaign AI from a melee one is not measured.</remarks>
     [Native(Level.Close)]
     public void StartCampaignAI(player? num, string? script) => StartAi(num, script);
 
     /// <summary>The AI thread waits the seconds.</summary>
+    /// <remarks>Close: the wait is on a game timer of at least one step (D361); the game's own resolution is not measured.</remarks>
     [Native(Level.Close)]
     public void Sleep(float seconds)
     {
@@ -73,6 +78,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Runs the function in a thread of its own for the AI player that started it, sleeping and going on as the main one does.</summary>
+    /// <remarks>Close: called outside an AI script it does nothing here, which is not measured in the game.</remarks>
     [Native(Level.Close)]
     public void StartThread(Action? func)
     {

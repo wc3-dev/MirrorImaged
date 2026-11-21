@@ -53,6 +53,7 @@ public sealed partial class GameNatives
     /// The unit type with the name, in any case (footman, Footman), as unitui.slk names it; two types of one name give
     /// the first in the tables (paladin is Hpal, not Hssa); 0 for an id or anything else (probe units-more).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probes units-more and units-more-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = MoreProbe)]
     public int UnitId(string? unitIdString)
     {
@@ -69,10 +70,12 @@ public sealed partial class GameNatives
     /// The unit type's name (footman); "" for an id that is no unit's, an item's or an ability's (probe units-more). Not
     /// measured: a map's own unit type reads its base type's name, and a JASS map gets null.
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probes units-more and units-more-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = MoreProbe)]
     public string? UnitId2String(int unitId) => Data.Object(ObjectKind.Unit, unitId)?.Text(OwnName) ?? (Jass ? null : "");
 
     /// <summary>CreateUnit of the type UnitId names; nil for a name no type has, an id too (probe units-more).</summary>
+    /// <remarks>Close: as CreateUnit; the name is found by the unit type's own name, and a map's own type's name is not measured.</remarks>
     [Native(Level.Close)]
     public unit? CreateUnitByName(player? whichPlayer, string? unitname, float x, float y, float face) => CreateUnit(whichPlayer, UnitId(unitname), x, y, face);
 
@@ -80,10 +83,12 @@ public sealed partial class GameNatives
     /// The player's living units but structures, hidden and paused ones too, and one removed until it is gone (probe
     /// units-more). There is no construction yet (wave 3), so <paramref name="includeIncomplete"/> changes nothing.
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probes units-more and units-more-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = MoreProbe)]
     public int GetPlayerUnitCount(player? whichPlayer, bool includeIncomplete) => Count(whichPlayer, structures: false);
 
     /// <summary>The player's living structures, as GetPlayerUnitCount counts units (probe units-more).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probes units-more and units-more-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = MoreProbe)]
     public int GetPlayerStructureCount(player? whichPlayer, bool includeIncomplete) => Count(whichPlayer, structures: true);
 
@@ -94,6 +99,7 @@ public sealed partial class GameNatives
     /// The player's living units of the type UnitId names, with the types it upgrades to when asked (townhall counts a
     /// keep and a castle), as GetPlayerUnitCount counts them (probe units-more).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probes units-more and units-more-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = MoreProbe)]
     public int GetPlayerTypedUnitCount(player? whichPlayer, string? unitName, bool includeIncomplete, bool includeUpgrades) =>
         Typed(whichPlayer, UnitId(unitName), includeUpgrades);
@@ -113,6 +119,7 @@ public sealed partial class GameNatives
     /// Whether the unit uses food: off, its food goes back to its owner, and on again it uses it; the food it makes
     /// stays (probe units-more).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probes units-more and units-more-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = MoreProbe)]
     public void SetUnitUseFood(unit? whichUnit, bool useFood)
     {
@@ -121,9 +128,13 @@ public sealed partial class GameNatives
         if (!whichUnit.Dead) Food(whichUnit.Owner, FoodUsedState, (useFood ? 1 : -1) * whichUnit.Type.Integer(FoodUsed));
     }
 
+    /// <summary>The food the unit type uses; 0 for an unknown type.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probes units-more and units-more-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = MoreProbe)]
     public int GetFoodUsed(int unitId) => Data.Object(ObjectKind.Unit, unitId)?.Integer(FoodUsed) ?? 0;
 
+    /// <summary>The food the unit type makes; 0 for an unknown type.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probes units-more and units-more-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = MoreProbe)]
     public int GetFoodMade(int unitId) => Data.Object(ObjectKind.Unit, unitId)?.Integer(FoodMade) ?? 0;
 }

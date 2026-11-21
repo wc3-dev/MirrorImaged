@@ -9,10 +9,12 @@ public sealed partial class GameNatives
     /// The string the game's string lists give <paramref name="source"/> (its case as written), else
     /// <paramref name="source"/>; a <c>TRIGSTR_n</c> has come as the map's string already, as every string argument does.
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, The game's data: probe data).</remarks>
     [Native(Level.Exact, Fact = DataProbe)]
     public string? GetLocalizedString(string? source) => source is null ? null : Data.String(source) ?? source;
 
     /// <summary>The letter of <c>ui/miscui.txt</c>'s hotkey for <paramref name="source"/> (any case), as a number; 0 for none.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, The game's data: probe data).</remarks>
     [Native(Level.Exact, Fact = DataProbe)]
     public int GetLocalizedHotkey(string? source) =>
         source is not null && Data.Hotkey(source) is { Length: > 0 } key ? key[0] : 0;

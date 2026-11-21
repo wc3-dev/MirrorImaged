@@ -11,6 +11,7 @@ public sealed partial class GameNatives
     /// the game's first ids differ, as it makes one handle before blizzard.j's and its players when first asked for, and
     /// it gives a destroyed handle's id again once Lua has collected it (decisions D110, D111).
     /// </summary>
+    /// <remarks>Close: the game's first ids and its reuse of a destroyed handle's id differ (D110, D111).</remarks>
     [Native(Level.Close)]
     public int GetHandleId(handle? h) => h?.Id ?? 0;
 }

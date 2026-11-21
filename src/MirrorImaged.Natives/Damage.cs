@@ -42,6 +42,7 @@ public sealed partial class GameNatives
     /// the amount from its life. Close: a nil source here deals nothing and answers false (the game's answer is not
     /// measured), and the abilities that change a hit are wave 4's.
     /// </summary>
+    /// <remarks>Close: measured in part (game-facts.md, Damage: probes of 10-16 to 10-31 and 11-06); a null source or target gives false, not measured in the game, and the abilities that change a hit are not modelled yet.</remarks>
     [Native(Level.Close, Fact = DamageFacts)]
     public bool UnitDamageTarget(unit? whichUnit, widget? target, float amount, bool attack, bool ranged, attacktype? attackType, damagetype? damageType, weapontype? weaponType)
     {
@@ -104,6 +105,7 @@ public sealed partial class GameNatives
     /// UnitDamageTarget (the source's own is included, the order the units' grid gives). Answers true. Close: the delay
     /// is only tested for its end, not for the source dying before it, and the splash's order isn't measured.
     /// </summary>
+    /// <remarks>Close: measured in part (game-facts.md, Damage: probes of 10-16 to 10-31 and 11-06); the delay is only tested for its end, not for the source dying before it, and the order of the splash is not measured.</remarks>
     [Native(Level.Close, Fact = DamageFacts)]
     public bool UnitDamagePoint(unit? whichUnit, float delay, float radius, float x, float y, float amount, bool attack, bool ranged, attacktype? attackType, damagetype? damageType, weapontype? weaponType)
     {
@@ -119,35 +121,50 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The amount of the damage event it is read in, as the actions have changed it; 0 outside one.</summary>
+    /// <remarks>Exact: matches the game wherever measured (game-facts.md, Damage: probes of 10-16 to 10-31 and 11-06).</remarks>
     [Native(Level.Exact, Fact = DamageFacts)]
     public float GetEventDamage() => Striking?.Amount ?? 0;
 
+    /// <summary>The unit that deals the damage of the damage event; nil outside one.</summary>
+    /// <remarks>Exact: matches the game wherever measured (game-facts.md, Damage: probes of 10-16 to 10-31 and 11-06).</remarks>
     [Native(Level.Exact, Fact = DamageFacts)]
     public unit? GetEventDamageSource() => Striking?.Source;
 
+    /// <summary>The unit that takes the damage of the damage event; nil outside one, and for a destructable.</summary>
+    /// <remarks>Exact: matches the game wherever measured (game-facts.md, Damage: probes of 10-16 to 10-31 and 11-06).</remarks>
     [Native(Level.Exact, Fact = DamageFacts)]
     public unit? BlzGetEventDamageTarget() => Striking?.Target as unit;
 
+    /// <summary>The attack type of the damage event, as the actions have changed it; nil outside one.</summary>
+    /// <remarks>Exact: matches the game wherever measured (game-facts.md, Damage: probes of 10-16 to 10-31 and 11-06).</remarks>
     [Native(Level.Exact, Fact = DamageFacts)]
     public attacktype? BlzGetEventAttackType() => Striking?.AttackType;
 
+    /// <summary>The damage type of the damage event, as the actions have changed it; nil outside one.</summary>
+    /// <remarks>Exact: matches the game wherever measured (game-facts.md, Damage: probes of 10-16 to 10-31 and 11-06).</remarks>
     [Native(Level.Exact, Fact = DamageFacts)]
     public damagetype? BlzGetEventDamageType() => Striking?.DamageType;
 
+    /// <summary>The weapon type of the damage event, as the actions have changed it; nil outside one.</summary>
+    /// <remarks>Exact: matches the game wherever measured (game-facts.md, Damage: probes of 10-16 to 10-31 and 11-06).</remarks>
     [Native(Level.Exact, Fact = DamageFacts)]
     public weapontype? BlzGetEventWeaponType() => Striking?.WeaponType;
 
     /// <summary>False for a hit from code even with the attack flag, true for a real attack (facts: Damage, 09-30 to 10-31).</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Damage: probes of 10-16 to 10-31 and 11-06); outside a damage event it gives false, not measured in the game.</remarks>
     [Native(Level.Close, Fact = DamageFacts)]
     public bool BlzGetEventIsAttack() => Striking?.Real ?? false;
 
     /// <summary>Changes the amount the armour, or the life, works from; false outside a damage event.</summary>
+    /// <remarks>Exact: matches the game wherever measured (game-facts.md, Damage: probes of 10-16 to 10-31 and 11-06).</remarks>
     [Native(Level.Exact, Fact = DamageFacts)]
     public void BlzSetEventDamage(float damage)
     {
         if (Striking is { } hit) hit.Amount = damage;
     }
 
+    /// <summary>Changes the attack type of the damage event; false outside one.</summary>
+    /// <remarks>Exact: matches the game wherever measured (game-facts.md, Damage: probes of 10-16 to 10-31 and 11-06).</remarks>
     [Native(Level.Exact, Fact = DamageFacts)]
     public bool BlzSetEventAttackType(attacktype? attackType)
     {
@@ -157,6 +174,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Before the armour it decides it; after it, nothing changes (facts: Damage, 09-30 and 10-31).</summary>
+    /// <remarks>Exact: matches the game wherever measured (game-facts.md, Damage: probes of 10-16 to 10-31 and 11-06).</remarks>
     [Native(Level.Exact, Fact = DamageFacts)]
     public bool BlzSetEventDamageType(damagetype? damageType)
     {
@@ -165,6 +183,8 @@ public sealed partial class GameNatives
         return true;
     }
 
+    /// <summary>Changes the weapon type of the damage event; false outside one.</summary>
+    /// <remarks>Exact: matches the game wherever measured (game-facts.md, Damage: probes of 10-16 to 10-31 and 11-06).</remarks>
     [Native(Level.Exact, Fact = DamageFacts)]
     public bool BlzSetEventWeaponType(weapontype? weaponType)
     {
@@ -174,10 +194,13 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The unit's armour: its type's, a hero's agility's, or the value BlzSetUnitArmor gave (facts: Damage, 11-06).</summary>
+    /// <remarks>Exact: matches the game wherever measured (game-facts.md, Damage: probes of 10-16 to 10-31 and 11-06).</remarks>
     [Native(Level.Exact, Fact = DamageFacts)]
     public float BlzGetUnitArmor(unit? whichUnit) =>
         whichUnit is null ? 0 : BlzGetUnitRealField(whichUnit, Convert<unitrealfield>(Defense));
 
+    /// <summary>Sets the unit's armour; nothing for a null unit.</summary>
+    /// <remarks>Exact: matches the game wherever measured (game-facts.md, Damage: probes of 10-16 to 10-31 and 11-06).</remarks>
     [Native(Level.Exact, Fact = DamageFacts)]
     public void BlzSetUnitArmor(unit? whichUnit, float armorAmount)
     {

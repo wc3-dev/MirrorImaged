@@ -35,10 +35,13 @@ public sealed partial class GameNatives
     // once movement (wave 3) moves units every step, if the benchmark (A10) needs it.
     readonly List<RegionEvent> _regionEvents = []; // in the order registered
 
+    /// <summary>A new region with no cells.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Regions: probe units-regions (11-08)).</remarks>
     [Native(Level.Exact, Fact = RegionsProbe)]
     public region? CreateRegion() => Make(new region());
 
     /// <summary>Its events stop: a unit moving into its cells fires nothing.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Regions: probe units-regions (11-08)).</remarks>
     [Native(Level.Exact, Fact = RegionsProbe)]
     public void RemoveRegion(region? whichRegion)
     {
@@ -48,24 +51,35 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The cells the rect's corners are in and those between: (100.5, 100.5)-(300.5, 300.5) covers 96 to 320.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Regions: probe units-regions (11-08); game-facts.md, Units: regions are whole 32 cells (10-25, 10-26)).</remarks>
     [Native(Level.Exact, Fact = RegionsProbe + "; game-facts.md, Units: regions are whole 32 cells (10-25, 10-26)")]
     public void RegionAddRect(region? whichRegion, rect? r) => Block(whichRegion, r, true);
 
+    /// <summary>Clears the cells the rect covers; the last block to hold a cell, added or cleared, decides it.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Regions: probe units-regions (11-08)).</remarks>
     [Native(Level.Exact, Fact = RegionsProbe)]
     public void RegionClearRect(region? whichRegion, rect? r) => Block(whichRegion, r, false);
 
+    /// <summary>Adds the whole 32-cell block the point is in; the point is a place, not a cell number.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Regions: probe units-regions (11-08); game-facts.md, Units: RegionAddCell(10, 10) covers 0 to 32 (10-25)).</remarks>
     [Native(Level.Exact, Fact = RegionsProbe + "; game-facts.md, Units: RegionAddCell(10, 10) covers 0 to 32 (10-25)")]
     public void RegionAddCell(region? whichRegion, float x, float y) => Block(whichRegion, x, y, x, y, true);
 
+    /// <summary>Clears the whole 32-cell block the point is in.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Regions: probe units-regions (11-08)).</remarks>
     [Native(Level.Exact, Fact = RegionsProbe)]
     public void RegionClearCell(region? whichRegion, float x, float y) => Block(whichRegion, x, y, x, y, false);
 
+    /// <summary>As <c>RegionAddCell</c>, at a location's place; nothing for a null location.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Regions: probe units-regions (11-08)).</remarks>
     [Native(Level.Exact, Fact = RegionsProbe)]
     public void RegionAddCellAtLoc(region? whichRegion, location? whichLocation)
     {
         if (whichLocation is not null) RegionAddCell(whichRegion, whichLocation.X, whichLocation.Y);
     }
 
+    /// <summary>As <c>RegionClearCell</c>, at a location's place; nothing for a null location.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Regions: probe units-regions (11-08)).</remarks>
     [Native(Level.Exact, Fact = RegionsProbe)]
     public void RegionClearCellAtLoc(region? whichRegion, location? whichLocation)
     {
@@ -80,9 +94,13 @@ public sealed partial class GameNatives
     static void Block(region? whichRegion, float minX, float minY, float maxX, float maxY, bool added) =>
         whichRegion?.Blocks.Add((region.Cell(minX), region.Cell(minY), region.Cell(maxX), region.Cell(maxY), added));
 
+    /// <summary>Whether the point is in one of the region's cells; false for a null region.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Regions: probe units-regions (11-08)).</remarks>
     [Native(Level.Exact, Fact = RegionsProbe)]
     public bool IsPointInRegion(region? whichRegion, float x, float y) => whichRegion?.Covers(x, y) ?? false;
 
+    /// <summary>As <c>IsPointInRegion</c>, for a location's place; false for a null location.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Regions: probe units-regions (11-08)).</remarks>
     [Native(Level.Exact, Fact = RegionsProbe)]
     public bool IsLocationInRegion(region? whichRegion, location? whichLocation) =>
         whichLocation is not null && IsPointInRegion(whichRegion, whichLocation.X, whichLocation.Y);
@@ -91,6 +109,7 @@ public sealed partial class GameNatives
     /// Whether the unit's place is in the region's cells as they are now, whatever events fired: also for a dead unit,
     /// a unit removed in this step, and one under a cell added while it stood there.
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Regions: probe units-regions (11-08); game-facts.md, Units: IsUnitInRegion keeps answering true for a unit that died inside (10-26)).</remarks>
     [Native(Level.Exact, Fact = RegionsProbe + "; game-facts.md, Units: IsUnitInRegion keeps answering true for a unit that died inside (10-26)")]
     public bool IsUnitInRegion(region? whichRegion, unit? whichUnit) => whichUnit is not null && IsPointInRegion(whichRegion, whichUnit.X, whichUnit.Y);
 
@@ -103,11 +122,13 @@ public sealed partial class GameNatives
     /// the region when it was made or registered, a cell added or cleared under a unit standing still, a death, or a
     /// removal.
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Regions: probe units-regions (11-08); game-facts.md, Units: enter and leave events (10-17, 10-25, 10-26)).</remarks>
     [Native(Level.Exact, Fact = RegionsProbe + "; game-facts.md, Units: enter and leave events (10-17, 10-25, 10-26)")]
     public @event? TriggerRegisterEnterRegion(trigger? whichTrigger, region? whichRegion, boolexpr? filter) =>
         RegisterRegion(whichTrigger, whichRegion, filter, true);
 
     /// <summary>As TriggerRegisterEnterRegion, for a unit moved out of the region.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Regions: probe units-regions (11-08); game-facts.md, Units: enter and leave events (10-25)).</remarks>
     [Native(Level.Exact, Fact = RegionsProbe + "; game-facts.md, Units: enter and leave events (10-25)")]
     public @event? TriggerRegisterLeaveRegion(trigger? whichTrigger, region? whichRegion, boolexpr? filter) =>
         RegisterRegion(whichTrigger, whichRegion, filter, false);
@@ -121,14 +142,17 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The region of an enter or leave event; nil outside one.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Regions: probe units-regions (11-08)).</remarks>
     [Native(Level.Exact, Fact = RegionsProbe)]
     public region? GetTriggeringRegion() => Current.Region;
 
     /// <summary>The unit of an enter event; nil in a leave event and outside one.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Regions: probe units-regions (11-08)).</remarks>
     [Native(Level.Exact, Fact = RegionsProbe)]
     public unit? GetEnteringUnit() => Current.Event.Id == EnterRegion ? Current.Unit?.Unit : null;
 
     /// <summary>The unit of a leave event; nil in an enter event and outside one.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Regions: probe units-regions (11-08)).</remarks>
     [Native(Level.Exact, Fact = RegionsProbe)]
     public unit? GetLeavingUnit() => Current.Event.Id == LeaveRegion ? Current.Unit?.Unit : null;
 

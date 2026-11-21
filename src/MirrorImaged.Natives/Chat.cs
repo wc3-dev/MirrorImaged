@@ -10,6 +10,7 @@ public sealed partial class GameNatives
     (string Message, string Matched)? _chatNow;
 
     /// <summary>Registers for what the player says: a message that contains the text, or all of it when exact; an empty text matches every message.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Version and launching: chat events (10-20)); a null trigger or player gives nil, and matching is case-sensitive here; the game's case rule is not measured.</remarks>
     [Native(Level.Close, Fact = "game-facts.md, Version and launching: chat events (10-20)")]
     public @event? TriggerRegisterPlayerChatEvent(trigger? whichTrigger, player? whichPlayer, string? chatMessageToDetect, bool exactMatchOnly)
     {
@@ -20,10 +21,12 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The whole message of the chat event.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Version and launching: chat events (10-20)); outside a chat event it gives an empty string, not measured in the game.</remarks>
     [Native(Level.Close, Fact = "game-facts.md, Version and launching: chat events (10-20)")]
     public string? GetEventPlayerChatString() => _chatNow?.Message ?? "";
 
     /// <summary>The text the registration looked for, as registered.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Version and launching: chat events (10-20)); outside a chat event it gives an empty string, not measured in the game.</remarks>
     [Native(Level.Close, Fact = "game-facts.md, Version and launching: chat events (10-20)")]
     public string? GetEventPlayerChatStringMatched() => _chatNow?.Matched ?? "";
 
