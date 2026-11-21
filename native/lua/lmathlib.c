@@ -187,10 +187,8 @@ static int math_log (lua_State *L) {
     if (base == l_mathop(2.0))
       res = l_mathop(log2)(x); else
 #endif
-    if (base == l_mathop(10.0))
-      res = l_mathop(log10)(x);
-    else
-      res = luai_numdiv(L, l_mathop(log)(x), l_mathop(log)(base));
+    /* MirrorImaged: the game has no log10 case, a base 10 is the log over the log of 10 in its division, as base 2 is */
+    res = luai_numdiv(L, l_mathop(log)(x), l_mathop(log)(base));
   }
   lua_pushnumber(L, res);
   return 1;

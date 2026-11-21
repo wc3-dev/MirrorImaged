@@ -39,7 +39,7 @@ public sealed class LuaDeterminismTests
         Assert.Equal(DeterminismHash, hash);
     }
 
-    const int DeterminismHash = -1906192347;
+    const int DeterminismHash = 1324828122;
 
     [Fact]
     public void SortGivesTheSameOrderEveryRun()

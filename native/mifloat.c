@@ -18,9 +18,11 @@ static float pack (uint32_t sign, int32_t e, uint32_t m) {
   return flt((sign << 31) | ((uint32_t)e << 23) | (m & 0x7fffff));
 }
 
-/* The exact sum or difference, cut toward zero; a number 23 or more octaves smaller, or a zero or subnormal one,
-   is dropped. Of two of the same size the second is kept, so 0 + -0 is -0. */
-float mi_add (float x, float y) {
+/* The sum or difference, cut toward zero; a number 23 or more octaves smaller, or a zero or subnormal one, is dropped.
+   Of two of the same size the second is kept, so 0 + -0 is -0. The smaller number's mantissa is shifted into 24 + guard
+   bits before it is added or taken away: the exact sum or difference for 23 guard bits (the add of the arithmetic
+   measured so far), and with 1 the log's (decision D763). */
+static float add_guarded (float x, float y, int guard) {
   uint32_t a = bits(x), b = bits(y);
   uint64_t ma, mb, m;
   int32_t ea, eb;
@@ -28,19 +30,21 @@ float mi_add (float x, float y) {
   ea = (a >> 23) & 0xff;
   eb = (b >> 23) & 0xff;
   if (eb == 0 || ea - eb >= 23) return flt(a);
-  ma = (uint64_t)((a & 0x7fffff) | 0x800000) << 23;
-  mb = ((uint64_t)((b & 0x7fffff) | 0x800000) << 23) >> (ea - eb);
+  ma = (uint64_t)((a & 0x7fffff) | 0x800000) << guard;
+  mb = ((uint64_t)((b & 0x7fffff) | 0x800000) << guard) >> (ea - eb);
   if ((a ^ b) >> 31) {
     m = ma - mb;
     if (m == 0) return 0.0f;
-    while (m < (1ull << 46)) { m <<= 1; ea--; }
+    while (m < (1ull << (23 + guard))) { m <<= 1; ea--; }
   }
   else {
     m = ma + mb;
-    if (m >> 47) { m >>= 1; ea++; }
+    if (m >> (24 + guard)) { m >>= 1; ea++; }
   }
-  return pack(a >> 31, ea, (uint32_t)(m >> 23));
+  return pack(a >> 31, ea, (uint32_t)(m >> guard));
 }
+
+float mi_add (float x, float y) { return add_guarded(x, y, 23); }
 
 float mi_sub (float a, float b) {
   return mi_add(a, flt(bits(b) ^ 0x80000000));
@@ -152,7 +156,6 @@ float mi_sqrtf (float x) {
 ** cuts.
 */
 
-static const double LN2_HI = 6.93147180369123816490e-01, LN2_LO = 1.90821492927058770002e-10;
 static const double PI = 3.14159265358979311600e+00, PIO2 = 1.57079632679489655800e+00;
 
 /* Toward zero, after a nudge of 2^-45 so that a result that should be exact (2^10, 10^3) stays exact. A
@@ -229,38 +232,22 @@ float mi_tanf (float x) { return mi_div(mi_sinf(x), mi_cosf(x)); }
 ** The rest is not pinned down by the measurements (Close), but for what each says.
 */
 
-/* log(x) = e ln 2 + log(m), for x > 0 */
-static double log_d (double x) {
-  uint64_t u;
-  double m, s, z, t, sum = 0;
-  int32_t e, i;
-  memcpy(&u, &x, sizeof u);
-  e = (int32_t)((u >> 52) & 0x7ff) - 1023;
-  u = (u & 0x000fffffffffffffull) | 0x3ff0000000000000ull;
-  memcpy(&m, &u, sizeof m);
-  if (m > 1.41421356237309514547) { m *= 0.5; e++; }
-  s = (m - 1) / (m + 1);
-  z = s * s;
-  t = s;
-  for (i = 1; i <= 41; i += 2) { sum += t / i; t *= z; }
-  return e * LN2_HI + (2 * sum + e * LN2_LO);
-}
-
 /* exp(x) for x of 0 and up, in the game's arithmetic: the float nearest e^(1/4) to the power of the whole quarters
    in x, squaring as it goes (so exp(1) is 402df853, a step under e, and exp(89) a nan, exp(100) 0, as its products
-   are packed), times 1 + r + r^2/2 + ... + r^6/720 for the rest r, worked out from the last term in. Every whole x
-   and k/16 measured is the game's; of other x about 1 in 40 is a step off, the series' own order not being found
-   (Close). */
+   are packed), times a polynomial of the rest r, 1 + r + c2 r^2 + ... + c6 r^6, worked out from the last term in. The c's
+   are close to 1/2 ... 1/720 but fitted (decision D761): of 131,072 values at every 2^-19 from 0 to a quarter, 130,700
+   are the game's, the rest a step off, and every whole x and k/16 measured is the game's (Close). */
 static float exp_up (float x) {
-  static const uint32_t inverse[] = { 0x3f000000, 0x3eaaaaaa, 0x3e800000, 0x3e4ccccc, 0x3e2aaaaa };  /* 1/2 to 1/6, cut */
-  float p = 1.0f, b = flt(0x3fa45af2), r, s = 1.0f;
+  static const uint32_t coefficient[] = { 0x3effffe6, 0x3e2aac15, 0x3d2a9ba5, 0x3c08cc10, 0x3aba30d2 };  /* c2 to c6 */
+  float p = 1.0f, b = flt(0x3fa45af2), r, s = flt(coefficient[4]);
   uint32_t m;
   int32_t k;
   if (!(x < 1024)) return 0.0f;  /* and nan */
   m = (uint32_t)(x * 4);
   r = x - m * 0.25f;
-  for (k = 4; k >= 0; k--) s = mi_add(1.0f, mi_mul(mi_mul(r, s), flt(inverse[k])));
-  s = mi_add(1.0f, mi_mul(r, s));
+  for (k = 3; k >= 0; k--) s = mi_add(flt(coefficient[k]), mi_mul(s, r));
+  s = mi_add(1.0f, mi_mul(s, r));
+  s = mi_add(1.0f, mi_mul(s, r));
   for (; m; m >>= 1) {
     if (m & 1) p = mi_mul(p, b);
     b = mi_mul(b, b);
@@ -272,16 +259,29 @@ static float exp_up (float x) {
 float mi_expf (float x) { return x < 0 ? mi_div(1.0f, exp_up(-x)) : exp_up(x); }
 
 /* The logarithm reads a zero or subnormal number as 1.m * 2^-127, as division reads a zero divisor, so log(0)
-   is -88.0296860; below 0 it is 0, as sqrt(-1) is. inf and nan go through the double's exponent (log(inf) is 709.78),
-   not measured. */
+   is -88.0296860; below 0 it is 0, as sqrt(-1) is. inf and nan are read by their exponent bits like any number (not
+   measured). */
 static int bad_log (float x) { return (bits(x) >> 31) && (bits(x) & 0x7f800000); }
-static double log_arg (float x) {
+
+/* The game's log (decision D760): the exponent e and the mantissa m from 1 up to 2, s = (m - 1) / (m + 1) in the game's
+   division, z = s s, log2 m = s (1 + c z) / (1 + b z) 2/ln 2 in its arithmetic in that order, and the log (e + log2 m)
+   ln 2, the sum with one guard bit (below 1 its difference is cut one step larger than the exact one: 0.5 + k 2^-16, all
+   32,768). All 131,072 values measured at 1 + k 2^-17 are the game's, as are the other scans and the whole numbers. */
+float mi_logf (float x) {
   uint32_t a = bits(x);
-  return (a & 0x7f800000) ? x : ((a & 0x7fffff) | 0x800000) * 0x1p-150;
+  int32_t e = (int32_t)((a >> 23) & 0xff) - 127;
+  float m, s, z, l, t;
+  if (bad_log(x)) return 0.0f;
+  m = flt((a & 0x7fffff) | 0x3f800000);
+  s = mi_div(mi_sub(m, 1.0f), mi_add(m, 1.0f));
+  z = mi_mul(s, s);
+  l = mi_mul(mi_div(mi_mul(s, mi_add(1.0f, mi_mul(flt(0xbe88d424), z))), mi_add(1.0f, mi_mul(flt(0xbf19bf59), z))), flt(0x4038aa3b));
+  t = add_guarded((float)e, l, 1);
+  return mi_mul(t, flt(0x3f317218));
 }
 
-float mi_logf (float x) { return bad_log(x) ? 0.0f : to_float(log_d(log_arg(x))); }
-float mi_log10f (float x) { return bad_log(x) ? 0.0f : to_float(log_d(log_arg(x)) * 4.34294481903251816668e-01); }
+/* Only in the compat build, where the game has no math.log10: its log of a base is the log over the base's. */
+float mi_log10f (float x) { return mi_div(mi_logf(x), mi_logf(10.0f)); }
 
 /* A whole power from 1 up is multiplied out in the game's arithmetic, squaring as it goes (1000^10 is 7149f2c9,
    one by one would give 7149f2c8), so (-8)^3 is -512; any other is exp(y log|x|), so (-8)^(1/3) is 1.99999964 and
