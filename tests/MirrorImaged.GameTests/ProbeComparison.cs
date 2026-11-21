@@ -317,6 +317,26 @@ public static class ProbeComparison
     }
 
     /// <summary>
+    /// The lines of a differences file that record a difference with no reason (A2, A6; decisions D790): a file opens
+    /// with its note on the form, "# Where MirrorImaged differs ...", up to the first blank line, and each recorded line's
+    /// reason is a note after that, above it. Gives the line numbers, or 0 when the opening note is missing.
+    /// </summary>
+    public static IReadOnlyList<int> Unreasoned(IReadOnlyList<string> lines)
+    {
+        if (lines.Count == 0 || !lines[0].StartsWith("# Where MirrorImaged differs", StringComparison.Ordinal))
+            return [0];
+        var opening = lines.TakeWhile(line => line.Length > 0).Count();
+        var unreasoned = new List<int>();
+        var reason = false;
+        for (var i = opening; i < lines.Count; i++)
+        {
+            if (lines[i].StartsWith("# ", StringComparison.Ordinal)) reason = true;
+            else if (lines[i].Length > 0 && !reason) unreasoned.Add(i + 1);
+        }
+        return unreasoned;
+    }
+
+    /// <summary>
     /// Fails unless <paramref name="differences"/> are what the probe's differences file in the mode
     /// (<see cref="Differences"/>) records, in order (decisions D121): none when there is no such file. The message names
     /// each difference and gives the lines the file would hold.

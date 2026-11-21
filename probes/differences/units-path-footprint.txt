@@ -1,3 +1,6 @@
+# Where MirrorImaged differs from the game's lines in expected/units-path-footprint.txt, in order, with why (decisions D121): a line
+# starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
+
 # Walking round a building (D720, Close): both arrive within 0.3 s of each other, at 7.3 to 7.6 s for 2000 (straight takes 7.4 s), as MirrorImaged sets out round the building at once and walks taut corners. The game bows out wider, 120 to 256 from the centre where MirrorImaged keeps 150 to 220, and a building is a circle of its collision size plus 8 here, 184 to 208 across for the town hall and necropolis where the game's footprints are 56 to 256 wide by type. The game steers off more for the small buildings (a house: 56 away where MirrorImaged gives 88 and 96).
 - htow offset 0: deviation 192, arrived {t} s, nearest 184, collision 176
 + htow offset 0: deviation 192, arrived 7.55 s, nearest 192, collision 176

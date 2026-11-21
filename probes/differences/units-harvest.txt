@@ -1,3 +1,6 @@
+# Where MirrorImaged differs from the game's lines in expected/units-harvest.txt, in order, with why (decisions D121): a line
+# starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
+
 # Harvesting (D643): gold matches the game's to a load in 4 s, five peasants or more taking 10 a second; the acolytes' first loads come together here and spread out in the game. A worker in a mine isn't hidden here (Close). A rallied worker's first order is the game's unnamed 851970, here harvest at once. The cutters' lumber comes a load sooner here: the walk back and the second cutter at the same tree aren't the game's.
 - trained order 851970 at mine false
 + trained order 852018 at mine true

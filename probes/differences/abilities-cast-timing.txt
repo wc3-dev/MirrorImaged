@@ -1,3 +1,6 @@
+# Where MirrorImaged differs from the game's lines in expected/abilities-cast-timing.txt, in order, with why (decisions D121): a line
+# starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
+
 # The cast's events by cast point, backswing and casting time, Storm Bolt's missile, Mirror Image's summon events and a paused unit's buff (decisions D450, D451, D453, D456, D457; 2026-11-19). What differs: a unit turns at once here, where the game's Archmage took 0.21 s to turn round before its cast began and so walked 134 of 150 in the half second after a move order; the game gives Storm Bolt's target a third hit of 0, 5.02 s after the first two, which is not modelled; and its missile reached the foe 600 away 0.02 s early.
 - silence, move 1 s after the order: move t, 0.5 s later it is 134 from its place
 + silence, move 1 s after the order: move t, 0.5 s later it is 150 from its place

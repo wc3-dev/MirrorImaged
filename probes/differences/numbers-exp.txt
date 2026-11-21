@@ -1,5 +1,6 @@
 # Where MirrorImaged differs from the game's lines in expected/numbers-exp.txt, in order, with why (decisions D121): a line
 # starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
+
 # exp is the float nearest e^(1/4) to the whole quarters, times a polynomial of the rest r below a quarter, 1 + r + c2 r^2 + ... + c6 r^6
 # with c2 to c6 fitted (D761, Close): 130,700 of the 131,072 values at every 2^-19 from 0 to a quarter are the game's, the others a float
 # step off, and whole x and k/16 are the game's. The game's own constants and order of operations are not found; a line of a scan holds

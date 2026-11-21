@@ -1,3 +1,6 @@
+# Where MirrorImaged differs from the game's lines in expected/abilities-repair.txt, in order, with why (decisions D121): a line
+# starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
+
 # Repair (D387): the rate of life and the price match the game (33.3 life a 2 seconds, 45 gold and 17 lumber for 1200 of 1500 life, the price taken a point ahead); the game starts its repair about 0.4 s later (the peasant's walk and turn), so each line of the run is a few life behind the model's.
 - t=2 life=326 gold=1999 lumber=1999 order=852024
 + t=2 life=333 gold=1998 lumber=1999 order=852024

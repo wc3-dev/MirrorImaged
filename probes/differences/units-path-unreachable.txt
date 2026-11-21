@@ -1,3 +1,6 @@
+# Where MirrorImaged differs from the game's lines in expected/units-path-unreachable.txt, in order, with why (decisions D121): a line
+# starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
+
 # A place that can't be reached (D722, Close): the second footman goes to the ground nearest the place and stops, at (16, 312) where the game's stops at (8, 304). The first walks straight at the block as the game's does (to (-200, -496) at 3 s), then, unlike the game's, which stops there at 3.25 s, searches and goes on to the block's nearest edge (8, -376), stopping a few seconds later.
 -  2 s: a -472 -496 order 851986, b -480 384 order 851986
 +  2 s: a -472 -496 order 851986, b -488 376 order 851986

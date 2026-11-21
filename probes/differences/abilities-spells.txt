@@ -1,3 +1,6 @@
+# Where MirrorImaged differs from the game's lines in expected/abilities-spells.txt, in order, with why (decisions D121): a line
+# starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
+
 # The seven spells of probe abilities-spells (decisions D408 to D415), from the standard data, with the game's own numbers (2026-11-18). The cast's timing, a hero's attack rate, a missile's flight, the mana that comes back, a paused unit's buff and Mirror Image's second summon event are modelled since 11-19 (D450 to D458; probes abilities-cast-timing, units-attack-timing, heroes-mana-regeneration). What is left: the game's hero got 23.7 mana back in 25 s where 0.95 a second gives 23.75, as its regeneration falls about 0.013% short of the rate (probe heroes-mana-regeneration).
 - control: mana back in 25 s 23.7; foes not where they were made 0
 + control: mana back in 25 s 23.8; foes not where they were made 0
