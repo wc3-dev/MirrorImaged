@@ -123,21 +123,15 @@ public sealed class MathNativesTests : IDisposable
     [InlineData("Pow", 0x40000000u, 0x3f000000u, 0x3fb504f3u)]
     [InlineData("Pow", 0x41c80000u, 0x3f000000u, 0x409ffff6u)]
     [InlineData("Pow", 0x3f000000u, 0x3f000000u, 0x3f3504f5u)]
+    [InlineData("Atan", 0x3f800000u, 0u, 0x3f490fdcu)]
+    [InlineData("Atan", 0xbf800000u, 0u, 0xbf490fdcu)]
+    [InlineData("Atan", 0x3f000000u, 0u, 0x3eed6339u)]
+    [InlineData("Atan2", 0x3f800000u, 0x3f800000u, 0x3f490fdcu)]
+    [InlineData("Atan2", 0xbf800000u, 0xbf800000u, 0xc016cbe4u)]
+    [InlineData("Atan2", 0x40400000u, 0x40800000u, 0x3f24bc7eu)]
     public void The_maths_natives_give_the_games_numbers(string native, uint x, uint y, uint game) =>
         Assert.Equal(game, Call(native, x, y));
 
-    [Theory]
-    [InlineData("Atan", 0x3f800000u, 0u, 0x3f490fdcu, 0x3f490fdau)]
-    [InlineData("Atan", 0xbf800000u, 0u, 0xbf490fdcu, 0xbf490fdau)]
-    [InlineData("Atan", 0x3f000000u, 0u, 0x3eed6339u, 0x3eed6338u)]
-    [InlineData("Atan2", 0x3f800000u, 0x3f800000u, 0x3f490fdcu, 0x3f490fdau)]
-    [InlineData("Atan2", 0xbf800000u, 0xbf800000u, 0xc016cbe4u, 0xc016cbe3u)]
-    [InlineData("Atan2", 0x40400000u, 0x40800000u, 0x3f24bc7eu, 0x3f24bc7du)]
-    public void The_maths_natives_are_off_the_game_where_the_math_model_is(string native, uint x, uint y, uint game, uint model)
-    {
-        Assert.NotEqual(game, model);
-        Assert.Equal(model, Call(native, x, y));
-    }
 
     // In the game the natives gave math.*'s numbers but for SquareRoot below 0.001, Asin and Acos past 1 and Atan2(0, 0)
     [Fact]
