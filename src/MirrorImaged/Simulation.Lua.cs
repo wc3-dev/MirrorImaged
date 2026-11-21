@@ -16,11 +16,13 @@ public sealed partial class Simulation
         if (native.GetCustomAttribute<NativeAttribute>()!.Level == Level.Missing || _treatAsMissing.Contains(native.Name))
             return _ => throw new MissingNativeException(native.Name);
         var parameters = native.GetParameters();
+        var recorded = native.GetCustomAttribute<NativeAttribute>()!.Level == Level.Recorded;
         return args =>
         {
             var values = new object?[parameters.Length];
             for (int i = 0; i < values.Length; i++)
                 values[i] = ToCSharp(i < args.Length ? args[i] : None, parameters[i].ParameterType, i + 1, native.Name);
+            if (recorded) _recordedCalls.Add(new(_game.Step, native.Name, values));
             var result = native.Invoke(_natives, BindingFlags.DoNotWrapExceptions, null, values, null);
             return native.ReturnType == typeof(void) ? [] : [result is handle h ? ToLua(h, native.ReturnType) : result];
         };

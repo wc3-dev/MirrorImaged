@@ -11,7 +11,7 @@ public sealed record LuaTestResult(string File, string Name, bool Passed, string
 /// <summary>
 /// Tests written in Lua: a file calls <c>test(name, function)</c>, and inside a test <c>mirror.load(map, {seed = n, difficulty = "easy", graphics = "classic"})</c> (the difficulty of the computers: easy, normal or insane; the player's graphics mode: reforged or classic) gives a simulation
 /// with the calls of the C# API (<c>advance</c>, <c>units</c>, <c>order</c>, <c>select</c>, <c>key</c>, <c>mouse</c>, <c>leave</c>, <c>say</c>,
-/// <c>log</c>, <c>hash</c>, <c>wait_until</c>, <c>recording</c>; a map path that is not rooted is read from the test file's folder), and <c>assert_eq</c>, <c>assert_true</c>, <c>assert_close</c> and
+/// <c>log</c>, <c>hash</c>, <c>wait_until</c>, <c>recording</c>, <c>recorded</c>; a map path that is not rooted is read from the test file's folder), and <c>assert_eq</c>, <c>assert_true</c>, <c>assert_close</c> and
 /// <c>assert_contains</c> check results. The test files run in a Lua state of their own, apart from the games they load.
 /// </summary>
 public sealed class LuaTestHost : IDisposable
@@ -39,6 +39,12 @@ public sealed class LuaTestHost : IDisposable
         _lua.Register("__stopped", args => [Sim(args).Stopped?.Message]);
         _lua.Register("__log", args => [string.Join('\n', Sim(args).Log)]);
         _lua.Register("__recording", args => [Sim(args).Recording.ToJson()]);
+        _lua.Register("__recorded_count", args => [Sim(args).RecordedCalls.Count]);
+        _lua.Register("__recorded", args =>
+        {
+            var call = Sim(args).RecordedCalls[Int(args, 1) - 1];
+            return [(double)call.Step, call.Native, .. call.Arguments.Select(a => a switch { Natives.handle h => h.Id, Delegate => "function", _ => a })];
+        });
         _lua.Register("__units", args => [string.Join('\n', Sim(args).Units(args[1] is null ? null : Int(args, 1)).Select(Row))]);
         _lua.Register("__unit", args => [Sim(args).Unit(Int(args, 1)) is { } unit ? Row(unit) : null]);
         _lua.Register("__order", args => With(args, simulation =>
@@ -172,6 +178,14 @@ public sealed class LuaTestHost : IDisposable
           function sim:stopped() return __stopped(h) end
           function sim:log() return lines(__log(h)) end
           function sim:recording() return __recording(h) end
+          function sim:recorded()
+            local list = {}
+            for i = 1, __recorded_count(h) do
+              local call = table.pack(__recorded(h, i))
+              list[i] = {step = call[1], native = call[2], args = table.pack(table.unpack(call, 3, call.n))}
+            end
+            return list
+          end
           function sim:units(player)
             local list = {}
             for _, row in ipairs(lines(__units(h, player))) do list[#list + 1] = fields(row) end

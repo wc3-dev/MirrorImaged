@@ -312,6 +312,8 @@ public sealed partial class GameNatives
         var (dx, dy) = (from.Item1 - mine.X, from.Item2 - mine.Y);
         var length = MathF.Max(MathF.Sqrt(dx * dx + dy * dy), 1);
         var away = mine.Type.Real(Collision) + type.Real(Collision) + 60;
+        // On out from the mine until the worker can stand there (D821): Korea's haunted mine site touched the mine's footprint, and no way ends on it
+        for (var more = 0; more < 128 && Blocked(peon, mine.X + dx / length * away, mine.Y + dy / length * away); more += 16) away += 16;
         return CanPay(Ai, type.Integer(Cost), type.Integer(LumberCost)) && IssueBuildOrderById(peon, id, mine.X + dx / length * away, mine.Y + dy / length * away);
     }
 

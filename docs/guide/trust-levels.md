@@ -6,7 +6,7 @@ Every native in the game's `common.j` and `common.ai` has a trust level, and non
 | ----- | ------- |
 | Exact | Matches the game on every case a probe measured |
 | Close | A documented model, not fully measured |
-| Recorded | Changes nothing a map can read back; the call is logged |
+| Recorded | Changes nothing a map can read back; the call is kept in `RecordedCalls` (`sim:recorded()` in Lua), apart from the log |
 | Missing | Stops the run with the native's name |
 
 No native of `common.j` and `common.ai` is Missing now, but the level stays: a native a later game patch adds is Missing until it is written, and `SimulationOptions.TreatAsMissing` (or the `MIRROR_MISSING` environment variable, names separated by commas) runs any native as Missing to see how a map copes. A Missing native stops the run: `Advance` throws a `LuaException` and `Simulation.Stopped` says which native it was, so a test never passes by
