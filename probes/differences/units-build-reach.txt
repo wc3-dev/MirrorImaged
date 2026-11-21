@@ -1,3 +1,6 @@
+# Where MirrorImaged differs from the game's lines in expected/units-build-reach.txt, in order, with why (decisions D121): a line
+# starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
+
 # Building (D353, D720, Close): a building starts with its worker 58 from the site here (60 reach, 9.5 a tick), 59 to 64 in the game, and the game puts the site on its grid (-1000 to -960); a building here needs no blight, and the necropolis the probe makes gave the crypt's site none in the game.
 - usep order false
 + usep order true

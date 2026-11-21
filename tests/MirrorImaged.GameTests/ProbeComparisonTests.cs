@@ -100,6 +100,30 @@ public sealed class ProbeComparisonTests : IDisposable
         Assert.Equal([new(2, "w {t} {w}", null), new(3, null, "w 1.5 true")], Compare(expected, "a", "b", "w 1.5 true"));
     }
 
+    // A differences line with no reason fails A2 and A6 (decisions D790).
+    [Fact]
+    public void Every_recorded_difference_has_a_reason()
+    {
+        var unreasoned = Directory.GetFiles(Path.Combine(AppContext.BaseDirectory, "probes", "differences"), "*.txt")
+            .SelectMany(file => ProbeComparison.Unreasoned(File.ReadAllLines(file)).Select(line => $"{Path.GetFileName(file)}:{line}"))
+            .ToList();
+
+        Assert.True(unreasoned.Count == 0,
+            "These lines of probes/differences record a difference with no note above it giving the reason (line 0: the file doesn't open with its note on the form):\n" +
+            string.Join('\n', unreasoned));
+    }
+
+    [Fact]
+    public void A_recorded_line_needs_a_note_after_the_opening_one_and_a_file_needs_the_opening_one()
+    {
+        string[] opening = ["# Where MirrorImaged differs from the game's lines", "# starting - is the game's", ""];
+
+        Assert.Empty(ProbeComparison.Unreasoned([.. opening, "# why", "- a", "+ b", "", "- c"]));
+        Assert.Equal([4, 5], ProbeComparison.Unreasoned([.. opening, "- a", "+ b", "# why", "- c"]));
+        Assert.Equal([3], ProbeComparison.Unreasoned(["# Where MirrorImaged differs", "", "- a"]));
+        Assert.Equal([0], ProbeComparison.Unreasoned(["# why", "- a"]));
+    }
+
     // Every expected and differences file belongs to a probe in probes/.
     [Fact]
     public void Every_record_has_its_probe()

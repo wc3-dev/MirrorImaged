@@ -1,5 +1,6 @@
 # Where MirrorImaged differs from the game's lines in expected/numbers-asin-3.txt, in order, with why (decisions D121): a line
 # starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
+
 # The table of D712 was fitted to these lines among others, so they differ only where one entry's last bits (below the float's 4 to 64 units) change a rounding: 74 of 571 lines.
 - asin f 4617 3de68508 129 128 129 129 129 129 129 128 129 129 129 129 129 128 129 129 129 129 128 129 129 129 126890 129 129 128 129 129 129 129 129 128 129 129 129 129 129 128 129 129 129 129 129 128 129 129 129 129 129 128 129 129 129 129 129 128
 + asin f 4617 3de68508 129 129 128 129 129 129 129 128 129 129 129 129 129 128 129 129 129 129 128 129 129 129 126890 129 129 128 129 129 129 129 129 128 129 129 129 129 129 128 129 129 129 129 129 128 129 129 129 129 129 128 129 129 129 129 129 128
