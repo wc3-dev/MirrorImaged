@@ -1,0 +1,36 @@
+# probes/items-abilities.lua on 3.0.1.24371, single player, 11-21 (L-mirror-trust-levels, D792 and D794): the game's lines, one run, on Reforged graphics
+# (hd=2); the items' abilities and the unit types are the same in both modes' data, and a classic run wasn't made, so one file serves both. An item nobody
+# carries holds no ability (BlzGetItemAbilityByIndex -1 to 4 and BlzGetItemAbility nil for eight items); a carried Potion of Healing's AIh1 is the carrier's own
+# ability handle (the same by index, by id and from BlzGetUnitAbility), a Gauntlets of Ogre Strength's AIs3 its only one, a dropped one holds none and gloves
+# not worn none. BlzItemAddAbility answered true for an ability the free item lacked (AHhb, and again), but BlzGetItemAbility didn't find it and the removal
+# answered false; for the dropped potion false for AIh1 it had, true for AIl1 and false for a removal of that and true for AIh1's. The equipment natives answered
+# false for every type 0 to 9 of a Paladin and a footman with and without AEqu and AIni, a nil unit and a nil type, and a Paladin wearing gloves.
+item abilities
+phea by index -1..4 nil,nil,nil,nil,nil,nil by id same 
+rst1 by index -1..4 nil,nil,nil,nil,nil,nil by id same 
+stwp by index -1..4 nil,nil,nil,nil,nil,nil by id same 
+wneg by index -1..4 nil,nil,nil,nil,nil,nil by id same 
+ratc by index -1..4 nil,nil,nil,nil,nil,nil by id same 
+ankh by index -1..4 nil,nil,nil,nil,nil,nil by id same 
+ssil by index -1..4 nil,nil,nil,nil,nil,nil by id same 
+wlsd by index -1..4 nil,nil,nil,nil,nil,nil by id same 
+phea handle nil same true id 0 other item true absent nil nil item nil
+phea fields cooldown 0.0 mana 0 levels 0 heal 0
+set false 0.0 other 0.0
+added true false index 1 0 twice true
+removed false nil handle 0
+removed item nil nil
+carried item abilities
+phea carried by index true AIh1 by id true same true unit's true same as unit's true
+rst1 carried by index true AIs3 second false
+phea dropped false false
+gloves by index false false
+item add false false true false remove false false true false
+equipment types
+paladin false,false,false,false,false,false,false,false,false,false | false,false,false,false,false,false,false,false,false,false
+paladin equip false,false,false,false,false,false,false,false,false,false | false,false,false,false,false,false,false,false,false,false
+paladin equip bag false,false,false,false,false,false,false,false,false,false | false,false,false,false,false,false,false,false,false,false
+footman false,false,false,false,false,false,false,false,false,false | false,false,false,false,false,false,false,false,false,false
+footman equip false,false,false,false,false,false,false,false,false,false | false,false,false,false,false,false,false,false,false,false
+nil false false
+paladin gloves on false,false,false,false,false,false,false,false,false,false | false,false,false,false,false,false,false,false,false,false

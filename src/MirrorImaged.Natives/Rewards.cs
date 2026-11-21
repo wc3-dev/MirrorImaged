@@ -16,6 +16,7 @@ public sealed partial class GameNatives
     void Reward(unit killer, unit victim)
     {
         if (killer.Owner == victim.Owner || !IsPlayerEnemy(killer.Owner, victim.Owner)) return;
+        ScoreKill(killer.Owner, victim);
         if (victim.Owner.States[GivesBounty] != 0)
         {
             var gold = victim.Type.Integer(BountyBase);
@@ -23,10 +24,15 @@ public sealed partial class GameNatives
             if (gold > 0) SetPlayerState(killer.Owner, Convert<playerstate>(Gold), killer.Owner.States[Gold] + gold);
         }
         var level = Math.Max(GetUnitLevel(victim), 1);
-        var xp = IsHero(victim.Type.Id) ? Listed("GrantHeroXP", level, 0) : Listed("GrantNormalXP", level, 0);
+        // A structure razed gave the hero score nothing (probe units-scores: 1120 before and after a barracks), so no experience
+        var xp = IsBuildingNow(victim) ? 0 : IsHero(victim.Type.Id) ? Listed("GrantHeroXP", level, 0) : Listed("GrantNormalXP", level, 0);
         if (xp <= 0) return;
         var range = Data.Constant("HeroExpRange", 1200);
         var heroes = _units.Values.Where(h => h.Owner == killer.Owner && IsHero(h.Type.Id) && !h.Dead && !h.Removed && Distance2(h.X - victim.X, h.Y - victim.Y) <= range * range).ToList();
-        foreach (var hero in heroes) AddHeroXP(hero, xp / heroes.Count, true);
+        foreach (var hero in heroes)
+        {
+            AddHeroXP(hero, xp / heroes.Count, true);
+            killer.Owner.HeroExperience += xp / heroes.Count;
+        }
     }
 }

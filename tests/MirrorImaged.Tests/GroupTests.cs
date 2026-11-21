@@ -352,4 +352,17 @@ public sealed class GroupTests : IDisposable
               pair(v, v, 0) .. pair(v, v, -1) .. pair(v, nil, 1000) .. pair(nil, v, 1000))
             """));
     }
+
+    // probe units-groups: GroupEnumUnitsOfType finds a type by its id as well as by its name
+    [Fact]
+    public void A_type_is_found_by_its_id()
+    {
+        Assert.Equal(["1,2\t"], Run("""
+            make(1, "hfoo", 0, 0) make(2, "hfoo", 100, 0) make(3, "hpea", 200, 0)
+            local g, none = CreateGroup(), CreateGroup()
+            GroupEnumUnitsOfType(g, "hfoo", nil)
+            GroupEnumUnitsOfType(none, "hfo", nil)
+            print(at(g), at(none))
+            """));
+    }
 }

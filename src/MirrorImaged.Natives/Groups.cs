@@ -181,13 +181,14 @@ public sealed partial class GameNatives
     }
 
     /// <summary>
-    /// Every player's units of the type named as UnitId names it, in any case ("footman", not "hfoo"), taken and
+    /// Every player's units of the type named as UnitId names it, in any case ("footman"), or by its id ("hfoo"), taken and
     /// ordered as GroupEnumUnitsOfPlayer takes them.
     /// </summary>
     [Native(Level.Exact, Fact = GroupsProbe)]
     public void GroupEnumUnitsOfType(group? whichGroup, string? unitname, boolexpr? filter)
     {
         var type = UnitId(unitname);
+        if (type == 0 && unitname is { Length: 4 }) type = Code(unitname);
         Enumerate(whichGroup, Newest(u => u.Type.Id == type), filter);
     }
 

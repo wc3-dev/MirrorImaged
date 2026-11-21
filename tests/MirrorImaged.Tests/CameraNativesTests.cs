@@ -480,4 +480,129 @@ public sealed class CameraNativesTests
 
         Assert.Equal((false, false), (_natives.IsFogEnabled(), _natives.IsFogMaskEnabled()));
     }
+
+    // cameras-noise: the shake is random within the magnitude on each axis (about a quarter of it on average and most of it at most, over 40 reads 0.05 s apart),
+    // the eye's alone for a source noise, the target's and the eye's with it for a target noise, none for a velocity or magnitude of 0, a negative magnitude as its
+    // size, the height alone for vertOnly, still again once set to 0; it has a random of its own
+    (double[] Largest, double[] Mean) Shaken(Action set, Func<(float, float, float)> read, (float, float, float) still)
+    {
+        set();
+        var (largest, mean) = (new double[3], new double[3]);
+        for (var i = 0; i < 40; i++)
+        {
+            Advance(0.05);
+            var now = read();
+            double[] off = [now.Item1 - still.Item1, now.Item2 - still.Item2, now.Item3 - still.Item3];
+            for (var axis = 0; axis < 3; axis++)
+            {
+                largest[axis] = Math.Max(largest[axis], Math.Abs(off[axis]));
+                mean[axis] += Math.Abs(off[axis]) / 40;
+            }
+        }
+        return (largest, mean);
+    }
+
+    (float, float, float) TargetNow => (_natives.GetCameraTargetPositionX(), _natives.GetCameraTargetPositionY(), _natives.GetCameraTargetPositionZ());
+
+    [Theory]
+    [InlineData(10)]
+    [InlineData(50)]
+    [InlineData(-200)]
+    public void A_target_noise_shakes_the_target_and_the_eye_by_the_same_amounts_within_the_magnitude(float magnitude)
+    {
+        _natives.SetCameraPosition(0, 0);
+        Advance(0.5);
+        var (stillTarget, stillEye) = (TargetNow, Eye);
+
+        var (largest, mean) = Shaken(() => _natives.CameraSetTargetNoise(magnitude, 50), () => TargetNow, stillTarget);
+        var size = Math.Abs(magnitude);
+
+        for (var axis = 0; axis < 3; axis++)
+        {
+            Assert.InRange(largest[axis], 0.3 * size, size);
+            Assert.InRange(mean[axis], 0.1 * size, 0.45 * size);
+        }
+        Assert.Equal(TargetNow.Item2 - stillTarget.Item2, Eye.Item2 - stillEye.Item2, 0.01);
+        Assert.Equal(TargetNow.Item3 - stillTarget.Item3, Eye.Item3 - stillEye.Item3, 0.01);
+    }
+
+    [Fact]
+    public void A_source_noise_shakes_the_eye_alone_and_a_target_noise_with_it_adds()
+    {
+        _natives.SetCameraPosition(0, 0);
+        Advance(0.5);
+        var (stillTarget, stillEye) = (TargetNow, Eye);
+
+        var (largest, _) = Shaken(() => _natives.CameraSetSourceNoise(200, 50), () => Eye, stillEye);
+
+        Assert.Equal(stillTarget, TargetNow);
+        Assert.All(largest, one => Assert.InRange(one, 60, 200));
+        _natives.CameraSetSourceNoise(0, 0);
+        Advance(0.05);
+        Assert.Equal(stillEye, Eye);
+        var both = Shaken(() => { _natives.CameraSetSourceNoise(50, 50); _natives.CameraSetTargetNoise(50, 50); }, () => Eye, stillEye);
+        Assert.Contains(both.Largest, one => one > 50);
+    }
+
+    [Theory]
+    [InlineData(50, 0)]
+    [InlineData(0, 50)]
+    public void A_velocity_or_a_magnitude_of_0_shakes_nothing(float magnitude, float velocity)
+    {
+        _natives.SetCameraPosition(0, 0);
+        Advance(0.5);
+        var still = (TargetNow, Eye);
+
+        _natives.CameraSetTargetNoise(magnitude, velocity);
+        _natives.CameraSetSourceNoise(magnitude, velocity);
+        Advance(1);
+
+        Assert.Equal(still, (TargetNow, Eye));
+    }
+
+    [Fact]
+    public void A_vertical_noise_shakes_the_height_alone_and_the_first_read_is_still()
+    {
+        _natives.SetCameraPosition(0, 0);
+        Advance(0.5);
+        var still = TargetNow;
+
+        _natives.CameraSetTargetNoiseEx(50, 50, true);
+        Assert.Equal(still, TargetNow);
+        var (largest, _) = Shaken(() => { }, () => TargetNow, still);
+
+        Assert.Equal([0, 0], [largest[0], largest[1]]);
+        Assert.InRange(largest[2], 15, 50);
+        _natives.CameraSetTargetNoiseEx(50, 50, false);
+        Assert.Equal([true], [Shaken(() => { }, () => TargetNow, still).Largest[0] > 0]);
+    }
+
+    [Fact]
+    public void The_shake_has_a_random_of_its_own_and_the_same_run_shakes_the_same()
+    {
+        double[] Play(bool noise, out int[] drawn)
+        {
+            var game = new Game(7);
+            var natives = new GameNatives(game);
+            natives.SetCameraBounds(-2000, -2000, 2000, 2000, -2000, 2000, 2000, -2000);
+            if (noise) natives.CameraSetTargetNoise(50, 50);
+            var seen = new List<double>();
+            var numbers = new List<int>();
+            for (var i = 0; i < 20; i++)
+            {
+                game.Advance(Game.Steps(0.05));
+                seen.Add(natives.GetCameraTargetPositionZ());
+                numbers.Add(natives.GetRandomInt(0, 1000000));
+            }
+            drawn = [.. numbers];
+            return [.. seen];
+        }
+
+        var first = Play(true, out var withNoise);
+        var second = Play(true, out _);
+        Play(false, out var without);
+
+        Assert.Equal(first, second);
+        Assert.Equal(without, withNoise);
+    }
 }

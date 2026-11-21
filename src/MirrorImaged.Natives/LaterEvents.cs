@@ -9,10 +9,6 @@ public sealed partial class GameNatives
     // ---- Spells and the orders that come with them (wave 4)
 
 
-    /// <summary>Using an item on a place or target needs its ability's cast (wave 4): refused.</summary>
-    [Native(Level.Close)] public bool UnitUseItemPoint(unit? whichUnit, item? whichItem, float x, float y) => false;
-    [Native(Level.Close)] public bool UnitUseItemTarget(unit? whichUnit, item? whichItem, widget? target) => false;
-
     [Native(Level.Close)]
     public @event? TriggerRegisterCommandEvent(trigger? whichTrigger, int whichAbility, string? order) => whichTrigger is null ? null : Register(whichTrigger);
 
@@ -21,8 +17,10 @@ public sealed partial class GameNatives
 
     // ---- Combat, buildings, training, shops and summons (wave 3)
 
-    [Native(Level.Close)] public item? BlzGetAbsorbingItem() => null;
-    [Native(Level.Close)] public bool BlzGetManipulatedItemWasAbsorbed() => false;
+    const string NoAbsorbing = "No item is absorbed here, as none was in the game (facts, Items: stacking was never seen, and what makes items stack isn't known), so every read is outside one: nil and false (probe natives-test-run)";
+
+    [Native(Level.Close, Fact = TestRunProbe, Reason = NoAbsorbing)] public item? BlzGetAbsorbingItem() => null;
+    [Native(Level.Close, Fact = TestRunProbe, Reason = NoAbsorbing)] public bool BlzGetManipulatedItemWasAbsorbed() => false;
 
     // Close: a unit whose auras are off gives none; the buffs it gave end with their own time (probe units-resets). The flag that sets what the
     // aura's buff shows to the player is drawn only.
@@ -32,8 +30,8 @@ public sealed partial class GameNatives
         if (whichUnit is not null) whichUnit.AurasOff = !enable;
     }
 
-    /// <summary>No run fires the victory event with a winner (left for wave 6): nil.</summary>
-    [Native(Level.Close)] public player? GetWinningPlayer() => null;
+    [Native(Level.Close, Fact = TestRunProbe, Reason = "EVENT_GAME_VICTORY never fired in the game (probe events: RemovePlayer's victory, defeat and tie of a computer and of the user), so every read is outside one: nil")]
+    public player? GetWinningPlayer() => null;
 
     // ---- Chat, keys, the mouse and trackables (wave 6)
 

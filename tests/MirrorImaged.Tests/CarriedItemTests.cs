@@ -325,4 +325,24 @@ public sealed class CarriedItemTests : IDisposable
             "flushed false nil",
         ], Printed(simulation));
     }
+
+    // probe items-abilities: the abilities an item holds are the ones it puts on its carrier, the unit's own handles, by index and by id, and an item
+    // that isn't carried (or one that is dropped) holds none
+    [Fact]
+    public void A_carried_items_abilities_are_the_ones_it_puts_on_its_carrier_and_a_free_item_holds_none()
+    {
+        using var simulation = Run("""
+            local h = make("Hpal")
+            local i = CreateItem(FourCC("phea"), 500, 500)
+            print(BlzGetItemAbilityByIndex(i, 0), BlzGetItemAbility(i, FourCC("AIh1")))
+            UnitAddItem(h, i)
+            local a = BlzGetItemAbilityByIndex(i, 0)
+            print(BlzGetAbilityId(a) == FourCC("AIh1"), BlzGetItemAbility(i, FourCC("AIh1")) == a, BlzGetUnitAbility(h, FourCC("AIh1")) == a,
+                BlzGetItemAbilityByIndex(i, 1), BlzGetItemAbilityByIndex(i, -1), BlzGetItemAbility(i, FourCC("AIs3")), BlzGetItemAbility(nil, FourCC("AIh1")))
+            UnitRemoveItem(h, i)
+            print(BlzGetItemAbilityByIndex(i, 0), BlzGetItemAbility(i, FourCC("AIh1")))
+            """);
+
+        Assert.Equal(["nil nil", "true true true nil nil nil nil", "nil nil"], Printed(simulation));
+    }
 }

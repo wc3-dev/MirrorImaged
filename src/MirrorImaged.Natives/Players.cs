@@ -121,17 +121,21 @@ public sealed partial class GameNatives
     public int GetPlayerId(player? whichPlayer) => whichPlayer?.Number ?? 0;
 
     // The slots common.j and blizzard.j name: users and computers 0 to 23, then neutral aggressive, victim, extra and
-    // passive. Only neutral passive's is measured.
-    [Native(Level.Close)]
+    // passive. The four were read on the probe map (probe natives-test-run, 24 24 25 26 27); the game gave 12 for GetBJMaxPlayers on a map whose
+    // info names editor version 6051 and 24 on one naming 6060 (facts, Version and launching), where the neutral slots of the old maps weren't
+    // read, so a map of an older editor reads 24 and these slots here.
+    const string SlotsReason = "The slots of a map built by editor version 6060 or later, as the probe map's; the game gave 12 for GetBJMaxPlayers on a map naming 6051 (where the neutral slots weren't read), and MirrorImaged answers these for every map (D791)";
+
+    [Native(Level.Close, Fact = TestRunProbe, Reason = SlotsReason)]
     public int GetBJMaxPlayers() => 24;
 
-    [Native(Level.Close)]
+    [Native(Level.Close, Fact = TestRunProbe, Reason = SlotsReason)]
     public int GetPlayerNeutralAggressive() => 24;
 
-    [Native(Level.Close)]
+    [Native(Level.Close, Fact = TestRunProbe, Reason = SlotsReason)]
     public int GetBJPlayerNeutralVictim() => 25;
 
-    [Native(Level.Close)]
+    [Native(Level.Close, Fact = TestRunProbe, Reason = SlotsReason)]
     public int GetBJPlayerNeutralExtra() => 26;
 
     [Native(Level.Exact, Fact = "game-facts.md, Orders and events: a new item belongs to neutral passive (slot 27) (10-21)")]

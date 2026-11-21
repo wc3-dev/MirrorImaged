@@ -1,10 +1,8 @@
 # Where MirrorImaged differs from the game's lines in expected/units-more.txt, in order, with why (decisions D121): a
 # line starting - is the game's, + MirrorImaged's. A note starts "# ".
 
-# The game rescued the footman 0.5 s after a unit of the player it was rescuable by was made 100 away; here no unit is
-# rescued, as that needs the units in range (W2-6), so the 1 s line comes in another place (D314, Close).
-- rescued 19 v by 0 owner 27 player 27 1.90
-- rescued 63 v by 0 owner 27 player 27 1.90
+# The rescue of the footman 0.5 s after a unit of the player it was rescuable by was made 100 away is modelled now (D794), and its events match; the 1 s line
+# still comes in another place in the same instant (D314, Close).
 - rescue 1s 27 27 27
 + rescue 1s 27 27 27
 

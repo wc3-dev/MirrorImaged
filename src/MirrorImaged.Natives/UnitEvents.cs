@@ -178,6 +178,8 @@ public sealed partial class GameNatives
     // filter passes; GetTriggerPlayer is the owner, but in the widget event
     void FireUnit(Happening happening, int unitKind, int playerKind, player? routedTo = null)
     {
+        if (unitKind == UnitTrainFinish && happening.Other is { } trained) ScoreMade(trained);
+        else if (unitKind == UnitConstructFinish) ScoreMade(happening.Unit);
         var (u, owner) = (happening.Unit, routedTo ?? happening.Unit.Owner);
         var (own, players) = (_widgetEvents.GetValueOrDefault(u)?.ToArray() ?? [], _playerUnitEvents.GetValueOrDefault(owner)?.ToArray() ?? []);
         if (unitKind == UnitDeath)

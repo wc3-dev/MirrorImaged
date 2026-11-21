@@ -1,5 +1,6 @@
 # Where MirrorImaged differs from the game's lines in expected/numbers-asin.txt, in order, with why (decisions D121): a line
 # starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
+
 # asin and acos from 0 to 1 less 2^-13 (acos 2^-10) are the table of D712 (Close): the game's is a table of 1025 in 2^-29 radians, the line between two entries lo + floor((D + 1/2) f + 1/2), acos from the top. Left: asin within 2^-13 of 1 and acos within 2^-10 (the curve less a step of x over the root, not fitted, D484) and acos in the middle, which is one float step high at 99 of 6,140 inputs (its own table is not fitted).
 - asin 0 4035 3fb2f225 11817 12215 12215 12214 12215 12657 12656 12656 12657 13150 13150 13150 13150 13707 13707 13706 13707 14342 14342 14342 14342 15076 15075 15075 15075 15935 15935 15934 15935 16962 16962 16962 16962 18218 18219 18219 18219 19353
 + asin 0 4035 3fb2f225 11817 12215 12214 12215 12215 12657 12656 12656 12657 13150 13150 13150 13150 13707 13707 13706 13707 14342 14342 14342 14342 15076 15075 15075 15075 15935 15935 15934 15935 16962 16962 16962 16961 18219 18219 18219 18219 19805

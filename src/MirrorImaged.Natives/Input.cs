@@ -27,7 +27,8 @@ public sealed partial class GameNatives
     [Native(Level.Close)] public oskeytype? BlzGetTriggerPlayerKey() => _keyNow?.Key;
     [Native(Level.Close)] public int BlzGetTriggerPlayerMetaKey() => _keyNow?.Meta ?? 0;
     [Native(Level.Close)] public bool BlzIsKeyPressed(oskeytype? key) => key is not null && _local is not null && _keysDown.Contains((_local, key.Id));
-    [Native(Level.Close)] public bool BlzIsMetaKeyPressed(int metakey) => false;
+    [Native(Level.Close, Fact = TestRunProbe, Reason = "No key is held in a test run: the game answered false for -1 to 9. A scripted press of a modifier key isn't read as a meta key here, as the bits' own meaning isn't measured")]
+    public bool BlzIsMetaKeyPressed(int metakey) => false;
     [Native(Level.Close)] public bool BlzIsMouseButtonPressed(mousebuttontype? mouseButtonType) => mouseButtonType is not null && _local is not null && _buttonsDown.Contains((_local, mouseButtonType.Id));
     [Native(Level.Close)] public mousebuttontype? BlzGetTriggerPlayerMouseButton() => _mouseNow is { } now ? Convert<mousebuttontype>(now.Button) : null;
     [Native(Level.Close)] public float BlzGetTriggerPlayerMouseX() => _mouseNow?.X ?? 0;

@@ -1,0 +1,35 @@
+# probes/units-random-creeps.lua on 3.0.1.24371, single player, 11-21 (L-mirror-trust-levels, D794): the game's lines, one run, on Reforged
+# graphics (hd=2), the probe map's tileset Lordaeron Summer; the units' tilesets, levels and flags don't differ between the graphics
+# modes, and a classic run wasn't made, so one file serves both. 600 draws of each: the levels' types and the neutral buildings'.
+creep -2 1
+creep -2 0
+creep -1 33
+creep -1 nfsh nfsp nftb nftk nftr nftt nggd nggg nggm nggr nglm ngna ngnb ngno ngns ngnv ngnw ngos ngow ngrk ngst nmrl nmrm nmrr nogl nogm nogr nomg nrdk nrdr nrwm nspb nspg
+creep 0 1
+creep 0 nglm
+creep 1 5
+creep 1 ngna ngno nmrl nspb nspg
+creep 2 4
+creep 2 nfsp nftr ngrk nmrr
+creep 3 7
+creep 3 nftt ngnb ngns ngnw nmrm nogr nrdk
+creep 4 2
+creep 4 nfsh nftb
+creep 5 3
+creep 5 ngnv nogm nomg
+creep 6 5
+creep 6 nftk nggd ngow ngst nrdr
+creep 7 1
+creep 7 nogl
+creep 8 1
+creep 8 0
+creep 9 3
+creep 9 nggg nggm nggr
+creep 10 1
+creep 10 nrwm
+creep 11 1
+creep 11 ngos
+creep 12 1
+creep 12 0
+building 9
+building ndrr nfoh ngad ngme nmer nmoo nmrk nshp ntav

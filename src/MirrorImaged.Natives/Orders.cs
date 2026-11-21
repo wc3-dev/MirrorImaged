@@ -40,6 +40,7 @@ public sealed partial class GameNatives
         }
         whichUnit.Given++;
         BreakCast(whichUnit);
+        (whichUnit.UsedItem, _itemToUse) = (_itemToUse, null);
         whichUnit.Casting = spell;
         EndChannel(whichUnit, false);
         if (CargoOrder(whichUnit, order, x, y, target, out var carried)) return carried;

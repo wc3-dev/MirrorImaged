@@ -1,5 +1,6 @@
 # Where MirrorImaged differs from the game's lines in expected/numbers-fine-2.txt, in order, with why (decisions D121): a line
 # starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
+
 # atan is the double model's, a float step or two off (D32, D152, Close; D762, not fitted): the game's is x (1 - 2^-20) near 0, then a
 # smooth function with a few float steps of noise, from 0.4143 up pi/4 plus a polynomial of (x - 1) / (x + 1) (a fit reaches 60% of the
 # 76,768 values measured from 0.4143 to 1, not exact).

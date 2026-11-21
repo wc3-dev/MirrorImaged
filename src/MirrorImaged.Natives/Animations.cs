@@ -12,6 +12,15 @@ public sealed partial class GameNatives
 
     readonly Dictionary<string, IReadOnlyList<(string Name, double Seconds)>> _sequences = [];
 
+    // The model file in the install, as the game's graphics read it: the classic one, or in Reforged the Definitive Edition's, else the high-definition
+    // one's, else the classic (D687); null for a file that isn't there or isn't a model
+    byte[]? InstalledModel(string file)
+    {
+        string[] layers = Data.Graphics == GraphicsMode.Classic ? [""] : ["_DE.w3mod:", "_HD.w3mod:", ""];
+        return layers.Select(layer => Data.InstallFile("War3.w3mod:" + layer + file)).FirstOrDefault(found => found is not null) is { Length: > 8 } bytes
+            && Encoding.ASCII.GetString(bytes, 0, 4) == "MDLX" ? bytes : null;
+    }
+
     IReadOnlyList<(string Name, double Seconds)> Sequences(unit u)
     {
         var path = u.Type.Text(ModelFile);
@@ -20,8 +29,7 @@ public sealed partial class GameNatives
         var key = Data.Graphics + file;
         if (_sequences.TryGetValue(key, out var known)) return known;
         var list = new List<(string, double)>();
-        string[] layers = Data.Graphics == GraphicsMode.Classic ? [""] : ["_DE.w3mod:", "_HD.w3mod:", ""];
-        if (layers.Select(layer => Data.InstallFile("War3.w3mod:" + layer + file)).FirstOrDefault(found => found is not null) is { Length: > 8 } bytes &&Encoding.ASCII.GetString(bytes, 0, 4) == "MDLX")
+        if (InstalledModel(file) is { } bytes)
             for (var at = 4; at + 8 <= bytes.Length;)
             {
                 var (tag, size) = (Encoding.ASCII.GetString(bytes, at, 4), BitConverter.ToInt32(bytes, at + 4));

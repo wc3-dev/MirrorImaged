@@ -1,0 +1,9 @@
+# Where MirrorImaged differs from the game's lines in expected/units-suspend-decay.txt, in order, with why (decisions D121): a line starting - is the
+# game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
+
+# UnitSuspendDecay changes nothing here (D793, Close): the game kept two of the eight bodies past 100 s, the one suspended in the bone stage and the one
+# suspended before its death and let go at 20 s, and what makes those two differ from the six that went at 93.25 s isn't known.
++ before lifted at 20 gone 93.25
++ bone stage gone 93.25
+- bone stage still there false 0.0
+- before lifted at 20 still there false 0.0

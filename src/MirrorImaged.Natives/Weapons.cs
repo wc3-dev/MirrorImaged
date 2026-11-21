@@ -215,8 +215,8 @@ public sealed partial class GameNatives
     [Native(Level.Close)] public float BlzGetDoodadScaleY(int index) => Doodad(index)?.Scale.Y ?? 0;
     [Native(Level.Close)] public float BlzGetDoodadScaleZ(int index) => Doodad(index)?.Scale.Z ?? 0;
 
-    /// <summary>Whether the doodad turns on its model's axes, which the file's state bits would say; false until measured.</summary>
-    [Native(Level.Close)] public bool BlzGetDoodadIsUsingModelAxes(int index) => false;
+    [Native(Level.Close, Fact = TestRunProbe, Reason = "False until measured: the game answered false for a doodad that isn't there (probe natives-test-run, none on its map); a map placing doodads, written by War3Net with each state byte, closed the game, so a doodad's own answer, which the file's state bits would give, wasn't read")]
+    public bool BlzGetDoodadIsUsingModelAxes(int index) => false;
 
     [Native(Level.Recorded, Reason = "A doodad's animation is drawn; no native reads it back")]
     public void BlzSetSingleDoodadAnimation(int index, string? animName, bool animRandom) { }

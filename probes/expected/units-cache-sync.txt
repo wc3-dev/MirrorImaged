@@ -1,0 +1,7 @@
+# probes/units-cache-sync.lua on 3.0.1.24371, single player, 11-21 (L-mirror-trust-levels, D793): the game's lines, one run, on Reforged graphics
+# (hd=2); nothing it reads differs between the modes, so one file serves both. Syncing a stored integer, real, boolean, string and unit, a key never stored and a nil
+# cache changed nothing that was read at once, a step later or a second later.
+stored 42 1.5 true text true missing 0 true false
+synced 42 1.5 true text true missing 0 true false
+a step later 42 1.5 true text true missing 0 true false
+a second later 42 1.5 true text true missing 0 true false

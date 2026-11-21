@@ -1,0 +1,17 @@
+# probes/units-detected.lua on 3.0.1.24371, single player, 11-21 (L-mirror-trust-levels, D791): the game's lines, one run, on Reforged graphics
+# (hd=2); the answers read no data that differs between the graphics modes, and a classic run wasn't made, so one file serves both. A time is
+# a {t}. No detected event fired in 6.4 s with an enemy footman of permanent invisibility (Apiv) within the radius of a footman with the
+# detector's ability (Adts), and out of it; the player's and the unit's registrations never ran. (The game read IsUnitDetected false there, and
+# IsUnitInvisible true only when the detector was away, which this probe leaves out.)
+added invisibility true
+added detector true
+far {t} outside nil nil
+moved near {t}
+just near {t} outside nil nil
+near {t} outside nil nil
+moved away {t}
+away {t} outside nil nil
+moved near again {t}
+near again {t} outside nil nil
+detector removed {t}
+removed {t} outside nil nil
