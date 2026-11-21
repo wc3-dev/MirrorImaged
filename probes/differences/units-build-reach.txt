@@ -1,8 +1,8 @@
-# Building (D353, Close): a building starts with its worker 100 from the site here, 59 to 64 in the game, and the game puts the site on its grid (-1000 to -960); a building here needs no blight, and the necropolis the probe makes gave the crypt's site none in the game.
+# Building (D353, D720, Close): a building starts with its worker 58 from the site here (60 reach, 9.5 a tick), 59 to 64 in the game, and the game puts the site on its grid (-1000 to -960); a building here needs no blight, and the necropolis the probe makes gave the crypt's site none in the game.
 - usep order false
 + usep order true
 - hbar start {t} s distance 59 site -960 0 collision 144
-+ usep start 3.20 s distance 99 site 800 600 collision 144
++ usep start 3.40 s distance 58 site 800 600 collision 144
 - hhou start {t} s distance 64 site -960 -1472 collision 72
-+ hhou start 3.70 s distance 99 site -1000 -1500 collision 72
-+ hbar start 3.70 s distance 99 site -1000 0 collision 144
++ hhou start 3.90 s distance 58 site -1000 -1500 collision 72
++ hbar start 3.90 s distance 58 site -1000 0 collision 144

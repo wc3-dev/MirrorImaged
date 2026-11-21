@@ -55,6 +55,8 @@ public sealed partial class GameNatives
     // ---- Construction
 
     const float HauntReach = 300;
+    // How near its site a worker starts the building: 59 to 64 in the game (probe units-build-reach), as it walks on to just inside this (D720)
+    const float BuildReach = 60;
 
     // A worker at the site: the building made and paid for, the construct events fired; false when the player can't pay. A haunted mine is
     // made of the gold mine beside the site and keeps its gold, as BlightGoldMineForPlayerBJ makes one, and is not made where none stands.

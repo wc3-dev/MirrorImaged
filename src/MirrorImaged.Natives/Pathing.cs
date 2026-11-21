@@ -15,7 +15,7 @@ public partial class unit
 public sealed partial class GameNatives
 {
     const float SearchCell = 32;
-    const int PathNodes = 3000;
+    const int PathNodes = 40000;
     // The search leans toward the goal, finding a way sooner at the cost of a way a little longer than the shortest
     const float HeuristicWeight = 2f;
     bool _lastReached;
@@ -65,6 +65,15 @@ public sealed partial class GameNatives
         {
             u.Path.Clear();
             u.PathGoal = (x, y);
+            // The game's unit sets out round what stands between it and the place, not when it reaches it (probe units-path-footprint)
+            // (not toward a place that is itself blocked, as one past the world's edge: the walk goes straight on until it is stopped)
+                        if (Seconds >= u.ReplanAt && !Blocked(u, x, y) && LineBlocked(u, u.X, u.Y, x, y))
+            {
+                u.ReplanAt = Seconds + 0.5;
+                var ahead = FindPath(u, x, y);
+                if (!_lastReached) u.ReplanAt = Seconds + 2;
+                if (ahead is { Count: > 0 }) u.Path.AddRange(ahead);
+            }
         }
         var (tx, ty) = u.Path.Count > 0 ? u.Path[0] : (x, y);
         var (dx, dy) = (tx - u.X, ty - u.Y);
@@ -104,6 +113,17 @@ public sealed partial class GameNatives
         u.Path.Clear();
         u.Path.AddRange(way);
         return true;
+    }
+
+    // Whether something stops the unit on the straight line between two places, looked at every 8
+    bool LineBlocked(unit u, float x0, float y0, float x1, float y1)
+    {
+        var moveType = BlzGetUnitIntegerField(u, Convert<unitintegerfield>(MoveType));
+        var (dx, dy) = (x1 - x0, y1 - y0);
+        var n = (int)MathF.Ceiling(MathF.Sqrt(dx * dx + dy * dy) / 8);
+        for (var k = 1; k <= n; k++)
+            if (Blocked(u, moveType, x0 + dx * k / n, y0 + dy * k / n)) return true;
+        return false;
     }
 
     // A* from the unit to the place over the 32 cells: the cell centres to walk through, ending at the place itself when it can be reached, or
@@ -165,6 +185,16 @@ public sealed partial class GameNatives
             if (MathF.Abs((b.Item1 - a.Item1) * (c.Item2 - b.Item2) - (b.Item2 - a.Item2) * (c.Item1 - b.Item1)) < 1e-3f) way.RemoveAt(i);
         }
         if (best == goal) way[^1] = (goalX, goalY);
-        return way;
+        // Pull the way taut: from each place on to the farthest one in sight, so the walker cuts the corners the cells made
+        var taut = new List<(float, float)>();
+        var from0 = (u.X, u.Y);
+        for (var i = 0; i < way.Count;)
+        {
+            var j = way.Count - 1;
+            while (j > i && LineBlocked(u, from0.Item1, from0.Item2, way[j].Item1, way[j].Item2)) j--;
+            taut.Add(way[j]);
+            (from0, i) = (way[j], j + 1);
+        }
+        return taut;
     }
 }

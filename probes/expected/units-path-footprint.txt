@@ -1,0 +1,25 @@
+# probes/units-path-footprint.lua on 3.0.1.24371, single player, classic graphics, 11-20: the game's lines, one run. The seconds a walk takes move by a tick or two, so they are {t}.
+htow offset 0: deviation 192, arrived {t} s, nearest 184, collision 176
+htow offset 128: deviation 112, arrived {t} s, nearest 240, collision 176
+htow offset 192: deviation 32, arrived {t} s, nearest 224, collision 176
+htow offset 96: deviation 160, arrived {t} s, nearest 256, collision 176
+htow offset 160: deviation 80, arrived {t} s, nearest 240, collision 176
+htow offset 224: deviation 0, arrived {t} s, nearest 224, collision 176
+unpl offset 0: deviation 128, arrived {t} s, nearest 120, collision 196
+unpl offset 128: deviation 112, arrived {t} s, nearest 240, collision 196
+unpl offset 192: deviation 32, arrived {t} s, nearest 216, collision 196
+unpl offset 96: deviation 160, arrived {t} s, nearest 256, collision 196
+unpl offset 160: deviation 80, arrived {t} s, nearest 240, collision 196
+unpl offset 224: deviation 0, arrived {t} s, nearest 224, collision 196
+hbar offset 0: deviation 128, arrived {t} s, nearest 120, collision 144
+hbar offset 128: deviation 48, arrived {t} s, nearest 168, collision 144
+hbar offset 192: deviation 32, arrived {t} s, nearest 216, collision 144
+hbar offset 96: deviation 96, arrived {t} s, nearest 184, collision 144
+hbar offset 160: deviation 16, arrived {t} s, nearest 176, collision 144
+hbar offset 224: deviation 0, arrived {t} s, nearest 224, collision 144
+hhou offset 0: deviation 56, arrived {t} s, nearest 56, collision 72
+hhou offset 128: deviation 48, arrived {t} s, nearest 168, collision 72
+hhou offset 192: deviation 32, arrived {t} s, nearest 216, collision 72
+hhou offset 96: deviation 32, arrived {t} s, nearest 120, collision 72
+hhou offset 160: deviation 16, arrived {t} s, nearest 176, collision 72
+hhou offset 224: deviation 0, arrived {t} s, nearest 224, collision 72
