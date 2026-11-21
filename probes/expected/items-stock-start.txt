@@ -1,4 +1,4 @@
-# 3.0.1.24371, 11-21 (L-mirror-trust-levels-recorded), Reforged graphics (War3Preferences hd=2 when it ran; the brief said classic): the game's lines, one run. A buy is tried every 0.1 s, so the times are a tenth either way.
+# 3.0.1.24371, 11-21 (L-mirror-trust-levels-recorded), classic graphics (War3Preferences hd=0) and Reforged (hd=2), the game giving the same lines in both: the game's lines, one run. A buy is tried every 0.1 s, so the times are a tenth either way.
 ~ added at {t}: first bought {t} s after the add
 ~ added at {t} s: first bought {t} s after the add
 end

@@ -1,4 +1,4 @@
-# 3.0.1.24371, 11-21 (L-mirror-trust-levels-recorded), Reforged graphics (War3Preferences hd=2 when it ran; the brief said classic): the game's lines, one run; the same on both modes' reading. Every shop sold all four goods whatever its slots.
+# 3.0.1.24371, 11-21 (L-mirror-trust-levels-recorded), classic graphics (War3Preferences hd=0) and Reforged (hd=2), the game giving the same lines in both: the game's lines, one run; the same on both modes' reading. Every shop sold all four goods whatever its slots.
 default, 4 goods: t/p/ratc t/p/rat6 t/p/rde1 t/p/rlif
 slots 1 set after the shop is made: t/p/ratc t/p/rat6 t/p/rde1 t/p/rlif
 slots 2: t/p/ratc t/p/rat6 t/p/rde1 t/p/rlif
