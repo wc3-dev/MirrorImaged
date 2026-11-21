@@ -248,6 +248,26 @@ public sealed class AiTownTests : IDisposable
     }
 
     [Fact]
+    public void The_next_expansion_is_the_nearest_free_mine_the_towns_land_reaches()
+    {
+        // A ring of unwalkable cells round the near mine (1500, 0): the far one (-1800, 0) is the one to walk to
+        var lines = Run("""
+            for i = -12, 12 do
+                for _, j in ipairs({ -12, 12 }) do
+                    SetTerrainPathable(1500 + i * 32, j * 32, PATHING_TYPE_WALKABILITY, false)
+                    SetTerrainPathable(1500 + j * 32, i * 32, PATHING_TYPE_WALKABILITY, false)
+                end
+            end
+            CreateUnit(p, id("htow"), 0, 0, 0)
+            SetResourceAmount(CreateUnit(Player(PLAYER_NEUTRAL_PASSIVE), id("ngol"), 1500, 0, 0), 5000)
+            SetResourceAmount(CreateUnit(Player(PLAYER_NEUTRAL_PASSIVE), id("ngol"), -1800, 0, 0), 5000)
+            print(GetNextExpansion(), GetExpansionX(), GetExpansionY())
+            """, 1);
+
+        Assert.Equal(["0	-1800	0"], lines);
+    }
+
+    [Fact]
     public void A_haunted_mine_is_made_of_the_gold_mine_and_is_a_town_of_its_own()
     {
         var lines = Run("""

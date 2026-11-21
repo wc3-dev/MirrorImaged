@@ -203,9 +203,16 @@ public sealed partial class GameNatives
         return null;
     }
 
-    // A unit in the way: the walker steps aside, turning as little as it can to the side away from it, and waits when it can't
+    // A unit in the way: the walker steps aside, turning as little as it can to the side away from it, and waits when it can't; held up
+    // either way until a step toward the place is clear
     bool GoRound(unit u, unit other, float ux, float uy, float step, float x, float y)
     {
+        // A unit standing on the way's next point, which the search doesn't see: the walker goes on to the point after it
+        if (other.Order == 0 && u.Path.Count > 0 && Apart(other, u.Path[0].X, u.Path[0].Y) < Room(u, other))
+        {
+            u.Path.RemoveAt(0);
+            return true;
+        }
         // A unit standing on the place: the walker makes for the nearest place clear of it, and ends there
         if (other.Order == 0 && Apart(other, x, y) < Room(u, other))
         {
@@ -226,7 +233,7 @@ public sealed partial class GameNatives
                 if (Blocked(u, nx, ny) || UnitInTheWay(u, nx, ny) is not null) continue;
                 u.Facing.Go(MathF.Atan2(ny - u.Y, nx - u.X), Seconds, 0);
                 Move(u, nx, ny);
-                u.WaitingSince = -1;
+                if (u.WaitingSince < 0) u.WaitingSince = Seconds;
                 return true;
             }
         if (u.WaitingSince < 0) u.WaitingSince = Seconds;
