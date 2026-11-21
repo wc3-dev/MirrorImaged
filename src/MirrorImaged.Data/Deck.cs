@@ -10,7 +10,7 @@ namespace MirrorImaged.Data;
 public sealed class Deck
 {
     const float Cell = 32;
-    static readonly Lazy<Dictionary<int, Deck>> All = new(Read);
+    static readonly Lazy<Dictionary<int, Deck>> Reforged = new(() => Read("Decks.txt")), Classic = new(() => Read("DecksClassic.txt"));
 
     readonly float[] _values; // NaN where it has none
     readonly int _columns, _rows, _column, _row;
@@ -25,8 +25,8 @@ public sealed class Deck
     /// <summary>How far from the place its farthest point measured is, at scale 1: past it there is no deck.</summary>
     public float Reach { get; }
 
-    /// <summary>The deck of the type <paramref name="id"/> (as <c>FourCC</c> gives it); null for a type without one.</summary>
-    public static Deck? Of(int id) => All.Value.GetValueOrDefault(id);
+    /// <summary>The deck of the type <paramref name="id"/> (as <c>FourCC</c> gives it) in the graphics mode; null for a type without one.</summary>
+    public static Deck? Of(int id, GraphicsMode mode) => (mode == GraphicsMode.Classic ? Classic : Reforged).Value.GetValueOrDefault(id);
 
     /// <summary>
     /// Its height above the ground beneath, <paramref name="x"/> east and <paramref name="y"/> north of its place in its
@@ -49,9 +49,9 @@ public sealed class Deck
 
     // A block is "type variation cell columns rows originColumn originRow", then its rows from the south, each a value a
     // column from the west, "." where there is no deck.
-    static Dictionary<int, Deck> Read()
+    static Dictionary<int, Deck> Read(string resource)
     {
-        using var stream = typeof(Deck).Assembly.GetManifestResourceStream("Decks.txt")!;
+        using var stream = typeof(Deck).Assembly.GetManifestResourceStream(resource)!;
         var lines = new StreamReader(stream).ReadToEnd().Split('\n').Select(line => line.Trim()).Where(line => line.Length > 0 && line[0] != '#').ToList();
         var decks = new Dictionary<int, Deck>();
         for (var at = 0; at < lines.Count;)

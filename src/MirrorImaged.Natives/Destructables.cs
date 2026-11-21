@@ -1,5 +1,6 @@
 using System.Buffers.Binary;
 using MirrorImaged.Data;
+using MirrorImaged.World;
 
 namespace MirrorImaged.Natives;
 
@@ -11,7 +12,7 @@ public partial class destructable
     internal Deck? Deck;
     internal float Ground, Scale, Cos, Sin, Reach; // where its deck stands, how it is scaled and turned, how far it reaches
     internal bool WasDead; // dead or not before the step its life last changed in, which its deck shows until the next
-    internal long Turned = -1;
+    internal long Turned = -1, DeckFrom; // the step its deck first reads, as set when made
 
     internal bool Dead => Life <= 0;
 }
@@ -24,6 +25,8 @@ public sealed partial class GameNatives
 
     static readonly int DestructableLife = Code("bhps"), Occlusion = Code("boch"), FixedRotation = Code("bfxr"), PathTexture = Code("bptx"),
         DestructableName = Code("bnam");
+
+    const float ClassicDeckDelay = 0.1f; // classic graphics: a deck reads from 0.1 s after its destructable is made (D770)
 
     readonly List<destructable> _destructables = []; // in the order made
     readonly List<destructable> _decks = []; // those with a deck, which GetLocationZ reads
@@ -60,13 +63,14 @@ public sealed partial class GameNatives
         var d = Make(new destructable
         {
             Type = type, X = Snap(x, across), Y = Snap(y, up), MaxLife = type.Real(DestructableLife), Occluder = type.Real(Occlusion),
-            Deck = Deck.Of(type.Id) ?? Deck.Of(type.BaseId), Scale = scale, Cos = MathF.Cos(turn), Sin = MathF.Sin(turn),
+            Deck = Deck.Of(type.Id, Data.Graphics) ?? Deck.Of(type.BaseId, Data.Graphics), Scale = scale, Cos = MathF.Cos(turn), Sin = MathF.Sin(turn),
         });
         d.Life = dead ? 0 : d.MaxLife;
         _destructables.Add(d);
         if (d.Deck is not null)
         {
             (d.Ground, d.Reach) = (Data.Terrain?.Ground(d.X, d.Y) ?? 0, d.Deck.Reach * Math.Abs(scale));
+            d.DeckFrom = _game.Step + (Data.Graphics == GraphicsMode.Classic ? Game.Steps(ClassicDeckDelay) : 0);
             _decks.Add(d);
         }
         return d;
@@ -401,7 +405,7 @@ public sealed partial class GameNatives
         foreach (var d in _decks)
         {
             var (dx, dy) = (x - d.X, y - d.Y);
-            if (dx * dx + dy * dy > d.Reach * d.Reach || (_game.Step > d.Turned ? d.Dead : d.WasDead)) continue;
+            if (_game.Step < d.DeckFrom || dx * dx + dy * dy > d.Reach * d.Reach || (_game.Step > d.Turned ? d.Dead : d.WasDead)) continue;
             (dx, dy) = (dx / d.Scale, dy / d.Scale);
             if (d.Deck!.Height(dx * d.Cos + dy * d.Sin, dy * d.Cos - dx * d.Sin) is { } deck && d.Ground + d.Scale * deck > height)
                 height = d.Ground + d.Scale * deck;

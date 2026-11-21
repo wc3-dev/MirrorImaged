@@ -113,9 +113,12 @@ public sealed partial class GameNatives
     [Native(Level.Close)]
     public void ClearHarvestAI() => _slots.Clear();
 
-    // The tree nearest the town that stands, within the reach of the town and a little beyond
+    readonly Dictionary<player, HashSet<destructable>> _unreachable = [];
+
+    // The tree nearest the town that stands, however far: when the trees round the town are cut the workers go on to the next (D730)
+    // except one a worker of the player stopped short of, which it can't reach (D731)
     destructable? TreeNear((float X, float Y) town) =>
-        _destructables.Where(d => !d.Dead && d.Life > 0.405f && Distance2(d.X - town.X, d.Y - town.Y) <= 1500 * 1500 && IsTree(d.Type))
+        _destructables.Where(d => !d.Dead && d.Life > 0.405f && IsTree(d.Type) && !(_unreachable.TryGetValue(Ai, out var lost) && lost.Contains(d)))
             .MinBy(d => Distance2(d.X - town.X, d.Y - town.Y));
 
     // Whether a destructable of the type is a tree, kept by type: a map has thousands of them and the AI looks every round
@@ -139,6 +142,12 @@ public sealed partial class GameNatives
         var pool = Mine(Ai).Where(u => !u.Constructing && u.Building is null && (IsWorker(u) || GathersLumberOnly(u)) && u.Order is 0 or OrderHarvest or OrderReturn).OrderBy(u => u.Id).ToList();
         var used = new HashSet<unit>();
         var towns = Towns();
+        // A worker idle at a tree that stands, farther than it chops from, was sent where it can't walk: the player's workers don't go there again
+        foreach (var w in pool.Where(w => w.Order == 0 && w.OrderTarget is destructable { Dead: false } tree && Distance2(tree.X - w.X, tree.Y - w.Y) > 150 * 150))
+        {
+            if (!_unreachable.TryGetValue(Ai, out var lost)) _unreachable[Ai] = lost = [];
+            lost.Add((destructable)w.OrderTarget!);
+        }
         foreach (var (gold, town) in _slots)
         {
             var worker = pool.Where(w => !used.Contains(w) && (!gold || IsWorker(w))).OrderBy(w => !gold && GathersLumberOnly(w) ? 0 : 1).FirstOrDefault();

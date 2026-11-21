@@ -2,14 +2,7 @@
 # D121): a line starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note
 # starts "# ".
 
-# GetLocationZ on a bridge's deck in classic graphics: the game has no deck in the instant a bridge is made, and its
-# classic deck has another shape (YT16's place 274.6 restored, Reforged's 286.5); MirrorImaged reads Reforged's decks in
-# both modes, as classic's are not measured (D686).
-- deck YT16 32.000 -1280.000 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
-+ deck YT16 32.000 -1280.000 287.0 278.0 255.0 247.0 199.0 158.0 289.0 0.0 0.0 0.0
-- deck LT06 -1280.000 32.000 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
-+ deck LT06 -1280.000 32.000 274.0 274.0 0.0 0.0 0.0 0.0 269.0 251.0 250.0 243.8
-- deck killed 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
-+ deck killed 287.0 278.0 255.0 247.0 199.0 158.0 289.0 0.0 0.0 0.0
+# GetLocationZ on a bridge's deck: the decks are measured in whole units, so most points read up to 0.5 off (D255, D770,
+# Close). The deck's absence in the instant it is made, and its going with a kill, match the game's.
 - deck restored 3 s 274.6 268.5 247.0 247.4 193.4 0.0 280.8 0.0 0.0 0.0
-+ deck restored 3 s 287.0 278.0 255.0 247.0 199.0 158.0 289.0 0.0 0.0 0.0
++ deck restored 3 s 275.0 269.0 247.0 247.0 193.0 0.0 281.0 0.0 0.0 0.0
