@@ -1,5 +1,6 @@
 # Where MirrorImaged differs from the game's lines in expected/numbers-asin-2.txt, in order, with why (decisions D121): a line
 # starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
+
 # asin from 0 to 1/32 (x = j 2^-20) and over 0 to 1 (x = j 2^-13) is the table of D712 (Close): its entries above k = 31 are the nearest whole numbers the game's floats allow, not read.
 - asin e 8035 3faff6b6 5272 5273 5273 5272 5273 5412 5412 5412 5412 5412 5412 5412 5412 5563 5563 5564 5563 5563 5563 5563 5563 5728 5728 5728 5728 5728 5728 5728 5728 5909 5908 5908 5909 5908 5909 5908 5909 6107 6108 6107 6108 6107 6107 6108 6107 6328
 + asin e 8035 3faff6b6 5272 5273 5273 5272 5273 5412 5412 5412 5412 5412 5412 5412 5412 5563 5563 5564 5563 5563 5563 5563 5563 5728 5728 5728 5728 5728 5728 5728 5728 5909 5908 5908 5909 5908 5909 5908 5909 6107 6108 6107 6107 6108 6107 6108 6107 6328

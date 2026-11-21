@@ -1,5 +1,6 @@
 # Where MirrorImaged differs from the game's lines in expected/numbers-sqrt.txt, in order, with why (decisions D121): a line
 # starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
+
 # A power that isn't whole is exp(y log x) with the game's log (D760) and the fitted exp (D761, Close): a float step off at about
 # 1 value in 350; whole powers match.
 - pow 24 3f82f734 3f831677 3f8335b2 3f8354e6 3f837412 3f839338 3f83b255 3f83d16c 3f83f07b 3f840f82 3f842e83 3f844d7c 3f846c6e 3f848b59 3f84aa3c 3f84c919 3f84e7ee 3f8506bc 3f852583 3f854443 3f8562fb 3f8581ad 3f85a057 3f85befb
