@@ -53,8 +53,19 @@ public sealed class MeleeCorpusTests(ITestOutputHelper output) : IDisposable
         Assert.True(clock.Elapsed < TimeSpan.FromSeconds(60), $"{clock.Elapsed.TotalSeconds:0.0} s");
     }
 
-    // The town halls of the four races, each with what it upgrades to: more than one is a computer that expanded
+    // The town halls of the four races, each with what it upgrades to: more than one is a computer that expanded; so are two haunted gold
+    // mines, as the Undead's script expands with one and no necropolis (D824)
     static readonly HashSet<string> Halls = ["htow", "hkee", "hcas", "ogre", "ostr", "ofrt", "etol", "etoa", "etoe", "unpl", "unp1", "unp2"];
+
+    // The maps where no computer's ground reaches a second gold mine, so none can expand by walking (D825). The melee scripts use no Way Gate
+    // or shipyard; they buy a zeppelin at 60 food, which the simulation doesn't (D431, D798). One that expands after all is reported, so the
+    // list stays true
+    static readonly Dictionary<string, string> NoWalkToASecondMine = new()
+    {
+        ["(8)Plaguelands.w3m"] = "each start's ground has its own mine only; the way out is by Way Gates",
+        ["(4)Islands.w3x"] = "each island has its own mine only; the map sells ships (Goblin Shipyards), no zeppelins",
+        ["(4)DesertStrife.w3x"] = "each start's plateau has its own mine only, no ramp off it (seen in the game for start 0)",
+    };
 
     sealed record Played(List<string> Lines, List<string> Errors, List<string> Unmet);
 
@@ -76,7 +87,7 @@ public sealed class MeleeCorpusTests(ITestOutputHelper output) : IDisposable
         Assert.True(errors.Count == 0, string.Join('\n', errors));
     }
 
-    /// <summary>The rest of A4's line, a map at a time; it fails on the maps where the line doesn't hold, and names which part of it.</summary>
+    /// <summary>The rest of A4's line, a map at a time; it fails on the maps where the line doesn't hold, and names which part of it, but for the expansion on the maps <see cref="NoWalkToASecondMine"/> names.</summary>
     [InstallTheory]
     [MemberData(nameof(Corpus.Parts), MemberType = typeof(Corpus))]
     public void On_every_melee_map_each_computer_trains_and_one_expands_and_a_unit_is_killed(int part)
@@ -123,7 +134,7 @@ public sealed class MeleeCorpusTests(ITestOutputHelper output) : IDisposable
                     for (var n = 0; n < sides.Length; n++)
                     {
                         if (minute == 0) first[n] = now[n].Count;
-                        (most[n], halls[n], last[n]) = (Math.Max(most[n], now[n].Count), Math.Max(halls[n], now[n].Count(u => Halls.Contains(u.Type))), now[n].Count);
+                        (most[n], halls[n], last[n]) = (Math.Max(most[n], now[n].Count), Math.Max(halls[n], Math.Max(now[n].Count(u => Halls.Contains(u.Type)), now[n].Count(u => u.Type == "ugol"))), now[n].Count);
                     }
                 }
                 lines[at] = $"{name}: {clock.Elapsed.TotalSeconds:0.0} s, creeps {first[0]} to {last[0]} ({killed[0]} killed), the person's units {first[1]} to {last[1]} ({killed[1]} killed), computers "
@@ -133,7 +144,12 @@ public sealed class MeleeCorpusTests(ITestOutputHelper output) : IDisposable
                 if (last.Skip(2).Sum() <= first.Skip(2).Sum()) problems.Add($"{name}: the computers trained no units ({first.Skip(2).Sum()} to {last.Skip(2).Sum()})");
                 for (var n = 2; n < sides.Length; n++)
                     if (most[n] <= first[n]) unmet.Add($"{name}: computer {sides[n]} trained no units ({first[n]} at the start, {most[n]} at most)");
-                if (halls.Skip(2).All(count => count < 2)) unmet.Add($"{name}: no computer took a second town hall");
+                var expanded = halls.Skip(2).Any(count => count >= 2);
+                if (NoWalkToASecondMine.TryGetValue(Path.GetFileName(name), out var why))
+                {
+                    if (expanded) unmet.Add($"{name}: a computer took a second town hall, though the test lists it as a map it can't ({why})");
+                }
+                else if (!expanded) unmet.Add($"{name}: no computer took a second town hall");
                 if (killed.Sum() == 0) unmet.Add($"{name}: no unit was killed");
             }
             catch (Exception e) { problems.Add($"{name}: {e.GetType().Name}: {e.Message.Split('\n')[0]}"); }

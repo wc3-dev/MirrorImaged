@@ -22,9 +22,16 @@ public sealed partial class GameNatives
     const float SearchCell = 32;
     static readonly int UnitPathTexture = Code("upat");
     const int PathNodes = 40000;
+    // A search toward a place the walker's own ground reaches looks much further (D822): Korea's way round a long cliff needs it
+    const int LandPathNodes = 400000;
     // The search leans toward the goal, finding a way sooner at the cost of a way a little longer than the shortest
     const float HeuristicWeight = 2f;
     bool _lastReached;
+    // The search's cells, kept from one search to the next and told apart by the search's number
+    float[] _pathCost = [];
+    int[] _pathFrom = [], _pathSeen = [], _freeSeen = [];
+    bool[] _pathFree = [];
+    int _pathSearch;
 
     // Whether a building (not one the unit is working on or standing inside) is in the way at the place. The buildings are listed again once in a
     // tick, in a grid of squares of 256, as the search for a path asks about thousands of places
@@ -298,24 +305,27 @@ public sealed partial class GameNatives
         float CenterX(int c) => minX + (c + 0.5f) * SearchCell;
         float CenterY(int r) => minY + (r + 0.5f) * SearchCell;
         var moveType = BlzGetUnitIntegerField(u, Convert<unitintegerfield>(MoveType));
-        var freeCells = new Dictionary<(int, int), bool>();
+        if (_pathSeen.Length < columns * rows) (_pathCost, _pathFrom, _pathSeen, _freeSeen, _pathFree) = (new float[columns * rows], new int[columns * rows], new int[columns * rows], new int[columns * rows], new bool[columns * rows]);
+        var search = ++_pathSearch;
         bool Free(int c, int r)
         {
             if (c < 0 || r < 0 || c >= columns || r >= rows) return false;
-            if (!freeCells.TryGetValue((c, r), out var free)) freeCells[(c, r)] = free = !Blocked(u, moveType, CenterX(c), CenterY(r));
-            return free;
+            var at = r * columns + c;
+            if (_freeSeen[at] != search) (_freeSeen[at], _pathFree[at]) = (search, !Blocked(u, moveType, CenterX(c), CenterY(r)));
+            return _pathFree[at];
         }
         var start = (c: Math.Clamp(Column(u.X), 0, columns - 1), r: Math.Clamp(Row(u.Y), 0, rows - 1));
         var goal = (c: Math.Clamp(Column(goalX), 0, columns - 1), r: Math.Clamp(Row(goalY), 0, rows - 1));
         float H((int c, int r) cell) => MathF.Sqrt(Distance2(cell.c - goal.c, cell.r - goal.r));
         var open = new PriorityQueue<(int c, int r), float>();
-        var cost = new Dictionary<(int, int), float> { [start] = 0 };
-        var from = new Dictionary<(int, int), (int, int)>();
+        int At((int c, int r) cell) => cell.r * columns + cell.c;
+        (_pathSeen[At(start)], _pathCost[At(start)], _pathFrom[At(start)]) = (search, 0, -1);
         open.Enqueue(start, H(start));
         var best = start;
         var bestH = H(start);
         var expanded = 0;
-        while (open.TryDequeue(out var here, out _) && expanded++ < PathNodes)
+        var limit = moveType is 1 or 4 && Free(goal.c, goal.r) && SameLand(u.X, u.Y, goalX, goalY) ? LandPathNodes : PathNodes;
+        while (open.TryDequeue(out var here, out _) && expanded++ < limit)
         {
             if (here == goal) { best = here; break; }
             if (H(here) < bestH) (best, bestH) = (here, H(here));
@@ -325,17 +335,17 @@ public sealed partial class GameNatives
                     if (dc == 0 && dr == 0) continue;
                     var next = (c: here.c + dc, r: here.r + dr);
                     if (!Free(next.c, next.r) || (dc != 0 && dr != 0 && (!Free(here.c + dc, here.r) || !Free(here.c, here.r + dr)))) continue;
-                    var through = cost[here] + (dc != 0 && dr != 0 ? 1.4142f : 1f);
-                    if (cost.TryGetValue(next, out var known) && known <= through) continue;
-                    cost[next] = through;
-                    from[next] = here;
+                    var through = _pathCost[At(here)] + (dc != 0 && dr != 0 ? 1.4142f : 1f);
+                    var n = At(next);
+                    if (_pathSeen[n] == search && _pathCost[n] <= through) continue;
+                    (_pathSeen[n], _pathCost[n], _pathFrom[n]) = (search, through, At(here));
                     open.Enqueue(next, through + H(next) * HeuristicWeight);
                 }
         }
         _lastReached = best == goal;
         if (best == start) return null;
         var cells = new List<(int, int)> { best };
-        while (from.TryGetValue(cells[^1], out var before) && before != start) cells.Add(before);
+        for (var before = _pathFrom[At(cells[^1])]; before >= 0 && before != At(start); before = _pathFrom[before]) cells.Add((before % columns, before / columns));
         cells.Reverse();
         var way = cells.Select(cell => (CenterX(cell.Item1), CenterY(cell.Item2))).ToList();
         // Drop the cells on a straight line, and end at the place when the last cell is the one it is in
@@ -356,5 +366,51 @@ public sealed partial class GameNatives
             (from0, i) = (way[j], j + 1);
         }
         return taut;
+    }
+
+    // Each cell of the pathing grid's piece of walkable ground, joined by eight neighbours as LandOf joins them, 0 where it is unwalkable;
+    // found once, as the ground seldom changes
+    int[]? _landLabels;
+
+    // Whether walkable ground joins the place to within 192 of the other (a goal may stand on a building's or a gold mine's own cells)
+    bool SameLand(float x0, float y0, float x1, float y1)
+    {
+        if (Data.Terrain is not { } terrain) return false;
+        var (minX, minY, maxX, maxY) = terrain.Bounds;
+        int columns = (int)((maxX - minX) / SearchCell) + 1, rows = (int)((maxY - minY) / SearchCell) + 1;
+        if (_landLabels is null)
+        {
+            var walk = Convert<pathingtype>(1);
+            bool Open(int c, int r) => c >= 0 && r >= 0 && c < columns && r < rows && !IsTerrainPathable(minX + (c + 0.5f) * SearchCell, minY + (r + 0.5f) * SearchCell, walk);
+            var labels = new int[columns * rows];
+            var next = 0;
+            var queue = new Queue<(int C, int R)>();
+            for (var r0 = 0; r0 < rows; r0++)
+                for (var c0 = 0; c0 < columns; c0++)
+                {
+                    if (labels[r0 * columns + c0] != 0 || !Open(c0, r0)) continue;
+                    labels[r0 * columns + c0] = ++next;
+                    queue.Enqueue((c0, r0));
+                    while (queue.TryDequeue(out var here))
+                        for (var dr = -1; dr <= 1; dr++)
+                            for (var dc = -1; dc <= 1; dc++)
+                            {
+                                var (c, r) = (here.C + dc, here.R + dr);
+                                if (!Open(c, r) || labels[r * columns + c] != 0) continue;
+                                if (dc != 0 && dr != 0 && (!Open(here.C + dc, here.R) || !Open(here.C, here.R + dr))) continue;
+                                labels[r * columns + c] = next;
+                                queue.Enqueue((c, r));
+                            }
+                }
+            _landLabels = labels;
+        }
+        int Label(int c, int r) => c >= 0 && r >= 0 && c < columns && r < rows ? _landLabels[r * columns + c] : 0;
+        var land = Label((int)((x0 - minX) / SearchCell), (int)((y0 - minY) / SearchCell));
+        if (land == 0) return false;
+        int c1 = (int)((x1 - minX) / SearchCell), r1 = (int)((y1 - minY) / SearchCell);
+        for (var dc = -6; dc <= 6; dc++)
+            for (var dr = -6; dr <= 6; dr++)
+                if (Label(c1 + dc, r1 + dr) == land) return true;
+        return false;
     }
 }

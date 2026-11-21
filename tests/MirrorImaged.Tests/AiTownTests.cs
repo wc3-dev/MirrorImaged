@@ -314,6 +314,45 @@ public sealed class AiTownTests : IDisposable
         ], lines);
     }
 
+    // D821: Korea's site, 157 off the mine toward the town, touched the mine's footprint, so the search for the acolyte's way round a cliff never ended there and stopped at 40,000 cells (D822)
+    [Fact]
+    public void A_haunted_mine_site_moves_off_the_gold_mine_s_footprint_so_a_way_round_a_wall_ends_on_it()
+    {
+        var data = Standard()
+            .Add(ObjectKind.Unit, "ngol", Values("unam=Gold Mine;ubdg=1;uhpm=2000;uabi=Agld;umvs=0;ucol=50;upat=Goldmine.tga"))
+            .Add(ObjectKind.Unit, "ugol", Values("unam=Haunted Gold Mine;ubdg=1;uhpm=800;uabi=Abgm;umvs=0;ucol=50;ugol=225;ulum=210;ubld=5"));
+        // the game's gold mine: 16 cells across, the middle 8 unwalkable
+        data.Footprints["Goldmine.tga"] = new Footprint(16, 16, [.. Enumerable.Range(0, 256).Select(i => i % 16 is >= 4 and < 12 && i / 16 is >= 4 and < 12)]);
+        var map = _maps.Build("function config() end\nfunction main()\n" + Foes + "\n" + """
+            SetPlayerState(p, PLAYER_STATE_RESOURCE_GOLD, 1000)
+            SetPlayerState(p, PLAYER_STATE_RESOURCE_LUMBER, 1000)
+            CreateUnit(p, id("htow"), 1500, 300, 0)
+            SetResourceAmount(CreateUnit(Player(PLAYER_NEUTRAL_PASSIVE), id("ngol"), 0, 0, 0), 5000)
+            print(SetExpansion(CreateUnit(p, id("uaco"), 1000, 0, 0), id("ugol")))
+            TimerStart(CreateTimer(), 120, false, function() print(GetUnitCount(id("ugol"))) end)
+            end
+            """, map: m =>
+        {
+            // a map 96 tiles across (-6144 to 6144) and a wall of unwalkable cells at x 288 to 352 from its bottom edge to y 4992, between the
+            // acolyte and the site
+            m.Info = War3Net.Build.MapFactory.Info(96, 96);
+            m.Info.ScriptLanguage = War3Net.Build.Info.ScriptLanguage.Lua;
+            m.Environment = War3Net.Build.MapFactory.Environment(m.Info);
+            var pathing = new War3Net.Build.Environment.MapPathingMap(War3Net.Build.Environment.MapPathingMapFormatVersion.v0) { Width = 384, Height = 384 };
+            for (var i = 0; i < 384 * 384; i++) pathing.Cells.Add(0);
+            for (var row = 0; row <= 348; row++)
+                foreach (var column in new[] { 201, 202 }) pathing.Cells[row * 384 + column] = War3Net.Build.Environment.PathingType.Walk;
+            // and walls along y -600 and 600 from it to x 2500, a bay the acolyte stands in, whose end is the nearest place to the site
+            for (var column = 201; column <= 270; column++)
+                foreach (var row in new[] { 173, 206 }) pathing.Cells[row * 384 + column] = War3Net.Build.Environment.PathingType.Walk;
+            m.PathingMap = pathing;
+        });
+        using var simulation = Simulation.Load(map, "", data: data);
+        simulation.Advance(TimeSpan.FromSeconds(121));
+
+        Assert.Equal(["true", "1"], simulation.Log.Select(line => line[(line.IndexOf(": ", StringComparison.Ordinal) + 2)..]));
+    }
+
     [Fact]
     public void A_player_s_town_halls_are_counted_whatever_their_tier_and_while_they_are_built()
     {
