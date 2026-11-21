@@ -57,10 +57,10 @@ public sealed class MeleeCorpusTests(ITestOutputHelper output) : IDisposable
     // mines, as the Undead's script expands with one and no necropolis (D824)
     static readonly HashSet<string> Halls = ["htow", "hkee", "hcas", "ogre", "ostr", "ofrt", "etol", "etoa", "etoe", "unpl", "unp1", "unp2"];
 
-    // The maps where no computer's ground reaches a second gold mine, so none can expand by walking (D825). The melee scripts use no Way Gate
-    // or shipyard; they buy a zeppelin at 60 food, which the simulation doesn't (D431, D798). One that expands after all is reported, so the
-    // list stays true
-    static readonly Dictionary<string, string> NoWalkToASecondMine = new()
+    // The maps where no computer can walk off its start's ground to a second gold mine, so none can expand, and may find no creep or enemy to
+    // kill (D825). The melee scripts use no Way Gate or shipyard; they buy a zeppelin at 60 food, which the simulation doesn't (D431, D798). One
+    // that expands after all is reported, so the list stays true
+    static readonly Dictionary<string, string> NoWayOffTheStart = new()
     {
         ["(8)Plaguelands.w3m"] = "each start's ground has its own mine only; the way out is by Way Gates",
         ["(4)Islands.w3x"] = "each island has its own mine only; the map sells ships (Goblin Shipyards), no zeppelins",
@@ -87,7 +87,7 @@ public sealed class MeleeCorpusTests(ITestOutputHelper output) : IDisposable
         Assert.True(errors.Count == 0, string.Join('\n', errors));
     }
 
-    /// <summary>The rest of A4's line, a map at a time; it fails on the maps where the line doesn't hold, and names which part of it, but for the expansion on the maps <see cref="NoWalkToASecondMine"/> names.</summary>
+    /// <summary>The rest of A4's line, a map at a time; it fails on the maps where the line doesn't hold, and names which part of it, but for the expansion and the kill on the maps <see cref="NoWayOffTheStart"/> names.</summary>
     [InstallTheory]
     [MemberData(nameof(Corpus.Parts), MemberType = typeof(Corpus))]
     public void On_every_melee_map_each_computer_trains_and_one_expands_and_a_unit_is_killed(int part)
@@ -145,12 +145,13 @@ public sealed class MeleeCorpusTests(ITestOutputHelper output) : IDisposable
                 for (var n = 2; n < sides.Length; n++)
                     if (most[n] <= first[n]) unmet.Add($"{name}: computer {sides[n]} trained no units ({first[n]} at the start, {most[n]} at most)");
                 var expanded = halls.Skip(2).Any(count => count >= 2);
-                if (NoWalkToASecondMine.TryGetValue(Path.GetFileName(name), out var why))
+                var stuck = NoWayOffTheStart.TryGetValue(Path.GetFileName(name), out var why);
+                if (stuck)
                 {
                     if (expanded) unmet.Add($"{name}: a computer took a second town hall, though the test lists it as a map it can't ({why})");
                 }
                 else if (!expanded) unmet.Add($"{name}: no computer took a second town hall");
-                if (killed.Sum() == 0) unmet.Add($"{name}: no unit was killed");
+                if (killed.Sum() == 0 && !stuck) unmet.Add($"{name}: no unit was killed");
             }
             catch (Exception e) { problems.Add($"{name}: {e.GetType().Name}: {e.Message.Split('\n')[0]}"); }
             finally { File.Delete(path); }
