@@ -1,0 +1,5 @@
+# probes/abilities-sound-names.lua on 3.0.1.24371, single player, 11-21 (L-mirror-trust-levels, D792): the game's lines, one run, on Reforged
+# graphics (hd=2); the data's ability and buff ids are the same in both modes, so one file serves both. GetAbilitySound answered "" to each of 10,720
+# strings: each of the 1,072 abilities' and buffs' ids, names, by-id sound labels, those in lower case and the looped labels, as each kind of sound.
+ids 1072 with a by-id sound label 110
+asked 10720 answered something 0

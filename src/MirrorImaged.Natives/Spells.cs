@@ -36,6 +36,7 @@ public sealed partial class GameNatives
     // The ability of the unit whose order has this id, if it has one
     ability? SpellOf(unit u, int order)
     {
+        if (_itemSpell is { } itemSpell && order >= ItemOrder) return itemSpell;
         if (OrderNames.TryGetValue(order, out var named) && Commands.Contains(named)) return null;
         if (Data.FieldAt(ObjectKind.Ability, "Order") is not { } field) return null;
         return u.Abilities.Find(a => !a.Disabled && !a.Hidden && a.Type.Text(field) is { Length: > 0 } name && OrderIds.GetValueOrDefault(name) == order);
@@ -91,7 +92,7 @@ public sealed partial class GameNatives
         var range = Field(ability, CastRange) + (target is unit t ? t.Type.Real(Collision) : 0);
         if (range > 0 && Distance2(x - u.X, y - u.Y) > range * range) return !walk || Walk(u, x, y, follow: true);
         var cast = u.Cast = new Happening(u, Skill: ability.Type.Id, PointX: x, PointY: y, Target: target);
-        var instant = Instant.Contains(ability.Type.BaseId);
+        var instant = Instant.Contains(ability.Type.BaseId) || u.UsedItem is not null && Field(ability, CastTime) <= 0;
         FireUnit(cast, UnitSpellChannel, PlayerSpellChannel);
         if (u.Cast == cast) FireUnit(cast, UnitSpellCast, PlayerSpellCast);
         if (u.Cast == cast) Later(u, cast, instant ? 0 : Own(u, CastPoint, u.Type.Real(CastPoint)), () => Effected(u, ability, cast, instant));
@@ -137,7 +138,9 @@ public sealed partial class GameNatives
         if (ability.Type.BaseId != MirrorImage) FireUnit(cast, UnitSpellFinish, PlayerSpellFinish);
         if (u.Cast != cast) return;
         var given = u.Given;
+        var used = u.UsedItem;
         BreakCast(u);
+        if (used is not null && !used.Removed) Spend(u, used, now: false);
         if (u.Given == given && Finish(u)) Wake();
     }
 

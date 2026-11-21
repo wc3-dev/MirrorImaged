@@ -28,10 +28,20 @@ public sealed partial class GameNatives
         if (thread is not null) ResumeAi(p, thread, wait);
     }
 
+    // The threads of a paused player's script wait where they woke, and go on when it is started again (D798)
+    readonly HashSet<player> _pausedAi = [];
+    readonly Dictionary<player, List<IScriptThread>> _heldAi = [];
+
     // The thread goes on after its sleep, for its player, and sleeps again until it ends
     void ResumeAi(player p, IScriptThread thread, float wait) =>
         _game.At(_game.Step + Math.Max(1, Game.Steps(Math.Max(wait, 0.01f))), () =>
         {
+            if (_pausedAi.Contains(p))
+            {
+                if (!_heldAi.TryGetValue(p, out var held)) _heldAi[p] = held = [];
+                held.Add(thread);
+                return;
+            }
             var outer = AiFor;
             AiFor = p;
             bool again;

@@ -109,11 +109,11 @@ public sealed partial class GameNatives
     /// little otherwise (decisions D223, D224, D273).
     /// </summary>
     [Native(Level.Close)]
-    public unit? CreateUnit(player? id, int unitid, float x, float y, float face) => Create(id, unitid, x, y, face, unitid);
+    public unit? CreateUnit(player? id, int unitid, float x, float y, float face) => Scored(Create(id, unitid, x, y, face, unitid));
 
     /// <summary>As CreateUnit, with the skin's id kept for BlzGetUnitSkin; its data stay the type's (probe units).</summary>
     [Native(Level.Close)]
-    public unit? BlzCreateUnitWithSkin(player? id, int unitid, float x, float y, float face, int skinId) => Create(id, unitid, x, y, face, skinId);
+    public unit? BlzCreateUnitWithSkin(player? id, int unitid, float x, float y, float face, int skinId) => Scored(Create(id, unitid, x, y, face, skinId));
 
     /// <summary>
     /// A dead unit of the type, life 0, with no death or decay event: its food counts and goes back, and a footman's
@@ -243,12 +243,9 @@ public sealed partial class GameNatives
         if (whichUnit is not null) whichUnit.Exploded = exploded;
     }
 
-    /// <summary>
-    /// Changes nothing a native reads: a body suspended right after its death still decays and goes when another does,
-    /// also when it is let go later (probes units-decay and units-bones). Close: suspended later, in its decay or bones,
-    /// isn't measured.
-    /// </summary>
-    [Native(Level.Close)]
+    // Not modelled: of 8 footmen suspended and let go in each way, 6 decayed at 3.14 s and were gone at 93.25 s as one never suspended, but the one suspended in
+    // the bone stage (4 s) and never let go, and the one suspended before its death and let go at 20 s, were still there at 100 s (probe units-suspend-decay, one run)
+    [Native(Level.Close, Fact = "probes units-decay, units-bones and units-suspend-decay (11-21, D793)", Reason = "Nothing is held back here; the game held a body in the bone stage back when it was suspended there and not let go, and one suspended before its death let go at 20 s, past 100 s, and no other of 8 ways (one run)")]
     public void UnitSuspendDecay(unit? whichUnit, bool suspend)
     {
     }

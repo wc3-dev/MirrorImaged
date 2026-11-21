@@ -8,7 +8,6 @@ public partial class unit
     internal (float X, float Y)? NoWayTo;                   // a place a search found no way toward, and until when
     internal double NoWayUntil, ReplanAt;
     internal (float X, float Y)? PathGoal;                  // where that path leads
-    internal bool NoPathing;                                // SetUnitPathing off: it walks through units and others through it
     internal double WaitingSince = -1;                      // when another unit stopped its walk, -1 while it walks
     internal (float X, float Y)? SpotFor;                   // the place another unit stood on, for which it makes for the nearest clear one
 }
@@ -165,7 +164,7 @@ public sealed partial class GameNatives
 
     // Units keep room from each other (probes units-path-gap, units-path-room): a ground unit standing in the world, not a building,
     // and not a worker on its gathering round, which the game's pass through each other at the mine
-    bool Collides(unit u) => !u.Dead && !u.Removed && !u.Hidden && !u.NoPathing && u.Transport is null && !u.Locust && u.Order is not (OrderHarvest or OrderReturn);
+    bool Collides(unit u) => !u.Dead && !u.Removed && !u.Hidden && !u.PathingOff && u.Transport is null && !u.Locust && u.Order is not (OrderHarvest or OrderReturn);
 
     const float UnitSquare = 256;
     readonly Dictionary<(int, int), List<unit>> _unitGrid = [];

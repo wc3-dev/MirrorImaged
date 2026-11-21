@@ -1,4 +1,5 @@
 using MirrorImaged.Data;
+using MirrorImaged.World;
 
 namespace MirrorImaged.Natives;
 
@@ -7,7 +8,8 @@ public partial class unit
     internal bool IgnoresAlarm;
     internal int? Gold; // what SetResourceAmount and AddResourceAmount left
     internal HashSet<player>? Rescuers;
-    internal float RescueRange;
+    internal float? RescueRange;
+    internal bool Rescuing; // its 0.5 s checks for a rescuer are running
 }
 
 // The rest of the unit natives, as the probes units-more, units-more-2, units-types and units-gold measure them
@@ -93,30 +95,54 @@ public sealed partial class GameNatives
     {
     }
 
-    /// <summary>
-    /// Kept on the unit. Close: the game rescues it once a unit of a player it is rescuable by stands within its range,
-    /// firing the rescue events on its owner's and its own registrations without changing its owner (probe units-more: a
-    /// footman made 100 away, 0.5 s later), which needs the units in range (W2-6); here no unit is rescued.
-    /// </summary>
-    [Native(Level.Close)]
+    const int UnitRescued = 63, PlayerUnitRescued = 19; // EVENT_UNIT_RESCUED, EVENT_PLAYER_UNIT_RESCUED
+    const string RescueProbe = "probes units-rescue and units-rescue-range (11-21, D794)";
+
+    // From the moment a unit is made rescuable it is checked every 0.5 s; the first check that finds a living, shown unit of a player it is rescuable by
+    // within its range (the nearest) fires the rescue events, the owner's registrations first, with that unit the rescuer, and ends the rescue: the
+    // owner doesn't change and nothing fires again. A paused unit isn't rescued until it is let go (probe units-rescue).
+    // The set range, or by default 400 and a half of the rescuer's collision size less a half: a footman (31) rescued a unit 414 away and not 415, a Paladin (32) 415
+    // and not 416 (probe units-rescue-range)
+    static float Reach(unit rescued, unit rescuer) => rescued.RescueRange ?? 399.5f + rescuer.Type.Real(Collision) / 2;
+
+    void CheckRescue(unit u)
+    {
+        if (u.Removed || u.Dead || u.Rescuers is not { Count: > 0 } rescuers)
+        {
+            u.Rescuing = false;
+            return;
+        }
+        var rescuer = u.Paused ? null : _units.Values.Where(r => r != u && !r.Dead && !r.Removed && !r.Hidden && rescuers.Contains(r.Owner) && Distance2(r.X - u.X, r.Y - u.Y) < Math.Pow(Reach(u, r), 2))
+            .MinBy(r => Distance2(r.X - u.X, r.Y - u.Y));
+        if (rescuer is null)
+        {
+            _game.At(_game.Step + Game.Steps(0.5), () => CheckRescue(u));
+            return;
+        }
+        (u.Rescuing, u.Rescuers) = (false, null);
+        FireUnit(new(u, Other: rescuer), UnitRescued, PlayerUnitRescued);
+    }
+
+    [Native(Level.Close, Fact = RescueProbe, Reason = "Checked every 0.5 s from the call, as the game does; the default range is fitted to a footman's and a Paladin's collision (the one of a building, which stands on the pathing grid, wasn't read), and a rescuer's range isn't changed by its owner's alliances (not measured)")]
     public void SetUnitRescuable(unit? whichUnit, player? byWhichPlayer, bool flag)
     {
         if (whichUnit is null || byWhichPlayer is null) return;
         whichUnit.Rescuers ??= [];
         if (flag) whichUnit.Rescuers.Add(byWhichPlayer);
         else whichUnit.Rescuers.Remove(byWhichPlayer);
+        if (!flag || whichUnit.Rescuing) return;
+        whichUnit.Rescuing = true;
+        _game.At(_game.Step + Game.Steps(0.5), () => CheckRescue(whichUnit));
     }
 
-    /// <summary>Kept on the unit; Close as SetUnitRescuable (probe units-more: 50 kept a rescuer 100 away out).</summary>
-    [Native(Level.Close)]
+    [Native(Level.Close, Fact = RescueProbe, Reason = "A rescuer closer than the range is rescued from, none at 0 or below; whether a set range adds the rescuer's collision size, as the default does, isn't measured (SetUnitRescuable)")]
     public void SetUnitRescueRange(unit? whichUnit, float range)
     {
         if (whichUnit is not null) whichUnit.RescueRange = range;
     }
 
-    /// <summary>Nil outside a rescue (probe units-more). Close: no unit is rescued here yet (SetUnitRescuable).</summary>
-    [Native(Level.Close)]
-    public unit? GetRescuer() => null;
+    [Native(Level.Close, Fact = RescueProbe, Reason = "The unit that rescued, the nearest in range; nil outside a rescue event (SetUnitRescuable)")]
+    public unit? GetRescuer() => Response(UnitRescued, PlayerUnitRescued)?.Other;
 
     /// <summary>
     /// A gold mine's gold: its Max Gold (its gold mine ability's Gld1, 12500) until set; 0 for any other unit, a

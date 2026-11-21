@@ -1,0 +1,22 @@
+# probes/natives-test-run.lua on 3.0.1.24371, single player, 11-21 (L-mirror-trust-levels, D791): the game's lines, one run, on Reforged graphics
+# (hd=2) on the hidden desktop of the runner; nothing here reads data, so one file serves both modes. What a test run reads from the natives that
+# answer a fixed value: the five slots; the tournament natives (nil, 0, 0.0, 0 for either player and for nil); the locale enUS (this PC's) and
+# the window active; no meta key (-1 to 9) pressed; no unit under the mouse; no save (the empty basic file name, false for a name that doesn't
+# exist, and for copying, removing and renaming it); 26 scores of Player 0 and of Player 1 (number 25 isn't one), all 0; no model cinematic
+# playing; BlzPreloadModelCinematicGame false for a name no model has, for the empty name true, for a camera model, a unit's model with either
+# slash, a space and a name with no folder false; the event responses outside an event.
+slots 24 24 25 26 27
+tournament nil 0 0.0 0 0 0
+client enUS true
+meta false false false false false false false false false false false
+mouse nil
+save [] false false copy false remove false rename false
+save after [] false false
+scores player 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+scores player 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+score nil 0 0
+cinematic 0 0.0 0
+preload false true false false false false false
+cinematic after 0 0.0 0
+outside nil nil nil nil nil false nil nil 0 nil
+doodads 0 false false

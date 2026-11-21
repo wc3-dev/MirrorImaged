@@ -1,0 +1,13 @@
+# Where MirrorImaged differs from the game's lines in expected/units-construction.txt, in order, with why (decisions D796): a line starting - is the game's, + MirrorImaged's.
+
+# Two things, as the lines come paired by order. A farm set to 0 progress at 5 s: the game gave no finish event within 55 s (its life read 500 at the end; not understood), here it
+# finishes a full build time after the call; its pair is the set-99 farm's line, a moving line in both (done 1.35 in the game, 1.36 here). And the keeps: the game fires
+# EVENT_PLAYER_UNIT_UPGRADE_FINISH when an upgrade is done, which the probe waits for; the upgrade events are not modelled, though the building turns into the Keep at its time (Close).
++ farm set 99 at 1 s: done 1.36; life 50.0 -> 500.0; life at the end 500.0
++ keep set 90 at 2 s: order true, finished not, type Keep
++ keep set 99 at 2 s: order true, finished not, type Keep
++ keep set 100 at 2 s: order true, finished not, type Keep
+- ~ farm set {t} at {t} s: done not; life {t} -> {t}; life at the end {t}
+- ~ keep set {t} at {t} s: order true, finished {t}, type Keep
+- ~ keep set {t} at {t} s: order true, finished {t}, type Keep
+- ~ keep set {t} at {t} s: order true, finished {t}, type Keep

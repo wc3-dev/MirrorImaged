@@ -237,6 +237,6 @@ public sealed partial class GameNatives
     [Native(Level.Recorded, Reason = "Indicators, command button effects and tints are drawn; no native reads them back")]
     public void BlzSetItemColor(item? whichItem, playercolor? whichColor) { }
 
-    [Native(Level.Recorded, Reason = "Its hit events need the mouse (wave 6); the handle is made and nothing else")]
+    [Native(Level.Recorded, Reason = "Its hit and track events come from the mouse over the model: the input model's mouse (Simulation.Mouse) gives a place on the ground, and what is missing is the model's hit area under it, which no probe has measured; no event fires for it (D795)")]
     public trackable? CreateTrackable(string? trackableModelPath, float x, float y, float facing) => Make(new trackable());
 }

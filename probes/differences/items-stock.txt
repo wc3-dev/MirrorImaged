@@ -1,0 +1,10 @@
+# Where MirrorImaged differs from the game's lines in expected/items-stock.txt, in order, with why (decisions D796): a line starting - is the game's, + MirrorImaged's.
+
+# A passive neutral shop: the game's InitBlizzard trigger RemovePurchasedItem takes a good out of stock after its first sale, so a (2, 2) good sold once; the run without blizzard.j
+# has no such trigger and sold it twice (Close).
+- passive 2,2: t/p/ratc f/-/- f/-/-
++ passive 2,2: t/p/ratc t/p/ratc f/-/-
+
+# The same, for the passive Marketplace of AddItemToAllStock(ring, 2, 2).
+- all stock 2,2: a t/p/rde1 f/-/- f/-/-, hostile b t/p/rde1 t/p/rde1 f/-/-, camp f/-/-, made after f/-/-
++ all stock 2,2: a t/p/rde1 t/p/rde1 f/-/-, hostile b t/p/rde1 t/p/rde1 f/-/-, camp f/-/-, made after f/-/-

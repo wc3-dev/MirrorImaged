@@ -40,8 +40,8 @@ public static class ProbeComparison
     /// </summary>
     public const string Closes = "! the game closes";
 
-    /// <summary>The most simulated time a probe runs in MirrorImaged, as the game runner gives a probe two minutes.</summary>
-    public static readonly TimeSpan Longest = TimeSpan.FromMinutes(2);
+    /// <summary>The most simulated time a probe runs in MirrorImaged, as the game runner gives a probe three minutes (units-suspend-decay needs 100 s after a load of about 20).</summary>
+    public static readonly TimeSpan Longest = TimeSpan.FromMinutes(3);
 
     // In place of the game's blizzard.j, which the comparison runs without (decisions D120, D150): what blizzard.j does
     // that the probe maps and the probes read, as blizzard.j does it. Its handle globals, the slot functions config
@@ -127,7 +127,7 @@ public static class ProbeComparison
     public static string Source(string name) => IsJass(name) ? ProbeMap.JassSource(name) : ProbeMap.Source(name);
 
     /// <summary>Whether a probe runs on the map with a computer and named slots (decisions D140).</summary>
-    public static bool WithComputer(string name) => name is "events" or "lobby" or "data-names";
+    public static bool WithComputer(string name) => name is "events" or "lobby" or "data-names" or "units-cripple";
 
     /// <summary>
     /// Whether a probe reads the game's data: W2-1's, W2-2's, W2-3's and W2-4's probes, W2-7's abilities probes, W5-2's
@@ -314,6 +314,26 @@ public static class ProbeComparison
         Assert.True(Modes(name).Contains(mode), $"{name} has no lines for {mode} graphics in probes/expected: run it in the game in that mode first");
         var (lines, stop) = Mirror(name, mode);
         AssertRecorded(name, mode, lines is null ? [new Difference(0, null, null, stop)] : Compare(Expected(name, mode), lines));
+    }
+
+    /// <summary>
+    /// The lines of a differences file that record a difference with no reason (A2, A6; decisions D790): a file opens
+    /// with its note on the form, "# Where MirrorImaged differs ...", up to the first blank line, and each recorded line's
+    /// reason is a note after that, above it. Gives the line numbers, or 0 when the opening note is missing.
+    /// </summary>
+    public static IReadOnlyList<int> Unreasoned(IReadOnlyList<string> lines)
+    {
+        if (lines.Count == 0 || !lines[0].StartsWith("# Where MirrorImaged differs", StringComparison.Ordinal))
+            return [0];
+        var opening = lines.TakeWhile(line => line.Length > 0).Count();
+        var unreasoned = new List<int>();
+        var reason = false;
+        for (var i = opening; i < lines.Count; i++)
+        {
+            if (lines[i].StartsWith("# ", StringComparison.Ordinal)) reason = true;
+            else if (lines[i].Length > 0 && !reason) unreasoned.Add(i + 1);
+        }
+        return unreasoned;
     }
 
     /// <summary>

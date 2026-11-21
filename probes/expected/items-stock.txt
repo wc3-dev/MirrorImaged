@@ -1,0 +1,21 @@
+# 3.0.1.24371, 11-21 (L-mirror-trust-levels-recorded), classic graphics (War3Preferences hd=0) and Reforged (hd=2), the game giving the same lines in both: the game's lines, one run. Nothing in them depends on the graphics mode. Added goods come on sale once the game is 2 s old, so the buys at 1.5 s answer false and the later ones true; a passive shop's RemovePurchasedItem (InitBlizzard) takes a good out of stock after its first sale.
+abilities Asid 1 Asud 1 Apit 1 on the passive shop; Asid 1 on the hostile one
+g at once: f/-/-
+g at 0.25 s: f/-/-
+g at 0.5 s: f/-/-
+g at 1 s: f/-/-
+g at 1.5 s: f/-/-
+passive 1,2: t/p/ratc f/-/-
+hostile 3,3: t/p/ratc t/p/ratc t/p/ratc f/-/-
+hostile 0,2: f/-/-
+passive 2,2: t/p/ratc f/-/- f/-/-
+hostile 1,1 then removed: f/-/-
+hostile 0,2 then 2,2: t/p/ratc t/p/ratc f/-/-
+hostile 5,3: t/p/ratc t/p/ratc t/p/ratc f/-/- f/-/- f/-/-
+hostile 1,3 then 2,3: t/p/ratc t/p/ratc f/-/-
+passive -1,3: f/-/-
+all stock 2,2: a t/p/rde1 f/-/- f/-/-, hostile b t/p/rde1 t/p/rde1 f/-/-, camp f/-/-, made after f/-/-
+all stock then removed: f/-/- f/-/- f/-/-
+farm with Sell Units, hfoo 1,1: order false, order id 0
+farm after RemoveUnitFromStock: false
+camp after AddUnitToAllStock: false

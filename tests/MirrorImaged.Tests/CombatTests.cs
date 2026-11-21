@@ -30,6 +30,83 @@ public sealed class CombatTests : IDisposable
         return [.. simulation.Log.Select(line => line[(line.IndexOf(": ", StringComparison.Ordinal) + 2)..])];
     }
 
+    // A footman of 1 s cooldown and 0.5 s damage point attacks a peasant that doesn't fight back; the call is made the delay after its first attacked event or
+    // its first hit (probe units-resets). Gives the times, after the order, of its first two attacked events and first two hits.
+    double[] Swings(string call, bool afterHit, double delay)
+    {
+        var lines = Run($$"""
+            local a, b = make("hfoo", Player(0), 0, 0), make("hpea", Player(1), 60, 0)
+            BlzSetUnitMaxHP(b, 5000)
+            SetWidgetLife(b, 5000)
+            local c = CreateTimer()
+            TimerStart(c, 1000, false, nil)
+            local attacked, hit = {}, {}
+            local function later() TimerStart(CreateTimer(), {{delay}}, false, function() {{call}} end) end
+            local t = CreateTrigger()
+            TriggerRegisterUnitEvent(t, b, EVENT_UNIT_ATTACKED)
+            TriggerAddAction(t, function()
+                attacked[#attacked + 1] = TimerGetElapsed(c)
+                if #attacked == 1 and not {{(afterHit ? "true" : "false")}} then later() end
+            end)
+            t = CreateTrigger()
+            TriggerRegisterUnitEvent(t, b, EVENT_UNIT_DAMAGED)
+            TriggerAddAction(t, function()
+                hit[#hit + 1] = TimerGetElapsed(c)
+                if #hit == 1 and {{(afterHit ? "true" : "false")}} then later() end
+            end)
+            IssueTargetOrder(a, "attack", b)
+            TimerStart(CreateTimer(), 3, false, function() print(attacked[1], attacked[2], hit[1], hit[2]) end)
+            """, 4);
+        return [.. lines.Single().Split((char)9).Select(double.Parse)];
+    }
+
+    [Fact]
+    public void Interrupting_an_attack_before_its_damage_point_drops_that_hit_and_the_unit_swings_again_at_once()
+    {
+        var plain = Swings("", false, 0.2);
+        var swing = Swings("BlzUnitInterruptAttack(a)", false, 0.2);
+
+        Assert.InRange(plain[2] - plain[0], 0.49, 0.56);
+        Assert.InRange(swing[1] - swing[0], 0.2, 0.4);
+        Assert.InRange(swing[2] - swing[1], 0.49, 0.56);
+    }
+
+    [Fact]
+    public void Interrupting_an_attack_after_its_hit_leaves_the_cooldown_running()
+    {
+        var swing = Swings("BlzUnitInterruptAttack(a)", true, 0.2);
+
+        Assert.InRange(swing[1] - swing[0], 0.95, 1.1);
+    }
+
+    [Fact]
+    public void A_unit_interrupted_just_after_its_attack_order_goes_on_to_attack_the_foe_it_acquires()
+    {
+        var lines = Run("""
+            local a, b = make("hfoo", Player(0), 0, 0), make("hfoo", Player(PLAYER_NEUTRAL_AGGRESSIVE), 100, 0)
+            UnitRemoveAbility(b, FourCC("Aatk"))
+            SetUnitPropWindow(b, 0)
+            BlzSetUnitMaxHP(b, 5000)
+            SetWidgetLife(b, 5000)
+            IssueTargetOrder(a, "attack", b)
+            TimerStart(CreateTimer(), 0.01, false, function() BlzUnitInterruptAttack(a) end)
+            TimerStart(CreateTimer(), 3, false, function() print(GetWidgetLife(b) < 5000, GetUnitCurrentOrder(a)) end)
+            """, 4);
+
+        Assert.Equal(["true\t0"], lines);
+    }
+
+    [Fact]
+    public void Resetting_an_attack_drops_a_swing_under_way_and_starts_the_next_at_once_whatever_the_cooldown()
+    {
+        var during = Swings("BlzResetUnitAttack(a, 0)", false, 0.1);
+        var cooling = Swings("BlzResetUnitAttack(a, 0)", true, 0.2);
+
+        Assert.InRange(during[1] - during[0], 0.08, 0.2);
+        Assert.InRange(during[2] - during[1], 0.49, 0.56);
+        Assert.InRange(cooling[1] - cooling[2], 0.15, 0.3);
+    }
+
     // a move order walks at the unit's speed in a straight line and ends on arrival
     [Fact]
     public void A_move_order_walks_at_the_units_speed_and_ends_on_arrival()

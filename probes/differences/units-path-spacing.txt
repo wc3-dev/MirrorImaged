@@ -1,3 +1,6 @@
+# Where MirrorImaged differs from the game's lines in expected/units-path-spacing.txt, in order, with why (decisions D121): a line
+# starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
+
 # Walking past an idle unit (D783, D786, Close): MirrorImaged steers round by the room, which the game's passes within -12 to +8 (peasants 66 here, 52 in the game; abominations 130 and 120). SetUnitPosition puts the unit at the room's edge, 64 to 128; the game's puts it elsewhere (58 to 158).
 - hfoo past hfoo: nearest 66, left its line by 72, idle one moved 0, arrived
 + hfoo past hfoo: nearest 66, left its line by 64, idle one moved 0, arrived

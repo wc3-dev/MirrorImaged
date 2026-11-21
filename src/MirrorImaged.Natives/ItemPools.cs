@@ -12,13 +12,15 @@ public partial class unitpool
     internal readonly List<(int Id, float Weight)> Types = [];
 }
 
-// The random item and unit picks: ChooseRandomItem and its kin, the item and unit pools, and the stock a shop would
-// sell, which nothing here sells (wave 3's orders). The picks come from the game's random numbers here, not the game's
+public partial class unit
+{
+    internal readonly Dictionary<int, (int Stock, int Max, double Open)> Stocked = [];   // the goods AddItemToStock gave a shop: left in stock, its limit, when it is on sale
+}
+
+// The random item and unit picks: ChooseRandomItem and its kin, the item and unit pools, and the stock natives of the shops. The picks come from the game's random numbers here, not the game's
 // own, so what they pick is the map's seed's, not the game's (decisions D338).
 public sealed partial class GameNatives
 {
-    const string StockReason = "A shop sells and restocks through orders and the clock of wave 3; no native here reads a stock back";
-
     static readonly int ItemPickRandom = Code("iprn");
 
     // An item type the data lists, in the data's order, that a random pick may choose: its level and class as asked (the
@@ -47,13 +49,21 @@ public sealed partial class GameNatives
     public int ChooseRandomItemExWithFilterAndIncludes(itemtype? whichType, int level, equipmentType? whichEquipmentType, itemTag? whichTag, bool includeInvalidMorphs, bool includeNonPickRandom) =>
         Pick(RandomItems(whichType?.Id ?? 9, level, includeNonPickRandom));
 
-    /// <summary>A random creep unit type of the level: not brought (needs the creep data's levels and the camps); 0.</summary>
-    [Native(Level.Close)]
-    public int ChooseRandomCreep(int level) => 0;
+    static readonly int UnitTilesets = Code("util"), UnitSpecial = Code("uspe"), NeutralBuildingRandom = Code("unbr");
 
-    /// <summary>A random neutral building type: not brought; 0.</summary>
-    [Native(Level.Close)]
-    public int ChooseRandomNPBuilding() => 0;
+    // A unit type the data lists that a random pick may choose, as the game's lists were (probe units-random-creeps): for the map's tileset or all of them
+    bool OnTileset(GameObject o) =>
+        (o.Text(UnitTilesets) ?? "").Split(',', StringSplitOptions.TrimEntries).Any(tileset => tileset == "*" || tileset.Length == 1 && tileset[0] == (char)(Data.Map?.Files.Info?.Tileset ?? 0));
+
+    // The creeps that aren't buildings, special or heroes (33 of the 864 units on the probe map's tileset), of the level asked (-1 any; none has no level: 0)
+    [Native(Level.Close, Fact = "probe units-random-creeps (11-21, D794)", Reason = "The game's lists for every level were read on the Lordaeron Summer map of the probe and matched by the data's rule above, whose draw is the map's random numbers, not the game's")]
+    public int ChooseRandomCreep(int level) =>
+        Pick([.. Data.Objects(ObjectKind.Unit).Where(o => o.Text(Race) == "creeps" && !IsHero(o.Id) && o.Integer(IsBuilding) == 0 && o.Integer(UnitSpecial) == 0 && OnTileset(o)
+            && (level == -1 || o.Integer(UnitLevel) == level)).Select(o => o.Id)]);
+
+    [Native(Level.Close, Fact = "probe units-random-creeps (11-21, D794)", Reason = "The game's list was read on the Lordaeron Summer map of the probe (9 buildings) and matched by the data's rule, whose draw is the map's random numbers, not the game's")]
+    public int ChooseRandomNPBuilding() =>
+        Pick([.. Data.Objects(ObjectKind.Unit).Where(o => o.Integer(NeutralBuildingRandom) != 0 && OnTileset(o)).Select(o => o.Id)]);
 
     [Native(Level.Close)]
     public itempool? CreateItemPool() => Make(new itempool());
@@ -114,65 +124,50 @@ public sealed partial class GameNatives
     public unit? PlaceRandomUnit(unitpool? whichPool, player? forWhichPlayer, float x, float y, float facing) =>
         whichPool is not null && Weighted(whichPool.Types) is var id and not 0 ? CreateUnit(forWhichPlayer, id, x, y, facing) : null;
 
-    // ---- Stock
+    // ---- Stock (probe items-stock, D796): a good added to a shop with Sell Items is sold as many times as its stock says, from two seconds into the game or from
+    // the add, and the shop's own goods are not changed by the natives. Close: a sold-out good is not restocked, and the slots of a card limit nothing here.
 
-    [Native(Level.Recorded, Reason = StockReason)]
+    const string StockFact = "game-facts.md, Orders and events: the stock natives (11-08); probe items-stock (11-21)";
+    const double StockOpens = 2.05;
+    static readonly int SellItems = Code("Asid");
+
+    void Stock(unit? shop, int itemId, int current, int stockMax)
+    {
+        if (shop is not null && Find(shop, SellItems) is not null) shop.Stocked[itemId] = (Math.Clamp(Math.Min(current, stockMax), 0, int.MaxValue), stockMax, Math.Max(Seconds, StockOpens));
+    }
+
+    IEnumerable<unit> Shops() => _units.Values.Where(u => !u.Removed && Find(u, SellItems) is not null).ToList();
+
+    // An added good that is on sale now
+    bool OnSale(unit shop, int itemId) => shop.Stocked.TryGetValue(itemId, out var added) && added.Stock > 0 && Seconds >= added.Open;
+
+    [Native(Level.Close, Fact = StockFact)]
+    public void AddItemToStock(unit? whichUnit, int itemId, int currentStock, int stockMax) => Stock(whichUnit, itemId, currentStock, stockMax);
+
+    [Native(Level.Close, Fact = StockFact)]
     public void AddItemToAllStock(int itemId, int currentStock, int stockMax)
     {
+        foreach (var shop in Shops()) Stock(shop, itemId, currentStock, stockMax);
     }
 
-    [Native(Level.Recorded, Reason = StockReason)]
-    public void AddItemToStock(unit? whichUnit, int itemId, int currentStock, int stockMax)
-    {
-    }
+    [Native(Level.Close, Fact = StockFact)]
+    public void RemoveItemFromStock(unit? whichUnit, int itemId) => whichUnit?.Stocked.Remove(itemId);
 
-    [Native(Level.Recorded, Reason = StockReason)]
-    public void AddUnitToAllStock(int unitId, int currentStock, int stockMax)
-    {
-    }
-
-    [Native(Level.Recorded, Reason = StockReason)]
-    public void AddUnitToStock(unit? whichUnit, int unitId, int currentStock, int stockMax)
-    {
-    }
-
-    [Native(Level.Recorded, Reason = StockReason)]
+    [Native(Level.Close, Fact = StockFact)]
     public void RemoveItemFromAllStock(int itemId)
     {
+        foreach (var shop in Shops()) shop.Stocked.Remove(itemId);
     }
 
-    [Native(Level.Recorded, Reason = StockReason)]
-    public void RemoveItemFromStock(unit? whichUnit, int itemId)
-    {
-    }
+    const string UnitStock = "A unit added to a shop's stock showed on its card (probe-shop-unit-slots) but was bought by no order (IssueNeutralImmediateOrderById on a neutral shop, IssueImmediateOrderById on a player's Farm with Sell Units: probe items-stock), so no native reads it back (D796)";
+    const string SlotStock = "The slots of a shop's card limit the goods it shows (11 units on a player's shop, probe-shop-unit-slots), not the goods it sells: with slots 0, 1, 2, 11 and 12, set before and after the shop was made, a shop sold all four goods added (probe items-stock-slots, D796)";
 
-    [Native(Level.Recorded, Reason = StockReason)]
-    public void RemoveUnitFromAllStock(int unitId)
-    {
-    }
-
-    [Native(Level.Recorded, Reason = StockReason)]
-    public void RemoveUnitFromStock(unit? whichUnit, int unitId)
-    {
-    }
-
-    [Native(Level.Recorded, Reason = StockReason)]
-    public void SetAllItemTypeSlots(int slots)
-    {
-    }
-
-    [Native(Level.Recorded, Reason = StockReason)]
-    public void SetAllUnitTypeSlots(int slots)
-    {
-    }
-
-    [Native(Level.Recorded, Reason = StockReason)]
-    public void SetItemTypeSlots(unit? whichUnit, int slots)
-    {
-    }
-
-    [Native(Level.Recorded, Reason = StockReason)]
-    public void SetUnitTypeSlots(unit? whichUnit, int slots)
-    {
-    }
+    [Native(Level.Recorded, Reason = UnitStock)] public void AddUnitToAllStock(int unitId, int currentStock, int stockMax) { }
+    [Native(Level.Recorded, Reason = UnitStock)] public void AddUnitToStock(unit? whichUnit, int unitId, int currentStock, int stockMax) { }
+    [Native(Level.Recorded, Reason = UnitStock)] public void RemoveUnitFromAllStock(int unitId) { }
+    [Native(Level.Recorded, Reason = UnitStock)] public void RemoveUnitFromStock(unit? whichUnit, int unitId) { }
+    [Native(Level.Recorded, Reason = SlotStock)] public void SetAllItemTypeSlots(int slots) { }
+    [Native(Level.Recorded, Reason = SlotStock)] public void SetAllUnitTypeSlots(int slots) { }
+    [Native(Level.Recorded, Reason = SlotStock)] public void SetItemTypeSlots(unit? whichUnit, int slots) { }
+    [Native(Level.Recorded, Reason = SlotStock)] public void SetUnitTypeSlots(unit? whichUnit, int slots) { }
 }

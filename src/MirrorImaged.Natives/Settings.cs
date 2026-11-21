@@ -1,12 +1,19 @@
 using MirrorImaged.Data;
+using MirrorImaged.World;
 
 namespace MirrorImaged.Natives;
 
 // The game's settings, menu and bookkeeping natives: what a getter reads back is kept; the screens, saves and campaign menus
 // aren't simulated and are Recorded. Defaults not measured are noted (decisions D600).
+public partial class unit
+{
+    internal bool PathingOff;
+}
+
 public sealed partial class GameNatives
 {
     const string SettingsNote = "A setting of the game's screens or menus; no native reads it back";
+    const string TestRunProbe = "probe natives-test-run (11-21, D791)";
 
     readonly Dictionary<string, object> _settings = [];
 
@@ -65,8 +72,11 @@ public sealed partial class GameNatives
     /// <summary>1920 by 1080, a little larger on each other machine of a desync check (<see cref="Machine"/>).</summary>
     [Native(Level.Close)] public int BlzGetLocalClientWidth() => 1920 + Machine * 16;
     [Native(Level.Close)] public int BlzGetLocalClientHeight() => 1080 + Machine * 9;
-    [Native(Level.Close)] public string? BlzGetLocale() => "enUS";
-    [Native(Level.Close)] public bool BlzIsLocalClientActive() => true;
+    [Native(Level.Close, Fact = TestRunProbe, Reason = "The game's own language, enUS on the PC measured; MirrorImaged answers enUS wherever it runs")]
+    public string? BlzGetLocale() => "enUS";
+
+    [Native(Level.Close, Fact = TestRunProbe, Reason = "True while the game's window is the active one, as it was in the runs measured; a window the player has switched away from isn't measured, and a run has none")]
+    public bool BlzIsLocalClientActive() => true;
 
     /// <summary>The player's living town halls of any race and tier, one being built too; the melee script reveals a player that has none.</summary>
     [Native(Level.Close)] public int BlzGetPlayerTownHallCount(player? whichPlayer) => whichPlayer is null ? 0 : Mine(whichPlayer).Count(IsTownHall);
@@ -99,10 +109,16 @@ public sealed partial class GameNatives
     [Native(Level.Recorded, Reason = "The cinematic panels and model cinematics are drawn; no native reads them back")] public void BlzHideCinematicPanels(bool enable) { }
     [Native(Level.Recorded, Reason = "The cinematic panels and model cinematics are drawn; no native reads them back")] public void BlzSetCinematicEnabledDE(bool enable) { }
     [Native(Level.Recorded, Reason = "The cinematic panels and model cinematics are drawn; no native reads them back")] public void BlzPlayModelCinematicGameAtPosition(string? modelName, float posX, float posY, float posZ, float RotZ) { }
-    [Native(Level.Close)] public bool BlzPreloadModelCinematicGame(string? modelName) => true;
-    [Native(Level.Close)] public int BlzGetModelCinematicGameCurrentShot() => 0;
-    [Native(Level.Close)] public float BlzGetModelCinematicGameRemainingTime() => 0;
-    [Native(Level.Close)] public int BlzGetModelCinematicGameShotCount() => 0;
+    [Native(Level.Close, Fact = TestRunProbe, Reason = "True only for the empty name, as the game answered; a model it would load as a cinematic wasn't found (a camera model, a unit's and a name with no folder gave false), so none answers true here")]
+    public bool BlzPreloadModelCinematicGame(string? modelName) => modelName == "";
+    [Native(Level.Close, Fact = TestRunProbe, Reason = "A model cinematic plays only from BlzPlayModelCinematicGameAtPosition, which is Recorded here; the game answered 0 with none playing")]
+    public int BlzGetModelCinematicGameCurrentShot() => 0;
+
+    [Native(Level.Close, Fact = TestRunProbe, Reason = "A model cinematic plays only from BlzPlayModelCinematicGameAtPosition, which is Recorded here; the game answered 0.0 with none playing")]
+    public float BlzGetModelCinematicGameRemainingTime() => 0;
+
+    [Native(Level.Close, Fact = TestRunProbe, Reason = "A model cinematic plays only from BlzPlayModelCinematicGameAtPosition, which is Recorded here; the game answered 0 with none playing")]
+    public int BlzGetModelCinematicGameShotCount() => 0;
 
     [Native(Level.Recorded, Reason = "The automation harness of the game's own tests; nothing here runs it")] public void AutomationSetTestType(string? testType) { }
     [Native(Level.Recorded, Reason = "The automation harness of the game's own tests; nothing here runs it")] public void AutomationTestEnd() { }
@@ -138,16 +154,15 @@ public sealed partial class GameNatives
             _settings[$"tax{sourcePlayer.GetHashCode()},{otherPlayer.GetHashCode()},{whichResource.Id}"] = rate;
     }
 
-    /// <summary>Close: the scores come with the game's counting (waves 3 and 6); 0 until then.</summary>
-    [Native(Level.Close)] public int GetPlayerScore(player? whichPlayer, playerscore? whichPlayerScore) => 0;
-
     /// <summary>The difficulty the run seats its computers at, Normal unless it says otherwise (decisions D141, D430); Close.</summary>
     [Native(Level.Close)] public aidifficulty? GetAIDifficulty(player? num) => Convert<aidifficulty>(Difficulty);
 
-    [Native(Level.Close)] public player? GetTournamentFinishNowPlayer() => null;
-    [Native(Level.Close)] public int GetTournamentFinishNowRule() => 0;
-    [Native(Level.Close)] public float GetTournamentFinishSoonTimeRemaining() => 0;
-    [Native(Level.Close)] public int GetTournamentScore(player? whichPlayer) => 0;
+    const string NoTournament = "A test run is not a tournament game: the game answered nil, 0, 0.0 and 0 for the four, whichever player was asked";
+
+    [Native(Level.Close, Fact = TestRunProbe, Reason = NoTournament)] public player? GetTournamentFinishNowPlayer() => null;
+    [Native(Level.Close, Fact = TestRunProbe, Reason = NoTournament)] public int GetTournamentFinishNowRule() => 0;
+    [Native(Level.Close, Fact = TestRunProbe, Reason = NoTournament)] public float GetTournamentFinishSoonTimeRemaining() => 0;
+    [Native(Level.Close, Fact = TestRunProbe, Reason = NoTournament)] public int GetTournamentScore(player? whichPlayer) => 0;
 
     /// <summary>Both game versions are supported by the installed game and compatible with it.</summary>
     [Native(Level.Close)] public bool VersionCompatible(version? whichVersion) => whichVersion is not null;
@@ -166,11 +181,15 @@ public sealed partial class GameNatives
     [Native(Level.Recorded, Reason = "Saved games are the game's files; a test run keeps none")] public void SaveGame(string? saveFileName) { }
     [Native(Level.Recorded, Reason = "Saved games are the game's files; a test run keeps none")] public void SaveGameCheckpoint(string? saveFileName, bool showWindow) { }
     [Native(Level.Recorded, Reason = "Saved games are the game's files; a test run keeps none")] public void SetMaxCheckpointSaves(int maxCheckpointSaves) { }
-    [Native(Level.Close)] public bool SaveGameExists(string? saveName) => false;
-    [Native(Level.Close)] public bool CopySaveGame(string? sourceSaveName, string? destSaveName) => false;
-    [Native(Level.Close)] public bool RemoveSaveDirectory(string? sourceDirName) => false;
-    [Native(Level.Close)] public bool RenameSaveDirectory(string? sourceDirName, string? destDirName) => false;
-    [Native(Level.Close)] public string? GetSaveBasicFilename() => "";
+    const string NoSaves = "A test run keeps no saved games (SaveGame is Recorded): the game answered false for a name that doesn't exist, and a save of its own isn't measured";
+
+    [Native(Level.Close, Fact = TestRunProbe, Reason = NoSaves)] public bool SaveGameExists(string? saveName) => false;
+    [Native(Level.Close, Fact = TestRunProbe, Reason = NoSaves)] public bool CopySaveGame(string? sourceSaveName, string? destSaveName) => false;
+    [Native(Level.Close, Fact = TestRunProbe, Reason = NoSaves)] public bool RemoveSaveDirectory(string? sourceDirName) => false;
+    [Native(Level.Close, Fact = TestRunProbe, Reason = NoSaves)] public bool RenameSaveDirectory(string? sourceDirName, string? destDirName) => false;
+
+    [Native(Level.Close, Fact = TestRunProbe, Reason = "A test run isn't a game loaded from a save: the game answered the empty string, before and after copies, removals and renames that found nothing")]
+    public string? GetSaveBasicFilename() => "";
     [Native(Level.Close)] public string? SkinManagerGetLocalPath(string? key) => key;
 
     /// <summary>Ends the run as EndGame does: the next level, the restart and the load are other maps' runs, which this one doesn't make.</summary>
@@ -190,13 +209,33 @@ public sealed partial class GameNatives
     [Native(Level.Close)]
     public void SetUnitPathing(unit? whichUnit, bool flag)
     {
-        if (whichUnit is not null) whichUnit.NoPathing = !flag;
+        if (whichUnit is not null) whichUnit.PathingOff = !flag;
     }
 
-    [Native(Level.Recorded, Reason = "Construction and upgrade progress are drawn; they come with buildings (wave 3)")] public void UnitSetConstructionProgress(unit? whichUnit, int constructionPercentage) { }
-    [Native(Level.Recorded, Reason = "Construction and upgrade progress are drawn; they come with buildings (wave 3)")] public void UnitSetUpgradeProgress(unit? whichUnit, int upgradePercentage) { }
+    // The rest of the build time is what the percentage leaves of it, counted from now, and the life jumps to the building's tenth and that share of it more
+    // (probe units-construction, D796). Close: a negative percentage finishes it as 100 does, as measured, and 0 was not seen to finish; life while it grows is flat here
+    [Native(Level.Close, Fact = "probes/expected/units-construction.txt")]
+    public void UnitSetConstructionProgress(unit? whichUnit, int constructionPercentage)
+    {
+        if (whichUnit is not { Constructing: true } building) return;
+        var percent = constructionPercentage < 0 ? 100 : Math.Min(constructionPercentage, 100);
+        var left = Math.Max(building.Type.Real(BuildTime), 0.1) * (1 - percent / 100.0);
+        building.Life = Math.Min(building.MaxLife, building.MaxLife * (StartLifeShare + percent / 100f));
+        building.ConstructDone = _game.Step + (percent == 100 ? 0 : Math.Max(1, Game.Steps(left)));
+        if (percent == 100) FinishBuilding(building);
+        else _game.At(building.ConstructDone, () => FinishBuilding(building));
+    }
 
-    [Native(Level.Recorded, Reason = "Crippling hides an opponent's view of the player; visibility comes with wave 6")] public void CripplePlayer(player? whichPlayer, force? toWhichPlayers, bool flag) { }
+    // The upgrade of a building to another type finishes the rest of its time after now; training and research are not changed (probe units-construction)
+    [Native(Level.Close, Fact = "probes/expected/units-construction.txt")]
+    public void UnitSetUpgradeProgress(unit? whichUnit, int upgradePercentage)
+    {
+        if (whichUnit is not { Train: [{ Started: true, Upgrade: true } item, ..] } building) return;
+        item.Done = _game.Step + Math.Max(1, Game.Steps(item.Seconds * (1 - Math.Clamp(upgradePercentage, 0, 100) / 100.0)));
+        _game.At(item.Done, () => FinishTraining(building, item));
+    }
+
+    [Native(Level.Recorded, Reason = "Crippling a player to a force (melee's exposing of a defeated player's units to its enemies) changed none of the visibility reads in the game: the player's units and the ground under them read the same for the force, crippled or not, with fog and mask on or off (probe units-cripple, D796)")] public void CripplePlayer(player? whichPlayer, force? toWhichPlayers, bool flag) { }
 
     /// <summary>The cliff level of the corner nearest the point, as the ground's tiles give it; 0 off the map.</summary>
     [Native(Level.Close)]

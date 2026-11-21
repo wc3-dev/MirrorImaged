@@ -1,0 +1,28 @@
+# probes/units-suspend-decay.lua on 3.0.1.24371, single player, 11-21 (L-mirror-trust-levels, D793, Close): the game's lines, one run, on Reforged
+# graphics (hd=2); a classic run (11-21) gave the same lines, so one file serves both. Eight footmen killed
+# together, each given UnitSuspendDecay in a way of its own: all decayed at 3.14 s, and all but two were gone at 93.25 s as the one never suspended;
+# the one suspended in the bone stage (4 s) and never let go, and the one suspended before its death and let go at 20 s, were there at 100 s.
+never death 0.10
+before death 0.10
+inside death death 0.10
+flesh stage death 0.10
+bone stage death 0.10
+lifted in flesh death 0.10
+lifted in bones death 0.10
+before lifted at 20 death 0.10
+never decay 3.14
+before decay 3.14
+inside death decay 3.14
+flesh stage decay 3.14
+bone stage decay 3.14
+lifted in flesh decay 3.14
+lifted in bones decay 3.14
+before lifted at 20 decay 3.14
+lifted in bones gone 93.25
+lifted in flesh gone 93.25
+flesh stage gone 93.25
+inside death gone 93.25
+before gone 93.25
+never gone 93.25
+bone stage still there false 0.0
+before lifted at 20 still there false 0.0

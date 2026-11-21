@@ -1,0 +1,8 @@
+# Where MirrorImaged differs from the game's lines in expected/units-pathing-flag.txt, in order, with why (decisions D799): a line starting - is the game's, + MirrorImaged's.
+
+# Units do not collide with each other in the run (no unit collision yet: the unit collision lane's work), so a footman with its pathing on walks straight through the wall too, as
+# it does with SetUnitPathing(u, false), whose flag is kept on the unit and read by nothing yet.
+- pathing on: got through true, strayed -140 to 0
++ pathing on: got through true, strayed 0 to 0
+- pathing off then on at 0.5 s: got through true, strayed -155 to 0
++ pathing off then on at 0.5 s: got through true, strayed 0 to 0

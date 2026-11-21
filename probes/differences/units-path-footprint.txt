@@ -1,3 +1,6 @@
+# Where MirrorImaged differs from the game's lines in expected/units-path-footprint.txt, in order, with why (decisions D121): a line
+# starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
+
 # Walking round a building (D720, D780 to D782, Close): footprints are the pathing textures, set as the game sets them, and 16 of the 30 lines are the game's. The rest are within 8 of the game's nearest approach, or the game bows out by 16 to 48 where the line passes 32 to 112 clear of a small building (a farm at offsets 96 to 192) and MirrorImaged walks straight.
 - htow offset 0: deviation 192, arrived {t} s, nearest 184, collision 176
 + htow offset 0: deviation 192, arrived 7.55 s, nearest 192, collision 176

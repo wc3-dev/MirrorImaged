@@ -1,0 +1,28 @@
+# probes/units-scores.lua on 3.0.1.24371, single player, 11-21 (L-mirror-trust-levels, D794, Close): the game's lines, one run, on Reforged graphics (hd=2);
+# the units' costs and food are the same in both modes' data, and a classic run wasn't made, so one file serves both. Player 0's 25 scores (PLAYER_SCORE_*
+# 0 to 24) after each step: CreateUnit of 2 footmen, a Paladin, a Barracks and a Town Hall (UNITS_TRAINED 3, STRUCT_BUILT 2, FOOD_MAXPROD 112 of the cap set
+# to 100 and the hall's 12, FOOD_MAXUSED 9, UNIT_TOTAL = TOTAL 1605, the costs summed); enemy units killed by Player 0's (footman 40 experience, hero 100,
+# a barracks none: HERO_TOTAL 8 times the experience); a unit with no killer, and the player's own, change only what making them did; TECH_PERCENT
+# ({t}) read 2 after SetPlayerTechResearched here and 0 in an earlier run and in a classic run (11-21), so it varies by run; a unit trained counts when it finishes (UNITS_TRAINED 7 to 8 at 20 s) and a farm
+# built when it is done (STRUCT_BUILT 2 to 3, FOOD_MAXPROD +6, +100 in UNIT_TOTAL); gold mined 10 a trip (GOLD_MINED_TOTAL = _UPKEEP = RESOURCE_TOTAL);
+# an item picked up by an order counted in ITEMS_GAINED, those put in the pack by script didn't.
+start 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+made 3 0 2 0 0 112 9 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1605 0 0 1605 structures 2 units 3
+later 3 0 2 0 0 112 9 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1605 0 0 1605 structures 2 units 3
+killed footman 3 1 2 0 0 112 9 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1740 320 0 2060 structures 2 units 3
+killed hero 3 2 2 0 0 112 9 1 0 0 0 0 0 0 0 0 0 0 0 0 0 2265 1120 0 3385 structures 2 units 3
+killed building 3 2 2 1 0 112 9 1 0 0 0 0 0 0 0 0 0 0 0 0 0 2485 1120 0 3605 structures 2 units 3
+killed with no killer 3 2 2 1 0 112 9 1 0 0 0 0 0 0 0 0 0 0 0 0 0 2485 1120 0 3605 structures 2 units 3
+killed by hero 3 3 2 1 0 112 9 1 0 0 0 0 0 0 0 0 0 0 0 0 0 2620 1440 0 4060 structures 2 units 3
+own killed by enemy 4 3 2 1 0 112 11 1 0 0 0 0 0 0 0 0 0 0 0 0 0 2755 1440 0 4195 structures 2 units 3
+own killed by self 5 3 2 1 0 112 11 1 0 0 0 0 0 0 0 0 0 0 0 0 0 2890 1440 0 4330 structures 2 units 3
+items 5 3 2 1 0 112 11 1 0 0 0 0 0 0 0 0 0 0 0 0 0 2890 1440 0 4330 structures 2 units 3
+researched 5 3 2 1 {t} 112 11 1 0 0 0 0 0 0 0 0 0 0 0 0 0 2890 1440 0 4330 structures 2 units 3
+build order true
+begun 7 3 2 1 {t} 112 13 1 0 0 0 0 0 0 0 0 0 0 0 0 0 3040 1440 0 4480 structures 2 units 7
+pick up order true
+pick up 7 3 2 1 {t} 112 13 1 0 0 0 0 0 0 0 0 0 0 0 0 0 3040 1440 0 4480 structures 2 units 7
+picked up 7 3 2 1 {t} 112 13 1 1 0 10 10 0 0 0 0 0 0 0 0 0 3040 1440 10 4490 structures 3 units 7
+25 s 8 3 2 1 {t} 112 15 1 1 0 70 70 0 0 0 0 0 0 0 0 0 3175 1440 70 4685 structures 3 units 7
+46 s 9 3 3 1 {t} 118 15 1 1 0 130 130 0 0 0 0 0 0 0 0 0 3410 1440 130 4980 structures 3 units 7
+60 s 9 3 3 1 {t} 118 15 1 1 0 170 170 0 0 0 0 0 0 0 0 0 3410 1440 170 5020 structures 3 units 7

@@ -265,4 +265,28 @@ public sealed class GameStateNativesTests
         Assert.Equal(3, _natives.GetStartLocPrioSlot(1, 1));
         Assert.Same(_natives.ConvertStartLocPrio(1), _natives.GetStartLocPrio(1, 1));
     }
+
+    // probe players-start-priorities: only the slots inside the count are kept; a new slot reads -1 as its other location, a slot past the count 0;
+    // a smaller count drops the slots past it and a bigger one starts new ones at -1
+    [Fact]
+    public void A_start_locations_priorities_are_the_slots_inside_its_count()
+    {
+        string Slots(int location) => string.Join(' ', Enumerable.Range(0, 5).Select(slot => _natives.GetStartLocPrioSlot(location, slot)));
+
+        _natives.SetStartLocPrio(0, 0, 1, _natives.ConvertStartLocPrio(1));
+        Assert.Equal("0 0 0 0 0", Slots(0));
+        _natives.SetStartLocPrioCount(0, 3);
+        Assert.Equal("-1 -1 -1 0 0", Slots(0));
+        foreach (var slot in new[] { 0, 1, 2, 3, -1 }) _natives.SetStartLocPrio(0, slot, slot + 1, _natives.ConvertStartLocPrio(1));
+        Assert.Equal("1 2 3 0 0", Slots(0));
+        _natives.SetStartLocPrioCount(0, 2);
+        Assert.Equal("1 2 0 0 0", Slots(0));
+        _natives.SetStartLocPrioCount(0, 5);
+        Assert.Equal("1 2 -1 -1 -1", Slots(0));
+        _natives.SetStartLocPrioCount(0, 0);
+        Assert.Equal("0 0 0 0 0", Slots(0));
+        _natives.SetStartLocPrioCount(0, -1);
+        Assert.Equal("0 0 0 0 0", Slots(0));
+        Assert.Equal("0 0 0 0 0", Slots(1));
+    }
 }

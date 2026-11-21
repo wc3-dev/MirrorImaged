@@ -1,0 +1,5 @@
+# probes/units-equip-types.lua on 3.0.1.24371, single player, 11-21 (L-mirror-trust-levels, D792): the game's lines, one run, on Reforged graphics
+# (hd=2); the unit types are the same in both modes' data (864), so one file serves both. UnitCanEquipItemOfEquipmentType and its Blz twin answered false
+# in each of 34,560 calls: for every unit type of the data, made, then with the equipment and bag abilities (AEqu, AIni) given, asked for each equipment
+# type 0 to 9. (items-abilities: false too for a Paladin and a footman with and without them, a nil unit or type, and a Paladin wearing gloves.)
+types 864 made 864 asked 34560 true 0

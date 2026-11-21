@@ -9,10 +9,6 @@ public sealed partial class GameNatives
     // ---- Spells and the orders that come with them (wave 4)
 
 
-    /// <summary>Using an item on a place or target needs its ability's cast (wave 4): refused.</summary>
-    [Native(Level.Close)] public bool UnitUseItemPoint(unit? whichUnit, item? whichItem, float x, float y) => false;
-    [Native(Level.Close)] public bool UnitUseItemTarget(unit? whichUnit, item? whichItem, widget? target) => false;
-
     [Native(Level.Close)]
     public @event? TriggerRegisterCommandEvent(trigger? whichTrigger, int whichAbility, string? order) => whichTrigger is null ? null : Register(whichTrigger);
 
@@ -21,14 +17,21 @@ public sealed partial class GameNatives
 
     // ---- Combat, buildings, training, shops and summons (wave 3)
 
-    [Native(Level.Close)] public item? BlzGetAbsorbingItem() => null;
-    [Native(Level.Close)] public bool BlzGetManipulatedItemWasAbsorbed() => false;
+    const string NoAbsorbing = "No item is absorbed here, as none was in the game (facts, Items: stacking was never seen, and what makes items stack isn't known), so every read is outside one: nil and false (probe natives-test-run)";
 
-    [Native(Level.Recorded, Reason = "Auras are drawn and counted by abilities, which come with wave 4; nothing reads the switch back")]
-    public void BlzUnitEnableAuras(unit? whichUnit, bool enable, bool affectsUI) { }
+    [Native(Level.Close, Fact = TestRunProbe, Reason = NoAbsorbing)] public item? BlzGetAbsorbingItem() => null;
+    [Native(Level.Close, Fact = TestRunProbe, Reason = NoAbsorbing)] public bool BlzGetManipulatedItemWasAbsorbed() => false;
 
-    /// <summary>No run fires the victory event with a winner (left for wave 6): nil.</summary>
-    [Native(Level.Close)] public player? GetWinningPlayer() => null;
+    // Close: a unit whose auras are off gives none; the buffs it gave end with their own time (probe units-resets). The flag that sets what the
+    // aura's buff shows to the player is drawn only.
+    [Native(Level.Close, Fact = "probes/expected/units-resets.txt: aura switch")]
+    public void BlzUnitEnableAuras(unit? whichUnit, bool enable, bool affectsUI)
+    {
+        if (whichUnit is not null) whichUnit.AurasOff = !enable;
+    }
+
+    [Native(Level.Close, Fact = TestRunProbe, Reason = "EVENT_GAME_VICTORY never fired in the game (probe events: RemovePlayer's victory, defeat and tie of a computer and of the user), so every read is outside one: nil")]
+    public player? GetWinningPlayer() => null;
 
     // ---- Chat, keys, the mouse and trackables (wave 6)
 
@@ -38,7 +41,8 @@ public sealed partial class GameNatives
     [Native(Level.Close)]
     public @event? TriggerRegisterTrackableTrackEvent(trigger? whichTrigger, trackable? t) => whichTrigger is null || t is null ? null : Register(whichTrigger);
 
-    [Native(Level.Close)] public trackable? GetTriggeringTrackable() => null;
+    [Native(Level.Close, Reason = "Nil, as outside an event: no trackable event fires (see CreateTrackable, D795)")]
+    public trackable? GetTriggeringTrackable() => null;
 
     // ---- Sync: data sent by the local player reaches the registrations for that prefix a step later (EVENT_PLAYER_SYNC_DATA)
 

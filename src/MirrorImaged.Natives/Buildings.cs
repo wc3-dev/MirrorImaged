@@ -94,7 +94,7 @@ public sealed partial class GameNatives
 
     void FinishBuilding(unit building)
     {
-        if (!building.Constructing || building.Dead || building.Removed) return;
+        if (!building.Constructing || building.Dead || building.Removed || _game.Step < building.ConstructDone) return;
         building.Constructing = false;
         building.Owner.States[FoodCap] += building.Type.Integer(FoodMadeField);
         SetLife(building, building.MaxLife);
@@ -192,7 +192,7 @@ public sealed partial class GameNatives
 
     void FinishTraining(unit building, Training item)
     {
-        if (building.Dead || building.Removed || building.Train.Count == 0 || building.Train[0] != item) return;
+        if (building.Dead || building.Removed || building.Train.Count == 0 || building.Train[0] != item || _game.Step < item.Done) return;
         building.Train.RemoveAt(0);
         if (item.Upgrade) Transform(building, Data.Object(ObjectKind.Unit, item.Id)!);
         else if (item.Revive)
