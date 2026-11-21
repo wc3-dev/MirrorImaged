@@ -126,17 +126,18 @@ public sealed partial class GameNatives
     [Native(Level.Close)]
     public void FlushStoredString(gamecache? cache, string? missionKey, string? key) => CacheFlush(cache, 's', missionKey, key);
 
-    // Syncing sends the local player's value to the others; a run has one machine, whose caches are every player's.
-    [Native(Level.Close)]
+    const string SyncReason = "Sends the local player's value to the other machines, and a run has one, whose caches are every player's; on a single machine the game read the value the same after it (probes files and heroes-store, D793)";
+
+    [Native(Level.Recorded, Reason = SyncReason)]
     public void SyncStoredInteger(gamecache? cache, string? missionKey, string? key) { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = SyncReason)]
     public void SyncStoredReal(gamecache? cache, string? missionKey, string? key) { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = SyncReason)]
     public void SyncStoredBoolean(gamecache? cache, string? missionKey, string? key) { }
 
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = SyncReason)]
     public void SyncStoredString(gamecache? cache, string? missionKey, string? key) { }
 
     bool CacheLive(gamecache? cache) => cache is not null && _caches.TryGetValue(cache.Name, out var values) && values == cache.Values;

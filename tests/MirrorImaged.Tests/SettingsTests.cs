@@ -63,6 +63,17 @@ public sealed class SettingsTests : IDisposable
         ], lines);
     }
 
+    // probe natives-test-run: the game's model cinematic preload was true for the empty name and false for any other (a name no model has, a camera model, a unit's)
+    [Fact]
+    public void A_model_cinematic_preloads_only_for_the_empty_name()
+    {
+        var lines = Run("""
+            print(BlzPreloadModelCinematicGame(""), BlzPreloadModelCinematicGame("mirror-no-such-model"), BlzPreloadModelCinematicGame("Units/Human/Footman/Footman.mdx"))
+            """);
+
+        Assert.Equal(["true	false	false"], lines);
+    }
+
     [Fact]
     public void Units_are_made_by_name_and_cliffs_read_from_the_ground()
     {

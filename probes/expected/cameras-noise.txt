@@ -1,0 +1,52 @@
+# probes/cameras-noise.lua on 3.0.1.24371, single player, 11-21 (L-mirror-trust-levels, D794, Close): the game's lines, one run, on Reforged graphics
+# (hd=2); the heights of the still camera differ by the mode (the z offset 10 or 0), so that line is {t}s and one file serves both modes. The shake is random, so each largest and mean distance of 40 reads over 2 s is a {t};
+# in the run recorded they were, for the target (and the eye with it) with a magnitude of 10, 50 and 200: largest 6 to 8, 36 to 48 and 137 to 181, mean 2.6,
+# 10 to 15 and 40 to 48, for a velocity of 10, 50 and 500 alike; a source noise alone shook the eye and not the target (a magnitude of 200: largest 171
+# to 187, mean 49 to 54), both together added; a velocity of 0 or a magnitude of 0 shook nothing and a magnitude of -50 as 50; the Ex natives with
+# vertOnly true shook only the height; and set to 0 again the target and the eye read as still within 2.5 s.
+still target {t} {t} {t} eye {t} {t} {t}
+source 50 50 target max {t} {t} {t} eye max {t} {t} {t}
+source 50 50 target mean {t} {t} {t} eye mean {t} {t} {t}
+source 50 50 cleared 0.0000 0.0000
+target 50 50 target max {t} {t} {t} eye max {t} {t} {t}
+target 50 50 target mean {t} {t} {t} eye mean {t} {t} {t}
+target 50 50 cleared 0.0000 0.0000
+both 50 50 target max {t} {t} {t} eye max {t} {t} {t}
+both 50 50 target mean {t} {t} {t} eye mean {t} {t} {t}
+both 50 50 cleared 0.0000 0.0000
+target 10 50 target max {t} {t} {t} eye max {t} {t} {t}
+target 10 50 target mean {t} {t} {t} eye mean {t} {t} {t}
+target 10 50 cleared 0.0000 0.0000
+target 200 50 target max {t} {t} {t} eye max {t} {t} {t}
+target 200 50 target mean {t} {t} {t} eye mean {t} {t} {t}
+target 200 50 cleared 0.0000 0.0000
+target 50 10 target max {t} {t} {t} eye max {t} {t} {t}
+target 50 10 target mean {t} {t} {t} eye mean {t} {t} {t}
+target 50 10 cleared 0.0000 0.0000
+target 50 500 target max {t} {t} {t} eye max {t} {t} {t}
+target 50 500 target mean {t} {t} {t} eye mean {t} {t} {t}
+target 50 500 cleared 0.0000 0.0000
+target 50 0 target max {t} {t} {t} eye max {t} {t} {t}
+target 50 0 target mean {t} {t} {t} eye mean {t} {t} {t}
+target 50 0 cleared 0.0000 0.0000
+target 0 50 target max {t} {t} {t} eye max {t} {t} {t}
+target 0 50 target mean {t} {t} {t} eye mean {t} {t} {t}
+target 0 50 cleared 0.0000 0.0000
+source 200 50 target max {t} {t} {t} eye max {t} {t} {t}
+source 200 50 target mean {t} {t} {t} eye mean {t} {t} {t}
+source 200 50 cleared 0.0000 0.0000
+source ex 50 50 vertical target max {t} {t} {t} eye max {t} {t} {t}
+source ex 50 50 vertical target mean {t} {t} {t} eye mean {t} {t} {t}
+source ex 50 50 vertical cleared 0.0000 0.0000
+source ex 50 50 not vertical target max {t} {t} {t} eye max {t} {t} {t}
+source ex 50 50 not vertical target mean {t} {t} {t} eye mean {t} {t} {t}
+source ex 50 50 not vertical cleared 0.0000 0.0000
+target ex 50 50 vertical target max {t} {t} {t} eye max {t} {t} {t}
+target ex 50 50 vertical target mean {t} {t} {t} eye mean {t} {t} {t}
+target ex 50 50 vertical cleared 0.0000 0.0000
+target ex 50 50 not vertical target max {t} {t} {t} eye max {t} {t} {t}
+target ex 50 50 not vertical target mean {t} {t} {t} eye mean {t} {t} {t}
+target ex 50 50 not vertical cleared 0.0000 0.0000
+target -50 50 target max {t} {t} {t} eye max {t} {t} {t}
+target -50 50 target mean {t} {t} {t} eye mean {t} {t} {t}
+target -50 50 cleared 0.0000 0.0000

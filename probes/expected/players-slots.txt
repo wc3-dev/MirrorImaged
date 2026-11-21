@@ -1,0 +1,34 @@
+# probes/players-slots.lua on 3.0.1.24371, single player, 11-21 (L-mirror-trust-levels, D791): the game's lines, one run, on Reforged graphics (hd=2);
+# no mode reads data, so one file serves both. On the probe map (built by the editor version MapFactory writes, a recent one): 24 slots of players, the
+# neutral aggressive (24), victim (25), extra (26) and passive (27) after them, as the four creeps' that play; the user is slot 0. The 12 the game gave
+# for GetBJMaxPlayers on a map naming editor version 6051 isn't read here.
+slots 24 24 25 26 27
+constants 24 27
+slot 0 0 1 [Local Player] team 0
+slot 1 5 0 [Player 2] team -1
+slot 2 5 0 [Player 3] team -1
+slot 3 5 0 [Player 4] team -1
+slot 4 5 0 [Player 5] team -1
+slot 5 5 0 [Player 6] team -1
+slot 6 5 0 [Player 7] team -1
+slot 7 5 0 [Player 8] team -1
+slot 8 5 0 [Player 9] team -1
+slot 9 5 0 [Player 10] team -1
+slot 10 5 0 [Player 11] team -1
+slot 11 5 0 [Player 12] team -1
+slot 12 5 0 [Player 13] team -1
+slot 13 5 0 [Player 14] team -1
+slot 14 5 0 [Player 15] team -1
+slot 15 5 0 [Player 16] team -1
+slot 16 5 0 [Player 17] team -1
+slot 17 5 0 [Player 18] team -1
+slot 18 5 0 [Player 19] team -1
+slot 19 5 0 [Player 20] team -1
+slot 20 5 0 [Player 21] team -1
+slot 21 5 0 [Player 22] team -1
+slot 22 5 0 [Player 23] team -1
+slot 23 5 0 [Player 24] team -1
+slot 24 4 1 [Player 25] team 0
+slot 25 4 1 [Player 26] team 0
+slot 26 4 1 [Player 27] team 0
+slot 27 4 1 [Player 28] team 0

@@ -1,0 +1,12 @@
+# Where MirrorImaged differs from the game's lines in expected/items-abilities.txt, in order, with why (decisions D121): a line starting - is the
+# game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
+
+# BlzItemAddAbility and BlzItemRemoveAbility (not the lane's natives, left Close): the game answered true to adding an ability an item didn't have, again
+# when it was added twice, and false to removing it; for an ability of the item's own list it answered false to adding and true to removing. MirrorImaged
+# keeps an added ability and refuses the second add, and removes what was added (D794).
+- added true false index 1 0 twice true
++ added true false index 1 0 twice false
+- removed false nil handle 0
++ removed true nil handle 0
+- item add false false true false remove false false true false
++ item add true false true false remove true false true false

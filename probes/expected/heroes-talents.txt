@@ -1,0 +1,10 @@
+# probes/heroes-talents.lua on 3.0.1.24371, single player, 11-21 (L-mirror-trust-levels, D793): the game's lines, one run, on Reforged graphics
+# (hd=2); the abilities a Paladin has are the same in both modes' data, and a classic run wasn't made, so one file serves both. The talent
+# abilities ATal and ATua can't be added to a hero (UnitAddAbility false), and BlzResetUnitTalents changed neither a plain Paladin of level 10 nor one
+# the script tried to give them, nor its skill points.
+plain level 10 points 10 abilities AInv,AHer,Aatk,Amov
+plain reset level 10 points 10 abilities AInv,AHer,Aatk,Amov
+added false false level 10 points 10 abilities AInv,AHer,Aatk,Amov
+talented reset level 10 points 10 abilities AInv,AHer,Aatk,Amov
+ATal level 0
+ATua level 0

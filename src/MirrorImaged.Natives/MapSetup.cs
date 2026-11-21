@@ -53,24 +53,31 @@ public sealed partial class GameNatives
     [Native(Level.Close)]
     public float GetStartLocationY(int whichStartLocation) => _startLocations.GetValueOrDefault(whichStartLocation).Y;
 
-    /// <summary>
-    /// How many priorities the start location has, which the lobby's placement reads. Close rather than Recorded:
-    /// whether GetStartLocPrio and GetStartLocPrioSlot read the slots past it differently isn't measured; here they read
-    /// what was set, whatever the count.
-    /// </summary>
-    [Native(Level.Close)]
-    public void SetStartLocPrioCount(int whichStartLoc, int prioSlotCount) { }
+    // Only the slots inside the count are kept (probe players-start-priorities, D794): a slot made by a bigger count reads -1 as its other location, one past
+    // the count 0, and a smaller count drops the slots past it; a set outside the count changes nothing
+    readonly Dictionary<int, int> _startPriorityCounts = [];
 
-    [Native(Level.Close)]
-    public void SetStartLocPrio(int whichStartLoc, int prioSlotIndex, int otherStartLocIndex, startlocprio? priority) =>
-        _startPriorities[(whichStartLoc, prioSlotIndex)] = (otherStartLocIndex, priority?.Id ?? 0);
+    [Native(Level.Exact, Fact = "probe players-start-priorities (11-21, D794)")]
+    public void SetStartLocPrioCount(int whichStartLoc, int prioSlotCount)
+    {
+        var (was, now) = (_startPriorityCounts.GetValueOrDefault(whichStartLoc), Math.Max(prioSlotCount, 0));
+        for (var slot = now; slot < was; slot++) _startPriorities.Remove((whichStartLoc, slot));
+        for (var slot = was; slot < now; slot++) _startPriorities[(whichStartLoc, slot)] = (-1, 0);
+        _startPriorityCounts[whichStartLoc] = now;
+    }
 
-    /// <summary>The other start location of the priority; 0 for one not set (not measured).</summary>
-    [Native(Level.Close)]
+    [Native(Level.Exact, Fact = "probe players-start-priorities (11-21, D794)")]
+    public void SetStartLocPrio(int whichStartLoc, int prioSlotIndex, int otherStartLocIndex, startlocprio? priority)
+    {
+        if (prioSlotIndex >= 0 && prioSlotIndex < _startPriorityCounts.GetValueOrDefault(whichStartLoc)) _startPriorities[(whichStartLoc, prioSlotIndex)] = (otherStartLocIndex, priority?.Id ?? 0);
+    }
+
+    // The other start location of the priority; -1 for a slot inside the count not set and 0 past it (probe players-start-priorities)
+    [Native(Level.Exact, Fact = "probe players-start-priorities (11-21, D794)")]
     public int GetStartLocPrioSlot(int whichStartLoc, int prioSlotIndex) => _startPriorities.GetValueOrDefault((whichStartLoc, prioSlotIndex)).Other;
 
-    /// <summary>The priority set; MAP_LOC_PRIO_LOW for one not set (not measured).</summary>
-    [Native(Level.Close)]
+    // The priority set; MAP_LOC_PRIO_LOW for one not set
+    [Native(Level.Exact, Fact = "probe players-start-priorities (11-21, D794)")]
     public startlocprio? GetStartLocPrio(int whichStartLoc, int prioSlotIndex) =>
         Convert<startlocprio>(_startPriorities.GetValueOrDefault((whichStartLoc, prioSlotIndex)).Priority);
 

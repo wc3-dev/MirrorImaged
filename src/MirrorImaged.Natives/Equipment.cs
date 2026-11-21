@@ -112,11 +112,12 @@ public sealed partial class GameNatives
     [Native(Level.Close)]
     public itemTag? BlzGetItemTag(item? whichItem) => GetItemTag(whichItem);
 
-    /// <summary>False for gloves while equipping them works (facts, 10-19): nothing here says true.</summary>
-    [Native(Level.Close, Fact = EquipFacts)]
+    // False in each of 34,560 calls: every unit type of the data, with and without the equipment and bag abilities, for each equipment type 0 to 9 (probe
+    // units-equip-types, D792), and for gloves while equipping them works (facts, 10-19)
+    [Native(Level.Exact, Fact = "probe units-equip-types (11-21, D792); " + EquipFacts)]
     public bool UnitCanEquipItemOfEquipmentType(unit? whichUnit, equipmentType? equipmentId) => false;
 
-    [Native(Level.Close, Fact = EquipFacts)]
+    [Native(Level.Exact, Fact = "probe units-equip-types (11-21, D792); " + EquipFacts)]
     public bool BlzUnitCanEquipItemOfEquipmentType(unit? whichUnit, equipmentType? equipmentId) => false;
 
     [Native(Level.Close, Fact = EquipFacts)]
@@ -221,10 +222,12 @@ public sealed partial class GameNatives
     [Native(Level.Close)]
     public bool BlzItemRemoveAbility(item? whichItem, int abilCode) => Live(whichItem) is { } i && AddedAbilities(i).Remove(abilCode);
 
-    /// <summary>Close: the ability objects of items aren't made; nil.</summary>
-    [Native(Level.Close)]
-    public ability? BlzGetItemAbility(item? whichItem, int abilCode) => null;
+    // The abilities an item holds are the ones it put on its carrier, the unit's own handles in the order of the item's list; a free item holds none (probe
+    // items-abilities, D794)
+    [Native(Level.Close, Fact = "probe items-abilities (11-21, D794)", Reason = "Only what the item's data lists and the carrier has from it; what BlzItemAddAbility adds isn't held (the game read none of those either, and refused the add of one it had)")]
+    public ability? BlzGetItemAbility(item? whichItem, int abilCode) => Live(whichItem)?.Given.Find(a => a.Type.Id == abilCode) is { } found ? Out(found) : null;
 
-    [Native(Level.Close)]
-    public ability? BlzGetItemAbilityByIndex(item? whichItem, int index) => null;
+    [Native(Level.Close, Fact = "probe items-abilities (11-21, D794)", Reason = "Only what the item's data lists and the carrier has from it; what BlzItemAddAbility adds isn't held (the game read none of those either, and refused the add of one it had)")]
+    public ability? BlzGetItemAbilityByIndex(item? whichItem, int index) =>
+        Live(whichItem) is { } i && index >= 0 && index < i.Given.Count ? Out(i.Given[index]) : null;
 }

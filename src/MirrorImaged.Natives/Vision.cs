@@ -115,8 +115,10 @@ public sealed partial class GameNatives
     public bool IsUnitInvisible(unit? whichUnit, player? whichPlayer) =>
         whichUnit is not null && whichPlayer is not null && whichUnit.Owner != whichPlayer && !IsPlayerAlly(whichUnit.Owner, whichPlayer) && whichUnit.Buffs.Any(b => b.Invisible);
     [Native(Level.Close)] public bool IsUnitDetected(unit? whichUnit, player? whichPlayer) => IsUnitVisible(whichUnit, whichPlayer);
-    [Native(Level.Close)] public unit? GetDetectedUnit() => null;
-    [Native(Level.Close)] public player? GetEventDetectingPlayer() => null;
+    const string NoDetectedEvent = "No detected event fires here, as none did in the game (probe units-detected: an invisible footman came within a detector's range and left it, 6 s, no event), so every read is outside one: nil";
+
+    [Native(Level.Close, Fact = "probe units-detected (11-21, D791)", Reason = NoDetectedEvent)] public unit? GetDetectedUnit() => null;
+    [Native(Level.Close, Fact = "probe units-detected (11-21, D791)", Reason = NoDetectedEvent)] public player? GetEventDetectingPlayer() => null;
 
     [Native(Level.Close, Fact = VisionFacts)]
     public bool IsUnitInForce(unit? whichUnit, force? whichForce) => whichUnit is not null && IsPlayerInForce(whichUnit.Owner, whichForce);
@@ -244,7 +246,8 @@ public sealed partial class GameNatives
     [Native(Level.Recorded, Reason = "Sends the local player's selection to the others; the selections are kept for each player here")]
     public void SyncSelections() { }
 
-    [Native(Level.Close)] public unit? BlzGetMouseFocusUnit() => null;
+    [Native(Level.Close, Fact = TestRunProbe, Reason = "A test run has no mouse over a unit: the game answered nil with the pointer nowhere on one; a unit under a scripted mouse isn't read")]
+    public unit? BlzGetMouseFocusUnit() => null;
 
     /// <summary>Registers; fires when units walk into range, which comes with movement (wave 3).</summary>
     [Native(Level.Close)]

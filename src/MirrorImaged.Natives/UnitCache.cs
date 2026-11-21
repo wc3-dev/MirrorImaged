@@ -33,8 +33,7 @@ public sealed partial class GameNatives
     [Native(Level.Close, Fact = StoredProbe)]
     public void FlushStoredUnit(gamecache? cache, string? missionKey, string? key) => CacheFlush(cache, 'u', missionKey, key);
 
-    // Syncing sends the local player's value to the others: a run has one machine (as SyncStoredInteger)
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = SyncReason)]
     public void SyncStoredUnit(gamecache? cache, string? missionKey, string? key) { }
 
     /// <summary>

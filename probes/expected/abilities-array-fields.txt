@@ -1,0 +1,10 @@
+# probes/abilities-array-fields.lua on 3.0.1.24371, single player, 11-21 (L-mirror-trust-levels, D792): the game's lines, one run, on Reforged
+# graphics (hd=2); the lines hold counts the data can't change (every field answered the empty default, every set, add and remove false), so
+# one file serves both modes. 860 ids (every ability field common.j names) and 10 more the object data keeps lists in, as each of the four
+# kinds, on four abilities, at levels 0 and 1 and indexes -1 to 3.
+read reads 138720 other than the default 0
+set calls 27744 true 0
+add calls 27744 true 0
+read after reads 138720 other than the default 0
+remove calls 27744 true 0
+read last reads 138720 other than the default 0

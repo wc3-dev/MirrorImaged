@@ -89,6 +89,7 @@ public sealed partial class GameNatives
         var take = Math.Min(IntegerOf(mine, HauntedMine, Gld1, TripLoad), GetResourceAmount(mine));
         AddResourceAmount(mine, -take);
         SetPlayerState(u.Owner, Convert<playerstate>(Gold), u.Owner.States[Gold] + take);
+        u.Owner.GoldMined += take;
         return true;
     }
 
@@ -153,6 +154,7 @@ public sealed partial class GameNatives
         if (Distance2(hall.X - u.X, hall.Y - u.Y) > reach * reach) return Walk(u, hall.X, hall.Y, follow: true);
         SetPlayerState(u.Owner, Convert<playerstate>(Gold), u.Owner.States[Gold] + u.CarryGold);
         SetPlayerState(u.Owner, Convert<playerstate>(Lumber), u.Owner.States[Lumber] + u.CarryLumber);
+        u.Owner.GoldMined += u.CarryGold;
         (u.CarryGold, u.CarryLumber) = (0, 0);
         if (SpentTarget(this, u.HarvestTarget)) return Finish(u);
         u.Order = OrderHarvest;
