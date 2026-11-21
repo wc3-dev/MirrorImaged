@@ -10,6 +10,7 @@ public partial class unit
     internal (float X, float Y)? PathGoal;                  // where that path leads
     internal bool NoPathing;                                // SetUnitPathing off: it walks through units and others through it
     internal double WaitingSince = -1;                      // when another unit stopped its walk, -1 while it walks
+    internal (float X, float Y)? SpotFor;                   // the place another unit stood on, for which it makes for the nearest clear one
 }
 
 // Finding a way round what blocks a walker: the unwalkable cells of the map and the buildings standing in the way, on the 32 grid of the
@@ -109,6 +110,7 @@ public sealed partial class GameNatives
         {
             u.Path.Clear();
             u.PathGoal = (x, y);
+            u.SpotFor = null;
             // The game's unit sets out round what stands between it and the place, not when it reaches it (probe units-path-footprint)
             // (not toward a place that is itself blocked, as one past the world's edge: the walk goes straight on until it is stopped)
                         if (Seconds >= u.ReplanAt && !Blocked(u, x, y) && LineBlocked(u, u.X, u.Y, x, y))
@@ -207,17 +209,19 @@ public sealed partial class GameNatives
         // A unit standing on the place: the walker makes for the nearest place clear of it, and ends there
         if (other.Order == 0 && Apart(other, x, y) < Room(u, other))
         {
+            if (u.SpotFor == (x, y)) return Finish(u);
             var (fx, fy) = Clear(u, x, y);
-            if (Distance2(fx - u.X, fy - u.Y) <= step * step || u.Path.Count == 1 && u.Path[0] == (fx, fy)) return Finish(u);
+            if (Distance2(fx - u.X, fy - u.Y) <= step * step) return Finish(u);
+            u.SpotFor = (x, y);
             u.Path.Clear();
             u.Path.Add((fx, fy));
             return true;
         }
         var away = (other.X - u.X) * uy - (other.Y - u.Y) * ux > 0 ? 1 : -1;
-        foreach (var turn in SideTurns)
+        foreach (var (c, sine) in SideTurns)
             foreach (var side in new[] { away, -away })
             {
-                var (c, s) = (MathF.Cos(turn * side), MathF.Sin(turn * side));
+                var s = sine * side;
                 var (nx, ny) = (u.X + (ux * c - uy * s) * step, u.Y + (ux * s + uy * c) * step);
                 if (Blocked(u, nx, ny) || UnitInTheWay(u, nx, ny) is not null) continue;
                 u.Facing.Go(MathF.Atan2(ny - u.Y, nx - u.X), Seconds, 0);
@@ -256,7 +260,8 @@ public sealed partial class GameNatives
         return (x, y);
     }
 
-    static readonly float[] SideTurns = [MathF.PI / 6, MathF.PI / 3, MathF.PI / 2];
+    // 30, 60 and 90 degrees, as numbers so that every platform turns alike
+    static readonly (float Cos, float Sin)[] SideTurns = [(0.8660254f, 0.5f), (0.5f, 0.8660254f), (0f, 1f)];
 
     // Whether something stops the unit on the straight line between two places, looked at every 8
     bool LineBlocked(unit u, float x0, float y0, float x1, float y1)

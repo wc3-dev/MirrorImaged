@@ -134,7 +134,7 @@ public sealed class AiTownTests : IDisposable
             local hostile = Player(PLAYER_NEUTRAL_AGGRESSIVE)
             local moved = CreateUnit(hostile, id("ngno"), 0, 3000, 0)
             local freed = CreateUnit(hostile, id("ngno"), 0, 4000, 0)
-            local posted = CreateUnit(hostile, id("ngno"), 0, 5000, 0)
+            local posted = CreateUnit(hostile, id("ngno"), 0, -1500, 0)
             local chaser = CreateUnit(hostile, id("ngno"), 0, 0, 0)
             local runner = CreateUnit(p, id("hfoo"), 300, 0, 0)
             local far = 0
@@ -142,7 +142,7 @@ public sealed class AiTownTests : IDisposable
                 SetUnitPosition(moved, 600, 3000)
                 SetUnitPosition(freed, 600, 4000)
                 RemoveGuardPosition(freed)
-                SetUnitPosition(posted, 600, 5000)
+                SetUnitPosition(posted, 600, -1500)
                 RecycleGuardPosition(posted)
                 IssuePointOrder(runner, "move", 1900, 0)
             end)

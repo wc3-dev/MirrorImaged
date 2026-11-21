@@ -52,5 +52,5 @@ public sealed class DeterminismTests : IDisposable
         Assert.Contains(simulation.Log, line => line.Contains("gold"));
     }
 
-    static readonly string[] Expected = ["826E9E975BBEDEFC", "B6D02D7714FC0CCE", "88151255E640CEDB", "FCCAF413610EFEEF", "9C9C9CB71E05EF92"];
+    static readonly string[] Expected = ["41BDB5BF0E9969F7", "56BCAE21BBF4EF03", "D478A2A0B5DB5BA8", "53A49829EF276369", "4EA28DB02D0737BF"];
 }
