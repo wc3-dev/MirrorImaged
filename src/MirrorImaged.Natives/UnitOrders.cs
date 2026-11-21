@@ -32,6 +32,7 @@ public sealed partial class GameNatives
     /// units-more and units-more-2). Close: the game also gives back the order the unit had, which comes with orders
     /// (wave 3; game-facts: the move, 0.016 s later).
     /// </summary>
+    /// <remarks>Close: the game also gives back the order the unit had (a move, 0.016 s later); here it is not given back.</remarks>
     [Native(Level.Close)]
     public void PauseUnit(unit? whichUnit, bool flag)
     {

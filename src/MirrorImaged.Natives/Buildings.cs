@@ -263,12 +263,26 @@ public sealed partial class GameNatives
         return true;
     }
 
+    /// <summary>The building of a construct start event; nil outside one.</summary>
+    /// <remarks>Close: Only the player-level event fires, common.j having no unit-level construct start; modelled on the economy, not measured (D353).</remarks>
     [Native(Level.Close)] public unit? GetConstructingStructure() => Response(UnitConstructStart, PlayerConstructStart)?.Unit;
+    /// <summary>The building of a construct finish event; nil outside one.</summary>
+    /// <remarks>Close: Fires when the build time is out; modelled on the economy, not measured (D353).</remarks>
     [Native(Level.Close)] public unit? GetConstructedStructure() => Response(UnitConstructFinish, PlayerConstructFinish)?.Unit;
+    /// <summary>The building of a construct cancel event; nil outside one.</summary>
+    /// <remarks>Close: Fires on a cancel, which refunds 75 percent of the cost; the game's refund is not measured (D353).</remarks>
     [Native(Level.Close)] public unit? GetCancelledStructure() => Response(UnitConstructCancel, PlayerConstructCancel)?.Unit;
+    /// <summary>The unit a train finish event made; nil outside one.</summary>
+    /// <remarks>Close: Fires when the queue's first unit is done; modelled on the economy, not measured (D353).</remarks>
     [Native(Level.Close)] public unit? GetTrainedUnit() => Response(UnitTrainFinish, PlayerTrainFinish)?.Other;
+    /// <summary>The type id of a train start, cancel or finish event; 0 outside one.</summary>
+    /// <remarks>Close: Read from the queue's events; modelled on the economy, not measured (D353).</remarks>
     [Native(Level.Close)] public int GetTrainedUnitType() => Response(UnitTrainStart, PlayerTrainStart, UnitTrainCancel, PlayerTrainCancel, UnitTrainFinish, PlayerTrainFinish)?.TypeId ?? 0;
+    /// <summary>The upgrade id of a research start, cancel or finish event; 0 outside one.</summary>
+    /// <remarks>Close: Read from the queue's events; modelled on the economy, not measured (D353).</remarks>
     [Native(Level.Close)] public int GetResearched() => Response(UnitResearchStart, PlayerResearchStart, UnitResearchCancel, PlayerResearchCancel, UnitResearchFinish, PlayerResearchFinish)?.TypeId ?? 0;
+    /// <summary>The building of a research start, cancel or finish event; nil outside one.</summary>
+    /// <remarks>Close: Read from the queue's events; modelled on the economy, not measured (D353).</remarks>
     [Native(Level.Close)] public unit? GetResearchingUnit() => Response(UnitResearchStart, PlayerResearchStart, UnitResearchCancel, PlayerResearchCancel, UnitResearchFinish, PlayerResearchFinish)?.Unit;
 
     // The player's dead hero of the type that a revive order names, the first made

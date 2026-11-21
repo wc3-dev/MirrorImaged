@@ -76,100 +76,135 @@ public sealed partial class GameNatives
     /// The tooltip of the level (from 0), the last level's past them and at -1; "Tool tip missing!" for an id of nothing
     /// and a buff (probe abilities-types; game-facts: "Holy Light - [|cffffcc00Level 1|r]").
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities-types (11-08); game-facts.md, Files and Preload: tooltips (11-03)).</remarks>
     [Native(Level.Exact, Fact = AbilityTypesProbe + "; game-facts.md, Files and Preload: tooltips (11-03)")]
     public string? BlzGetAbilityTooltip(int abilCode, int level) => TypeText(abilCode, "Tip", level);
 
     /// <summary>Sets the level's tooltip, kept only within the levels the data has tooltips for; "" isn't kept (probe abilities-types; game-facts, Files and Preload).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities-types (11-08); game-facts.md, Files and Preload: tooltips (11-03)).</remarks>
     [Native(Level.Exact, Fact = AbilityTypesProbe + "; game-facts.md, Files and Preload: tooltips (11-03)")]
     public void BlzSetAbilityTooltip(int abilCode, string? tooltip, int level) => SetTypeText(abilCode, "Tip", tooltip, level);
 
     /// <summary>
     /// As the tooltip, "" where there is none, its <c>&lt;id,column&gt;</c> tags filled (<see cref="ParseTags"/>).
     /// </summary>
+    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: tooltip tags and ParseTags (10-29, 11-08); MirrorImaged probe data-tags); the tags are filled by ParseTags, whose columns are measured in part.</remarks>
     [Native(Level.Close, Fact = TagFacts)]
     public string? BlzGetAbilityExtendedTooltip(int abilCode, int level) => ParseTags(TypeText(abilCode, "Ubertip", level));
 
+    /// <summary>Sets the level's extended tooltip, kept only within the levels the data has tooltips for; "" isn't kept.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities-types (11-08); game-facts.md, Files and Preload: tooltips (11-03)).</remarks>
     [Native(Level.Exact, Fact = AbilityTypesProbe + "; game-facts.md, Files and Preload: tooltips (11-03)")]
     public void BlzSetAbilityExtendedTooltip(int abilCode, string? extendedTooltip, int level) => SetTypeText(abilCode, "Ubertip", extendedTooltip, level);
 
     /// <summary>The learn tooltip, one for every level with its <c>%d</c> (game-facts; probe abilities-types).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities-types (11-08); game-facts.md, Spells and abilities: BlzGetAbilityResearchTooltip keeps its %d (10-14)).</remarks>
     [Native(Level.Exact, Fact = AbilityTypesProbe + "; game-facts.md, Spells and abilities: BlzGetAbilityResearchTooltip keeps its %d (10-14)")]
     public string? BlzGetAbilityResearchTooltip(int abilCode, int level) => TypeText(abilCode, "Researchtip", level);
 
     /// <summary>Sets the learn tooltip at level 0, the one it has; another level isn't kept (probe abilities-types).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities-types (11-08)).</remarks>
     [Native(Level.Exact, Fact = AbilityTypesProbe)]
     public void BlzSetAbilityResearchTooltip(int abilCode, string? researchTooltip, int level) => SetTypeText(abilCode, "Researchtip", researchTooltip, level);
 
     /// <summary>The learn extended tooltip, one for every level, its tags filled.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: tooltip tags and ParseTags (10-29, 11-08); MirrorImaged probe data-tags); the tags are filled by ParseTags, whose columns are measured in part.</remarks>
     [Native(Level.Close, Fact = TagFacts)]
     public string? BlzGetAbilityResearchExtendedTooltip(int abilCode, int level) => ParseTags(TypeText(abilCode, "Researchubertip", level));
 
+    /// <summary>As BlzSetAbilityResearchTooltip, for the learn extended tooltip.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities-types (11-08)).</remarks>
     [Native(Level.Exact, Fact = AbilityTypesProbe)]
     public void BlzSetAbilityResearchExtendedTooltip(int abilCode, string? researchExtendedTooltip, int level) => SetTypeText(abilCode, "Researchubertip", researchExtendedTooltip, level);
 
     /// <summary>The turn-off tooltip ("Deactivate Divine Shield", one for every level); "Tool tip missing!" without (probe abilities-types).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities-types (11-08)).</remarks>
     [Native(Level.Exact, Fact = AbilityTypesProbe)]
     public string? BlzGetAbilityActivatedTooltip(int abilCode, int level) => TypeText(abilCode, "Untip", level);
 
     /// <summary>Kept only within the entries the data has: Holy Light, without one, keeps none (probe abilities-types).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities-types (11-08)).</remarks>
     [Native(Level.Exact, Fact = AbilityTypesProbe)]
     public void BlzSetAbilityActivatedTooltip(int abilCode, string? tooltip, int level) => SetTypeText(abilCode, "Untip", tooltip, level);
 
     /// <summary>"" without one, its tags filled.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: tooltip tags and ParseTags (10-29, 11-08); MirrorImaged probe data-tags); the tags are filled by ParseTags, whose columns are measured in part.</remarks>
     [Native(Level.Close, Fact = TagFacts)]
     public string? BlzGetAbilityActivatedExtendedTooltip(int abilCode, int level) => ParseTags(TypeText(abilCode, "Unubertip", level));
 
+    /// <summary>As BlzSetAbilityActivatedTooltip, for the turn-off extended tooltip: kept only within the entries the data has.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities-types (11-08)).</remarks>
     [Native(Level.Exact, Fact = AbilityTypesProbe)]
     public void BlzSetAbilityActivatedExtendedTooltip(int abilCode, string? extendedTooltip, int level) => SetTypeText(abilCode, "Unubertip", extendedTooltip, level);
 
     /// <summary>The button's icon; BTNTemp for an id of nothing (probe abilities-types).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities-types (11-08)).</remarks>
     [Native(Level.Exact, Fact = AbilityTypesProbe)]
     public string? BlzGetAbilityIcon(int abilCode) => TypeText(abilCode, "Art", 0);
 
     /// <summary>Sets the icon, which the type's abilities on units read unless their own was set; an id of nothing keeps none (probe abilities-types).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities-types (11-08)).</remarks>
     [Native(Level.Exact, Fact = AbilityTypesProbe)]
     public void BlzSetAbilityIcon(int abilCode, string? iconPath) => SetTypeText(abilCode, "Art", iconPath, 0);
 
     /// <summary>The turned-on icon; BTNTemp without one (game-facts; probe abilities-types).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities-types (11-08); game-facts.md, Spells and abilities: BTNTemp (10-14)).</remarks>
     [Native(Level.Exact, Fact = AbilityTypesProbe + "; game-facts.md, Spells and abilities: BTNTemp (10-14)")]
     public string? BlzGetAbilityActivatedIcon(int abilCode) => TypeText(abilCode, "Unart", 0);
 
+    /// <summary>Sets the turned-on icon; an id of nothing keeps none.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities-types (11-08)).</remarks>
     [Native(Level.Exact, Fact = AbilityTypesProbe)]
     public void BlzSetAbilityActivatedIcon(int abilCode, string? iconPath) => SetTypeText(abilCode, "Unart", iconPath, 0);
 
     /// <summary>The button's column from the left (game-facts; probe abilities-types).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities-types (11-08); game-facts.md, Spells and abilities: BlzGetAbilityPosX/Y (10-14)).</remarks>
     [Native(Level.Exact, Fact = AbilityTypesProbe + "; game-facts.md, Spells and abilities: BlzGetAbilityPosX/Y (10-14)")]
     public int BlzGetAbilityPosX(int abilCode) => TypePlace(abilCode, "Buttonpos", 0);
 
     /// <summary>The button's row from the top.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities-types (11-08); game-facts.md, Spells and abilities: BlzGetAbilityPosX/Y (10-14)).</remarks>
     [Native(Level.Exact, Fact = AbilityTypesProbe + "; game-facts.md, Spells and abilities: BlzGetAbilityPosX/Y (10-14)")]
     public int BlzGetAbilityPosY(int abilCode) => TypePlace(abilCode, "Buttonpos", 1);
 
     /// <summary>Kept from 0 to 3, for any id, an unknown one too (probe abilities-types).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities-types (11-08)).</remarks>
     [Native(Level.Exact, Fact = AbilityTypesProbe)]
     public void BlzSetAbilityPosX(int abilCode, int x) => SetTypePlace(abilCode, "Buttonpos", 0, x);
 
     /// <summary>Kept from 0 to 2 (probe abilities-types: -1 isn't).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities-types (11-08)).</remarks>
     [Native(Level.Exact, Fact = AbilityTypesProbe)]
     public void BlzSetAbilityPosY(int abilCode, int y) => SetTypePlace(abilCode, "Buttonpos", 1, y);
 
+    /// <summary>The turned-on button's column from the left.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities-types (11-08)).</remarks>
     [Native(Level.Exact, Fact = AbilityTypesProbe)]
     public int BlzGetAbilityActivatedPosX(int abilCode) => TypePlace(abilCode, "UnButtonpos", 0);
 
+    /// <summary>The turned-on button's row from the top.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities-types (11-08)).</remarks>
     [Native(Level.Exact, Fact = AbilityTypesProbe)]
     public int BlzGetAbilityActivatedPosY(int abilCode) => TypePlace(abilCode, "UnButtonpos", 1);
 
+    /// <summary>Kept from 0 to 3, for any id, an unknown one too, as BlzSetAbilityPosX keeps it.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities-types (11-08)).</remarks>
     [Native(Level.Exact, Fact = AbilityTypesProbe)]
     public void BlzSetAbilityActivatedPosX(int abilCode, int x) => SetTypePlace(abilCode, "UnButtonpos", 0, x);
 
+    /// <summary>Kept from 0 to 2, as BlzSetAbilityPosY keeps it.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities-types (11-08)).</remarks>
     [Native(Level.Exact, Fact = AbilityTypesProbe)]
     public void BlzSetAbilityActivatedPosY(int abilCode, int y) => SetTypePlace(abilCode, "UnButtonpos", 1, y);
 
     /// <summary>The type's cooldown at the level (from 0) from its data, which a unit's sets don't change; 0 past its levels and for an id of nothing (probe abilities-fields).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probes abilities-fields, abilities-columns and abilities-sets (11-08)).</remarks>
     [Native(Level.Exact, Fact = FieldsProbe)]
     public float BlzGetAbilityCooldown(int abilId, int level) =>
         Data.Object(ObjectKind.Ability, abilId) is { } type && level >= 0 && level < type.Levels ? type.Real(Cooldown, level + 1) : 0;
 
+    /// <summary>The type's mana cost at the level (from 0) from its data, which a unit's sets don't change; 0 past its levels and for an id of nothing.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probes abilities-fields, abilities-columns and abilities-sets (11-08)).</remarks>
     [Native(Level.Exact, Fact = FieldsProbe)]
     public int BlzGetAbilityManaCost(int abilId, int level) =>
         Data.Object(ObjectKind.Ability, abilId) is { } type && level >= 0 && level < type.Levels ? type.Integer(ManaCost, level + 1) : 0;
@@ -179,12 +214,15 @@ public sealed partial class GameNatives
     /// type, nil too; "" without (probe abilities-types: Stampede's, Aerial Shackles' buff's loop). A unit's ability's own
     /// set doesn't change it.
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities-types (11-08)).</remarks>
     [Native(Level.Exact, Fact = AbilityTypesProbe)]
     public string? GetAbilitySoundById(int abilityId, soundtype? t) =>
         SoundOf(ObjectKind.Ability, abilityId, t) ?? SoundOf(ObjectKind.Buff, abilityId, t) ?? "";
 
     // "" for every string tried: each of the 1,072 abilities' and buffs' ids, names and sound labels, as each kind of sound (probes abilities-types
     // and abilities-sound-names, D792); what the by-string native reads, if anything, wasn't found
+    /// <summary>Always an empty string: the game read "" for every ability and buff id, name and sound label tried.</summary>
+    /// <remarks>Exact: matches the game wherever measured (probes abilities-types and abilities-sound-names (11-21, D792)).</remarks>
     [Native(Level.Exact, Fact = "probes abilities-types and abilities-sound-names (11-21, D792)")]
     public string? GetAbilitySound(string? abilityString, soundtype? t) => "";
 

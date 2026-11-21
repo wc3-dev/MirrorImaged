@@ -19,9 +19,12 @@ public sealed partial class GameNatives
     public int Difficulty { get; init; } = 1;
 
     /// <summary>The difficulty the computer plays at, as GetAIDifficulty.</summary>
+    /// <remarks>Close: the number comes from the run's setting, not measured in the game.</remarks>
     [Native(Level.Close)]
     public int MeleeDifficulty() => Difficulty;
 
+    /// <summary>The player number of the player the AI natives act for.</summary>
+    /// <remarks>Close: which player that is rests on how the run was set up, not measured in the game.</remarks>
     [Native(Level.Close)]
     public int GetAiPlayer() => GetPlayerId(Ai);
 
@@ -30,21 +33,40 @@ public sealed partial class GameNatives
     int CountOf(player p, int id, bool done) => Mine(p).Count(u => u.Type.Id == id && (!done || !u.Constructing))
         + (done ? 0 : Mine(p).Sum(b => b.Train.Count(t => !t.Research && t.Id == id)));
 
+    /// <summary>The AI player's units of the type, those under construction and queued in training too.</summary>
+    /// <remarks>Close: buildings under construction and units queued count, as the model's own count does; the game's is not measured.</remarks>
     [Native(Level.Close)] public int GetUnitCount(int unitid) => CountOf(Ai, unitid, false);
+    /// <summary>The AI player's finished units of the type; those under construction and in training are left out.</summary>
+    /// <remarks>Close: the game's own count is not measured.</remarks>
     [Native(Level.Close)] public int GetUnitCountDone(int unitid) => CountOf(Ai, unitid, true);
+    /// <summary>The player's units of the type, those under construction and queued in training too; 0 for nil.</summary>
+    /// <remarks>Close: buildings under construction and units queued count, as the model's own count does; the game's is not measured.</remarks>
     [Native(Level.Close)] public int GetPlayerUnitTypeCount(player? p, int unitid) => p is null ? 0 : CountOf(p, unitid, false);
     /// <summary>The gold left in the mines the AI player works; the script expands when it runs low.</summary>
+    /// <remarks>Close: the game's own sum is not measured; this adds the gold left in the mine of each town the AI player works.</remarks>
     [Native(Level.Close)] public int GetGoldOwned() => Towns().Sum(town => WorkedMine(town) is { } mine ? GetResourceAmount(mine) : 0);
+    /// <summary>The gold the unit type costs; 0 for an unknown type.</summary>
+    /// <remarks>Close: read from the type's object data, not measured in the game.</remarks>
     [Native(Level.Close)] public int GetUnitGoldCost(int unitid) => Data.Object(ObjectKind.Unit, unitid)?.Integer(Cost) ?? 0;
+    /// <summary>The lumber the unit type costs; 0 for an unknown type.</summary>
+    /// <remarks>Close: read from the type's object data, not measured in the game.</remarks>
     [Native(Level.Close)] public int GetUnitWoodCost(int unitid) => Data.Object(ObjectKind.Unit, unitid)?.Integer(LumberCost) ?? 0;
+    /// <summary>The build time of the unit type in seconds, cut to a whole number; 0 for an unknown type.</summary>
+    /// <remarks>Close: read from the type's object data, not measured in the game.</remarks>
     [Native(Level.Close)] public int GetUnitBuildTime(int unitid) => (int)(Data.Object(ObjectKind.Unit, unitid)?.Real(BuildTime) ?? 0);
+    /// <summary>The level the AI player has of the upgrade; 0 for none.</summary>
+    /// <remarks>Close: read from the player's tech levels, not measured in the game.</remarks>
     [Native(Level.Close)] public int GetUpgradeLevel(int id) => Ai.TechLevels.GetValueOrDefault(id);
 
     // The cost of the upgrade's next level for the AI player
     int UpgradeCost(int id, int baseField, int modField) =>
         Data.Object(ObjectKind.Upgrade, id) is { } upgrade ? upgrade.Integer(baseField) + Ai.TechLevels.GetValueOrDefault(id) * upgrade.Integer(modField) : 0;
 
+    /// <summary>The gold the upgrade's next level costs the AI player, its base plus the level had times the increase; 0 for an unknown upgrade.</summary>
+    /// <remarks>Close: read from the upgrade's base and increase data, not measured in the game.</remarks>
     [Native(Level.Close)] public int GetUpgradeGoldCost(int id) => UpgradeCost(id, Code("gglb"), Code("gglm"));
+    /// <summary>The lumber the upgrade's next level costs the AI player, its base plus the level had times the increase; 0 for an unknown upgrade.</summary>
+    /// <remarks>Close: read from the upgrade's base and increase data, not measured in the game.</remarks>
     [Native(Level.Close)] public int GetUpgradeWoodCost(int id) => UpgradeCost(id, Code("glmb"), Code("glmm"));
 
     readonly Dictionary<player, List<(float X, float Y)>> _towns = [];
@@ -71,21 +93,33 @@ public sealed partial class GameNatives
     // The town's mine when the AI player has it: its own, or one beside its town hall
     unit? WorkedMine((float X, float Y) town) => MineNear(town) is { } mine && (mine.Owner == Ai || HallAt(town) is not null) ? mine : null;
 
+    /// <summary>Whether the town has a finished town hall of the AI player; false for an index out of range.</summary>
+    /// <remarks>Close: a town is the model's own idea (D357, D490); the game's is not measured.</remarks>
     [Native(Level.Close)] public bool TownHasHall(int townid) => townid >= 0 && Towns() is var towns && townid < towns.Count && HallAt(towns[townid]) is not null;
+    /// <summary>Whether a mine with gold, nobody's or the AI player's, stands within 1000 of the town; false for an index out of range.</summary>
+    /// <remarks>Close: a town is the model's own idea (D357, D490); the game's is not measured.</remarks>
     [Native(Level.Close)] public bool TownHasMine(int townid) => townid >= 0 && Towns() is var towns && townid < towns.Count && MineNear(towns[townid]) is not null;
+    /// <summary>How many towns have a mine the AI player works, its own or one by its town hall.</summary>
+    /// <remarks>Close: a town is the model's own idea (D357, D490); the game's is not measured.</remarks>
     [Native(Level.Close)] public int GetMinesOwned() => Towns().Count(town => WorkedMine(town) is not null);
+    /// <summary>The index of the first town with a mine the AI player works; -1 for none.</summary>
+    /// <remarks>Close: a town is the model's own idea (D357, D490); the game's is not measured.</remarks>
     [Native(Level.Close)] public int TownWithMine() => Towns().FindIndex(town => WorkedMine(town) is not null);
 
+    /// <summary>The AI player's units of the type within 1000 of the town, finished ones only when the flag is set; 0 for an index out of range.</summary>
+    /// <remarks>Close: a town is the model's own idea (D357, D490); the game's is not measured.</remarks>
     [Native(Level.Close)]
     public int GetTownUnitCount(int id, int tn, bool dn) =>
         Towns() is var towns && tn >= 0 && tn < towns.Count && towns[tn] is var town
             ? Mine(Ai).Count(u => u.Type.Id == id && (!dn || !u.Constructing) && Within(town, u)) : 0;
 
     /// <summary>A building of the player (the first made), nil for none.</summary>
+    /// <remarks>Close: the first made stands for the game's own pick, which is not measured.</remarks>
     [Native(Level.Close)]
     public unit? GetBuilding(player? p) => p is null ? null : Mine(p).Where(u => IsBuildingNow(u)).OrderBy(u => u.Id).FirstOrDefault();
 
     /// <summary>Makes the number of units of the type more: a building is built by a worker near the town's hall, a unit trained at the buildings that train it; true when all were started (or queued).</summary>
+    /// <remarks>Close: the building, the worker and the site are the model's picks, not measured in the game; a unit nothing trains counts as made (D433).</remarks>
     [Native(Level.Close)]
     public bool SetProduce(int qty, int id, int town)
     {
@@ -102,6 +136,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Researches the next level of the upgrade at a building that lists it and is free; true when it was queued.</summary>
+    /// <remarks>Close: which building takes the research is the model's pick, not measured in the game.</remarks>
     [Native(Level.Close)]
     public bool SetUpgrade(int id) =>
         Mine(Ai).Where(b => !b.Constructing && Listed(b, Researches, id)).OrderBy(b => b.Train.Count).Any(b => QueueOrder(b, id));
@@ -110,6 +145,7 @@ public sealed partial class GameNatives
     readonly List<(bool Gold, int Town)> _slots = [];
 
     /// <summary>Forgets what the AI asked of its workers, so the next round of requests says it afresh.</summary>
+    /// <remarks>Close: the game's own harvest state is not measured; here it is a list of slots.</remarks>
     [Native(Level.Close)]
     public void ClearHarvestAI() => _slots.Clear();
 
@@ -164,6 +200,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Asks for this many workers on the gold mine of the town, after those asked for so far this round.</summary>
+    /// <remarks>Close: how workers are picked and sent to the mine is the model's, not measured in the game.</remarks>
     [Native(Level.Close)]
     public void HarvestGold(int town, int peons)
     {
@@ -172,6 +209,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Asks for this many workers on the trees near the town's hall, after those asked for so far this round.</summary>
+    /// <remarks>Close: how workers are picked and sent to the trees is the model's, not measured in the game (D730, D731).</remarks>
     [Native(Level.Close)]
     public void HarvestWood(int town, int peons)
     {

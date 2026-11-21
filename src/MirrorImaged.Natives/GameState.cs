@@ -49,6 +49,7 @@ public sealed partial class GameNatives
     /// own frames make it run a little slow (above), and its time-of-day events read the hour a float step under it at
     /// 12 (facts).
     /// </summary>
+    /// <remarks>Close: The game's frames add the time up a little slow and its time-of-day events read the hour a float step under it at 12; neither is modelled.</remarks>
     [Native(Level.Close)]
     public float GetFloatGameState(fgamestate? whichFloatGameState) => whichFloatGameState?.Id == 2 ? TowardZero(Math.Min(Day(), 24)) : 0; // GAME_STATE_TIME_OF_DAY
 
@@ -61,6 +62,7 @@ public sealed partial class GameNatives
     /// steps off, at once (0.1, 23.9) or after a frame (7 as 7.00000477; the lobby probe), and the frames after a set
     /// do more than this (decisions D144). Another state isn't kept.
     /// </summary>
+    /// <remarks>Close: The game reads some values back a few float steps off and its frames after a set do more than this (D144).</remarks>
     [Native(Level.Close)]
     public void SetFloatGameState(fgamestate? whichFloatGameState, float value)
     {
@@ -118,6 +120,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Sets the time's speed; an infinite or NaN scale is refused and the scale stays (not measured).</summary>
+    /// <remarks>Exact: matches the game wherever measured (game-facts.md, Time of day: scale 2 runs twice as fast, 0 stops, -1 runs backward, and it reads what was set (11-02)).</remarks>
     [Native(Level.Exact, Fact = "game-facts.md, Time of day: scale 2 runs twice as fast, 0 stops, -1 runs backward, and it reads what was set (11-02)")]
     public void SetTimeOfDayScale(float r)
     {
@@ -127,10 +130,13 @@ public sealed partial class GameNatives
         ScheduleDay();
     }
 
+    /// <summary>The time of day's scale; 1 until set.</summary>
+    /// <remarks>Exact: matches the game wherever measured (game-facts.md, Time of day: GetTimeOfDayScale reads 1, then what was set (11-02)).</remarks>
     [Native(Level.Exact, Fact = "game-facts.md, Time of day: GetTimeOfDayScale reads 1, then what was set (11-02)")]
     public float GetTimeOfDayScale() => _dayScale;
 
     /// <summary>Stops the time of day, or runs it again at its scale; suspends aren't counted.</summary>
+    /// <remarks>Exact: matches the game wherever measured (game-facts.md, Time of day: suspending stops it, a time or scale set meanwhile holds, one resume runs it (11-02)).</remarks>
     [Native(Level.Exact, Fact = "game-facts.md, Time of day: suspending stops it, a time or scale set meanwhile holds, one resume runs it (11-02)")]
     public void SuspendTimeOfDay(bool b)
     {
@@ -140,6 +146,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>0 at the start.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers-3 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe3)]
     public int GetIntegerGameState(igamestate? whichIntegerGameState) =>
         whichIntegerGameState is null ? 0 : _integerStates.GetValueOrDefault(whichIntegerGameState.Id);
@@ -148,6 +155,7 @@ public sealed partial class GameNatives
     /// Kept and read back; a change fires the state's events (TriggerRegisterGameStateEvent). What the game does with
     /// divine intervention or the disconnected state isn't simulated.
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers-3 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe3)]
     public void SetIntegerGameState(igamestate? whichIntegerGameState, int value)
     {
@@ -160,10 +168,12 @@ public sealed partial class GameNatives
     /// The speed, normal at the start (the players probe). Game time is the simulation's whatever the speed: it
     /// changes only how fast real time would pass.
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Players and the game: normal at the start of a -loadfile game).</remarks>
     [Native(Level.Exact, Fact = "facts, Players and the game: normal at the start of a -loadfile game")]
     public gamespeed? GetGameSpeed() => Convert<gamespeed>(_speed);
 
     /// <summary>Fastest is refused and the speed stays (the players probe); the others aren't all measured.</summary>
+    /// <remarks>Close: Fastest being refused is measured; the other speeds aren't all measured.</remarks>
     [Native(Level.Close)]
     public void SetGameSpeed(gamespeed? whichspeed)
     {
@@ -174,24 +184,35 @@ public sealed partial class GameNatives
     /// Stops the game's time, timers and the time of day with it, once what is due in this step has run, until the map
     /// goes on (not measured).
     /// </summary>
+    /// <remarks>Close: Not measured in the game: when the clock stops, and what it holds, is the model's.</remarks>
     [Native(Level.Close)]
     public void PauseGame(bool flag) => _game.Paused = flag;
 
+    /// <summary>The difficulty, easy at the start of a -loadfile game.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Players and the game: easy in a -loadfile game).</remarks>
     [Native(Level.Exact, Fact = "facts, Players and the game: easy in a -loadfile game")]
     public gamedifficulty? GetGameDifficulty() => Convert<gamedifficulty>(_difficulty);
 
+    /// <summary>Sets the difficulty GetGameDifficulty reads; a null difficulty changes nothing.</summary>
+    /// <remarks>Close: Only kept for GetGameDifficulty; not measured in the game.</remarks>
     [Native(Level.Close)]
     public void SetGameDifficulty(gamedifficulty? whichdifficulty)
     {
         if (whichdifficulty is not null) _difficulty = whichdifficulty.Id;
     }
 
+    /// <summary>VERSION_FROZEN_THRONE, whatever the map.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Players and the game: VERSION_FROZEN_THRONE).</remarks>
     [Native(Level.Exact, Fact = "facts, Players and the game: VERSION_FROZEN_THRONE")]
     public version? VersionGet() => Convert<version>(1);
 
+    /// <summary>Always false.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Players and the game: false in a -loadfile game).</remarks>
     [Native(Level.Exact, Fact = "facts, Players and the game: false in a -loadfile game")]
     public bool IsNoVictoryCheat() => false;
 
+    /// <summary>Always false.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Players and the game: false in a -loadfile game).</remarks>
     [Native(Level.Exact, Fact = "facts, Players and the game: false in a -loadfile game")]
     public bool IsNoDefeatCheat() => false;
 
@@ -200,6 +221,7 @@ public sealed partial class GameNatives
     /// it, then the clock stops for good; no end-level event fires. The score screen isn't simulated: a -loadfile game
     /// skips it (facts, "Version and launching").
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Player and game events: probe events (11-08)).</remarks>
     [Native(Level.Exact, Fact = Events)]
     public void EndGame(bool doScoreScreen) => _game.Ended = true;
 }

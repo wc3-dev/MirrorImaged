@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <!-- The natives are documented by the game's own common.j and common.ai; each carries its trust level, which mirror coverage lists -->
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <!-- The handle types keep common.j's lower-case names (decisions D19), in every file that adds to them. -->

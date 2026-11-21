@@ -14,6 +14,7 @@ public sealed partial class GameNatives
     /// The unit's move speed: its type's, or what a set left (probe units); a buff that slows it leaves the constants'
     /// MinUnitSpeed at least (probe abilities-banish: half of 270 reads 150, half of 400 200).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public float GetUnitMoveSpeed(unit? whichUnit)
     {
@@ -23,6 +24,8 @@ public sealed partial class GameNatives
         return Math.Clamp(speed * factor, factor < 1 ? Data.Constant("MinUnitSpeed", 0) : 0, factor > 1 ? Data.Constant("MaxUnitSpeed", 522) : float.MaxValue);
     }
 
+    /// <summary>The move speed of the unit's type; 0 for nil.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public float GetUnitDefaultMoveSpeed(unit? whichUnit) => whichUnit?.Type.Real(MoveSpeed) ?? 0;
 
@@ -30,6 +33,7 @@ public sealed partial class GameNatives
     /// Kept from the constants' MinUnitSpeed to MaxUnitSpeed (150 and 400: 1000 read 400, 5 and -10 150); a unit that
     /// can't move, as a building, keeps 0 (probe units).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public void SetUnitMoveSpeed(unit? whichUnit, float newSpeed)
     {
@@ -41,11 +45,13 @@ public sealed partial class GameNatives
     const float MinimumTurn = 0.001f;
 
     /// <summary>The unit's turn rate, an angle in radians from 0.001 below 2π: 0.001 for a type with none (probe units).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public float GetUnitTurnSpeed(unit? whichUnit) =>
         whichUnit is null ? 0 : Own(whichUnit, TurnRate, Math.Max(GetUnitDefaultTurnSpeed(whichUnit), MinimumTurn));
 
     /// <summary>The type's turn rate; 0 for a type with none (probe units).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public float GetUnitDefaultTurnSpeed(unit? whichUnit) => whichUnit?.Type.Real(TurnRate) ?? 0;
 
@@ -53,6 +59,7 @@ public sealed partial class GameNatives
     /// Kept as an angle from 0 below 2π, at least 0.001: -1 reads 5.283185, 7 0.7168145, 7.5 1.216815 and 0 0.001 (probe
     /// units). Close: past a turn either way only those are measured; here any angle comes round by a float modulo.
     /// </summary>
+    /// <remarks>Close: past a turn either way only the four listed values are measured; any other angle is brought round by a float modulo.</remarks>
     [Native(Level.Close)]
     public void SetUnitTurnSpeed(unit? whichUnit, float newTurnSpeed)
     {
@@ -63,6 +70,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The type's acquisition range, or what a set left; 0 for a unit without an attack (probe units).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public float GetUnitAcquireRange(unit? whichUnit) =>
         whichUnit is null || !Armed(whichUnit) ? 0 : Own(whichUnit, Acquire, whichUnit.Type.Real(Acquire));
@@ -71,6 +79,7 @@ public sealed partial class GameNatives
     /// The type's acquisition range, also for a unit without an attack; its day sight where the data has none (probe
     /// units: a barracks 900, its sight).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public float GetUnitDefaultAcquireRange(unit? whichUnit) =>
         whichUnit is null ? 0 : whichUnit.Type.Text(Acquire) is null ? whichUnit.Type.Real(Code("usid")) : whichUnit.Type.Real(Acquire);
@@ -81,6 +90,7 @@ public sealed partial class GameNatives
     /// A range of 50 or less isn't taken, nor any by a unit without an attack (probe units: 0, 7.5 and 50 not, 55 and
     /// on taken). Close: 51 to 54 aren't measured.
     /// </summary>
+    /// <remarks>Close: a range from 51 to 54 is not measured; here it is taken.</remarks>
     [Native(Level.Close)]
     public void SetUnitAcquireRange(unit? whichUnit, float newAcquireRange)
     {
@@ -88,13 +98,17 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The unit's propulsion window in radians: its type's degrees made radians as Deg2Rad makes them (probe units: 60 reads 1.047197).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public float GetUnitPropWindow(unit? whichUnit) => whichUnit is null ? 0 : Own(whichUnit, PropWindow, Deg2Rad(whichUnit.Type.Real(PropWindow)));
 
     /// <summary>The type's propulsion window in degrees.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public float GetUnitDefaultPropWindow(unit? whichUnit) => whichUnit?.Type.Real(PropWindow) ?? 0;
 
+    /// <summary>Keeps the window as given, which <c>GetUnitPropWindow</c> reads back; nothing for nil.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public void SetUnitPropWindow(unit? whichUnit, float newPropWindowAngle)
     {
@@ -105,13 +119,17 @@ public sealed partial class GameNatives
     /// The height set, at once, whatever the rate (the game draws the unit getting there, but reads the new height):
     /// on a ground unit too (probe units; facts, Units).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (game-facts.md, Units: SetUnitFlyHeight on a ground unit reads the new height (10-21); facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = "game-facts.md, Units: SetUnitFlyHeight on a ground unit reads the new height (10-21); " + UnitsProbe)]
     public float GetUnitFlyHeight(unit? whichUnit) => whichUnit?.FlyHeight ?? 0;
 
+    /// <summary>The fly height of the unit's type; 0 for nil.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public float GetUnitDefaultFlyHeight(unit? whichUnit) => whichUnit is null ? 0 : whichUnit.Type.Real(Code("umvh"));
 
     /// <summary>The rate isn't kept: the height reads the new one at once.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public void SetUnitFlyHeight(unit? whichUnit, float newHeight, float rate)
     {
@@ -124,10 +142,12 @@ public sealed partial class GameNatives
     /// knight's and gryphon rider's steady pace (6.4, 4.8 and 3.2 for 0.6, 0.5 and 0.4), at least 0.5, the short way
     /// round, straight to the end; the game eases into the end and its frames don't fall on the clock's steps.
     /// </summary>
+    /// <remarks>Close: the turn's pace is fitted to three units' steady pace and the game eases into the end, so a facing read mid-turn may differ.</remarks>
     [Native(Level.Close)]
     public float GetUnitFacing(unit? whichUnit) => whichUnit is null ? 0 : Angle(whichUnit.Facing.At(Seconds));
 
     /// <summary>Turns the unit at its turn rate from the next frame (GetUnitFacing).</summary>
+    /// <remarks>Close: the turn starts 1/32 s after the call at a pace fitted to three units; the game's easing into the end is not modelled.</remarks>
     [Native(Level.Close)]
     public void SetUnitFacing(unit? whichUnit, float facingAngle)
     {
@@ -139,6 +159,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>As SetUnitFacing over the duration given; Close, not measured.</summary>
+    /// <remarks>Close: the duration is not measured; the model turns at a steady rate over it, from the call.</remarks>
     [Native(Level.Close)]
     public void SetUnitFacingTimed(unit? whichUnit, float facingAngle, float duration)
     {
@@ -153,22 +174,30 @@ public sealed partial class GameNatives
     static float Turn(float from, float to) => Angle(to - from) is var turn && turn > 180 ? turn - 360 : turn;
 
     /// <summary>Turns the unit at once (probe units: 123.5 and -30 read 123.5 and 330).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public void BlzSetUnitFacingEx(unit? whichUnit, float facingAngle)
     {
         if (whichUnit is not null) whichUnit.Facing = new(Angle(facingAngle));
     }
 
+    /// <summary>The unit's owner; null for nil.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public player? GetOwningPlayer(unit? whichUnit) => whichUnit?.Owner;
 
+    /// <summary>Whether the unit's owner is the player; false for nil.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public bool IsUnitOwnedByPlayer(unit? whichUnit, player? whichPlayer) => whichUnit is not null && whichUnit.Owner == whichPlayer;
 
     /// <summary>Whether the unit's owner is the player's ally (IsPlayerAlly of the owner and the player).</summary>
+    /// <remarks>Close: the answer is the owner's alliance as <c>IsPlayerAlly</c> gives it; a null player is not measured.</remarks>
     [Native(Level.Close)]
     public bool IsUnitAlly(unit? whichUnit, player? whichPlayer) => whichUnit is not null && IsPlayerAlly(whichUnit.Owner, whichPlayer);
 
+    /// <summary>Whether the unit's owner is the player's enemy (<c>IsPlayerEnemy</c> of the owner and the player); false for nil.</summary>
+    /// <remarks>Close: the answer is the owner's relation as <c>IsPlayerEnemy</c> gives it; a null player is not measured.</remarks>
     [Native(Level.Close)]
     public bool IsUnitEnemy(unit? whichUnit, player? whichPlayer) => whichUnit is not null && IsPlayerEnemy(whichUnit.Owner, whichPlayer);
 
@@ -180,6 +209,7 @@ public sealed partial class GameNatives
     /// and a dead one neither. Given to its owner, nothing happens. The colour is the new owner's when asked. When a
     /// stop's event gives the unit away first, this call changes nothing more (not measured).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08); facts, Units: probes units-more and units-more-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe + "; " + MoreProbe)]
     public void SetUnitOwner(unit? whichUnit, player? whichPlayer, bool changeColor)
     {
@@ -205,38 +235,55 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The level of the unit's type, a hero's its hero level (facts, Units: a footman's is 2).</summary>
+    /// <remarks>Exact: matches the game wherever measured (game-facts.md, Units: GetUnitLevel (10-21); facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = "game-facts.md, Units: GetUnitLevel (10-21); " + UnitsProbe)]
     public int GetUnitLevel(unit? whichUnit) => whichUnit is null ? 0 : BlzGetUnitIntegerField(whichUnit, Convert<unitintegerfield>(UnitLevel));
 
+    /// <summary>The food the unit's type uses; 0 for nil.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public int GetUnitFoodUsed(unit? whichUnit) => whichUnit?.Type.Integer(FoodUsed) ?? 0;
 
+    /// <summary>The food the unit's type makes; 0 for nil.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public int GetUnitFoodMade(unit? whichUnit) => whichUnit?.Type.Integer(FoodMade) ?? 0;
 
+    /// <summary>The point value of the unit's type; 0 for nil.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public int GetUnitPointValue(unit? whichUnit) => whichUnit?.Type.Integer(Points) ?? 0;
 
+    /// <summary>The point value of the unit type; 0 for an unknown type.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public int GetUnitPointValueByType(int unitType) => Data.Object(ObjectKind.Unit, unitType)?.Integer(Points) ?? 0;
 
     /// <summary>The race of the unit's type, as common.j's RACE_* and the game's own for the rest (probe units: critters 10).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public race? GetUnitRace(unit? whichUnit) => whichUnit is null ? null : Convert<race>(Races.GetValueOrDefault(whichUnit.Type.Text(Race) ?? ""));
 
+    /// <summary>Whether the unit's race is the given one; false for nil.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public bool IsUnitRace(unit? whichUnit, race? whichRace) => whichUnit is not null && whichRace?.Id == GetUnitRace(whichUnit)!.Id;
 
     /// <summary>The skin given at creation; the type's own otherwise.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public int BlzGetUnitSkin(unit? whichUnit) => whichUnit?.Skin ?? 0;
 
+    /// <summary>Keeps the skin for <c>BlzGetUnitSkin</c>; the model is not drawn.</summary>
+    /// <remarks>Recorded: Changes the unit's model; the skin is kept for BlzGetUnitSkin.</remarks>
     [Native(Level.Recorded, Reason = "Changes the unit's model; the skin is kept for BlzGetUnitSkin")]
     public void BlzSetUnitSkin(unit? whichUnit, int skinId)
     {
         if (whichUnit is not null) whichUnit.Skin = skinId;
     }
 
+    /// <summary>Keeps the colour on the unit; nothing is drawn.</summary>
+    /// <remarks>Recorded: Paints the unit in a player's colour; kept on the unit, which no native reads back.</remarks>
     [Native(Level.Recorded, Reason = "Paints the unit in a player's colour; kept on the unit, which no native reads back")]
     public void SetUnitColor(unit? whichUnit, playercolor? whichColor)
     {
@@ -244,6 +291,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The game draws it by the x scale alone (facts, Units); UNIT_RF_SCALING_VALUE keeps the type's.</summary>
+    /// <remarks>Recorded: Sizes the unit's model; kept on the unit, which no native reads back (UNIT_RF_SCALING_VALUE keeps the type's).</remarks>
     [Native(Level.Recorded, Reason = "Sizes the unit's model; kept on the unit, which no native reads back (UNIT_RF_SCALING_VALUE keeps the type's)")]
     public void SetUnitScale(unit? whichUnit, float scaleX, float scaleY, float scaleZ)
     {
@@ -251,6 +299,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Each part kept from 0 to 255 (facts, Units: 300 reads as 255, -50 as 0); the tint fields stay 255.</summary>
+    /// <remarks>Recorded: Tints the unit's model; kept on the unit, which no native reads back (the tint fields stay 255).</remarks>
     [Native(Level.Recorded, Reason = "Tints the unit's model; kept on the unit, which no native reads back (the tint fields stay 255)")]
     public void SetUnitVertexColor(unit? whichUnit, int red, int green, int blue, int alpha)
     {
@@ -264,6 +313,7 @@ public sealed partial class GameNatives
     /// Ethereal is a banished unit (probe abilities-banish). Close: stunned, plagued, snared, poisoned, polymorphed,
     /// resistant and magic immune need buffs and abilities (wave 4) and read false.
     /// </summary>
+    /// <remarks>Close: stunned, plagued, snared, poisoned, polymorphed, resistant and magic immune always read false here, though the game reads them from buffs and abilities.</remarks>
     [Native(Level.Close)]
     public bool IsUnitType(unit? whichUnit, unittype? whichUnitType) =>
         whichUnit is not null && whichUnitType is not null && Is(whichUnit.Type, whichUnit, whichUnitType.Id);

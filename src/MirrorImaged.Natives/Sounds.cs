@@ -22,11 +22,13 @@ public sealed partial class GameNatives
     const string NotPlayed = "what a sound sounds like: nothing is played, and no native reads it back (probes sounds and sounds-2)";
 
     /// <summary>A sound of the file, which takes the next handle id; its length is the file's. Nothing is played (D521).</summary>
+    /// <remarks>Close: the 3D, range, fade and EAX arguments aren't kept and nothing is played; the game's start delay isn't matched (D520 to D524).</remarks>
     [Native(Level.Close)]
     public sound? CreateSound(string? fileName, bool looping, bool is3D, bool stopwhenoutofrange, int fadeInRate, int fadeOutRate, string? eaxSetting) =>
         Make(new sound { File = fileName, Looping = looping });
 
     /// <summary>As CreateSound: its length is the file's, not the label's.</summary>
+    /// <remarks>Close: the label isn't read and the other arguments aren't kept; not measured in the game.</remarks>
     [Native(Level.Close)]
     public sound? CreateSoundFilenameWithLabel(string? fileName, bool looping, bool is3D, bool stopwhenoutofrange, int fadeInRate, int fadeOutRate, string? SLKEntryName) =>
         CreateSound(fileName, looping, is3D, stopwhenoutofrange, fadeInRate, fadeOutRate, null);
@@ -35,16 +37,19 @@ public sealed partial class GameNatives
     /// A sound of the label's first file in the game's sound tables; a label they don't have still makes a sound, of
     /// length 0. Close: the game takes one of a label's files at random (decisions D523).
     /// </summary>
+    /// <remarks>Close: the game takes one of a label's files at random, not the first (D523).</remarks>
     [Native(Level.Close)]
     public sound? CreateSoundFromLabel(string? soundLabel, bool looping, bool is3D, bool stopwhenoutofrange, int fadeInRate, int fadeOutRate) =>
         CreateSound(soundLabel is null ? null : Data.SoundLabelFile(soundLabel), looping, is3D, stopwhenoutofrange, fadeInRate, fadeOutRate, null);
 
     /// <summary>As CreateSoundFromLabel (the ambient sounds' labels, <c>LordaeronSummerDay</c>).</summary>
+    /// <remarks>Close: made as CreateSoundFromLabel is, so its differences hold; a MIDI sound's own behaviour is not measured.</remarks>
     [Native(Level.Close)]
     public sound? CreateMIDISound(string? soundLabel, int fadeInRate, int fadeOutRate) =>
         CreateSoundFromLabel(soundLabel, false, false, false, fadeInRate, fadeOutRate);
 
     /// <summary>The length in milliseconds of the file the sound plays (GetSoundFileDuration's); 0 for none.</summary>
+    /// <remarks>Close: the file's length, exact for the oggs measured and up to 32 frames (836 ms) over the game's for an mp3 (D520).</remarks>
     [Native(Level.Close)]
     public int GetSoundDuration(sound? soundHandle) => soundHandle?.File is { } file ? GetSoundFileDuration(file) : 0;
 
@@ -53,6 +58,7 @@ public sealed partial class GameNatives
     /// measured; an mp3 is its frames and one more, which the game reads for 27 of 61, and up to 32 frames (836 ms) more
     /// than the game's (decisions D520).
     /// </summary>
+    /// <remarks>Close: exact for the oggs measured; an mp3 is its frames and one more, up to 32 frames (836 ms) over the game's (D520).</remarks>
     [Native(Level.Close)]
     public int GetSoundFileDuration(string? musicFileName) => musicFileName is null ? 0 : Data.SoundLength(musicFileName);
 
@@ -61,14 +67,17 @@ public sealed partial class GameNatives
     /// until stopped, and one of length 0 never. Close: the game's start waits a varying while, 0.8 to 4.0 s in the probes
     /// (D522).
     /// </summary>
+    /// <remarks>Close: the game's start waits a varying while, 0.8 to 4.0 s in the probes, so it reads playing longer there (D522).</remarks>
     [Native(Level.Close)]
     public bool GetSoundIsPlaying(sound? soundHandle) => soundHandle?.End > Seconds;
 
     /// <summary>False: every read of the probes was false, also in the instant of StartSound.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Sounds: probes sounds and sounds-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Sounds)]
     public bool GetSoundIsLoading(sound? soundHandle) => false;
 
     /// <summary>Plays it unless it is playing: a second start leaves it to end when the first would (D522).</summary>
+    /// <remarks>Close: it plays for the sound's length from the call, where the game's start waits a varying while first (D522).</remarks>
     [Native(Level.Close)]
     public void StartSound(sound? soundHandle)
     {
@@ -78,6 +87,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>As StartSound; a fade in changes nothing here (not measured).</summary>
+    /// <remarks>Close: a fade in changes nothing here; not measured in the game.</remarks>
     [Native(Level.Close)]
     public void StartSoundEx(sound? soundHandle, bool fadeIn) => StartSound(soundHandle);
 
@@ -87,6 +97,7 @@ public sealed partial class GameNatives
     /// after it read playing to about its end in seven runs; D522). It isn't destroyed, killWhenDone or not (its length still
     /// reads).
     /// </summary>
+    /// <remarks>Close: the fade stop is fitted to two measured cases, not a measured rule (D522).</remarks>
     [Native(Level.Close)]
     public void StopSound(sound? soundHandle, bool killWhenDone, bool fadeOut)
     {
@@ -96,6 +107,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>A sound playing stops reading playing at once and keeps its length; one not playing is destroyed (D522).</summary>
+    /// <remarks>Close: modelled on the probes' cases (D522); the game's timing for others is not measured.</remarks>
     [Native(Level.Close)]
     public void KillSoundWhenDone(sound? soundHandle)
     {
@@ -105,10 +117,12 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The sound's length doesn't change (GetSoundDuration still reads its file's), nor how long it plays.</summary>
+    /// <remarks>Recorded: it changes nothing a native reads: the length and the play stay the file's (probes sounds and sounds-2).</remarks>
     [Native(Level.Recorded, Reason = "it changes nothing a native reads: the length and the play stay the file's (probes sounds and sounds-2)")]
     public void SetSoundDuration(sound? soundHandle, int duration) { }
 
     /// <summary>On a sound playing, it plays on from there; before StartSound it does nothing.</summary>
+    /// <remarks>Close: a position set on a playing sound is not measured, a looping sound ignores it, and one not playing does nothing.</remarks>
     [Native(Level.Close)]
     public void SetSoundPlayPosition(sound? soundHandle, int millisecs)
     {
@@ -119,6 +133,7 @@ public sealed partial class GameNatives
     /// The next start plays it faster or slower: pitch 2 for half its length. A pitch set while it plays changes nothing
     /// until its next start (not measured).
     /// </summary>
+    /// <remarks>Close: a pitch set while it plays changes nothing until the next start, and a pitch of 0 or below plays at its own speed; neither is measured in the game.</remarks>
     [Native(Level.Close)]
     public void SetSoundPitch(sound? soundHandle, float pitch)
     {
@@ -133,19 +148,23 @@ public sealed partial class GameNatives
     /// on a tenth as TriggerSleepAction's waits do: 0.2 s for a sound not playing or a negative offset, 0.1 s for nil.
     /// Close: this matches 61 of the 75 waits measured (D524).
     /// </summary>
+    /// <remarks>Close: matches 61 of the 75 waits measured (D524).</remarks>
     [Native(Level.Close)]
     public void TriggerWaitForSound(sound? s, float offset) =>
         TriggerSleepAction(s is null ? 0 : 0.15f + (float)(GetSoundIsPlaying(s) && offset >= 0 ? Math.Max(s.End - Seconds - offset, 0) : 0));
 
     /// <summary>"" until set.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Sounds: probes sounds and sounds-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Sounds)]
     public string? GetDialogueSpeakerNameKey(sound? soundHandle) => soundHandle?.SpeakerKey ?? "";
 
     /// <summary>"" until set.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Sounds: probes sounds and sounds-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Sounds)]
     public string? GetDialogueTextKey(sound? soundHandle) => soundHandle?.TextKey ?? "";
 
     /// <summary>Kept as given and true; false for nil.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Sounds: probes sounds and sounds-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Sounds)]
     public bool SetDialogueSpeakerNameKey(sound? soundHandle, string? speakerName)
     {
@@ -155,6 +174,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Kept as given and true; false for nil.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Sounds: probes sounds and sounds-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Sounds)]
     public bool SetDialogueTextKey(sound? soundHandle, string? dialogueText)
     {
@@ -164,53 +184,82 @@ public sealed partial class GameNatives
     }
 
     /// <summary>True; false for nil. Nothing reads it back.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Sounds: probes sounds and sounds-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Sounds)]
     public bool SetSoundFacialAnimationLabel(sound? soundHandle, string? animationLabel) => soundHandle is not null;
 
     /// <summary>True; false for nil. Nothing reads it back.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Sounds: probes sounds and sounds-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Sounds)]
     public bool SetSoundFacialAnimationGroupLabel(sound? soundHandle, string? groupLabel) => soundHandle is not null;
 
     /// <summary>True; false for nil. Nothing reads it back.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Sounds: probes sounds and sounds-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Sounds)]
     public bool SetSoundFacialAnimationSetFilepath(sound? soundHandle, string? animationSetFilepath) => soundHandle is not null;
 
+    /// <summary>Changes nothing; the label's sound settings aren't applied.</summary>
+    /// <remarks>Recorded: what a sound sounds like: nothing is played, and no native reads it back (probes sounds and sounds-2).</remarks>
     [Native(Level.Recorded, Reason = NotPlayed)]
     public void SetSoundParamsFromLabel(sound? soundHandle, string? soundLabel) { }
 
+    /// <summary>Changes nothing; the channel isn't kept.</summary>
+    /// <remarks>Recorded: what a sound sounds like: nothing is played, and no native reads it back (probes sounds and sounds-2).</remarks>
     [Native(Level.Recorded, Reason = NotPlayed)]
     public void SetSoundChannel(sound? soundHandle, int channel) { }
 
+    /// <summary>Changes nothing; the volume isn't kept.</summary>
+    /// <remarks>Recorded: what a sound sounds like: nothing is played, and no native reads it back (probes sounds and sounds-2).</remarks>
     [Native(Level.Recorded, Reason = NotPlayed)]
     public void SetSoundVolume(sound? soundHandle, int volume) { }
 
+    /// <summary>Changes nothing; the distances aren't kept.</summary>
+    /// <remarks>Recorded: what a sound sounds like: nothing is played, and no native reads it back (probes sounds and sounds-2).</remarks>
     [Native(Level.Recorded, Reason = NotPlayed)]
     public void SetSoundDistances(sound? soundHandle, float minDist, float maxDist) { }
 
+    /// <summary>Changes nothing; the cutoff isn't kept.</summary>
+    /// <remarks>Recorded: what a sound sounds like: nothing is played, and no native reads it back (probes sounds and sounds-2).</remarks>
     [Native(Level.Recorded, Reason = NotPlayed)]
     public void SetSoundDistanceCutoff(sound? soundHandle, float cutoff) { }
 
+    /// <summary>Changes nothing; the cone angles and volume aren't kept.</summary>
+    /// <remarks>Recorded: what a sound sounds like: nothing is played, and no native reads it back (probes sounds and sounds-2).</remarks>
     [Native(Level.Recorded, Reason = NotPlayed)]
     public void SetSoundConeAngles(sound? soundHandle, float inside, float outside, int outsideVolume) { }
 
+    /// <summary>Changes nothing; the cone's direction isn't kept.</summary>
+    /// <remarks>Recorded: what a sound sounds like: nothing is played, and no native reads it back (probes sounds and sounds-2).</remarks>
     [Native(Level.Recorded, Reason = NotPlayed)]
     public void SetSoundConeOrientation(sound? soundHandle, float x, float y, float z) { }
 
+    /// <summary>Changes nothing; the sound's place isn't kept.</summary>
+    /// <remarks>Recorded: what a sound sounds like: nothing is played, and no native reads it back (probes sounds and sounds-2).</remarks>
     [Native(Level.Recorded, Reason = NotPlayed)]
     public void SetSoundPosition(sound? soundHandle, float x, float y, float z) { }
 
+    /// <summary>Changes nothing; the sound's velocity isn't kept.</summary>
+    /// <remarks>Recorded: what a sound sounds like: nothing is played, and no native reads it back (probes sounds and sounds-2).</remarks>
     [Native(Level.Recorded, Reason = NotPlayed)]
     public void SetSoundVelocity(sound? soundHandle, float x, float y, float z) { }
 
+    /// <summary>Changes nothing; the sound isn't attached to the unit.</summary>
+    /// <remarks>Recorded: what a sound sounds like: nothing is played, and no native reads it back (probes sounds and sounds-2).</remarks>
     [Native(Level.Recorded, Reason = NotPlayed)]
     public void AttachSoundToUnit(sound? soundHandle, unit? whichUnit) { }
 
+    /// <summary>Changes nothing; the sound isn't registered as stacked.</summary>
+    /// <remarks>Recorded: what a sound sounds like: nothing is played, and no native reads it back (probes sounds and sounds-2).</remarks>
     [Native(Level.Recorded, Reason = NotPlayed)]
     public void RegisterStackedSound(sound? soundHandle, bool byPosition, float rectwidth, float rectheight) { }
 
+    /// <summary>Changes nothing; the sound isn't unregistered as stacked.</summary>
+    /// <remarks>Recorded: what a sound sounds like: nothing is played, and no native reads it back (probes sounds and sounds-2).</remarks>
     [Native(Level.Recorded, Reason = NotPlayed)]
     public void UnregisterStackedSound(sound? soundHandle, bool byPosition, float rectwidth, float rectheight) { }
 
+    /// <summary>Changes nothing; the sound environment doesn't change.</summary>
+    /// <remarks>Recorded: what a sound sounds like: nothing is played, and no native reads it back (probes sounds and sounds-2).</remarks>
     [Native(Level.Recorded, Reason = NotPlayed)]
     public void NewSoundEnvironment(string? environmentName) { }
 }

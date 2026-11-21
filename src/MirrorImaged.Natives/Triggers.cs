@@ -113,6 +113,8 @@ public sealed partial class GameNatives
     // Outside any event, the event id is a handle with id 0 (probe triggers)
     Firing Current => _firing ?? (_outside ??= new(null, Convert<gameevent>(0)));
 
+    /// <summary>A new trigger, enabled, with no events, conditions or actions.</summary>
+    /// <remarks>Close: A trigger as the model keeps it, enabled with nothing added; not measured in the game.</remarks>
     [Native(Level.Close)]
     public trigger? CreateTrigger()
     {
@@ -128,6 +130,7 @@ public sealed partial class GameNatives
     /// Its events stop and they, its actions and its conditions are let go of; a thread already running its actions runs
     /// on (the game's handle stack may break: a claim, not measured).
     /// </summary>
+    /// <remarks>Close: What a thread already running its actions does after this is a claim, not measured.</remarks>
     [Native(Level.Close)]
     public void DestroyTrigger(trigger? whichTrigger)
     {
@@ -155,6 +158,7 @@ public sealed partial class GameNatives
     /// Whether a run of its actions hasn't ended, waiting or not, also one interrupted that hasn't reached its end yet;
     /// its conditions in TriggerEvaluate are no run.
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers-4 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe4)]
     public bool BlzTriggerIsRunning(trigger? whichTrigger) => whichTrigger?.Running > 0;
 
@@ -162,6 +166,7 @@ public sealed partial class GameNatives
     /// Stops its runs: the action running goes on, but no other action runs, and a run that waits never goes on after
     /// its wait, also one the action running starts after the interrupt (decisions D77).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers-4 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe4)]
     public void BlzTriggerInterrupt(trigger? whichTrigger)
     {
@@ -169,12 +174,15 @@ public sealed partial class GameNatives
     }
 
     /// <summary>A disabled trigger's events are counted but run nothing; TriggerExecute and TriggerEvaluate still run it.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe1)]
     public void DisableTrigger(trigger? whichTrigger)
     {
         if (whichTrigger is not null) whichTrigger.Enabled = false;
     }
 
+    /// <summary>Enables the trigger, so its events run its actions; a null trigger changes nothing.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe1)]
     public void EnableTrigger(trigger? whichTrigger)
     {
@@ -182,10 +190,12 @@ public sealed partial class GameNatives
     }
 
     /// <summary>True for a new trigger.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe1)]
     public bool IsTriggerEnabled(trigger? whichTrigger) => whichTrigger?.Enabled ?? false;
 
     /// <summary>Kept and read back; TriggerExecuteWait doesn't wait either way.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe2)]
     public void TriggerWaitOnSleeps(trigger? whichTrigger, bool flag)
     {
@@ -193,17 +203,22 @@ public sealed partial class GameNatives
     }
 
     /// <summary>False for a new trigger.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe1)]
     public bool IsTriggerWaitOnSleeps(trigger? whichTrigger) => whichTrigger?.WaitOnSleeps ?? false;
 
     /// <summary>Its events and TriggerExecute count; TriggerEvaluate doesn't.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe2)]
     public int GetTriggerEvalCount(trigger? whichTrigger) => whichTrigger?.EvalCount ?? 0;
 
     /// <summary>Its runs: TriggerExecute, and its events whose conditions passed, counted before the actions run.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe2)]
     public int GetTriggerExecCount(trigger? whichTrigger) => whichTrigger?.ExecCount ?? 0;
 
+    /// <summary>Sets the trigger's evaluation and execution counts to 0.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe1)]
     public void ResetTrigger(trigger? whichTrigger)
     {
@@ -217,6 +232,7 @@ public sealed partial class GameNatives
     /// only its own action. A run takes the actions the trigger has as it starts: one added or removed meanwhile changes
     /// the next run.
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe2)]
     public triggeraction? TriggerAddAction(trigger? whichTrigger, Action? actionFunc)
     {
@@ -230,12 +246,16 @@ public sealed partial class GameNatives
         return action;
     }
 
+    /// <summary>Removes the action from the trigger and lets go of its function once no thread of the trigger can still run it.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe2)]
     public void TriggerRemoveAction(trigger? whichTrigger, triggeraction? whichAction)
     {
         if (whichTrigger is not null && whichAction is not null && whichTrigger.Actions.Remove(whichAction)) LetGo(whichTrigger, whichAction);
     }
 
+    /// <summary>Removes every action of the trigger, as TriggerRemoveAction does each.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe2)]
     public void TriggerClearActions(trigger? whichTrigger)
     {
@@ -248,6 +268,7 @@ public sealed partial class GameNatives
     /// A nil condition makes the trigger's conditions fail. A destroyed condition fails, until a Condition or Filter made
     /// after it takes its place and runs there (decisions D115).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers (11-08); facts, Handles and errors: probes handles, handles-2, handles-3 and arguments (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe1 + "; " + Handles)]
     public triggercondition? TriggerAddCondition(trigger? whichTrigger, boolexpr? condition)
     {
@@ -257,12 +278,16 @@ public sealed partial class GameNatives
         return added;
     }
 
+    /// <summary>Removes the condition from the trigger and destroys its handle; nothing for one the trigger doesn't hold.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers (11-08); facts, Handles and errors: probes handles, handles-2, handles-3 and arguments (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe1 + "; " + Handles)]
     public void TriggerRemoveCondition(trigger? whichTrigger, triggercondition? whichCondition)
     {
         if (whichCondition is not null && whichTrigger?.Conditions.Remove(whichCondition) == true) _game.Remove(whichCondition.Key);
     }
 
+    /// <summary>Removes every condition of the trigger and destroys their handles.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe2)]
     public void TriggerClearConditions(trigger? whichTrigger)
     {
@@ -276,6 +301,7 @@ public sealed partial class GameNatives
     /// condition that raises, or waits, fails. Counts nothing; a disabled trigger's conditions run too. Close: with
     /// Condition(nil) in an And, Or or Not it gives the model's value, not the game's (decisions D114).
     /// </summary>
+    /// <remarks>Close: With Condition(nil) in an And, Or or Not it gives the model's value, not the game's (D114).</remarks>
     [Native(Level.Close)]
     public bool TriggerEvaluate(trigger? whichTrigger) =>
         whichTrigger is not null && In(Current with { Trigger = whichTrigger }, () => Passes(whichTrigger));
@@ -284,6 +310,7 @@ public sealed partial class GameNatives
     /// Runs the actions in a new thread, also for a disabled trigger, with the caller's event; the caller goes on when
     /// they end or wait. Counts an evaluation and a run.
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe1)]
     public void TriggerExecute(trigger? whichTrigger)
     {
@@ -294,6 +321,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>As TriggerExecute: the caller doesn't wait for the actions' waits, even with TriggerWaitOnSleeps.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe2)]
     public void TriggerExecuteWait(trigger? whichTrigger) => TriggerExecute(whichTrigger);
 
@@ -302,6 +330,7 @@ public sealed partial class GameNatives
     /// ends or waits. Null, which a JASS map can give, runs nothing (probe jass-executefunc-null). A name that isn't a
     /// function raises in that thread, which logs it; the game's JASS runs nothing and says nothing (the same probe).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe2)]
     public void ExecuteFunc(string? funcName)
     {
@@ -314,6 +343,7 @@ public sealed partial class GameNatives
     /// function, it raises. The first wait started in the step a force ForForce ran over was destroyed in never ends
     /// either (DestroyForce).
     /// </summary>
+    /// <remarks>Close: Modelled on D71's tenths of a second; not measured for every place a wait can be called from.</remarks>
     [Native(Level.Close)]
     public void TriggerSleepAction(float timeout)
     {
@@ -324,6 +354,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The trigger whose conditions or actions run; nil outside one, and ExecuteFunc keeps its caller's.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe2)]
     public trigger? GetTriggeringTrigger() => Current.Trigger;
 
@@ -332,6 +363,7 @@ public sealed partial class GameNatives
     /// events, EVENT_GAME_STATE_LIMIT for a float game state, the comparison less 255 for an integer one, and a handle
     /// with id 0 outside an event. Lua's == holds with any handle of its id, ConvertPlayerColor(4) too (decisions D112).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers (11-08); facts, Triggers and threads: probe triggers-3 (11-08); facts, Handles and errors: probes handles, handles-2, handles-3 and arguments (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe1 + "; " + Probe3 + "; " + Handles)]
     public eventid? GetTriggerEventId() => Current.Event;
 
@@ -341,11 +373,13 @@ public sealed partial class GameNatives
     /// trigger's condition and is false in an And, Or or Not. Close: there the game's reads a value left from what ran
     /// before it, which this matches in 15 of the 21 cases measured (decisions D114).
     /// </summary>
+    /// <remarks>Close: Condition(nil) read in an And, Or or Not matches the game in 15 of the 21 cases measured (D114).</remarks>
     [Native(Level.Close)]
     public conditionfunc? Condition(Func<bool>? func) =>
         func is null ? _noCondition ??= Nil(new conditionfunc()) : Make(new conditionfunc { Place = Take(func) });
 
     /// <summary>As Condition.</summary>
+    /// <remarks>Close: As Condition: Filter(nil) in an And, Or or Not matches the game in 15 of the 21 cases measured (D114).</remarks>
     [Native(Level.Close)]
     public filterfunc? Filter(Func<bool>? func) =>
         func is null ? _noFilter ??= Nil(new filterfunc()) : Make(new filterfunc { Place = Take(func) });
@@ -372,18 +406,22 @@ public sealed partial class GameNatives
     /// it, 6 of the 21 cases measured differ, such as And(t, Condition(nil)) for a condition t that passes, which passes
     /// in the game and fails here (decisions D114).
     /// </summary>
+    /// <remarks>Close: With Condition(nil) in it, 6 of the 21 cases measured differ from the game (D114).</remarks>
     [Native(Level.Close)]
     public boolexpr? And(boolexpr? operandA, boolexpr? operandB) => Make(new boolexpr { Junction = Junction.And, A = operandA, B = operandB });
 
     /// <summary>The second operand runs only when the first fails; a nil operand is false. Close as And (decisions D114).</summary>
+    /// <remarks>Close: As And: with Condition(nil) in it, the game's value isn't always matched (D114).</remarks>
     [Native(Level.Close)]
     public boolexpr? Or(boolexpr? operandA, boolexpr? operandB) => Make(new boolexpr { Junction = Junction.Or, A = operandA, B = operandB });
 
     /// <summary>Not(nil) is false. Close as And (decisions D114).</summary>
+    /// <remarks>Close: As And: with Condition(nil) in it, the game's value isn't always matched (D114).</remarks>
     [Native(Level.Close)]
     public boolexpr? Not(boolexpr? operand) => Make(new boolexpr { Junction = Junction.Not, A = operand });
 
     /// <summary>A destroyed And, Or or Not still runs where it was added.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe2)]
     public void DestroyBoolExpr(boolexpr? e) => Destroy(e);
 
@@ -391,10 +429,12 @@ public sealed partial class GameNatives
     /// A destroyed condition no longer runs, and fails where it was added, until a Condition or Filter made after it takes
     /// its place and runs there (decisions D115).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers-2 (11-08); facts, Handles and errors: probes handles, handles-2, handles-3 and arguments (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe2 + "; " + Handles)]
     public void DestroyCondition(conditionfunc? c) => Destroy(c);
 
     /// <summary>As DestroyCondition.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers-2 (11-08); facts, Handles and errors: probes handles, handles-2, handles-3 and arguments (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe2 + "; " + Handles)]
     public void DestroyFilter(filterfunc? f) => Destroy(f);
 
@@ -403,6 +443,7 @@ public sealed partial class GameNatives
     /// EVENT_GAME_TIMER_EXPIRED, and GetExpiredTimer is nil in it. Among what falls due together it keeps the place it
     /// got when registered, every time (decisions D76).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers (11-08); facts, Triggers and threads: probe triggers-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe1 + "; " + Probe2)]
     public @event? TriggerRegisterTimerEvent(trigger? whichTrigger, float timeout, bool periodic)
     {
@@ -430,6 +471,7 @@ public sealed partial class GameNatives
     /// Fires when the timer expires, before its callback, with GetExpiredTimer the timer; registered twice, twice
     /// (facts, "Errors and callbacks").
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (game-facts.md, Errors and callbacks: a timer-expiry trigger fires before the timer's own callback (10-01); facts, Triggers and threads: probe triggers-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = "game-facts.md, Errors and callbacks: a timer-expiry trigger fires before the timer's own callback (10-01); " + Probe2)]
     public @event? TriggerRegisterTimerExpireEvent(trigger? whichTrigger, timer? t)
     {
@@ -441,6 +483,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Never fires: the game's doesn't for a global the script sets.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe1)]
     public @event? TriggerRegisterVariableEvent(trigger? whichTrigger, string? varName, limitop? opcode, float limitval) =>
         whichTrigger is null ? null : Register(whichTrigger);
@@ -451,6 +494,7 @@ public sealed partial class GameNatives
     /// passes the limit (GameState.cs). Close: three things the events probe saw the game do in the frames after a set
     /// aren't modelled (decisions D144).
     /// </summary>
+    /// <remarks>Close: Three things the events probe saw the game do in the frames after a set aren't modelled (D144).</remarks>
     [Native(Level.Close)]
     public @event? TriggerRegisterGameStateEvent(trigger? whichTrigger, gamestate? whichState, limitop? opcode, float limitval)
     {
@@ -462,6 +506,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The game state of the event that fired the trigger; nil outside one.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Triggers and threads: probe triggers-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = Probe2)]
     public gamestate? GetEventGameState() => Current.State;
 

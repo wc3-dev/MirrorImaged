@@ -123,9 +123,10 @@ public static partial class Generator
     {
         var text = new StringBuilder(Header(source));
         text.Append("\n#pragma warning disable CS8981 // The types keep common.j's names, which are lower case.\n");
-        text.Append("\nnamespace MirrorImaged.Natives;\n\npublic partial class handle;\n");
+        text.Append("\nnamespace MirrorImaged.Natives;\n\n/// <summary>The game's <c>handle</c>, the type every other handle type extends.</summary>\npublic partial class handle;\n");
         foreach (var type in types.OrderBy(type => type.Name, StringComparer.Ordinal))
-            text.Append($"public partial class {Identifier(type.Name)} : {Identifier(type.Parent)};\n");
+            text.Append($"/// <summary>The game's <c>{type.Name}</c> handle, a kind of <c>{type.Parent}</c>.</summary>\n")
+                .Append($"public partial class {Identifier(type.Name)} : {Identifier(type.Parent)};\n");
         return text.ToString();
     }
 

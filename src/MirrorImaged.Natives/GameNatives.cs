@@ -12,6 +12,7 @@ public partial class handle
     public int Key { get; internal set; }
 }
 
+/// <summary>The game's natives from common.j and common.ai, as C# methods over one <see cref="Game"/>; each carries its trust level in <see cref="NativeAttribute"/>.</summary>
 public sealed partial class GameNatives
 {
     readonly Game _game;

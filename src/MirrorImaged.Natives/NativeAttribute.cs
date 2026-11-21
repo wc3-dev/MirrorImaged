@@ -4,6 +4,7 @@ namespace MirrorImaged.Natives;
 [AttributeUsage(AttributeTargets.Method)]
 public sealed class NativeAttribute(Level level) : Attribute
 {
+    /// <summary>How far the native can be trusted to do what the game does.</summary>
     public Level Level { get; } = level;
 
     /// <summary>For a Recorded native, why it is not simulated.</summary>

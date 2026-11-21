@@ -67,6 +67,7 @@ public sealed partial class GameNatives
     /// changed, in the same instant; a point off the grid reads blocked. Close: a map with no pathing file reads open,
     /// where the game works its own out from the ground.
     /// </summary>
+    /// <remarks>Close: measured in part (game-facts.md, Terrain changes: probe of 11-09; Units: IsTerrainPathable (10-25, 10-26)); a map with no pathing file reads open, where the game works its own out from the ground.</remarks>
     [Native(Level.Close, Fact = GroundFacts)]
     public bool IsTerrainPathable(float x, float y, pathingtype? t)
     {
@@ -77,6 +78,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>One 32 by 32 cell on the world's grid takes the flag: true makes it pathable for the kind, false blocks it.</summary>
+    /// <remarks>Exact: matches the game wherever measured (game-facts.md, Terrain changes: probe of 11-09; Units: IsTerrainPathable (10-25, 10-26)).</remarks>
     [Native(Level.Exact, Fact = GroundFacts)]
     public void SetTerrainPathable(float x, float y, pathingtype? t, bool flag)
     {
@@ -92,6 +94,7 @@ public sealed partial class GameNatives
     static byte Mask(pathingtype t) => t.Id == 0 ? byte.MaxValue : t.Id <= PathingBits.Length ? PathingBits[t.Id - 1] : (byte)0;
 
     /// <summary>Whether the cell is blighted, as IsTerrainPathable reads blight pathing.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Terrain changes: probe of 11-09; Units: IsTerrainPathable (10-25, 10-26)); read from the cell's blight bit, and false for a map with no pathing file, which is not measured in the game.</remarks>
     [Native(Level.Close, Fact = GroundFacts)]
     public bool IsPointBlighted(float x, float y) => CellAt(x, y) is var cell and >= 0 && Cells() is { } cells && (cells[cell] & BlightBit) != 0;
 
@@ -116,12 +119,15 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Blights (or clears) the 64 cells whose centres are within 0.8 of the radius; the player changes nothing here.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Terrain changes: probe of 11-09; Units: IsTerrainPathable (10-25, 10-26)); the reach of 0.8 of the radius is fitted to the probe (radius 300 reached 240, 150 cleared 112), other radii are not measured.</remarks>
     [Native(Level.Close, Fact = GroundFacts)]
     public void SetBlight(player? whichPlayer, float x, float y, float radius, bool addBlight)
     {
         if (whichPlayer is not null) Blight(x, y, radius * BlightReach, addBlight);
     }
 
+    /// <summary>As SetBlight at the location; nothing for a null location.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Terrain changes: probe of 11-09; Units: IsTerrainPathable (10-25, 10-26)); as SetBlight, other radii are not measured.</remarks>
     [Native(Level.Close, Fact = GroundFacts)]
     public void SetBlightLoc(player? whichPlayer, location? whichLocation, float radius, bool addBlight)
     {
@@ -129,10 +135,12 @@ public sealed partial class GameNatives
     }
 
     /// <summary>One point's blight, of the size of a radius of 200 (the game's reached about 160 along a line; Close).</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Terrain changes: probe of 11-09; Units: IsTerrainPathable (10-25, 10-26)); modelled as a radius of 200, which reaches 160 along a line as the probe's point did, other directions are not measured.</remarks>
     [Native(Level.Close, Fact = GroundFacts)]
     public void SetBlightPoint(player? whichPlayer, float x, float y, bool addBlight) => SetBlight(whichPlayer, x, y, PointBlight, addBlight);
 
     /// <summary>Every 64 cell whose centre is inside the rect.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Terrain changes: probe of 11-09; Units: IsTerrainPathable (10-25, 10-26)); the rule that a cell centre inside the rect counts is the model's, not measured in the game.</remarks>
     [Native(Level.Close, Fact = GroundFacts)]
     public void SetBlightRect(player? whichPlayer, rect? r, bool addBlight)
     {
@@ -147,6 +155,7 @@ public sealed partial class GameNatives
     /// A Haunted Gold Mine ("ugol") for the player at the place, with the blight of a point around it; nil where the data
     /// has no such unit. Close: the size of its blight isn't measured.
     /// </summary>
+    /// <remarks>Close: measured in part (game-facts.md, Terrain changes: probe of 11-09; Units: IsTerrainPathable (10-25, 10-26)); the size of its blight is not measured.</remarks>
     [Native(Level.Close, Fact = GroundFacts)]
     public unit? CreateBlightedGoldmine(player? id, float x, float y, float face)
     {
@@ -165,12 +174,14 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The tile id of the corner nearest the point (as painted), 0 off the map.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Terrain changes: probe of 11-09; Units: IsTerrainPathable (10-25, 10-26)); the nearest corner of the 128 grid, a half rounding up, is the model's reading and not measured at every place.</remarks>
     [Native(Level.Close, Fact = GroundFacts)]
     public int GetTerrainType(float x, float y) =>
         NearestCorner(x, y) is not var (column, row) ? 0
         : _painted.TryGetValue(row * Data.Terrain!.Grid.Columns + column, out var painted) ? painted.Type : Data.Terrain.TileAt(column, row).Type;
 
     /// <summary>The variation of the corner nearest the point (as painted), 0 off the map.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Terrain changes: probe of 11-09; Units: IsTerrainPathable (10-25, 10-26)); the nearest corner of the 128 grid, a half rounding up, is the model's reading and not measured at every place.</remarks>
     [Native(Level.Close, Fact = GroundFacts)]
     public int GetTerrainVariance(float x, float y) =>
         NearestCorner(x, y) is not var (column, row) ? 0
@@ -181,6 +192,7 @@ public sealed partial class GameNatives
     /// with the tile and variation (-1 keeps the variation 0 here); it changes no pathing and no blight (facts). Close:
     /// a random variation (-1) isn't drawn.
     /// </summary>
+    /// <remarks>Close: measured in part (game-facts.md, Terrain changes: probe of 11-09; Units: IsTerrainPathable (10-25, 10-26)); a random variation (-1) is kept as 0 here, not drawn at random.</remarks>
     [Native(Level.Close, Fact = GroundFacts)]
     public void SetTerrainType(float x, float y, int terrainType, int variation, int area, int shape)
     {
@@ -199,6 +211,7 @@ public sealed partial class GameNatives
     /// (facts, Terrain changes). Close: the game's ramp over a duration starts slower than a straight line (2.5% at 0.1 s
     /// of 1 s).
     /// </summary>
+    /// <remarks>Close: measured in part (game-facts.md, Terrain changes: probe of 11-09; Units: IsTerrainPathable (10-25, 10-26)); the game's ramp over a duration starts slower than a straight line (2.5% at 0.1 s of 1 s), here it is linear.</remarks>
     [Native(Level.Close, Fact = GroundFacts)]
     public terraindeformation? TerrainDeformCrater(float x, float y, float radius, float depth, int duration, bool permanent)
     {
@@ -210,6 +223,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The crater stops after the duration, fading over it; at once (0) it is gone from the next moment, still read in this one.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Terrain changes: probe of 11-09; Units: IsTerrainPathable (10-25, 10-26); facts: a stopped crater still reads in the instant it is stopped (11-13)); the fade after the stop is linear here, not measured in the game.</remarks>
     [Native(Level.Close, Fact = GroundFacts + "; facts: a stopped crater still reads in the instant it is stopped (11-13)")]
     public void TerrainDeformStop(terraindeformation? deformation, int duration)
     {
@@ -217,20 +231,28 @@ public sealed partial class GameNatives
         (crater.Stopped, crater.StoppedAt, crater.Fade) = (_game.Step, Seconds, Math.Max(duration, 0) / 1000.0);
     }
 
+    /// <summary>Stops every crater still running with no fade: each is gone from the next moment, still read in this one.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Terrain changes: probe of 11-09; Units: IsTerrainPathable (10-25, 10-26)); modelled as TerrainDeformStop with 0, not measured separately.</remarks>
     [Native(Level.Close, Fact = GroundFacts)]
     public void TerrainDeformStopAll()
     {
         foreach (var crater in _craters.Where(c => c.Stopped is null)) (crater.Stopped, crater.StoppedAt, crater.Fade) = (_game.Step, Seconds, 0);
     }
 
+    /// <summary>Gives a new handle; no ground is moved.</summary>
+    /// <remarks>Recorded: GetLocationZ read no change at any corner within the radius, 0.25 s to 5 s after a ripple was made and after it was stopped, in a probe run on classic and on Reforged graphics; but it read none for the lasting crater used as the control either, which the 11-09 lines have moving the ground, so that run is no measurement of it; nothing is modelled (D796).</remarks>
     [Native(Level.Recorded, Reason = "GetLocationZ read no change at any corner within the radius, 0.25 s to 5 s after a ripple was made and after it was stopped, in a probe run on classic and on Reforged graphics; but it read none for the lasting crater used as the control either, which the 11-09 lines have moving the ground, so that run is no measurement of it; nothing is modelled (D796)")]
     public terraindeformation? TerrainDeformRipple(float x, float y, float radius, float depth, int duration, int count, float spaceWaves, float timeWaves, float radiusStartPct, bool limitNeg) =>
         Make(new terraindeformation());
 
+    /// <summary>Gives a new handle; no ground is moved.</summary>
+    /// <remarks>Recorded: GetLocationZ read no change at any corner within the radius, 0.25 s to 5 s after a random shake was made and after it was stopped, in a probe run on classic and on Reforged graphics; but it read none for the lasting crater used as the control either, which the 11-09 lines have moving the ground, so that run is no measurement of it; nothing is modelled (D796).</remarks>
     [Native(Level.Recorded, Reason = "GetLocationZ read no change at any corner within the radius, 0.25 s to 5 s after a random shake was made and after it was stopped, in a probe run on classic and on Reforged graphics; but it read none for the lasting crater used as the control either, which the 11-09 lines have moving the ground, so that run is no measurement of it; nothing is modelled (D796)")]
     public terraindeformation? TerrainDeformRandom(float x, float y, float radius, float minDelta, float maxDelta, int duration, int updateInterval) =>
         Make(new terraindeformation());
 
+    /// <summary>Gives a new handle; no ground is moved.</summary>
+    /// <remarks>Recorded: GetLocationZ read no change at any corner within the radius, 0.25 s to 5 s after a wave was made and after it was stopped, in a probe run on classic and on Reforged graphics; but it read none for the lasting crater used as the control either, which the 11-09 lines have moving the ground, so that run is no measurement of it; nothing is modelled (D796).</remarks>
     [Native(Level.Recorded, Reason = "GetLocationZ read no change at any corner within the radius, 0.25 s to 5 s after a wave was made and after it was stopped, in a probe run on classic and on Reforged graphics; but it read none for the lasting crater used as the control either, which the 11-09 lines have moving the ground, so that run is no measurement of it; nothing is modelled (D796)")]
     public terraindeformation? TerrainDeformWave(float x, float y, float dirX, float dirY, float distance, float speed, float radius, float depth, int trailTime, int count) =>
         Make(new terraindeformation());

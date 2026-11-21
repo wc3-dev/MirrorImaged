@@ -51,6 +51,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The wave asks for the number of units of the type more; true when it can be made.</summary>
+    /// <remarks>Close: the wave's units are asked for at once through SetProduce; the game's own wave rules are not measured (D366).</remarks>
     [Native(Level.Close)]
     public bool AddAssault(int qty, int id)
     {
@@ -61,12 +62,17 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Empties the wave.</summary>
+    /// <remarks>Close: the game's own wave state is not measured (D366).</remarks>
     [Native(Level.Close)]
     public void InitAssault() => WarOf(Ai).Wave.Clear();
 
+    /// <summary>Makes the AI player's war state if it has none.</summary>
+    /// <remarks>Close: only the attack captain is modelled; the defence captain is not kept apart (D366).</remarks>
     [Native(Level.Close)]
     public void CreateCaptains() => WarOf(Ai);
 
+    /// <summary>Sets where the attack captain (0) or the defence captain (any other number) comes home; nothing reads the defence home back.</summary>
+    /// <remarks>Close: which number is which captain is not measured in the game; here 0 is the attack captain.</remarks>
     [Native(Level.Close)]
     public void SetCaptainHome(int which, float x, float y)
     {
@@ -74,17 +80,28 @@ public sealed partial class GameNatives
         if (which == 0) war.Home = (x, y); else war.DefenceHome = (x, y);
     }
 
+    /// <summary>Forgets the attack goal.</summary>
+    /// <remarks>Close: the model keeps one goal; what else the game resets is not measured.</remarks>
     [Native(Level.Close)] public void ResetCaptainLocs() => WarOf(Ai).Goal = null;
+    /// <summary>Changes nothing; the captain keeps its goal.</summary>
+    /// <remarks>Recorded: Whether the engine lets the attack captain change its goal while it fights; the simulation's captain keeps the goal the script gave it (D798).</remarks>
     [Native(Level.Recorded, Reason = "Whether the engine lets the attack captain change its goal while it fights; the simulation's captain keeps the goal the script gave it (D798)")]
     public void SetCaptainChanges(bool allow) { }
+    /// <summary>Forgets the attack goal.</summary>
+    /// <remarks>Close: the model keeps one goal; what else the game clears is not measured.</remarks>
     [Native(Level.Close)] public void ClearCaptainTargets() => WarOf(Ai).Goal = null;
+    /// <summary>Changes nothing; the captain is not pointed at a player.</summary>
+    /// <remarks>Recorded: Points the attack captain at a player, so it picks that player's units and buildings as targets; the simulation's captain goes to the place the script names (D798).</remarks>
     [Native(Level.Recorded, Reason = "Points the attack captain at a player, so it picks that player's units and buildings as targets; the simulation's captain goes to the place the script names (D798)")]
     public void CaptainVsPlayer(player? id) { }
 
+    /// <summary>Changes nothing; the captain is not pointed at a player's units.</summary>
+    /// <remarks>Recorded: Points the attack captain at a player's units, not its buildings; the simulation's captain goes to the place the script names (D798).</remarks>
     [Native(Level.Recorded, Reason = "Points the attack captain at a player's units, not its buildings; the simulation's captain goes to the place the script names (D798)")]
     public void CaptainVsUnits(player? id) { }
 
     /// <summary>The captain fights its way to the place.</summary>
+    /// <remarks>Close: the units get an attack order to the place; the wave's reinforcing and retreating are the script's, not the game's (D366).</remarks>
     [Native(Level.Close)]
     public void CaptainAttack(float x, float y)
     {
@@ -93,8 +110,12 @@ public sealed partial class GameNatives
         foreach (var u in Captain()) Give(u, OrderAttackId, x, y, null, 1);
     }
 
+    /// <summary>As <c>CaptainAttack</c>, to a place given in whole numbers.</summary>
+    /// <remarks>Close: as CaptainAttack; the game's own rules for it are not measured.</remarks>
     [Native(Level.Close)] public void AttackMoveXY(int x, int y) => CaptainAttack(x, y);
 
+    /// <summary>As <c>CaptainAttack</c>, to where the target stands now; nothing for nil.</summary>
+    /// <remarks>Close: the captain goes to the place the target stands at now, not after it as it moves; the game's own rules are not measured.</remarks>
     [Native(Level.Close)]
     public void AttackMoveKill(unit? target)
     {
@@ -102,6 +123,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The captain comes home and stays.</summary>
+    /// <remarks>Close: the units get a move order to the home; the game's own retreat is not measured (D366).</remarks>
     [Native(Level.Close)]
     public void CaptainGoHome()
     {
@@ -110,15 +132,23 @@ public sealed partial class GameNatives
         foreach (var u in Captain()) Give(u, OrderMoveId, war.Home.X, war.Home.Y, null, 1);
     }
 
+    /// <summary>Puts every unit of the captain at the place, as <c>SetUnitPosition</c> does.</summary>
+    /// <remarks>Close: where the game puts the units is not measured.</remarks>
     [Native(Level.Close)]
     public void TeleportCaptain(float x, float y)
     {
         foreach (var u in Captain()) SetUnitPosition(u, x, y);
     }
 
+    /// <summary>How many units the captain has.</summary>
+    /// <remarks>Close: the captain is the wave's units picked by type and id, the model's own pick; the game's is not measured (D366).</remarks>
     [Native(Level.Close)] public int CaptainGroupSize() => Captain().Count;
+    /// <summary>Whether the captain has no units.</summary>
+    /// <remarks>Close: the captain is the wave's units picked by type and id, the model's own pick; the game's is not measured (D366).</remarks>
     [Native(Level.Close)] public bool CaptainIsEmpty() => Captain().Count == 0;
 
+    /// <summary>Whether the captain has the number of every type the wave asked for; false for an empty wave.</summary>
+    /// <remarks>Close: the game's own test is not measured (D366).</remarks>
     [Native(Level.Close)]
     public bool CaptainIsFull()
     {
@@ -126,18 +156,28 @@ public sealed partial class GameNatives
         return wave.Count > 0 && Captain() is var units && wave.All(w => units.Count(u => u.Type.Id == w.Id) >= w.Qty);
     }
 
+    /// <summary>Whether the captain has units and all are within 600 of the attack goal; false with no goal.</summary>
+    /// <remarks>Close: the reach of 600 is the model's, not measured in the game.</remarks>
     [Native(Level.Close)]
     public bool CaptainAtGoal() =>
         WarOf(Ai).Goal is { } goal && Captain() is { Count: > 0 } units && units.All(u => Distance2(u.X - goal.X, u.Y - goal.Y) <= AtGoalReach * AtGoalReach);
 
+    /// <summary>Whether every unit of the captain is within 700 of its home; true for an empty captain.</summary>
+    /// <remarks>Close: the reach of 700 is the model's, not measured in the game.</remarks>
     [Native(Level.Close)]
     public bool CaptainIsHome() =>
         Captain() is var units && WarOf(Ai).Home is var home && units.All(u => Distance2(u.X - home.X, u.Y - home.Y) <= HomeReach * HomeReach);
 
+    /// <summary>Whether the captain was sent home and has not got there yet.</summary>
+    /// <remarks>Close: the game's own test is not measured.</remarks>
     [Native(Level.Close)] public bool CaptainRetreating() => WarOf(Ai).Retreating && !CaptainIsHome();
+    /// <summary>Whether the attack captain (true given) has a unit with an attack target; false for the other.</summary>
+    /// <remarks>Close: a unit with an attack target counts as fighting; the game's own test is not measured.</remarks>
     [Native(Level.Close)] public bool CaptainInCombat(bool attack_captain) => attack_captain && Captain().Any(u => u.AttackTarget is not null);
 
     // How much of the wave stands ready, in percent
+    /// <summary>The share of the wave's units the captain has, in percent, cut to a whole number; 0 for an empty wave.</summary>
+    /// <remarks>Close: the game's own formula is not measured.</remarks>
     [Native(Level.Close)]
     public int CaptainReadiness()
     {
@@ -148,10 +188,15 @@ public sealed partial class GameNatives
         return 100 * wave.Sum(w => Math.Min(w.Qty, units.Count(u => u.Type.Id == w.Id))) / total;
     }
 
+    /// <summary>The average life of the captain's units in percent, cut to a whole number; 0 with no units.</summary>
+    /// <remarks>Close: the game's own formula is not measured.</remarks>
     [Native(Level.Close)] public int CaptainReadinessHP() => Captain() is { Count: > 0 } units ? (int)(100 * units.Average(u => u.Life / Math.Max(u.MaxLife, 1))) : 0;
+    /// <summary>The average mana of the captain's units in percent, a unit with no mana counting full; 0 with no units.</summary>
+    /// <remarks>Close: the game's own formula is not measured.</remarks>
     [Native(Level.Close)] public int CaptainReadinessMa() => Captain() is { Count: > 0 } units ? (int)(100 * units.Average(u => u.MaxMana > 0 ? u.Mana / u.MaxMana : 1)) : 0;
 
     /// <summary>The nearest building of an enemy player to the AI player's first town hall, a town hall first.</summary>
+    /// <remarks>Close: the order (town halls first, then nearest) is the model's pick, not measured in the game.</remarks>
     [Native(Level.Close)]
     public unit? GetEnemyBase()
     {
@@ -161,13 +206,18 @@ public sealed partial class GameNatives
             .ThenBy(b => Distance2(b.X - from.Item1, b.Y - from.Item2)).FirstOrDefault();
     }
 
+    /// <summary>Does nothing; <c>GetEnemyBase</c> answers at once.</summary>
+    /// <remarks>Close: The game searches for the base over time; here GetEnemyBase answers at once, so the search is always done (D431).</remarks>
     [Native(Level.Close, Reason = "The game searches for the base over time; here GetEnemyBase answers at once, so the search is always done (D431)")]
     public void StartGetEnemyBase() { }
 
+    /// <summary>Whether the search is still going; always false.</summary>
+    /// <remarks>Close: False: the search StartGetEnemyBase starts is already done (D431).</remarks>
     [Native(Level.Close, Reason = "False: the search StartGetEnemyBase starts is already done (D431)")]
     public bool WaitGetEnemyBase() => false;
 
     /// <summary>How strong the enemies are: their fighting units that stand.</summary>
+    /// <remarks>Close: it counts armed units, not their strength; the game's own measure is not measured.</remarks>
     [Native(Level.Close)]
     public int GetEnemyPower() =>
         _units.Values.Count(u => !u.Dead && !u.Removed && !IsBuildingNow(u) && u.Owner != Ai && GetPlayerId(u.Owner) < 24 && IsPlayerEnemy(Ai, u.Owner) && u.Type.Integer(WeaponsOn) != 0);
@@ -229,22 +279,30 @@ public sealed partial class GameNatives
         [.. _units.Values.Where(c => !c.Dead && !c.Removed && GetPlayerId(c.Owner) == GetPlayerNeutralAggressive() && !IsBuildingNow(c) && Distance2(c.X - x, c.Y - y) <= reach * reach)];
 
     /// <summary>0 when a gold mine without a town hall remains to expand to, else -1.</summary>
+    /// <remarks>Close: the game's own ranking of places to expand is not measured; only whether a free mine is left is told.</remarks>
     [Native(Level.Close)] public int GetNextExpansion() => FreeMine() is null ? -1 : 0;
+    /// <summary>The x of the mine to expand to, cut to a whole number; -1 for none.</summary>
+    /// <remarks>Close: the mine is the model's pick (D789), not measured in the game.</remarks>
     [Native(Level.Close)] public int GetExpansionX() => FreeMine() is { } mine ? (int)mine.X : -1;
+    /// <summary>The y of the mine to expand to, cut to a whole number; -1 for none.</summary>
+    /// <remarks>Close: the mine is the model's pick (D789), not measured in the game.</remarks>
     [Native(Level.Close)] public int GetExpansionY() => FreeMine() is { } mine ? (int)mine.Y : -1;
 
     /// <summary>A creep guarding the mine to expand to, or nil.</summary>
+    /// <remarks>Close: the reach of 700 round the mine is the model's, not measured in the game.</remarks>
     [Native(Level.Close)]
     public unit? GetExpansionFoe() =>
         FreeMine() is { } mine ? CreepsNear(mine.X, mine.Y, 700).OrderBy(c => Distance2(c.X - mine.X, c.Y - mine.Y)).FirstOrDefault() : null;
 
     /// <summary>The worker nearest the mine to expand to that is idle or gathering, or nil.</summary>
+    /// <remarks>Close: the nearest idle or gathering worker is the model's pick, not measured in the game.</remarks>
     [Native(Level.Close)]
     public unit? GetExpansionPeon() =>
         FreeMine() is { } mine ? Mine(Ai).Where(w => !w.Constructing && w.Building is null && IsWorker(w) && w.Order is 0 or OrderHarvest or OrderReturn)
             .OrderBy(w => Distance2(w.X - mine.X, w.Y - mine.Y)).FirstOrDefault() : null;
 
     /// <summary>The worker goes to build the town hall type beside the mine to expand to; true when it was sent.</summary>
+    /// <remarks>Close: the site beside the mine is the model's pick, not measured in the game.</remarks>
     [Native(Level.Close)]
     public bool SetExpansion(unit? peon, int id)
     {
@@ -258,6 +316,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>A creep of the nearest camp whose creeps level to between the numbers, with no flyers unless they are allowed, or nil.</summary>
+    /// <remarks>Close: a camp is the creeps within 600 of one and its level their levels added, the model's reading; the game's camps are not measured.</remarks>
     [Native(Level.Close)]
     public unit? GetCreepCamp(int min, int max, bool flyers_ok)
     {
@@ -269,6 +328,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>An enemy town hall other than the first one an enemy player made, or nil.</summary>
+    /// <remarks>Close: an enemy's first town hall is taken as its main, the model's rule; the game's is not measured.</remarks>
     [Native(Level.Close)]
     public unit? GetEnemyExpansion() =>
         _units.Values.Where(h => !h.Dead && !h.Removed && !h.Constructing && h.Owner != Ai && GetPlayerId(h.Owner) < 24 && IsPlayerEnemy(Ai, h.Owner)

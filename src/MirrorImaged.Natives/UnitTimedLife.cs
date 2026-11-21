@@ -18,6 +18,7 @@ public sealed partial class GameNatives
     /// units-more and units-more-2; game-facts: 2.0 s). Close: with the Water Elemental's buff (BHwe) the game gave the
     /// body no decay event and took it away at the decay's time.
     /// </summary>
+    /// <remarks>Close: with the Water Elemental's buff (BHwe) the game gave the body no decay event and took it away at the decay's time; here the body is treated as any other's.</remarks>
     [Native(Level.Close)]
     public void UnitApplyTimedLife(unit? whichUnit, int buffId, float duration)
     {
@@ -40,6 +41,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Stops the timed life's clock, or runs it on from where it stopped; with none it does nothing (probes units-more and units-more-2).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probes units-more and units-more-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = MoreProbe)]
     public void UnitPauseTimedLife(unit? whichUnit, bool flag)
     {
@@ -54,6 +56,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Ends the timed life now: the unit dies inside the call, paused or not; with none it does nothing (probes units-more and units-more-2).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probes units-more and units-more-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = MoreProbe)]
     public void BlzUnitCancelTimedLife(unit? whichUnit)
     {

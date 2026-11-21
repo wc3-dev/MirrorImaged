@@ -81,9 +81,13 @@ public sealed partial class GameNatives
     IEnumerable<ActiveBuff> Picked(unit? u, bool positive, bool negative, bool magic) =>
         u is null ? [] : u.Buffs.Where(b => (b.Positive ? positive : negative) && (b.Magic ? magic : true));
 
+    /// <summary>Takes off the unit's positive buffs, its negative ones or both.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: UnitRemoveBuffs takes the buffs off (10-31)); buffs here are all magic, so which kinds the game spares is not measured.</remarks>
     [Native(Level.Close, Fact = "game-facts.md, Spells and abilities: UnitRemoveBuffs takes the buffs off (10-31)")]
     public void UnitRemoveBuffs(unit? whichUnit, bool removePositive, bool removeNegative) => UnitRemoveBuffsEx(whichUnit, removePositive, removeNegative, true, true, false, false, false);
 
+    /// <summary>Takes off the unit's buffs picked by sign and by magic; the flags for physical, timed life, aura and auto-dispel change nothing.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: UnitRemoveBuffs takes the buffs off (10-31)); no buff here is of the other kinds, so those flags are not measured.</remarks>
     [Native(Level.Close, Fact = "game-facts.md, Spells and abilities: UnitRemoveBuffs takes the buffs off (10-31)")]
     public void UnitRemoveBuffsEx(unit? whichUnit, bool removePositive, bool removeNegative, bool magic, bool physical, bool timedLife, bool aura, bool autoDispel)
     {
@@ -92,10 +96,14 @@ public sealed partial class GameNatives
         foreach (var buff in picked) whichUnit.Buffs.Remove(buff);
     }
 
+    /// <summary>True when UnitCountBuffsEx finds at least one buff.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: UnitCountBuffsEx (10-31)); no buff here is of the other kinds, so those flags are not measured.</remarks>
     [Native(Level.Close, Fact = "game-facts.md, Spells and abilities: UnitCountBuffsEx (10-31)")]
     public bool UnitHasBuffsEx(unit? whichUnit, bool removePositive, bool removeNegative, bool magic, bool physical, bool timedLife, bool aura, bool autoDispel) =>
         UnitCountBuffsEx(whichUnit, removePositive, removeNegative, magic, physical, timedLife, aura, autoDispel) > 0;
 
+    /// <summary>How many of the unit's buffs the sign and magic flags pick; 0 for a null unit.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: UnitCountBuffsEx (10-31)); no buff here is of the other kinds, so the flags for them count none and are not measured.</remarks>
     [Native(Level.Close, Fact = "game-facts.md, Spells and abilities: UnitCountBuffsEx (10-31)")]
     public int UnitCountBuffsEx(unit? whichUnit, bool removePositive, bool removeNegative, bool magic, bool physical, bool timedLife, bool aura, bool autoDispel) =>
         Picked(whichUnit, removePositive, removeNegative, magic).Count();

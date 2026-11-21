@@ -65,6 +65,7 @@ public sealed partial class GameNatives
     /// closes the game (probe units-attribute). Close: an attribute's permanent field reads the attribute itself, and
     /// its with-bonus field adds what the hero carries; the game read the permanent one 1 after its own set.
     /// </summary>
+    /// <remarks>Close: an attribute's permanent field reads the attribute itself here, where the game read the permanent one 1 after its own set.</remarks>
     [Native(Level.Close)]
     public int BlzGetUnitIntegerField(unit? whichUnit, unitintegerfield? whichField)
     {
@@ -99,6 +100,7 @@ public sealed partial class GameNatives
     /// measured). Close: a hero's attribute set changes only the field here, not its life, mana or armour, and its
     /// permanent attribute (read 1 after a set of 7 and of 0) isn't modelled; heroes are W2-3's.
     /// </summary>
+    /// <remarks>Close: a hero's attribute set changes only the field, not its life, mana or armour; its permanent attribute (read 1 after a set of 7 and of 0) isn't modelled.</remarks>
     [Native(Level.Close)]
     public bool BlzSetUnitIntegerField(unit? whichUnit, unitintegerfield? whichField, int value)
     {
@@ -124,6 +126,7 @@ public sealed partial class GameNatives
     /// acquisition range, fly height, armour, sight at this time of day), unless a set changed it. The hero gains per
     /// level read 0 on a unit that isn't a hero; the most pitch and roll always 0 (probe units).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public float BlzGetUnitRealField(unit? whichUnit, unitrealfield? whichField)
     {
@@ -156,6 +159,7 @@ public sealed partial class GameNatives
     /// range of a unit with no attack; true but not kept for the shadow's size, the sight and a ground unit's fly height
     /// (probe units).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public bool BlzSetUnitRealField(unit? whichUnit, unitrealfield? whichField, float value)
     {
@@ -185,6 +189,7 @@ public sealed partial class GameNatives
     /// both, the Paladin's and barracks' 2 decays, the gryphon rider's 0 neither), a neutral building's minimap icon
     /// true where the data has none, unless a set changed it.
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public bool BlzGetUnitBooleanField(unit? whichUnit, unitbooleanfield? whichField)
     {
@@ -196,6 +201,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Sets the unit's boolean field and answers true; hiding it on the minimap isn't kept (probe units).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public bool BlzSetUnitBooleanField(unit? whichUnit, unitbooleanfield? whichField, bool value)
     {
@@ -209,6 +215,7 @@ public sealed partial class GameNatives
     /// isn't a hero doesn't have or keep (probe units). Close: a hero's proper name is the first of its type's here; the
     /// game draws one at random and numbers it once taken ("Zann the Defender XII"), W2-3's.
     /// </summary>
+    /// <remarks>Close: a hero's proper name is the first of its type's, where the game draws one at random and numbers it once taken.</remarks>
     [Native(Level.Close)]
     public string? BlzGetUnitStringField(unit? whichUnit, unitstringfield? whichField)
     {
@@ -219,6 +226,8 @@ public sealed partial class GameNatives
         return Own(whichUnit, field, type.Text(field) ?? "");
     }
 
+    /// <summary>Sets the unit's string field and answers true; the name and the proper name go through their own natives; false for a null unit, field or text.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public bool BlzSetUnitStringField(unit? whichUnit, unitstringfield? whichField, string? value)
     {

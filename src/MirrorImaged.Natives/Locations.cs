@@ -20,25 +20,34 @@ public sealed partial class GameNatives
     const string BoundsProbe = "facts, Rects and locations: probe units-bounds (11-08)";
     const string EdgeProbe = "facts, Rects and locations: probe terrain-edge (11-08)";
 
+    /// <summary>A new location at (x, y), which may be anywhere, off the map too.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Rects and locations: probe units-bounds (11-08)).</remarks>
     [Native(Level.Exact, Fact = BoundsProbe)]
     public location? Location(float x, float y) => Make(new location { X = x, Y = y });
 
     /// <summary>A removed location reads (0, 0).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Rects and locations: probe units-bounds (11-08)).</remarks>
     [Native(Level.Exact, Fact = BoundsProbe)]
     public void RemoveLocation(location? whichLocation)
     {
         if (whichLocation is not null) _game.Remove(whichLocation.Key);
     }
 
+    /// <summary>Moves the location to the new place; nothing for a null location.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Rects and locations: probe units-bounds (11-08)).</remarks>
     [Native(Level.Exact, Fact = BoundsProbe)]
     public void MoveLocation(location? whichLocation, float newX, float newY)
     {
         if (whichLocation is not null) (whichLocation.X, whichLocation.Y) = (newX, newY);
     }
 
+    /// <summary>The location's x; 0 for a null or removed location.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Rects and locations: probe units-bounds (11-08)).</remarks>
     [Native(Level.Exact, Fact = BoundsProbe)]
     public float GetLocationX(location? whichLocation) => whichLocation?.X ?? 0;
 
+    /// <summary>The location's y; 0 for a null or removed location.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Rects and locations: probe units-bounds (11-08)).</remarks>
     [Native(Level.Exact, Fact = BoundsProbe)]
     public float GetLocationY(location? whichLocation) => whichLocation?.Y ?? 0;
 
@@ -49,6 +58,7 @@ public sealed partial class GameNatives
     /// restored one is back at the next step where the game's takes 0.5 s, or 7 s with birth; the walkable types
     /// without a measured deck (the ice floes ITf1 to ITf4, whose decks moved, DTep and RW00) have none here.
     /// </summary>
+    /// <remarks>Close: only a bridge deck differs: measured in whole units, 0.5 off the game's at most points, with its falling and restoring times and the walkable types without a measured deck not matched.</remarks>
     [Native(Level.Close)]
     public float GetLocationZ(location? whichLocation) => whichLocation is null ? 0 : Height(whichLocation.X, whichLocation.Y);
 
@@ -57,19 +67,26 @@ public sealed partial class GameNatives
     /// edge to 32 short of its east (north) one (probe units-bounds: -3e38 to 3e38 is -2048 to 2016 on a map of
     /// -2048 to 2048).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Rects and locations: probe units-bounds (11-08)).</remarks>
     [Native(Level.Exact, Fact = BoundsProbe)]
     public rect? Rect(float minx, float miny, float maxx, float maxy) => Set(Make(new rect()), minx, miny, maxx, maxy);
 
+    /// <summary>A rect from the two locations as corners, in order and held in the world as Rect holds them; nil if either is nil.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Rects and locations: probe units-bounds (11-08)).</remarks>
     [Native(Level.Exact, Fact = BoundsProbe)]
     public rect? RectFromLoc(location? min, location? max) =>
         min is null || max is null ? null : Rect(min.X, min.Y, max.X, max.Y);
 
+    /// <summary>Sets the rect's corners as Rect gives them, in order and held in the world; nothing for a null rect.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Rects and locations: probe units-bounds (11-08)).</remarks>
     [Native(Level.Exact, Fact = BoundsProbe)]
     public void SetRect(rect? whichRect, float minx, float miny, float maxx, float maxy)
     {
         if (whichRect is not null) Set(whichRect, minx, miny, maxx, maxy);
     }
 
+    /// <summary>As SetRect with the two locations' places; nothing if either is nil.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Rects and locations: probe units-bounds (11-08)).</remarks>
     [Native(Level.Exact, Fact = BoundsProbe)]
     public void SetRectFromLoc(rect? whichRect, location? min, location? max)
     {
@@ -77,6 +94,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Keeps the rect's size about the new centre, which isn't held in the world (probe units-bounds).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Rects and locations: probe units-bounds (11-08)).</remarks>
     [Native(Level.Exact, Fact = BoundsProbe)]
     public void MoveRectTo(rect? whichRect, float newCenterX, float newCenterY)
     {
@@ -86,6 +104,8 @@ public sealed partial class GameNatives
         (whichRect.MaxX, whichRect.MaxY) = (Native.mi_add(newCenterX, halfX), Native.mi_add(newCenterY, halfY));
     }
 
+    /// <summary>Moves the rect to the location as MoveRectTo moves it to a place; nothing for a nil location.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Rects and locations: probe units-bounds (11-08)).</remarks>
     [Native(Level.Exact, Fact = BoundsProbe)]
     public void MoveRectToLoc(rect? whichRect, location? newCenterLoc)
     {
@@ -93,26 +113,39 @@ public sealed partial class GameNatives
     }
 
     /// <summary>A removed rect, and nil, read 0.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Rects and locations: probe units-bounds (11-08)).</remarks>
     [Native(Level.Exact, Fact = BoundsProbe)]
     public float GetRectMinX(rect? whichRect) => whichRect?.MinX ?? 0;
 
+    /// <summary>The rect's south edge; 0 for a null or removed rect.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Rects and locations: probe units-bounds (11-08)).</remarks>
     [Native(Level.Exact, Fact = BoundsProbe)]
     public float GetRectMinY(rect? whichRect) => whichRect?.MinY ?? 0;
 
+    /// <summary>The rect's east edge; 0 for a null or removed rect.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Rects and locations: probe units-bounds (11-08)).</remarks>
     [Native(Level.Exact, Fact = BoundsProbe)]
     public float GetRectMaxX(rect? whichRect) => whichRect?.MaxX ?? 0;
 
+    /// <summary>The rect's north edge; 0 for a null or removed rect.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Rects and locations: probe units-bounds (11-08)).</remarks>
     [Native(Level.Exact, Fact = BoundsProbe)]
     public float GetRectMaxY(rect? whichRect) => whichRect?.MaxY ?? 0;
 
+    /// <summary>The x of the rect's middle; 0 for a null rect.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Rects and locations: probe units-bounds (11-08)).</remarks>
     [Native(Level.Exact, Fact = BoundsProbe)]
     public float GetRectCenterX(rect? whichRect) => whichRect is null ? 0 : Half(Native.mi_add(whichRect.MinX, whichRect.MaxX));
 
+    /// <summary>The y of the rect's middle; 0 for a null rect.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Rects and locations: probe units-bounds (11-08)).</remarks>
     [Native(Level.Exact, Fact = BoundsProbe)]
     public float GetRectCenterY(rect? whichRect) => whichRect is null ? 0 : Half(Native.mi_add(whichRect.MinY, whichRect.MaxY));
 
     static float Half(float f) => Native.mi_mul(f, 0.5f);
 
+    /// <summary>Removes the rect from the game; nothing for a null rect.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Rects and locations: probe units-bounds (11-08)).</remarks>
     [Native(Level.Exact, Fact = BoundsProbe)]
     public void RemoveRect(rect? whichRect)
     {
@@ -120,6 +153,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>A new rect each call, the whole of the map's terrain, held in nothing.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Rects and locations: probe units-bounds (11-08)).</remarks>
     [Native(Level.Exact, Fact = BoundsProbe)]
     public rect? GetWorldBounds() => Make(World is (var minX, var minY, var maxX, var maxY) ? new rect { MinX = minX, MinY = minY, MaxX = maxX, MaxY = maxY } : new rect());
 
@@ -140,10 +174,12 @@ public sealed partial class GameNatives
         : at;
 
     /// <summary>A new location each call at the start location's place: (0, 0) for one not defined.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Rects and locations: probe units-bounds (11-08)).</remarks>
     [Native(Level.Exact, Fact = BoundsProbe)]
     public location? GetStartLocationLoc(int whichStartLocation) => Location(GetStartLocationX(whichStartLocation), GetStartLocationY(whichStartLocation));
 
     /// <summary>As DefineStartLocation; nil defines nothing.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Rects and locations: probe units-bounds (11-08)).</remarks>
     [Native(Level.Exact, Fact = BoundsProbe)]
     public void DefineStartLocationLoc(int whichStartLoc, location? whichLocation)
     {
@@ -151,10 +187,12 @@ public sealed partial class GameNatives
     }
 
     /// <summary>A new location each call at the unit's place; nil for nil.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Rects and locations: probe units-bounds (11-08)).</remarks>
     [Native(Level.Exact, Fact = BoundsProbe)]
     public location? GetUnitLoc(unit? whichUnit) => whichUnit is null ? null : Location(whichUnit.X, whichUnit.Y);
 
     /// <summary>As CreateUnit at the location; nil for no location.</summary>
+    /// <remarks>Close: the game's nearest clear place for a unit made on a footprint or near another unit is not the one found here (as CreateUnit, D223, D224, D273).</remarks>
     [Native(Level.Close)]
     public unit? CreateUnitAtLoc(player? id, int unitid, location? whichLocation, float face) =>
         whichLocation is null ? null : CreateUnit(id, unitid, whichLocation.X, whichLocation.Y, face);
@@ -164,6 +202,7 @@ public sealed partial class GameNatives
     /// put on a building's footprint, unwalkable ground or near another unit goes to the nearest place clear of them (probes
     /// units-path-stamp, units-path-room). Close: where the game's goes is not that place, and the game stops its order.
     /// </summary>
+    /// <remarks>Close: the game's nearest clear place is not the one found here, and the game stops the unit's order.</remarks>
     [Native(Level.Close)]
     public void SetUnitPosition(unit? whichUnit, float newX, float newY)
     {
@@ -173,6 +212,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>As SetUnitPosition; nil moves nothing.</summary>
+    /// <remarks>Close: as SetUnitPosition.</remarks>
     [Native(Level.Close)]
     public void SetUnitPositionLoc(unit? whichUnit, location? whichLocation)
     {
@@ -212,6 +252,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The unit type's collision size (probe units-groups: a footman 31, a peasant 16, a gryphon rider 8).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Groups: probes units-groups and units-order (11-08)).</remarks>
     [Native(Level.Exact, Fact = GroupsProbe)]
     public float BlzGetUnitCollisionSize(unit? whichUnit) => whichUnit?.Type.Real(Collision) ?? 0;
 
@@ -221,15 +262,19 @@ public sealed partial class GameNatives
     /// Whether the unit's place is within the distance of (x, y) and its collision size: compared squared, so a
     /// distance below minus the size counts from the size's far side.
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Groups: probes units-groups and units-order (11-08); game-facts.md, Groups and performance: IsUnitInRangeXY is true up to range plus collision size).</remarks>
     [Native(Level.Exact, Fact = GroupsProbe + "; game-facts.md, Groups and performance: IsUnitInRangeXY is true up to range plus collision size")]
     public bool IsUnitInRangeXY(unit? whichUnit, float x, float y, float distance) =>
         whichUnit is not null && Within(whichUnit.X - x, whichUnit.Y - y, distance + BlzGetUnitCollisionSize(whichUnit));
 
+    /// <summary>As IsUnitInRangeXY at the location's place; false for a nil location.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Groups: probes units-groups and units-order (11-08)).</remarks>
     [Native(Level.Exact, Fact = GroupsProbe)]
     public bool IsUnitInRangeLoc(unit? whichUnit, location? whichLocation, float distance) =>
         whichLocation is not null && IsUnitInRangeXY(whichUnit, whichLocation.X, whichLocation.Y, distance);
 
     /// <summary>As IsUnitInRangeXY, with both units' collision sizes.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Groups: probes units-groups and units-order (11-08)).</remarks>
     [Native(Level.Exact, Fact = GroupsProbe)]
     public bool IsUnitInRange(unit? whichUnit, unit? otherUnit, float distance) =>
         whichUnit is not null && otherUnit is not null &&

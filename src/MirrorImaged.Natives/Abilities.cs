@@ -151,6 +151,7 @@ public sealed partial class GameNatives
     /// 0) and one of no levels, Attack and Move (probe abilities). An upgrade the unit's type uses raises its level as for
     /// the type's own (probe abilities-upgrades). A hero's skill added fires no skill event and takes no point (game-facts).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities (11-08); facts, Abilities: probe abilities-upgrades; game-facts.md, Spells and abilities: UnitAddAbility (11-02)).</remarks>
     [Native(Level.Exact, Fact = AbilitiesProbe + "; facts, Abilities: probe abilities-upgrades; game-facts.md, Spells and abilities: UnitAddAbility (11-02)")]
     public bool UnitAddAbility(unit? whichUnit, int abilityId)
     {
@@ -165,6 +166,7 @@ public sealed partial class GameNatives
     /// unit's type goes too (Defend, Attack, Move), and one made permanent (probe abilities; game-facts). A unit without
     /// its Attack attacks nothing (probe abilities-banish: heroes that attacked unordered stood still without it).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities (11-08); game-facts.md, Spells and abilities: UnitRemoveAbility (11-02)).</remarks>
     [Native(Level.Exact, Fact = AbilitiesProbe + "; game-facts.md, Spells and abilities: UnitRemoveAbility (11-02)")]
     public bool UnitRemoveAbility(unit? whichUnit, int abilityId)
     {
@@ -179,12 +181,14 @@ public sealed partial class GameNatives
     /// lacks both. A unit's own abilities are at level 1, Attack and Move too; a hero's skills it hasn't learned it lacks
     /// (probe abilities).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities (11-08)).</remarks>
     [Native(Level.Exact, Fact = AbilitiesProbe)]
     public int GetUnitAbilityLevel(unit? whichUnit, int abilcode) =>
         (Find(whichUnit, abilcode) ?? whichUnit?.Abilities.Find(a => a.Type.Text(AbilityCode) is { Length: 4 } code && Code(code) == abilcode))?.Level
         ?? (whichUnit?.Buffs.Any(b => b.Id == abilcode) == true ? 1 : 0);
 
     /// <summary>The level set, kept from 1 to the ability's level count; 0, adding nothing, when the unit lacks it (probe abilities).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities (11-08); facts, Abilities: probe abilities-sets).</remarks>
     [Native(Level.Exact, Fact = AbilitiesProbe + "; facts, Abilities: probe abilities-sets")]
     public int SetUnitAbilityLevel(unit? whichUnit, int abilcode, int level)
     {
@@ -194,6 +198,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>One level up, to one past the last at most (3 to 4 on Holy Light, not 5); the level; 0 when the unit lacks it (probe abilities).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities (11-08); facts, Abilities: probe abilities-sets).</remarks>
     [Native(Level.Exact, Fact = AbilitiesProbe + "; facts, Abilities: probe abilities-sets")]
     public int IncUnitAbilityLevel(unit? whichUnit, int abilcode)
     {
@@ -203,6 +208,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>One level down, not below 1; the level; 0 when the unit lacks it (probe abilities).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities (11-08)).</remarks>
     [Native(Level.Exact, Fact = AbilitiesProbe)]
     public int DecUnitAbilityLevel(unit? whichUnit, int abilcode)
     {
@@ -215,6 +221,7 @@ public sealed partial class GameNatives
     /// The unit's ability, which takes a handle id the first time it is given out and is the same handle after; nil when
     /// the unit lacks it (probe abilities).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities (11-08)).</remarks>
     [Native(Level.Exact, Fact = AbilitiesProbe)]
     public ability? BlzGetUnitAbility(unit? whichUnit, int abilId) => Find(whichUnit, abilId) is { } a ? Out(a) : null;
 
@@ -222,11 +229,13 @@ public sealed partial class GameNatives
     /// The unit's ability at the index from 0: the one added last first, then the type's own list after the abilities the
     /// game gives it for what it is (probes abilities and abilities-lists); nil outside the list.
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities (11-08); facts, Abilities: probe abilities-lists).</remarks>
     [Native(Level.Exact, Fact = AbilitiesProbe + "; facts, Abilities: probe abilities-lists")]
     public ability? BlzGetUnitAbilityByIndex(unit? whichUnit, int index) =>
         whichUnit is not null && index >= 0 && index < whichUnit.Abilities.Count ? Out(whichUnit.Abilities[index]) : null;
 
     /// <summary>The ability's id; 0 for nil, and for one taken off its unit or gone with it (probe abilities).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities (11-08)).</remarks>
     [Native(Level.Exact, Fact = AbilitiesProbe)]
     public int BlzGetAbilityId(ability? whichAbility) => whichAbility?.Type.Id ?? 0;
 
@@ -234,6 +243,7 @@ public sealed partial class GameNatives
     /// Hides the ability's button; its level, handle and place stay, and one the unit lacks is added as usual later (probe
     /// abilities). Close: what a hidden button holds back is input's and orders' (waves 3 and 6).
     /// </summary>
+    /// <remarks>Close: only the flag is kept; what a hidden button holds back in input and orders is not modelled.</remarks>
     [Native(Level.Close)]
     public void BlzUnitHideAbility(unit? whichUnit, int abilId, bool flag)
     {
@@ -244,6 +254,7 @@ public sealed partial class GameNatives
     /// Disables the ability, its button hidden as asked; its level, handle and place stay (probe abilities). Close: what
     /// a disabled ability holds back is the cast's (wave 4).
     /// </summary>
+    /// <remarks>Close: only the flag is kept; what a disabled ability holds back in a cast is not modelled.</remarks>
     [Native(Level.Close)]
     public void BlzUnitDisableAbility(unit? whichUnit, int abilId, bool flag, bool hideUI)
     {
@@ -256,6 +267,7 @@ public sealed partial class GameNatives
     /// True for an ability the unit has, whichever way, and false for one it lacks, adding nothing (probe abilities);
     /// UnitRemoveAbility still takes it off. Close: what it keeps through a morph is wave 4's (game-facts).
     /// </summary>
+    /// <remarks>Close: only the flag is kept; what a permanent ability keeps through a morph is not modelled.</remarks>
     [Native(Level.Close)]
     public bool UnitMakeAbilityPermanent(unit? whichUnit, bool permanent, int abilityId)
     {
@@ -269,6 +281,7 @@ public sealed partial class GameNatives
     /// added and levelled (probe abilities). Close: it takes the button off the command card (game-facts), which input
     /// and orders read (waves 3 and 6).
     /// </summary>
+    /// <remarks>Close: only the flag is kept; taking the button off the command card is not modelled.</remarks>
     [Native(Level.Close)]
     public void SetPlayerAbilityAvailable(player? whichPlayer, int abilid, bool avail)
     {

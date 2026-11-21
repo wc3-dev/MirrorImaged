@@ -12,13 +12,18 @@ public sealed partial class GameNatives
     static readonly int ItemsSold = Code("usei"), UnitsSold = Code("useu"), ItemGold = Code("igol"), ItemLumber = Code("ilum");
 
     /// <summary>The item or unit that was bought, in a sell event.</summary>
+    /// <remarks>Close: the sell event fires from the model's purchase (D382), where the stock's wait is not kept and a hero is bought as a tavern's units are; null outside a sell event is not measured.</remarks>
     [Native(Level.Close)] public item? GetSoldItem() => Response(UnitSellItem, PlayerUnitSellItem, UnitPawnItem, PlayerUnitPawnItem)?.Item;
+    /// <summary>The unit bought, in a unit sell event; null outside one.</summary>
+    /// <remarks>Close: the sell event fires from the model's purchase (D382), where the stock's wait is not kept and a hero is bought as a tavern's units are; null outside a sell event is not measured.</remarks>
     [Native(Level.Close)] public unit? GetSoldUnit() => Response(UnitSell, PlayerUnitSell)?.Other;
 
     /// <summary>The shop in a sell event.</summary>
+    /// <remarks>Close: the sell event fires from the model's purchase (D382), where the stock's wait is not kept and a hero is bought as a tavern's units are; null outside a sell event is not measured.</remarks>
     [Native(Level.Close)] public unit? GetSellingUnit() => Response(UnitSell, UnitSellItem, PlayerUnitSell, PlayerUnitSellItem, UnitPawnItem, PlayerUnitPawnItem)?.Unit;
 
     /// <summary>The unit that bought, in a sell event.</summary>
+    /// <remarks>Close: the sell event fires from the model's purchase (D382), where the stock's wait is not kept and a hero is bought as a tavern's units are; null outside a sell event is not measured.</remarks>
     [Native(Level.Close)] public unit? GetBuyingUnit() => Response(UnitSell, UnitSellItem, PlayerUnitSell, PlayerUnitSellItem, UnitPawnItem, PlayerUnitPawnItem)?.Target as unit;
 
     bool Sells(unit shop, int id) => Listed(shop, ItemsSold, id) || Listed(shop, UnitsSold, id) || OnSale(shop, id);

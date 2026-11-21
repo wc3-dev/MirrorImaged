@@ -1,4 +1,7 @@
+using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
+using MirrorImaged.Natives;
 
 namespace MirrorImaged.Tests;
 
@@ -42,5 +45,21 @@ public sealed partial class DocsTests
 
         Assert.NotEmpty(commands);
         foreach (var command in commands) Assert.Contains($"`mirror {command}", page);
+    }
+
+    [Fact]
+    public void Every_natives_remarks_give_its_level_and_its_reason()
+    {
+        var remarks = XDocument.Load(Path.ChangeExtension(typeof(GameNatives).Assembly.Location, ".xml")).Descendants("member")
+            .Where(member => member.Attribute("name")!.Value.StartsWith("M:MirrorImaged.Natives.GameNatives.", StringComparison.Ordinal))
+            .ToDictionary(member => member.Attribute("name")!.Value.Split('(')[0]["M:MirrorImaged.Natives.GameNatives.".Length..], member => member.Element("remarks")?.Value ?? "");
+
+        foreach (var method in typeof(GameNatives).GetMethods())
+        {
+            if (method.GetCustomAttribute<NativeAttribute>() is not { } native) continue;
+            var text = remarks.GetValueOrDefault(method.Name, "");
+            Assert.StartsWith($"{native.Level}: ", text);
+            if (native.Reason is { } reason) Assert.Contains(reason.TrimEnd('.'), text);
+        }
     }
 }

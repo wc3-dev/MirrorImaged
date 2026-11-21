@@ -87,135 +87,195 @@ public sealed partial class GameNatives
     /// Nil for an id that isn't a destructable's (a unit's, 0); a variation past the type's count or below 0 makes one.
     /// It is put on the grid of its pathing texture, with its type's life, occluder height and name (decisions D251).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Destructables: probe destructables (11-08)).</remarks>
     [Native(Level.Exact, Fact = Destructables)]
     public destructable? CreateDestructable(int objectid, float x, float y, float face, float scale, int variation) =>
         NewDestructable(objectid, x, y, face, scale, false);
 
     /// <summary>As CreateDestructable; the height isn't read back.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Destructables: probe destructables (11-08)).</remarks>
     [Native(Level.Exact, Fact = Destructables)]
     public destructable? CreateDestructableZ(int objectid, float x, float y, float z, float face, float scale, int variation) =>
         NewDestructable(objectid, x, y, face, scale, false);
 
     /// <summary>Made dead, its life 0 of its most: KillDestructable fires nothing, and restoring brings it back.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Destructables: probe destructables (11-08)).</remarks>
     [Native(Level.Exact, Fact = Destructables)]
     public destructable? CreateDeadDestructable(int objectid, float x, float y, float face, float scale, int variation) =>
         NewDestructable(objectid, x, y, face, scale, true);
 
     /// <summary>As CreateDeadDestructable (not measured).</summary>
+    /// <remarks>Close: the height is not kept here, and the game's read of it is not measured.</remarks>
     [Native(Level.Close)]
     public destructable? CreateDeadDestructableZ(int objectid, float x, float y, float z, float face, float scale, int variation) =>
         NewDestructable(objectid, x, y, face, scale, true);
 
     // As CreateDestructable and CreateDeadDestructable: the height, skin, colour, pitch and roll aren't read back (not measured).
 
+    /// <summary>As CreateDeadDestructable; the pitch and roll are not kept.</summary>
+    /// <remarks>Close: the pitch and roll are not kept here, and the game's reads of them are not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDeadDestructablePitchRoll(int objectid, float x, float y, float face, float roll, float pitch, float scale, int variation) =>
         NewDestructable(objectid, x, y, face, scale, true);
 
+    /// <summary>As CreateDeadDestructable; the pitch, roll and colour are not kept.</summary>
+    /// <remarks>Close: the pitch, roll and colour are not kept here, and the game's reads of them are not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDeadDestructablePitchRollWithColor(int objectid, float x, float y, float face, float roll, float pitch, float scale, int variation, playercolor? color) =>
         NewDestructable(objectid, x, y, face, scale, true);
 
+    /// <summary>As CreateDeadDestructable; the colour is not kept.</summary>
+    /// <remarks>Close: the colour is not kept here, and the game's read of it is not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDeadDestructableWithColor(int objectid, float x, float y, float face, float scale, int variation, playercolor? color) =>
         NewDestructable(objectid, x, y, face, scale, true);
 
+    /// <summary>As CreateDeadDestructable; the skin is not kept.</summary>
+    /// <remarks>Close: the skin is not kept here, and the game's read of it is not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDeadDestructableWithSkin(int objectid, float x, float y, float face, float scale, int variation, int skinId) =>
         NewDestructable(objectid, x, y, face, scale, true);
 
+    /// <summary>As CreateDeadDestructable; the skin and colour are not kept.</summary>
+    /// <remarks>Close: the skin and colour are not kept here, and the game's reads of them are not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDeadDestructableWithSkinColor(int objectid, float x, float y, float face, float scale, int variation, int skinId, playercolor? color) =>
         NewDestructable(objectid, x, y, face, scale, true);
 
+    /// <summary>As CreateDeadDestructable; the skin, pitch and roll are not kept.</summary>
+    /// <remarks>Close: the skin, pitch and roll are not kept here, and the game's reads of them are not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDeadDestructableWithSkinPitchRoll(int objectid, float x, float y, float face, float roll, float pitch, float scale, int variation, int skinId) =>
         NewDestructable(objectid, x, y, face, scale, true);
 
+    /// <summary>As CreateDeadDestructable; the skin, pitch, roll and colour are not kept.</summary>
+    /// <remarks>Close: the skin, pitch, roll and colour are not kept here, and the game's reads of them are not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDeadDestructableWithSkinPitchRollColor(int objectid, float x, float y, float face, float roll, float pitch, float scale, int variation, int skinId, playercolor? color) =>
         NewDestructable(objectid, x, y, face, scale, true);
 
+    /// <summary>As CreateDeadDestructable; the height, pitch and roll are not kept.</summary>
+    /// <remarks>Close: the height, pitch and roll are not kept here, and the game's reads of them are not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDeadDestructableZPitchRoll(int objectid, float x, float y, float z, float face, float roll, float pitch, float scale, int variation) =>
         NewDestructable(objectid, x, y, face, scale, true);
 
+    /// <summary>As CreateDeadDestructable; the height, pitch, roll and colour are not kept.</summary>
+    /// <remarks>Close: the height, pitch, roll and colour are not kept here, and the game's reads of them are not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDeadDestructableZPitchRollWithColor(int objectid, float x, float y, float z, float face, float roll, float pitch, float scale, int variation, playercolor? color) =>
         NewDestructable(objectid, x, y, face, scale, true);
 
+    /// <summary>As CreateDeadDestructable; the height and colour are not kept.</summary>
+    /// <remarks>Close: the height and colour are not kept here, and the game's reads of them are not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDeadDestructableZWithColor(int objectid, float x, float y, float z, float face, float scale, int variation, playercolor? color) =>
         NewDestructable(objectid, x, y, face, scale, true);
 
+    /// <summary>As CreateDeadDestructable; the height and skin are not kept.</summary>
+    /// <remarks>Close: the height and skin are not kept here, and the game's reads of them are not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDeadDestructableZWithSkin(int objectid, float x, float y, float z, float face, float scale, int variation, int skinId) =>
         NewDestructable(objectid, x, y, face, scale, true);
 
+    /// <summary>As CreateDeadDestructable; the height, skin and colour are not kept.</summary>
+    /// <remarks>Close: the height, skin and colour are not kept here, and the game's reads of them are not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDeadDestructableZWithSkinColor(int objectid, float x, float y, float z, float face, float scale, int variation, int skinId, playercolor? color) =>
         NewDestructable(objectid, x, y, face, scale, true);
 
+    /// <summary>As CreateDeadDestructable; the height, skin, pitch and roll are not kept.</summary>
+    /// <remarks>Close: the height, skin, pitch and roll are not kept here, and the game's reads of them are not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDeadDestructableZWithSkinPitchRoll(int objectid, float x, float y, float z, float face, float roll, float pitch, float scale, int variation, int skinId) =>
         NewDestructable(objectid, x, y, face, scale, true);
 
+    /// <summary>As CreateDeadDestructable; the height, skin, pitch, roll and colour are not kept.</summary>
+    /// <remarks>Close: the height, skin, pitch, roll and colour are not kept here, and the game's reads of them are not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDeadDestructableZWithSkinPitchRollColor(int objectid, float x, float y, float z, float face, float roll, float pitch, float scale, int variation, int skinId, playercolor? color) =>
         NewDestructable(objectid, x, y, face, scale, true);
 
+    /// <summary>As CreateDestructable; the pitch and roll are not kept.</summary>
+    /// <remarks>Close: the pitch and roll are not kept here, and the game's reads of them are not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDestructablePitchRoll(int objectid, float x, float y, float face, float roll, float pitch, float scale, int variation) =>
         NewDestructable(objectid, x, y, face, scale, false);
 
+    /// <summary>As CreateDestructable; the pitch, roll and colour are not kept.</summary>
+    /// <remarks>Close: the pitch, roll and colour are not kept here, and the game's reads of them are not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDestructablePitchRollWithColor(int objectid, float x, float y, float face, float roll, float pitch, float scale, int variation, playercolor? color) =>
         NewDestructable(objectid, x, y, face, scale, false);
 
+    /// <summary>As CreateDestructable; the colour is not kept.</summary>
+    /// <remarks>Close: the colour is not kept here, and the game's read of it is not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDestructableWithColor(int objectid, float x, float y, float face, float scale, int variation, playercolor? color) =>
         NewDestructable(objectid, x, y, face, scale, false);
 
+    /// <summary>As CreateDestructable; the skin is not kept.</summary>
+    /// <remarks>Close: the skin is not kept here, and the game's read of it is not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDestructableWithSkin(int objectid, float x, float y, float face, float scale, int variation, int skinId) =>
         NewDestructable(objectid, x, y, face, scale, false);
 
+    /// <summary>As CreateDestructable; the skin and colour are not kept.</summary>
+    /// <remarks>Close: the skin and colour are not kept here, and the game's reads of them are not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDestructableWithSkinColor(int objectid, float x, float y, float face, float scale, int variation, int skinId, playercolor? color) =>
         NewDestructable(objectid, x, y, face, scale, false);
 
+    /// <summary>As CreateDestructable; the skin, pitch and roll are not kept.</summary>
+    /// <remarks>Close: the skin, pitch and roll are not kept here, and the game's reads of them are not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDestructableWithSkinPitchRoll(int objectid, float x, float y, float face, float roll, float pitch, float scale, int variation, int skinId) =>
         NewDestructable(objectid, x, y, face, scale, false);
 
+    /// <summary>As CreateDestructable; the skin, pitch, roll and colour are not kept.</summary>
+    /// <remarks>Close: the skin, pitch, roll and colour are not kept here, and the game's reads of them are not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDestructableWithSkinPitchRollColor(int objectid, float x, float y, float face, float roll, float pitch, float scale, int variation, int skinId, playercolor? color) =>
         NewDestructable(objectid, x, y, face, scale, false);
 
+    /// <summary>As CreateDestructable; the height, pitch and roll are not kept.</summary>
+    /// <remarks>Close: the height, pitch and roll are not kept here, and the game's reads of them are not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDestructableZPitchRoll(int objectid, float x, float y, float z, float face, float roll, float pitch, float scale, int variation) =>
         NewDestructable(objectid, x, y, face, scale, false);
 
+    /// <summary>As CreateDestructable; the height, pitch, roll and colour are not kept.</summary>
+    /// <remarks>Close: the height, pitch, roll and colour are not kept here, and the game's reads of them are not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDestructableZPitchRollWithColor(int objectid, float x, float y, float z, float face, float roll, float pitch, float scale, int variation, playercolor? color) =>
         NewDestructable(objectid, x, y, face, scale, false);
 
+    /// <summary>As CreateDestructable; the height and colour are not kept.</summary>
+    /// <remarks>Close: the height and colour are not kept here, and the game's reads of them are not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDestructableZWithColor(int objectid, float x, float y, float z, float face, float scale, int variation, playercolor? color) =>
         NewDestructable(objectid, x, y, face, scale, false);
 
+    /// <summary>As CreateDestructable; the height and skin are not kept.</summary>
+    /// <remarks>Close: the height and skin are not kept here, and the game's reads of them are not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDestructableZWithSkin(int objectid, float x, float y, float z, float face, float scale, int variation, int skinId) =>
         NewDestructable(objectid, x, y, face, scale, false);
 
+    /// <summary>As CreateDestructable; the height, skin and colour are not kept.</summary>
+    /// <remarks>Close: the height, skin and colour are not kept here, and the game's reads of them are not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDestructableZWithSkinColor(int objectid, float x, float y, float z, float face, float scale, int variation, int skinId, playercolor? color) =>
         NewDestructable(objectid, x, y, face, scale, false);
 
+    /// <summary>As CreateDestructable; the height, skin, pitch and roll are not kept.</summary>
+    /// <remarks>Close: the height, skin, pitch and roll are not kept here, and the game's reads of them are not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDestructableZWithSkinPitchRoll(int objectid, float x, float y, float z, float face, float roll, float pitch, float scale, int variation, int skinId) =>
         NewDestructable(objectid, x, y, face, scale, false);
 
+    /// <summary>As CreateDestructable; the height, skin, pitch, roll and colour are not kept.</summary>
+    /// <remarks>Close: the height, skin, pitch, roll and colour are not kept here, and the game's reads of them are not measured.</remarks>
     [Native(Level.Close)]
     public destructable? BlzCreateDestructableZWithSkinPitchRollColor(int objectid, float x, float y, float z, float face, float roll, float pitch, float scale, int variation, int skinId, playercolor? color) =>
         NewDestructable(objectid, x, y, face, scale, false);
@@ -225,6 +285,7 @@ public sealed partial class GameNatives
     /// reads it as nil (its type id, life and place 0). Removed again inside that event, it fires the event again
     /// there, nested, as many times as the event removes it (probe: three deep).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Destructables: probe destructables (11-08); game-facts.md, Units: RemoveDestructable fires the death event (10-23)).</remarks>
     [Native(Level.Exact, Fact = Destructables + "; game-facts.md, Units: RemoveDestructable fires the death event (10-23)")]
     public void RemoveDestructable(destructable? d)
     {
@@ -240,6 +301,7 @@ public sealed partial class GameNatives
     /// Its life goes to 0 and its death event fires inside the call; a destructable whose life is 0 already, dead or
     /// with its most life set to 0, fires nothing.
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Destructables: probe destructables (11-08)).</remarks>
     [Native(Level.Exact, Fact = Destructables)]
     public void KillDestructable(destructable? d)
     {
@@ -268,6 +330,8 @@ public sealed partial class GameNatives
             if (kind == WidgetDeath) Fire(registered, Convert<widgetevent>(kind), destructable: d);
     }
 
+    /// <summary>The life it has now; 0 for nil, and for a dead or removed one.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Destructables: probe destructables (11-08)).</remarks>
     [Native(Level.Exact, Fact = Destructables)]
     public float GetDestructableLife(destructable? d) => d?.Life ?? 0;
 
@@ -276,6 +340,7 @@ public sealed partial class GameNatives
     /// 0; a dead one stays at 0. At 0.405 or more a dead one reads that life and lives again, so KillDestructable fires
     /// again, though the game still shows it dead.
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Destructables: probe destructables (11-08); game-facts.md, Units: SetDestructableLife (11-02)).</remarks>
     [Native(Level.Exact, Fact = Destructables + "; game-facts.md, Units: SetDestructableLife (11-02)")]
     public void SetDestructableLife(destructable? d, float life)
     {
@@ -284,6 +349,8 @@ public sealed partial class GameNatives
         else if (!d.Dead) Die(d);
     }
 
+    /// <summary>Its most life: its type's until SetDestructableMaxLife; 0 for nil.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Destructables: probe destructables (11-08)).</remarks>
     [Native(Level.Exact, Fact = Destructables)]
     public float GetDestructableMaxLife(destructable? d) => d?.MaxLife ?? 0;
 
@@ -291,6 +358,7 @@ public sealed partial class GameNatives
     /// The most life is rounded to a whole number, halves away from 0 (80.5 is 81), and may be 0 or below; the life
     /// keeps its share of it, at least 0, and nothing dies.
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Destructables: probe destructables (11-08); game-facts.md, Units: SetDestructableMaxLife (11-02)).</remarks>
     [Native(Level.Exact, Fact = Destructables + "; game-facts.md, Units: SetDestructableMaxLife (11-02)")]
     public void SetDestructableMaxLife(destructable? d, float max)
     {
@@ -304,6 +372,7 @@ public sealed partial class GameNatives
     /// Brings a dead one back with <paramref name="life"/> from 0.5 up to its most, 0 giving the most; a living one is
     /// left as it is. Its death registrations still hold. Birth changes how it is drawn, which isn't simulated.
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Destructables: probe destructables (11-08); game-facts.md, Units: DestructableRestoreLife (11-02)).</remarks>
     [Native(Level.Exact, Fact = Destructables + "; game-facts.md, Units: DestructableRestoreLife (11-02)")]
     public void DestructableRestoreLife(destructable? d, float life, bool birth)
     {
@@ -311,19 +380,25 @@ public sealed partial class GameNatives
     }
 
     /// <summary>A flag: an invulnerable destructable still dies to KillDestructable and to its life set below 0.405.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Destructables: probe destructables (11-08)).</remarks>
     [Native(Level.Exact, Fact = Destructables)]
     public void SetDestructableInvulnerable(destructable? d, bool flag)
     {
         if (d is not null) d.Invulnerable = flag;
     }
 
+    /// <summary>The flag SetDestructableInvulnerable kept; false until set, and for nil.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Destructables: probe destructables (11-08)).</remarks>
     [Native(Level.Exact, Fact = Destructables)]
     public bool IsDestructableInvulnerable(destructable? d) => d?.Invulnerable ?? false;
 
     /// <summary>Its type's occluder height (<c>boch</c>) until set; a set is kept as given, below 0 too.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Destructables: probe destructables (11-08)).</remarks>
     [Native(Level.Exact, Fact = Destructables)]
     public float GetDestructableOccluderHeight(destructable? d) => d?.Occluder ?? 0;
 
+    /// <summary>Keeps the occluder height as given, below 0 too.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Destructables: probe destructables (11-08)).</remarks>
     [Native(Level.Exact, Fact = Destructables)]
     public void SetDestructableOccluderHeight(destructable? d, float height)
     {
@@ -334,16 +409,23 @@ public sealed partial class GameNatives
     /// Its type's name (<c>bnam</c>), a World Editor string key read from the strings the game keeps
     /// (<c>WESTRING_DEST_BARREL</c> is "Barrel"), without the editor suffix; any other name as it is; "" for nil.
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Destructables: probe destructables (11-08)).</remarks>
     [Native(Level.Exact, Fact = Destructables)]
     public string? GetDestructableName(destructable? d) =>
         d?.Type.Text(DestructableName) is { } name ? Data.EditorString(name) ?? name : "";
 
+    /// <summary>The id of its type; 0 for nil, and for a removed one.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Destructables: probe destructables (11-08)).</remarks>
     [Native(Level.Exact, Fact = Destructables)]
     public int GetDestructableTypeId(destructable? d) => d?.Type.Id ?? 0;
 
+    /// <summary>Its x, as put on the grid of its pathing texture when made; 0 for nil.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Destructables: probe destructables (11-08)).</remarks>
     [Native(Level.Exact, Fact = Destructables)]
     public float GetDestructableX(destructable? d) => d?.X ?? 0;
 
+    /// <summary>Its y, as put on the grid of its pathing texture when made; 0 for nil.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Destructables: probe destructables (11-08)).</remarks>
     [Native(Level.Exact, Fact = Destructables)]
     public float GetDestructableY(destructable? d) => d?.Y ?? 0;
 
@@ -353,6 +435,7 @@ public sealed partial class GameNatives
     /// GetFilterDestructable and GetEnumDestructable it; by squares of 256 world units, in rows from the south, west to
     /// east, the last made first in a square whatever its place in it. Hidden destructables are listed.
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Destructables: probe destructables (11-08); game-facts.md, Units: a rect of 32 finds none (10-26)).</remarks>
     [Native(Level.Exact, Fact = Destructables + "; game-facts.md, Units: a rect of 32 finds none (10-26)")]
     public void EnumDestructablesInRect(rect? r, boolexpr? filter, Action? actionFunc)
     {
@@ -385,14 +468,17 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The destructable EnumDestructablesInRect is calling back for; nil outside it.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Destructables: probe destructables (11-08)).</remarks>
     [Native(Level.Exact, Fact = Destructables)]
     public destructable? GetEnumDestructable() => _enumDestructable;
 
     /// <summary>The destructable EnumDestructablesInRect's filter, and its callback, is running for; nil outside it.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Destructables: probe destructables (11-08)).</remarks>
     [Native(Level.Exact, Fact = Destructables)]
     public destructable? GetFilterDestructable() => _enumDestructable;
 
     /// <summary>The destructable of the death event that fired the trigger; nil outside one.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Destructables: probe destructables (11-08)).</remarks>
     [Native(Level.Exact, Fact = Destructables)]
     public destructable? GetTriggerDestructable() => Current.Destructable;
 
@@ -414,33 +500,52 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Not simulated: only how it is drawn changes. It is still listed by the enumerations.</summary>
+    /// <remarks>Recorded: Shows or hides how the destructable is drawn; it is still listed (probe destructables).</remarks>
     [Native(Level.Recorded, Reason = "Shows or hides how the destructable is drawn; it is still listed (probe destructables)")]
     public void ShowDestructable(destructable? d, bool flag) { }
 
+    /// <summary>Changes nothing; no animation is played.</summary>
+    /// <remarks>Recorded: Plays an animation, which nothing reads back.</remarks>
     [Native(Level.Recorded, Reason = "Plays an animation, which nothing reads back")]
     public void SetDestructableAnimation(destructable? d, string? whichAnimation) { }
 
+    /// <summary>Changes nothing; no animation is queued.</summary>
+    /// <remarks>Recorded: Queues an animation, which nothing reads back.</remarks>
     [Native(Level.Recorded, Reason = "Queues an animation, which nothing reads back")]
     public void QueueDestructableAnimation(destructable? d, string? whichAnimation) { }
 
+    /// <summary>Changes nothing; no animation speed changes.</summary>
+    /// <remarks>Recorded: Changes how fast its animations play, which nothing reads back.</remarks>
     [Native(Level.Recorded, Reason = "Changes how fast its animations play, which nothing reads back")]
     public void SetDestructableAnimationSpeed(destructable? d, float speedFactor) { }
 
+    /// <summary>Changes nothing; its colour is not changed.</summary>
+    /// <remarks>Recorded: Changes its team colour, which nothing reads back.</remarks>
     [Native(Level.Recorded, Reason = "Changes its team colour, which nothing reads back")]
     public void SetDestructableColor(destructable? d, playercolor? color) { }
 
+    /// <summary>Changes nothing; its tint is not changed.</summary>
+    /// <remarks>Recorded: Changes its tint, which nothing reads back.</remarks>
     [Native(Level.Recorded, Reason = "Changes its tint, which nothing reads back")]
     public void SetDestructableVertexColor(destructable? whichDestructable, int red, int green, int blue, int alpha) { }
 
+    /// <summary>Changes nothing; no doodad animation is played.</summary>
+    /// <remarks>Recorded: Plays an animation of doodads near a point, which nothing reads back.</remarks>
     [Native(Level.Recorded, Reason = "Plays an animation of doodads near a point, which nothing reads back")]
     public void SetDoodadAnimation(float x, float y, float radius, int doodadID, bool nearestOnly, string? animName, bool animRandom) { }
 
+    /// <summary>Changes nothing; no doodad animation is played.</summary>
+    /// <remarks>Recorded: Plays an animation of doodads in a rect, which nothing reads back.</remarks>
     [Native(Level.Recorded, Reason = "Plays an animation of doodads in a rect, which nothing reads back")]
     public void SetDoodadAnimationRect(rect? r, int doodadID, string? animName, bool animRandom) { }
 
+    /// <summary>Changes nothing; no doodad colour is changed.</summary>
+    /// <remarks>Recorded: Gives doodads near a point a team colour, which nothing reads back.</remarks>
     [Native(Level.Recorded, Reason = "Gives doodads near a point a team colour, which nothing reads back")]
     public void SetDoodadColor(float x, float y, float radius, int doodadID, bool nearestOnly, playercolor? whichColor) { }
 
+    /// <summary>Changes nothing; no doodad colour is changed.</summary>
+    /// <remarks>Recorded: Gives doodads in a rect a team colour, which nothing reads back.</remarks>
     [Native(Level.Recorded, Reason = "Gives doodads in a rect a team colour, which nothing reads back")]
     public void SetDoodadColorRect(rect? r, int doodadID, playercolor? whichColor) { }
 }

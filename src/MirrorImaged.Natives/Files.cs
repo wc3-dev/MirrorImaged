@@ -36,6 +36,7 @@ public sealed partial class GameNatives
     public Action<string, string>? RunPreloadFile { get; init; }
 
     /// <summary>Keeps the text for the next file <see cref="PreloadGenEnd"/> writes: its first 259 bytes.</summary>
+    /// <remarks>Exact: matches the game wherever measured (game-facts.md, Files and Preload: one Preload call keeps the first 259 bytes of its text (11-02, 11-03); facts, Files and game cache: kept until PreloadGenClear).</remarks>
     [Native(Level.Exact, Fact = "game-facts.md, Files and Preload: one Preload call keeps the first 259 bytes of its text (11-02, 11-03); facts, Files and game cache: kept until PreloadGenClear")]
     public void Preload(string? filename)
     {
@@ -45,9 +46,13 @@ public sealed partial class GameNatives
         _preloaded.Add(text.Length > 259 ? text[..259] : text);
     }
 
+    /// <summary>Empties the texts Preload kept.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Files and game cache: PreloadGenClear empties what Preload kept, nothing else does).</remarks>
     [Native(Level.Exact, Fact = "facts, Files and game cache: PreloadGenClear empties what Preload kept, nothing else does")]
     public void PreloadGenClear() => _preloaded.Clear();
 
+    /// <summary>Does nothing; the game starts the count that the file's PreloadEnd number holds.</summary>
+    /// <remarks>Recorded: Starts the count the file's PreloadEnd number holds, which a map can't read (a script that runs the file meets a PreloadEnd that does nothing) and the game gave as 0.0 for a file written in one call (facts, Files and game cache, D793).</remarks>
     [Native(Level.Recorded, Reason = "Starts the count the file's PreloadEnd number holds, which a map can't read (a script that runs the file meets a PreloadEnd that does nothing) and the game gave as 0.0 for a file written in one call (facts, Files and game cache, D793)")]
     public void PreloadGenStart() { }
 
@@ -57,6 +62,7 @@ public sealed partial class GameNatives
     /// <c>PreloadEnd</c>'s number is 0.0, the game's for a file written in one call; it wrote 1.9 and 2.0 for one ended
     /// 2.5 game seconds after <c>PreloadGenStart</c>.
     /// </summary>
+    /// <remarks>Close: the number written is always 0.0, where the game gave 1.9 and 2.0 for a file ended 2.5 game seconds after PreloadGenStart.</remarks>
     [Native(Level.Close)]
     public void PreloadGenEnd(string? filename)
     {
@@ -81,6 +87,7 @@ public sealed partial class GameNatives
     /// Runs the file at <paramref name="filename"/> in <c>CustomMapData</c> at once, as the content the game first read
     /// at that path in this game; nothing for a missing file or a path the game reads nothing from (D101, D102).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (game-facts.md, Files and Preload: read back at once, a missing file changes nothing, a path keeps its first content (11-03, 11-06); facts, Files and game cache).</remarks>
     [Native(Level.Exact, Fact = "game-facts.md, Files and Preload: read back at once, a missing file changes nothing, a path keeps its first content (11-03, 11-06); facts, Files and game cache")]
     public void Preloader(string? filename)
     {
@@ -93,15 +100,23 @@ public sealed partial class GameNatives
     }
 
     // The natives a Preload file calls around its Preload calls: they show the game loading the files named.
+    /// <summary>Does nothing here; the game starts loading the files Preload names.</summary>
+    /// <remarks>Recorded: Starts the game's loading of the files Preload names, which shows nothing a map reads; not in the run's log (D98).</remarks>
     [Native(Level.Recorded, Reason = "Starts the game's loading of the files Preload names, which shows nothing a map reads; not in the run's log (D98)")]
     public void PreloadStart() { }
 
+    /// <summary>Does nothing here; the game ends its loading of the files Preload names.</summary>
+    /// <remarks>Recorded: Ends the game's loading of the files Preload names, which shows nothing a map reads; not in the run's log (D98).</remarks>
     [Native(Level.Recorded, Reason = "Ends the game's loading of the files Preload names, which shows nothing a map reads; not in the run's log (D98)")]
     public void PreloadEnd(float timeout) { }
 
+    /// <summary>Does nothing here; the game ends its loading of the files Preload names.</summary>
+    /// <remarks>Recorded: Ends the game's loading of the files Preload names, which shows nothing a map reads; not in the run's log (D98).</remarks>
     [Native(Level.Recorded, Reason = "Ends the game's loading of the files Preload names, which shows nothing a map reads; not in the run's log (D98)")]
     public void PreloadEndEx() { }
 
+    /// <summary>Does nothing here; the game goes on loading the files Preload names.</summary>
+    /// <remarks>Recorded: Goes on with the game's loading of the files Preload names, which shows nothing a map reads; not in the run's log (D98).</remarks>
     [Native(Level.Recorded, Reason = "Goes on with the game's loading of the files Preload names, which shows nothing a map reads; not in the run's log (D98)")]
     public void PreloadRefresh() { }
 

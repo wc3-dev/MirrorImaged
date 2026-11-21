@@ -187,30 +187,48 @@ public sealed partial class GameNatives
     Happening? SpellResponse => Response(UnitSpellChannel, UnitSpellCast, UnitSpellEffect, UnitSpellFinish, UnitSpellEndCast,
         PlayerSpellChannel, PlayerSpellCast, PlayerSpellEffect, PlayerSpellFinish, PlayerSpellEndCast);
 
+    /// <summary>The id of the ability being cast, in a spell event; 0 outside one.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: the cast events (10-31, 11-05)); the events come from the model's cast flow (D450, D451), where the caster turns to its target at once; outside a spell event the answer is not measured.</remarks>
     [Native(Level.Close, Fact = "game-facts.md, Spells and abilities: the cast events (10-31, 11-05)")]
     public int GetSpellAbilityId() => SpellResponse?.Skill ?? 0;
 
+    /// <summary>The caster's ability of the id being cast, in a spell event; null outside one.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: the cast events (10-31, 11-05)); found by id among the caster's abilities as they are now, so one removed since gives null; the events come from the model's cast flow (D450, D451), where the caster turns to its target at once; outside a spell event the answer is not measured.</remarks>
     [Native(Level.Close, Fact = "game-facts.md, Spells and abilities: the cast events (10-31, 11-05)")]
     public ability? GetSpellAbility() => SpellResponse is { } e ? e.Unit.Abilities.Find(a => a.Type.Id == e.Skill) : null;
 
+    /// <summary>The casting unit, in a spell event; null outside one.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: the cast events (10-31, 11-05)); the events come from the model's cast flow (D450, D451), where the caster turns to its target at once; outside a spell event the answer is not measured.</remarks>
     [Native(Level.Close, Fact = "game-facts.md, Spells and abilities: the cast events (10-31, 11-05)")]
     public unit? GetSpellAbilityUnit() => SpellResponse?.Unit;
 
+    /// <summary>The target of the cast when it is a unit, else null.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: the cast events (10-31, 11-05)); the events come from the model's cast flow (D450, D451), where the caster turns to its target at once; outside a spell event the answer is not measured.</remarks>
     [Native(Level.Close, Fact = "game-facts.md, Spells and abilities: the cast events (10-31, 11-05)")]
     public unit? GetSpellTargetUnit() => SpellResponse?.Target as unit;
 
+    /// <summary>The target of the cast when it is an item, else null.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: the cast events (10-31, 11-05)); the events come from the model's cast flow (D450, D451), where the caster turns to its target at once; outside a spell event the answer is not measured.</remarks>
     [Native(Level.Close, Fact = "game-facts.md, Spells and abilities: the cast events (10-31, 11-05)")]
     public item? GetSpellTargetItem() => SpellResponse?.Target as item;
 
+    /// <summary>The target of the cast when it is a destructable, else null.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: the cast events (10-31, 11-05)); the events come from the model's cast flow (D450, D451), where the caster turns to its target at once; outside a spell event the answer is not measured.</remarks>
     [Native(Level.Close, Fact = "game-facts.md, Spells and abilities: the cast events (10-31, 11-05)")]
     public destructable? GetSpellTargetDestructable() => SpellResponse?.Target as destructable;
 
+    /// <summary>The x the order gave, a target's place when the order was given; 0 outside a spell event.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: the cast events (10-31, 11-05)); a unit target's place is where it was when the order was given, not at the cast; the events come from the model's cast flow (D450, D451), where the caster turns to its target at once; outside a spell event the answer is not measured.</remarks>
     [Native(Level.Close, Fact = "game-facts.md, Spells and abilities: the cast events (10-31, 11-05)")]
     public float GetSpellTargetX() => SpellResponse?.PointX ?? 0;
 
+    /// <summary>The y the order gave, a target's place when the order was given; 0 outside a spell event.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: the cast events (10-31, 11-05)); a unit target's place is where it was when the order was given, not at the cast; the events come from the model's cast flow (D450, D451), where the caster turns to its target at once; outside a spell event the answer is not measured.</remarks>
     [Native(Level.Close, Fact = "game-facts.md, Spells and abilities: the cast events (10-31, 11-05)")]
     public float GetSpellTargetY() => SpellResponse?.PointY ?? 0;
 
+    /// <summary>A location at the cast's target point; null outside a spell event.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: the cast events (10-31, 11-05)); a unit target's place is where it was when the order was given, not at the cast; the events come from the model's cast flow (D450, D451), where the caster turns to its target at once; outside a spell event the answer is not measured.</remarks>
     [Native(Level.Close, Fact = "game-facts.md, Spells and abilities: the cast events (10-31, 11-05)")]
     public location? GetSpellTargetLoc() => SpellResponse is { } e ? Location(e.PointX, e.PointY) : null;
 }

@@ -25,6 +25,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>Whether the unit guards its post as a creep does: a creep does until told not to, another unit once told to, from where it stands then.</summary>
+    /// <remarks>Close: The distance is the constant's, the rule itself is not measured (D435).</remarks>
     [Native(Level.Close)]
     public void SetUnitCreepGuard(unit? whichUnit, bool creepGuard)
     {
@@ -34,6 +35,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The unit no longer goes back to a post.</summary>
+    /// <remarks>Close: The distance is the constant's, the rule itself is not measured (D435).</remarks>
     [Native(Level.Close)]
     public void RemoveGuardPosition(unit? hUnit)
     {
@@ -41,6 +43,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The unit guards where it stands now.</summary>
+    /// <remarks>Close: The distance is the constant's, the rule itself is not measured (D435).</remarks>
     [Native(Level.Close)]
     public void RecycleGuardPosition(unit? hUnit)
     {
@@ -48,6 +51,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>None of the player's units goes back to a post.</summary>
+    /// <remarks>Close: The distance is the constant's, the rule itself is not measured (D435).</remarks>
     [Native(Level.Close)]
     public void RemoveAllGuardPositions(player? num)
     {

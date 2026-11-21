@@ -39,6 +39,7 @@ public sealed partial class GameNatives
     /// the orders SetUnitOwner, KillUnit, RemoveUnit and PauseUnit give it (stop, undefend, stunned); the other unit
     /// events fire once their waves bring them.
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08); facts, Units: probes units-more and units-more-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe + "; " + MoreProbe)]
     public @event? TriggerRegisterUnitEvent(trigger? whichTrigger, unit? whichUnit, unitevent? whichEvent) =>
         RegisterUnit(whichTrigger, whichUnit, null, whichEvent);
@@ -48,6 +49,7 @@ public sealed partial class GameNatives
     /// when it passes (nil passes); a death registered so never fires, with a filter or without (probes units-more and
     /// units-more-2: an owner change fired with nil and a passing filter, not with a failing one).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probes units-more and units-more-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = MoreProbe)]
     public @event? TriggerRegisterFilterUnitEvent(trigger? whichTrigger, unit? whichUnit, unitevent? whichEvent, boolexpr? filter)
     {
@@ -64,6 +66,7 @@ public sealed partial class GameNatives
     /// registered (probes units-more and units-more-2). Close: the game's frame comes 0.005 s later, and its
     /// regeneration can pass a limit, which the mana that comes back here doesn't fire (Regeneration.cs).
     /// </summary>
+    /// <remarks>Close: the game's frame comes 0.005 s later than here, and its regeneration can pass a limit, which the mana that comes back here doesn't fire.</remarks>
     [Native(Level.Close)]
     public @event? TriggerRegisterUnitStateEvent(trigger? whichTrigger, unit? whichUnit, unitstate? whichState, limitop? opcode, float limitval)
     {
@@ -99,6 +102,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The state of a unit state event; outside one the state with id 0, UNIT_STATE_LIFE (probe units-more).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probes units-more and units-more-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = MoreProbe)]
     public unitstate? GetEventUnitState() => Response(UnitStateLimit)?.State ?? Convert<unitstate>(LifeState);
 
@@ -106,6 +110,7 @@ public sealed partial class GameNatives
     /// As TriggerRegisterUnitEvent, for each unit the player owns when it happens; for an owner change, the new owner.
     /// The filter never runs, and one that would fail doesn't hold the event back (probe units).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public @event? TriggerRegisterPlayerUnitEvent(trigger? whichTrigger, player? whichPlayer, playerunitevent? whichPlayerUnitEvent, boolexpr? filter) =>
         whichPlayer is null ? null : RegisterUnit(whichTrigger, null, whichPlayer, whichPlayerUnitEvent);
@@ -141,10 +146,12 @@ public sealed partial class GameNatives
     internal int UnitEventLists => _widgetEvents.Count + _playerUnitEvents.Count;
 
     /// <summary>The unit an event is about, in its widget death event too; nil outside a unit's event.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public unit? GetTriggerUnit() => Current.Unit?.Unit;
 
     /// <summary>The unit of a unit or player-unit death event; nil in the widget death event.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public unit? GetDyingUnit() => Response(UnitDeath, PlayerUnitDeath)?.Unit;
 
@@ -152,22 +159,32 @@ public sealed partial class GameNatives
     /// The unit whose hit killed it, also a dead one's (game-facts, Damage: a footman killed 1 s before still names itself);
     /// nil for a death from KillUnit or a set of its life or most life (game-facts, Orders and events; probe units).
     /// </summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08); game-facts.md, Orders and events: GetKillingUnit is nil for KillUnit (10-15); game-facts.md, Damage: a dead source's killing blow (10-27)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe + "; game-facts.md, Orders and events: GetKillingUnit is nil for KillUnit (10-15); game-facts.md, Damage: a dead source's killing blow (10-27)")]
     public unit? GetKillingUnit() => Response(UnitDeath, PlayerUnitDeath, WidgetDeath)?.Killer;
 
+    /// <summary>The unit of the decay event that is running; nil outside one.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units-decay (11-08); facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = DecayProbe + "; " + UnitsProbe)]
     public unit? GetDecayingUnit() => Response(UnitDecay, PlayerUnitDecay)?.Unit;
 
+    /// <summary>The unit of the owner-change event that is running; nil outside one.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public unit? GetChangingUnit() => Response(UnitChangeOwner, PlayerUnitChangeOwner)?.Unit;
 
+    /// <summary>The player that owned the unit before the owner-change event that is running; nil outside one.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe)]
     public player? GetChangingUnitPrevOwner() => Response(UnitChangeOwner, PlayerUnitChangeOwner)?.Previous;
 
+    /// <summary>The unit of the order event that is running; nil outside one.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08); facts, Units: probes units-more and units-more-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe + "; " + MoreProbe)]
     public unit? GetOrderedUnit() => AnyOrder?.Unit;
 
     /// <summary>The order of an order event; 0 outside one.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08); facts, Units: probes units-more and units-more-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe + "; " + MoreProbe)]
     public int GetIssuedOrderId() => AnyOrder?.Order ?? 0;
 

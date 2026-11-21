@@ -18,15 +18,19 @@ public sealed partial class GameNatives
     static readonly HashSet<int> CargoBases = [Code("Achd"), Code("Sch2"), Code("Sch3"), Code("Sch4"), Code("Sch5"), Code("Sch1")];
 
     /// <summary>Whether the unit is in a transport.</summary>
+    /// <remarks>Close: Reads the model's cargo, in which a unit takes one room and is loaded at once when near enough, where the game counts by size (D386).</remarks>
     [Native(Level.Close)] public bool IsUnitLoaded(unit? whichUnit) => whichUnit?.Transport is not null;
 
     /// <summary>Whether the unit is in that transport.</summary>
+    /// <remarks>Close: Reads the model's cargo, in which a unit takes one room and is loaded at once when near enough, where the game counts by size (D386).</remarks>
     [Native(Level.Close)] public bool IsUnitInTransport(unit? whichUnit, unit? whichTransport) => whichUnit is not null && whichTransport is not null && whichUnit.Transport == whichTransport;
 
     /// <summary>The unit a loaded event is about.</summary>
+    /// <remarks>Close: Only the loaded event exists, as common.j has it (D386).</remarks>
     [Native(Level.Close)] public unit? GetLoadedUnit() => Response(UnitLoaded, PlayerUnitLoaded)?.Other;
 
     /// <summary>The transport in a loaded event.</summary>
+    /// <remarks>Close: Only the loaded event exists, as common.j has it (D386).</remarks>
     [Native(Level.Close)] public unit? GetTransportUnit() => Response(UnitLoaded, PlayerUnitLoaded)?.Unit;
 
     int Room(unit transport) =>

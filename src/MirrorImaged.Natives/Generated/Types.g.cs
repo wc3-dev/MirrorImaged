@@ -4,143 +4,283 @@
 
 namespace MirrorImaged.Natives;
 
+/// <summary>The game's <c>handle</c>, the type every other handle type extends.</summary>
 public partial class handle;
+/// <summary>The game's <c>ability</c> handle, a kind of <c>agent</c>.</summary>
 public partial class ability : agent;
+/// <summary>The game's <c>abilitybooleanfield</c> handle, a kind of <c>handle</c>.</summary>
 public partial class abilitybooleanfield : handle;
+/// <summary>The game's <c>abilitybooleanlevelarrayfield</c> handle, a kind of <c>handle</c>.</summary>
 public partial class abilitybooleanlevelarrayfield : handle;
+/// <summary>The game's <c>abilitybooleanlevelfield</c> handle, a kind of <c>handle</c>.</summary>
 public partial class abilitybooleanlevelfield : handle;
+/// <summary>The game's <c>abilityintegerfield</c> handle, a kind of <c>handle</c>.</summary>
 public partial class abilityintegerfield : handle;
+/// <summary>The game's <c>abilityintegerlevelarrayfield</c> handle, a kind of <c>handle</c>.</summary>
 public partial class abilityintegerlevelarrayfield : handle;
+/// <summary>The game's <c>abilityintegerlevelfield</c> handle, a kind of <c>handle</c>.</summary>
 public partial class abilityintegerlevelfield : handle;
+/// <summary>The game's <c>abilityrealfield</c> handle, a kind of <c>handle</c>.</summary>
 public partial class abilityrealfield : handle;
+/// <summary>The game's <c>abilityreallevelarrayfield</c> handle, a kind of <c>handle</c>.</summary>
 public partial class abilityreallevelarrayfield : handle;
+/// <summary>The game's <c>abilityreallevelfield</c> handle, a kind of <c>handle</c>.</summary>
 public partial class abilityreallevelfield : handle;
+/// <summary>The game's <c>abilitystringfield</c> handle, a kind of <c>handle</c>.</summary>
 public partial class abilitystringfield : handle;
+/// <summary>The game's <c>abilitystringlevelarrayfield</c> handle, a kind of <c>handle</c>.</summary>
 public partial class abilitystringlevelarrayfield : handle;
+/// <summary>The game's <c>abilitystringlevelfield</c> handle, a kind of <c>handle</c>.</summary>
 public partial class abilitystringlevelfield : handle;
+/// <summary>The game's <c>agent</c> handle, a kind of <c>handle</c>.</summary>
 public partial class agent : handle;
+/// <summary>The game's <c>aidifficulty</c> handle, a kind of <c>handle</c>.</summary>
 public partial class aidifficulty : handle;
+/// <summary>The game's <c>alliancetype</c> handle, a kind of <c>handle</c>.</summary>
 public partial class alliancetype : handle;
+/// <summary>The game's <c>animtype</c> handle, a kind of <c>handle</c>.</summary>
 public partial class animtype : handle;
+/// <summary>The game's <c>armortype</c> handle, a kind of <c>handle</c>.</summary>
 public partial class armortype : handle;
+/// <summary>The game's <c>attacktype</c> handle, a kind of <c>handle</c>.</summary>
 public partial class attacktype : handle;
+/// <summary>The game's <c>blendmode</c> handle, a kind of <c>handle</c>.</summary>
 public partial class blendmode : handle;
+/// <summary>The game's <c>boolexpr</c> handle, a kind of <c>agent</c>.</summary>
 public partial class boolexpr : agent;
+/// <summary>The game's <c>buff</c> handle, a kind of <c>ability</c>.</summary>
 public partial class buff : ability;
+/// <summary>The game's <c>button</c> handle, a kind of <c>agent</c>.</summary>
 public partial class button : agent;
+/// <summary>The game's <c>camerafield</c> handle, a kind of <c>handle</c>.</summary>
 public partial class camerafield : handle;
+/// <summary>The game's <c>camerasetup</c> handle, a kind of <c>handle</c>.</summary>
 public partial class camerasetup : handle;
+/// <summary>The game's <c>commandbuttoneffect</c> handle, a kind of <c>handle</c>.</summary>
 public partial class commandbuttoneffect : handle;
+/// <summary>The game's <c>conditionfunc</c> handle, a kind of <c>boolexpr</c>.</summary>
 public partial class conditionfunc : boolexpr;
+/// <summary>The game's <c>damagetype</c> handle, a kind of <c>handle</c>.</summary>
 public partial class damagetype : handle;
+/// <summary>The game's <c>defeatcondition</c> handle, a kind of <c>agent</c>.</summary>
 public partial class defeatcondition : agent;
+/// <summary>The game's <c>defensetype</c> handle, a kind of <c>handle</c>.</summary>
 public partial class defensetype : handle;
+/// <summary>The game's <c>destructable</c> handle, a kind of <c>widget</c>.</summary>
 public partial class destructable : widget;
+/// <summary>The game's <c>dialog</c> handle, a kind of <c>agent</c>.</summary>
 public partial class dialog : agent;
+/// <summary>The game's <c>dialogevent</c> handle, a kind of <c>eventid</c>.</summary>
 public partial class dialogevent : eventid;
+/// <summary>The game's <c>effect</c> handle, a kind of <c>agent</c>.</summary>
 public partial class effect : agent;
+/// <summary>The game's <c>effecttype</c> handle, a kind of <c>handle</c>.</summary>
 public partial class effecttype : handle;
+/// <summary>The game's <c>equipmentType</c> handle, a kind of <c>handle</c>.</summary>
 public partial class equipmentType : handle;
+/// <summary>The game's <c>event</c> handle, a kind of <c>agent</c>.</summary>
 public partial class @event : agent;
+/// <summary>The game's <c>eventid</c> handle, a kind of <c>handle</c>.</summary>
 public partial class eventid : handle;
+/// <summary>The game's <c>fgamestate</c> handle, a kind of <c>gamestate</c>.</summary>
 public partial class fgamestate : gamestate;
+/// <summary>The game's <c>filterfunc</c> handle, a kind of <c>boolexpr</c>.</summary>
 public partial class filterfunc : boolexpr;
+/// <summary>The game's <c>fogmodifier</c> handle, a kind of <c>agent</c>.</summary>
 public partial class fogmodifier : agent;
+/// <summary>The game's <c>fogstate</c> handle, a kind of <c>handle</c>.</summary>
 public partial class fogstate : handle;
+/// <summary>The game's <c>fogstyle</c> handle, a kind of <c>handle</c>.</summary>
 public partial class fogstyle : handle;
+/// <summary>The game's <c>force</c> handle, a kind of <c>agent</c>.</summary>
 public partial class force : agent;
+/// <summary>The game's <c>frameeventtype</c> handle, a kind of <c>handle</c>.</summary>
 public partial class frameeventtype : handle;
+/// <summary>The game's <c>framehandle</c> handle, a kind of <c>agent</c>.</summary>
 public partial class framehandle : agent;
+/// <summary>The game's <c>framepointtype</c> handle, a kind of <c>handle</c>.</summary>
 public partial class framepointtype : handle;
+/// <summary>The game's <c>gamecache</c> handle, a kind of <c>agent</c>.</summary>
 public partial class gamecache : agent;
+/// <summary>The game's <c>gamedifficulty</c> handle, a kind of <c>handle</c>.</summary>
 public partial class gamedifficulty : handle;
+/// <summary>The game's <c>gameevent</c> handle, a kind of <c>eventid</c>.</summary>
 public partial class gameevent : eventid;
+/// <summary>The game's <c>gamespeed</c> handle, a kind of <c>handle</c>.</summary>
 public partial class gamespeed : handle;
+/// <summary>The game's <c>gamestate</c> handle, a kind of <c>handle</c>.</summary>
 public partial class gamestate : handle;
+/// <summary>The game's <c>gametype</c> handle, a kind of <c>handle</c>.</summary>
 public partial class gametype : handle;
+/// <summary>The game's <c>group</c> handle, a kind of <c>agent</c>.</summary>
 public partial class group : agent;
+/// <summary>The game's <c>hashtable</c> handle, a kind of <c>agent</c>.</summary>
 public partial class hashtable : agent;
+/// <summary>The game's <c>heroattribute</c> handle, a kind of <c>handle</c>.</summary>
 public partial class heroattribute : handle;
+/// <summary>The game's <c>igamestate</c> handle, a kind of <c>gamestate</c>.</summary>
 public partial class igamestate : gamestate;
+/// <summary>The game's <c>image</c> handle, a kind of <c>handle</c>.</summary>
 public partial class image : handle;
+/// <summary>The game's <c>item</c> handle, a kind of <c>widget</c>.</summary>
 public partial class item : widget;
+/// <summary>The game's <c>itemTag</c> handle, a kind of <c>handle</c>.</summary>
 public partial class itemTag : handle;
+/// <summary>The game's <c>itembooleanfield</c> handle, a kind of <c>handle</c>.</summary>
 public partial class itembooleanfield : handle;
+/// <summary>The game's <c>itemintegerfield</c> handle, a kind of <c>handle</c>.</summary>
 public partial class itemintegerfield : handle;
+/// <summary>The game's <c>itempool</c> handle, a kind of <c>handle</c>.</summary>
 public partial class itempool : handle;
+/// <summary>The game's <c>itemrealfield</c> handle, a kind of <c>handle</c>.</summary>
 public partial class itemrealfield : handle;
+/// <summary>The game's <c>itemstringfield</c> handle, a kind of <c>handle</c>.</summary>
 public partial class itemstringfield : handle;
+/// <summary>The game's <c>itemtype</c> handle, a kind of <c>handle</c>.</summary>
 public partial class itemtype : handle;
+/// <summary>The game's <c>leaderboard</c> handle, a kind of <c>agent</c>.</summary>
 public partial class leaderboard : agent;
+/// <summary>The game's <c>lightning</c> handle, a kind of <c>handle</c>.</summary>
 public partial class lightning : handle;
+/// <summary>The game's <c>limitop</c> handle, a kind of <c>eventid</c>.</summary>
 public partial class limitop : eventid;
+/// <summary>The game's <c>loadoutslot</c> handle, a kind of <c>handle</c>.</summary>
 public partial class loadoutslot : handle;
+/// <summary>The game's <c>location</c> handle, a kind of <c>agent</c>.</summary>
 public partial class location : agent;
+/// <summary>The game's <c>mapcontrol</c> handle, a kind of <c>handle</c>.</summary>
 public partial class mapcontrol : handle;
+/// <summary>The game's <c>mapdensity</c> handle, a kind of <c>handle</c>.</summary>
 public partial class mapdensity : handle;
+/// <summary>The game's <c>mapflag</c> handle, a kind of <c>handle</c>.</summary>
 public partial class mapflag : handle;
+/// <summary>The game's <c>mapsetting</c> handle, a kind of <c>handle</c>.</summary>
 public partial class mapsetting : handle;
+/// <summary>The game's <c>mapvisibility</c> handle, a kind of <c>handle</c>.</summary>
 public partial class mapvisibility : handle;
+/// <summary>The game's <c>metakeytype</c> handle, a kind of <c>handle</c>.</summary>
 public partial class metakeytype : handle;
+/// <summary>The game's <c>minimapicon</c> handle, a kind of <c>handle</c>.</summary>
 public partial class minimapicon : handle;
+/// <summary>The game's <c>mousebuttontype</c> handle, a kind of <c>handle</c>.</summary>
 public partial class mousebuttontype : handle;
+/// <summary>The game's <c>movetype</c> handle, a kind of <c>handle</c>.</summary>
 public partial class movetype : handle;
+/// <summary>The game's <c>multiboard</c> handle, a kind of <c>agent</c>.</summary>
 public partial class multiboard : agent;
+/// <summary>The game's <c>multiboarditem</c> handle, a kind of <c>agent</c>.</summary>
 public partial class multiboarditem : agent;
+/// <summary>The game's <c>originframetype</c> handle, a kind of <c>handle</c>.</summary>
 public partial class originframetype : handle;
+/// <summary>The game's <c>oskeytype</c> handle, a kind of <c>handle</c>.</summary>
 public partial class oskeytype : handle;
+/// <summary>The game's <c>pathingflag</c> handle, a kind of <c>handle</c>.</summary>
 public partial class pathingflag : handle;
+/// <summary>The game's <c>pathingtype</c> handle, a kind of <c>handle</c>.</summary>
 public partial class pathingtype : handle;
+/// <summary>The game's <c>placement</c> handle, a kind of <c>handle</c>.</summary>
 public partial class placement : handle;
+/// <summary>The game's <c>player</c> handle, a kind of <c>agent</c>.</summary>
 public partial class player : agent;
+/// <summary>The game's <c>playercolor</c> handle, a kind of <c>handle</c>.</summary>
 public partial class playercolor : handle;
+/// <summary>The game's <c>playerevent</c> handle, a kind of <c>eventid</c>.</summary>
 public partial class playerevent : eventid;
+/// <summary>The game's <c>playergameresult</c> handle, a kind of <c>handle</c>.</summary>
 public partial class playergameresult : handle;
+/// <summary>The game's <c>playerscore</c> handle, a kind of <c>handle</c>.</summary>
 public partial class playerscore : handle;
+/// <summary>The game's <c>playerslotstate</c> handle, a kind of <c>handle</c>.</summary>
 public partial class playerslotstate : handle;
+/// <summary>The game's <c>playerstate</c> handle, a kind of <c>handle</c>.</summary>
 public partial class playerstate : handle;
+/// <summary>The game's <c>playerunitevent</c> handle, a kind of <c>eventid</c>.</summary>
 public partial class playerunitevent : eventid;
+/// <summary>The game's <c>quest</c> handle, a kind of <c>agent</c>.</summary>
 public partial class quest : agent;
+/// <summary>The game's <c>questitem</c> handle, a kind of <c>agent</c>.</summary>
 public partial class questitem : agent;
+/// <summary>The game's <c>race</c> handle, a kind of <c>handle</c>.</summary>
 public partial class race : handle;
+/// <summary>The game's <c>racepreference</c> handle, a kind of <c>handle</c>.</summary>
 public partial class racepreference : handle;
+/// <summary>The game's <c>raritycontrol</c> handle, a kind of <c>handle</c>.</summary>
 public partial class raritycontrol : handle;
+/// <summary>The game's <c>rect</c> handle, a kind of <c>agent</c>.</summary>
 public partial class rect : agent;
+/// <summary>The game's <c>regentype</c> handle, a kind of <c>handle</c>.</summary>
 public partial class regentype : handle;
+/// <summary>The game's <c>region</c> handle, a kind of <c>agent</c>.</summary>
 public partial class region : agent;
+/// <summary>The game's <c>sound</c> handle, a kind of <c>agent</c>.</summary>
 public partial class sound : agent;
+/// <summary>The game's <c>soundtype</c> handle, a kind of <c>handle</c>.</summary>
 public partial class soundtype : handle;
+/// <summary>The game's <c>startlocprio</c> handle, a kind of <c>handle</c>.</summary>
 public partial class startlocprio : handle;
+/// <summary>The game's <c>subanimtype</c> handle, a kind of <c>handle</c>.</summary>
 public partial class subanimtype : handle;
+/// <summary>The game's <c>targetflag</c> handle, a kind of <c>handle</c>.</summary>
 public partial class targetflag : handle;
+/// <summary>The game's <c>terraindeformation</c> handle, a kind of <c>handle</c>.</summary>
 public partial class terraindeformation : handle;
+/// <summary>The game's <c>texmapflags</c> handle, a kind of <c>handle</c>.</summary>
 public partial class texmapflags : handle;
+/// <summary>The game's <c>textaligntype</c> handle, a kind of <c>handle</c>.</summary>
 public partial class textaligntype : handle;
+/// <summary>The game's <c>texttag</c> handle, a kind of <c>handle</c>.</summary>
 public partial class texttag : handle;
+/// <summary>The game's <c>timer</c> handle, a kind of <c>agent</c>.</summary>
 public partial class timer : agent;
+/// <summary>The game's <c>timerdialog</c> handle, a kind of <c>agent</c>.</summary>
 public partial class timerdialog : agent;
+/// <summary>The game's <c>trackable</c> handle, a kind of <c>agent</c>.</summary>
 public partial class trackable : agent;
+/// <summary>The game's <c>trigger</c> handle, a kind of <c>agent</c>.</summary>
 public partial class trigger : agent;
+/// <summary>The game's <c>triggeraction</c> handle, a kind of <c>handle</c>.</summary>
 public partial class triggeraction : handle;
+/// <summary>The game's <c>triggercondition</c> handle, a kind of <c>agent</c>.</summary>
 public partial class triggercondition : agent;
+/// <summary>The game's <c>ubersplat</c> handle, a kind of <c>handle</c>.</summary>
 public partial class ubersplat : handle;
+/// <summary>The game's <c>unit</c> handle, a kind of <c>widget</c>.</summary>
 public partial class unit : widget;
+/// <summary>The game's <c>unitbooleanfield</c> handle, a kind of <c>handle</c>.</summary>
 public partial class unitbooleanfield : handle;
+/// <summary>The game's <c>unitcategory</c> handle, a kind of <c>handle</c>.</summary>
 public partial class unitcategory : handle;
+/// <summary>The game's <c>unitevent</c> handle, a kind of <c>eventid</c>.</summary>
 public partial class unitevent : eventid;
+/// <summary>The game's <c>unitintegerfield</c> handle, a kind of <c>handle</c>.</summary>
 public partial class unitintegerfield : handle;
+/// <summary>The game's <c>unitpool</c> handle, a kind of <c>handle</c>.</summary>
 public partial class unitpool : handle;
+/// <summary>The game's <c>unitrealfield</c> handle, a kind of <c>handle</c>.</summary>
 public partial class unitrealfield : handle;
+/// <summary>The game's <c>unitstate</c> handle, a kind of <c>handle</c>.</summary>
 public partial class unitstate : handle;
+/// <summary>The game's <c>unitstringfield</c> handle, a kind of <c>handle</c>.</summary>
 public partial class unitstringfield : handle;
+/// <summary>The game's <c>unittype</c> handle, a kind of <c>handle</c>.</summary>
 public partial class unittype : handle;
+/// <summary>The game's <c>unitweaponbooleanfield</c> handle, a kind of <c>handle</c>.</summary>
 public partial class unitweaponbooleanfield : handle;
+/// <summary>The game's <c>unitweaponintegerfield</c> handle, a kind of <c>handle</c>.</summary>
 public partial class unitweaponintegerfield : handle;
+/// <summary>The game's <c>unitweaponrealfield</c> handle, a kind of <c>handle</c>.</summary>
 public partial class unitweaponrealfield : handle;
+/// <summary>The game's <c>unitweaponstringfield</c> handle, a kind of <c>handle</c>.</summary>
 public partial class unitweaponstringfield : handle;
+/// <summary>The game's <c>version</c> handle, a kind of <c>handle</c>.</summary>
 public partial class version : handle;
+/// <summary>The game's <c>volumegroup</c> handle, a kind of <c>handle</c>.</summary>
 public partial class volumegroup : handle;
+/// <summary>The game's <c>weapontype</c> handle, a kind of <c>handle</c>.</summary>
 public partial class weapontype : handle;
+/// <summary>The game's <c>weathereffect</c> handle, a kind of <c>handle</c>.</summary>
 public partial class weathereffect : handle;
+/// <summary>The game's <c>widget</c> handle, a kind of <c>agent</c>.</summary>
 public partial class widget : agent;
+/// <summary>The game's <c>widgetevent</c> handle, a kind of <c>eventid</c>.</summary>
 public partial class widgetevent : eventid;

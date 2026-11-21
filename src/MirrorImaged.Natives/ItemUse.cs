@@ -50,6 +50,8 @@ public sealed partial class GameNatives
         finally { (_itemSpell, _itemToUse) = (null, null); }
     }
 
+    /// <summary>Gives the order of the item's slot at the point, casting its ability as a spell order does; always false.</summary>
+    /// <remarks>Close: Always false, as in the game's 20 calls, but the order is given and the ability cast as the game did; whether an ability takes a place is read from its targets, not from the data, and a place the game walked to from 316 away is cast from here when within the ability's range (probe differences).</remarks>
     [Native(Level.Close, Fact = ItemUseFacts, Reason = "Always false, as in the game's 20 calls, but the order is given and the ability cast as the game did; whether an ability takes a place is read from its targets, not from the data, and a place the game walked to from 316 away is cast from here when within the ability's range (probe differences)")]
     public bool UnitUseItemPoint(unit? whichUnit, item? whichItem, float x, float y)
     {
@@ -57,6 +59,8 @@ public sealed partial class GameNatives
         return false;
     }
 
+    /// <summary>Gives the order of the item's slot on the target, casting its ability as a spell order does; true when the order was given.</summary>
+    /// <remarks>Close: True when the order of the slot is given, for a target the ability's alignment and kind take, false with no order for another (the hero itself, a footman for Town Portal); the game walked to an enemy 141 away and kept Town Portal to its channel event for 1.5 s, where here the cast ranges let them cast at once, and whether an ability takes a unit is read from its targets, not from the data.</remarks>
     [Native(Level.Close, Fact = ItemUseFacts, Reason = "True when the order of the slot is given, for a target the ability's alignment and kind take, false with no order for another (the hero itself, a footman for Town Portal); the game walked to an enemy 141 away and kept Town Portal to its channel event for 1.5 s, where here the cast ranges let them cast at once, and whether an ability takes a unit is read from its targets, not from the data")]
     public bool UnitUseItemTarget(unit? whichUnit, item? whichItem, widget? target) =>
         target is not null && UseItem(whichUnit, whichItem, 2, GetWidgetX(target), GetWidgetY(target), target);
