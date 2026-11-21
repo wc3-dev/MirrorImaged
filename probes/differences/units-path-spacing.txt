@@ -1,0 +1,33 @@
+# Walking past an idle unit (D783, D786, Close): MirrorImaged steers round by the room, which the game's passes within -12 to +8 (peasants 66 here, 52 in the game; abominations 130 and 120). SetUnitPosition puts the unit at the room's edge, 64 to 128; the game's puts it elsewhere (58 to 158).
+- hfoo past hfoo: nearest 66, left its line by 72, idle one moved 0, arrived
++ hfoo past hfoo: nearest 66, left its line by 64, idle one moved 0, arrived
+- hfoo put on hfoo: stands 58 from it
++ hfoo put on hfoo: stands 64 from it
+- hpea past hpea: nearest 52, left its line by 56, idle one moved 0, arrived
++ hpea past hpea: nearest 66, left its line by 64, idle one moved 0, arrived
+- hpea put on hpea: stands 74 from it
++ hpea put on hpea: stands 64 from it
+- hkni past hkni: nearest 104, left its line by 104, idle one moved 0, arrived
++ hkni past hkni: nearest 96, left its line by 96, idle one moved 0, arrived
+- hkni put on hkni: stands 100 from it
++ hkni put on hkni: stands 96 from it
+- uabo past uabo: nearest 120, left its line by 120, idle one moved 0, arrived
++ uabo past uabo: nearest 130, left its line by 136, idle one moved 0, arrived
+- uabo put on uabo: stands 158 from it
++ uabo put on uabo: stands 128 from it
+- hfoo past uabo: nearest 104, left its line by 104, idle one moved 0, arrived
++ hfoo past uabo: nearest 98, left its line by 96, idle one moved 0, arrived
+- hfoo put on uabo: stands 100 from it
++ hfoo put on uabo: stands 96 from it
+- hpea past hfoo: nearest 52, left its line by 56, idle one moved 0, arrived
++ hpea past hfoo: nearest 66, left its line by 64, idle one moved 0, arrived
+- hpea put on hfoo: stands 74 from it
++ hpea put on hfoo: stands 64 from it
+- ewsp past ewsp: nearest 64, left its line by 72, idle one moved 0, arrived
++ ewsp past ewsp: nearest 66, left its line by 64, idle one moved 0, arrived
+- ewsp put on ewsp: stands 58 from it
++ ewsp put on ewsp: stands 64 from it
+- hpea past uabo: nearest 88, left its line by 88, idle one moved 0, arrived
++ hpea past uabo: nearest 96, left its line by 96, idle one moved 0, arrived
+- hpea put on uabo: stands 114 from it
++ hpea put on uabo: stands 96 from it

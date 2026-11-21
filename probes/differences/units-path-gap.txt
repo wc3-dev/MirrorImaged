@@ -1,11 +1,11 @@
-# A group through a gap (D720, Close): units here don't push each other, so 4 of 4 arrive on every gap and none is held up (the last at 7.3 to 7.5 s); in the game a group is held up by its own members: 1 of 4 never arrives at centres 192 and 320, and the last takes 9.5 to 10 s at 128, 160 and 256. Where the first arrives is the same (7.3 to 7.6 s). The 192 gap here takes 9.1 s for the first: a search round both houses.
+# A group through a gap (D782 to D786, Close): the houses at centres 128 to 192 touch, as the game snaps them, and the group goes round; units keep a square room (64 for two footmen) and the four lanes are 48 apart, so at the end two of four stand where they stop, 48 to 64 from their places (the game's all came within 40 at 128, 160 and 256). The game holds one of four up for good at 192 and 320; MirrorImaged's held-up walkers pass after 2 s (D784).
 - centres 128 apart: 4 of 4 arrived, first {t} s, last {t} s, left the lane by 160
-+ centres 128 apart: 4 of 4 arrived, first 7.35 s, last 7.45 s, left the lane by 144
++ centres 128 apart: 2 of 4 arrived, first 7.35 s, last never s, left the lane by 144
 - centres 160 apart: 4 of 4 arrived, first {t} s, last {t} s, left the lane by 112
-+ centres 160 apart: 4 of 4 arrived, first 7.35 s, last 7.50 s, left the lane by 208
++ centres 160 apart: 2 of 4 arrived, first 7.35 s, last never s, left the lane by 80
 - centres 192 apart: 3 of 4 arrived, first {t} s, last never s, left the lane by 144
-+ centres 192 apart: 4 of 4 arrived, first 9.10 s, last 10.60 s, left the lane by 48
++ centres 192 apart: 2 of 4 arrived, first 7.35 s, last never s, left the lane by 144
 - centres 256 apart: 4 of 4 arrived, first {t} s, last {t} s, left the lane by 112
-+ centres 256 apart: 4 of 4 arrived, first 7.30 s, last 7.35 s, left the lane by 48
++ centres 256 apart: 2 of 4 arrived, first 7.30 s, last never s, left the lane by 48
 - centres 320 apart: 3 of 4 arrived, first {t} s, last never s, left the lane by 112
-+ centres 320 apart: 4 of 4 arrived, first 7.30 s, last 7.30 s, left the lane by 0
++ centres 320 apart: 2 of 4 arrived, first 7.30 s, last never s, left the lane by 48
