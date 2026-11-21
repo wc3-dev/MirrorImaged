@@ -172,6 +172,8 @@ public sealed class LuaMathTests : IDisposable
     [InlineData("3^0.5", "1.73205006")]
     [InlineData("1000000^0.5", "999.991516")]
     [InlineData("0.0001^0.5", "0.00999999791")]
+    [InlineData("math.atan(1, 1) * 4", "3.14159298")]
+    [InlineData("math.atan(1)", "0.785398245")]
     public void Functions(string expression, string game) => Assert.Equal(Expected(game), _lua.Bits(expression));
 
     [Fact]
@@ -184,19 +186,6 @@ public sealed class LuaMathTests : IDisposable
         end
         return true
         """)[0]);
-
-    /// <summary>
-    /// The game's values the model doesn't reproduce (Close): the model's own value is asserted, so the gap to the
-    /// game's stays what the decisions record.
-    /// </summary>
-    [Theory]
-    [InlineData("math.atan(1, 1) * 4", "3.14159298", "3.1415925")]
-    [InlineData("math.atan(1)", "0.785398245", "0.785398126")]
-    public void CloseToTheGame(string expression, string game, string model)
-    {
-        Assert.NotEqual(Expected(game), Expected(model));
-        Assert.Equal(Expected(model), _lua.Bits(expression));
-    }
 
     /// <summary>
     /// How often a cast or Ceiling of a quotient, or a cast of a whole square's root, goes wrong: as often as in the

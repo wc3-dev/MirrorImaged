@@ -6,20 +6,6 @@
 - StringHash <ff> = i 1843378377
 + StringHash <ff> = i -1471725602
 
-# Atan and Atan2 one or two float steps off the game's (D32, D152, Close).
-- Atan 3f800000 = f 3f490fdc 0.785398245 same
-+ Atan 3f800000 = f 3f490fda 0.785398126 same
-- Atan bf800000 = f bf490fdc -0.785398245 same
-+ Atan bf800000 = f bf490fda -0.785398126 same
-- Atan 3f000000 = f 3eed6339 0.463647634 same
-+ Atan 3f000000 = f 3eed6338 0.463647604 same
-- Atan2 3f800000 3f800000 = f 3f490fdc 0.785398245 same
-+ Atan2 3f800000 3f800000 = f 3f490fda 0.785398126 same
-- Atan2 bf800000 bf800000 = f c016cbe4 -2.3561945 same
-+ Atan2 bf800000 bf800000 = f c016cbe3 -2.35619426 same
-- Atan2 40400000 40800000 = f 3f24bc7e 0.643501163 same
-+ Atan2 40400000 40800000 = f 3f24bc7d 0.643501103 same
-
 # The random generator is SplitMix64, not the game's, which isn't known (D46, D86, Close).
 - GetRandomInt 0 99 after seed 42 = 63 11 34 15 77
 + GetRandomInt 0 99 after seed 42 = 74 15 27 34 3
