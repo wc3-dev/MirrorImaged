@@ -224,6 +224,31 @@ public sealed class LuaTestApiTests : IDisposable
         Assert.True(exit == 0, output + error);
     }
 
+    // D820: a Recorded native's call, as the Lua API reads it
+    [InstallFact]
+    public void Sim_recorded_lists_the_recorded_calls()
+    {
+        var path = Map("""SetMapName("Arena") SetEnemyStartLocPrio(0, 1, 2, MAP_LOC_PRIO_LOW)""").Replace('\\', '/');
+        var test = Path.Combine(_folder, "recorded.test.lua");
+        File.WriteAllText(test, $$"""
+            test("recorded calls", function()
+              local calls = mirror.load([[{{path}}]]):recorded()
+              assert_eq(#calls, 2)
+              assert_eq(calls[1].native, "SetMapName")
+              assert_eq(calls[1].step, 0)
+              assert_eq(calls[1].args[1], "Arena")
+              assert_eq(calls[2].native, "SetEnemyStartLocPrio")
+              assert_eq(calls[2].args.n, 4)
+              assert_eq(calls[2].args[3], 2)
+              assert_eq(type(calls[2].args[4]), "number")
+            end)
+            """);
+
+        var (exit, output, error) = CoverageTests.Mirror("test", test);
+
+        Assert.True(exit == 0, output + error);
+    }
+
     [InstallFact]
     public void Mirror_test_prints_each_result_and_writes_junit()
     {

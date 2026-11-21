@@ -29,6 +29,7 @@ end)
 | `sim:log()` | The lines the run printed or showed, as a list of strings: `time print: text` |
 | `sim:stopped()` | The error that stopped the run, or nil |
 | `sim:recording()` | The run so far as JSON, to [replay](recordings.md) |
+| `sim:recorded()` | Every call of a [Recorded](trust-levels.md) native so far, in order: `{step = n, native = "Name", args = {...}}`, a handle as its id and a function as `"function"` |
 | `sim:close()` | Ends the run early |
 
 ## Units

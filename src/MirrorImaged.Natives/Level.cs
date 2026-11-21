@@ -10,7 +10,7 @@ public enum Level
     Close,
 
     /// <summary>
-    /// Changes no game state that maps can read back, beyond what its getters read; the call is logged.
+    /// Changes no game state that maps can read back, beyond what its getters read; the call is kept in the run's record of Recorded calls, apart from its log (D98).
     /// <see cref="NativeAttribute.Reason"/> says why it is not simulated.
     /// </summary>
     Recorded,

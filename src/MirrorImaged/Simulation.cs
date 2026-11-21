@@ -258,6 +258,13 @@ public sealed partial class Simulation : IDisposable
     /// </summary>
     public IReadOnlyList<string> Log => _game.Log;
 
+    /// <summary>
+    /// Every call of a Recorded native, in order: kept apart from <see cref="Log"/>, which is what the map shows (D98, D820).
+    /// </summary>
+    public IReadOnlyList<RecordedCall> RecordedCalls => _recordedCalls;
+
+    readonly List<RecordedCall> _recordedCalls = [];
+
     /// <summary>What stopped the run, if something has: no more of it can run.</summary>
     public LuaException? Stopped { get; private set; }
 
