@@ -114,10 +114,13 @@ public sealed partial class GameNatives
     // The unit's data lists the type among what it builds (ubui), or it is a worker's type without a list
     bool Builds(unit u, int type) => (u.Type.Text(Code("ubui")) ?? "").Split(',', StringSplitOptions.TrimEntries).Contains(Name(type));
 
+    // A neutral shop answers false for an item or a unit it does not sell (probe items-stock, D796); a player's own building takes a unit's id as its train order
+    bool Refuses(unit? shop, int id) => shop is { Owner.Number: >= NeutralAggressive } && (Data.Object(ObjectKind.Item, id) is not null || Data.Object(ObjectKind.Unit, id) is not null);
+
     // Neutral orders go to a unit the neutral player doesn't own, as the shops take them
     [Native(Level.Close, Fact = OrderFacts)]
     public bool IssueNeutralImmediateOrderById(player? forWhichPlayer, unit? neutralStructure, int unitId) =>
-        forWhichPlayer is not null && (neutralStructure is not null && Sells(neutralStructure, unitId) ? Buy(forWhichPlayer, neutralStructure, unitId) : Data.Object(ObjectKind.Item, unitId) is null && Data.Object(ObjectKind.Unit, unitId) is null && Give(neutralStructure, unitId, 0, 0, null, 0));
+        forWhichPlayer is not null && (neutralStructure is not null && Sells(neutralStructure, unitId) ? Buy(forWhichPlayer, neutralStructure, unitId) : !Refuses(neutralStructure, unitId) && Give(neutralStructure, unitId, 0, 0, null, 0));
 
     [Native(Level.Close, Fact = OrderFacts)]
     public bool IssueNeutralImmediateOrder(player? forWhichPlayer, unit? neutralStructure, string? unitToBuild) => unitToBuild is { Length: 4 } code && IssueNeutralImmediateOrderById(forWhichPlayer, neutralStructure, Code(code));
