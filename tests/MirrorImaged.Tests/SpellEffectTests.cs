@@ -187,6 +187,43 @@ public sealed class SpellEffectTests : IDisposable
         Assert.Equal(["armour\t0.0\tspeed\t326.7\tlife\t510.0", "far\t270.0\tfoe\t270.0", "gone\t270.0", "after death\t270.0"], lines);
     }
 
+    // probe units-resets: an aura switched off stops being given and its buff ends with the buff's time; switched on it gives again
+    [Fact]
+    public void An_aura_switched_off_stops_giving_its_buff_and_switched_on_gives_it_again()
+    {
+        var lines = Run("""
+            local hero, ally = make(Player(0)), make(Player(0), 300, 0)
+            UnitAddAbility(hero, FourCC("AOae"))
+            local function at(t, label) TimerStart(CreateTimer(), t, false, function() print(label, f1(GetUnitMoveSpeed(ally))) end) end
+            at(2.2, "on")
+            TimerStart(CreateTimer(), 3.5, false, function() BlzUnitEnableAuras(hero, false, true) end)
+            at(4.4, "1 s after off")
+            at(6, "3 s after off")
+            TimerStart(CreateTimer(), 6.05, false, function() BlzUnitEnableAuras(hero, true, true) end)
+            at(8, "on again")
+            """, 9);
+
+        Assert.Equal(["on\t297.0", "1 s after off\t297.0", "3 s after off\t270.0", "on again\t297.0"], lines);
+    }
+
+    // probe units-resets: the cooldown running on the unit's abilities ends at once
+    [Fact]
+    public void Resetting_cooldowns_ends_those_running_and_lets_the_spell_be_cast_again()
+    {
+        var lines = Run("""
+            local caster, foe = make(Player(0)), make(Player(1), 300, 0)
+            UnitAddAbility(caster, FourCC("AUdc"))
+            IssueTargetOrder(caster, "deathcoil", foe)
+            TimerStart(CreateTimer(), 0.5, false, function()
+                print(f1(BlzGetUnitAbilityCooldownRemaining(caster, FourCC("AUdc"))))
+                UnitResetCooldown(caster)
+                print(f1(BlzGetUnitAbilityCooldownRemaining(caster, FourCC("AUdc"))), IssueTargetOrder(caster, "deathcoil", foe))
+            end)
+            """, 1);
+
+        Assert.Equal(["0.5", "0.0\ttrue"], lines);
+    }
+
     [Fact]
     public void A_summoning_spell_calls_units_that_end_with_their_time_and_fire_the_summon_event()
     {
@@ -203,7 +240,7 @@ public sealed class SpellEffectTests : IDisposable
             TimerStart(CreateTimer(), 30, false, function() print("later", count()) end)
             """, 31);
 
-        Assert.Equal(["summon	Footman	true	true", "summon	Footman	true	true", "summon	Footman	true	true", "summon	Footman	true	true", "summon	Footman	true	true", "count	6", "later	1"], lines);
+        Assert.Equal(["summon\tFootman\ttrue\ttrue", "summon\tFootman\ttrue\ttrue", "summon\tFootman\ttrue\ttrue", "summon\tFootman\ttrue\ttrue", "summon\tFootman\ttrue\ttrue", "count\t6", "later\t1"], lines);
     }
 
     [Fact]
@@ -221,7 +258,7 @@ public sealed class SpellEffectTests : IDisposable
             end)
             """, 2);
 
-        Assert.Equal(["crit	33.0	bash	36.0	plain	11.0	evaded	1000.0"], lines);
+        Assert.Equal(["crit\t33.0\tbash\t36.0\tplain\t11.0\tevaded\t1000.0"], lines);
     }
 
     [Fact]
@@ -242,7 +279,7 @@ public sealed class SpellEffectTests : IDisposable
             TimerStart(CreateTimer(), 40, false, function() print("later", mine()) end)
             """, 41);
 
-        Assert.Equal(["blizzard	90.0	90.0	0.0", "raised	3", "later	1"], lines);
+        Assert.Equal(["blizzard\t90.0\t90.0\t0.0", "raised\t3", "later\t1"], lines);
     }
 
     [Fact]
@@ -260,7 +297,7 @@ public sealed class SpellEffectTests : IDisposable
             TimerStart(CreateTimer(), 16, false, function() print("over", UnitCountBuffsEx(caster, true, false, true, true, true, true, true) > 0, f1(GetUnitState(caster, UNIT_STATE_MAX_LIFE))) end)
             """, 17);
 
-        Assert.Equal(["hexed	Frog	100.0	50.0", "back	Footman	270.0", "morphed	Big	2000.0", "normal	Footman", "avatar	true	1500.0", "over	false	1000.0"], lines);
+        Assert.Equal(["hexed\tFrog\t100.0\t50.0", "back\tFootman\t270.0", "morphed\tBig\t2000.0", "normal\tFootman", "avatar\ttrue\t1500.0", "over\tfalse\t1000.0"], lines);
     }
 
     [Fact]
@@ -281,7 +318,7 @@ public sealed class SpellEffectTests : IDisposable
             TimerStart(CreateTimer(), 9, false, function() print("brilliance", GetUnitState(low, UNIT_STATE_MANA) > 20) end)
             """, 10);
 
-        Assert.Equal(["raised	4", "inferno	50.0	50.0	5", "brilliance	true"], lines);
+        Assert.Equal(["raised\t4", "inferno\t50.0\t50.0\t5", "brilliance\ttrue"], lines);
     }
 
     // Probe abilities-spells: 15 every 0.33 s from the casting time on for the hero duration (9 hits), then 4 a second to the duration's end (6), to
@@ -439,7 +476,7 @@ public sealed class SpellEffectTests : IDisposable
             IssueTargetOrder(attacker, "attack", target)
             TimerStart(CreateTimer(), 3, false, function() print("thorns", GetWidgetLife(attacker) < 1000) end)
             """, 4);
-        Assert.Equal(["thorns	true"], thorns);
+        Assert.Equal(["thorns\ttrue"], thorns);
     }
 
     // Probe abilities-spells: channelled; from DataA seconds in and every second the buildings at the place take DataB and the other foes there are

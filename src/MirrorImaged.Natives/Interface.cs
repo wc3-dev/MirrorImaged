@@ -49,6 +49,8 @@ public partial class button
 {
     internal string Text = "";
     internal int Hotkey;
+    internal bool Quits;
+    internal bool ScoreScreen;
 }
 
 // The boards, quests, timer dialogs and dialogs of the interface (game-facts, "Presentation" and "UI: frames"): what their
@@ -312,7 +314,17 @@ public sealed partial class GameNatives
     [Native(Level.Close, Fact = BoardFacts)]
     public dialog? DialogCreate() => Make(new dialog());
 
-    [Native(Level.Close)] public void DialogDestroy(dialog? whichDialog) => whichDialog?.Buttons.Clear();
+    // What each player is shown, one dialog at a time, and the registrations a click fires: a button's, then its dialog's (D795)
+    readonly Dictionary<player, dialog> _shown = [];
+    readonly List<(dialog? Dialog, button? Button, @event Event)> _dialogEvents = [];
+    (dialog Dialog, button Button)? _clicked;
+
+    [Native(Level.Close)] public void DialogDestroy(dialog? whichDialog) { whichDialog?.Buttons.Clear(); Hide(whichDialog); }
+
+    void Hide(dialog? whichDialog)
+    {
+        foreach (var (shown, _) in _shown.Where(pair => pair.Value == whichDialog).ToList()) _shown.Remove(shown);
+    }
     [Native(Level.Close)] public void DialogClear(dialog? whichDialog) => whichDialog?.Buttons.Clear();
     [Native(Level.Close)] public void DialogSetMessage(dialog? whichDialog, string? messageText) { if (whichDialog is not null) whichDialog.Message = messageText ?? ""; }
 
@@ -326,18 +338,57 @@ public sealed partial class GameNatives
     }
 
     [Native(Level.Close, Fact = BoardFacts)]
-    public button? DialogAddQuitButton(dialog? whichDialog, bool doScoreScreen, string? buttonText, int hotkey) => DialogAddButton(whichDialog, buttonText, hotkey);
+    public button? DialogAddQuitButton(dialog? whichDialog, bool doScoreScreen, string? buttonText, int hotkey)
+    {
+        var added = DialogAddButton(whichDialog, buttonText, hotkey);
+        if (added is not null) (added.Quits, added.ScoreScreen) = (true, doScoreScreen);
+        return added;
+    }
 
-    [Native(Level.Recorded, Reason = "The dialog is drawn and waits for a click, which needs input (wave 6)")]
-    public void DialogDisplay(player? whichPlayer, dialog? whichDialog, bool flag) { }
-
-    /// <summary>Registers but never fires: a click needs a player's input (wave 6).</summary>
+    // Shown until a button is clicked or it is hidden. Close: a probe cannot click, so the click events and what they answer are the documented ones (D795)
     [Native(Level.Close)]
-    public @event? TriggerRegisterDialogEvent(trigger? whichTrigger, dialog? whichDialog) => whichTrigger is null || whichDialog is null ? null : Register(whichTrigger);
+    public void DialogDisplay(player? whichPlayer, dialog? whichDialog, bool flag)
+    {
+        if (whichPlayer is null || whichDialog is null) return;
+        if (flag) _shown[whichPlayer] = whichDialog;
+        else if (_shown.GetValueOrDefault(whichPlayer) == whichDialog) _shown.Remove(whichPlayer);
+    }
 
     [Native(Level.Close)]
-    public @event? TriggerRegisterDialogButtonEvent(trigger? whichTrigger, button? whichButton) => whichTrigger is null || whichButton is null ? null : Register(whichTrigger);
+    public @event? TriggerRegisterDialogEvent(trigger? whichTrigger, dialog? whichDialog)
+    {
+        if (whichTrigger is null || whichDialog is null) return null;
+        var registered = Register(whichTrigger);
+        _dialogEvents.Add((whichDialog, null, registered));
+        return registered;
+    }
 
-    [Native(Level.Close)] public button? GetClickedButton() => null;
-    [Native(Level.Close)] public dialog? GetClickedDialog() => null;
+    [Native(Level.Close)]
+    public @event? TriggerRegisterDialogButtonEvent(trigger? whichTrigger, button? whichButton)
+    {
+        if (whichTrigger is null || whichButton is null) return null;
+        var registered = Register(whichTrigger);
+        _dialogEvents.Add((null, whichButton, registered));
+        return registered;
+    }
+
+    [Native(Level.Close)] public button? GetClickedButton() => _clicked?.Button;
+    [Native(Level.Close)] public dialog? GetClickedDialog() => _clicked?.Dialog;
+
+    // The player clicks a button of the dialog it is shown: the dialog closes, the button's events fire, then the dialog's, and a quit button ends the run
+    internal void Click(player p, int index)
+    {
+        if (!_shown.TryGetValue(p, out var dialog) || index < 0 || index >= dialog.Buttons.Count) return;
+        var button = dialog.Buttons[index];
+        _shown.Remove(p);
+        var outer = _clicked;
+        _clicked = (dialog, button);
+        try
+        {
+            foreach (var (_, registeredButton, registered) in _dialogEvents.Where(e => e.Button == button).ToArray()) Fire(registered, Convert<dialogevent>(90), player: p);
+            foreach (var (registeredDialog, _, registered) in _dialogEvents.Where(e => e.Dialog == dialog).ToArray()) Fire(registered, Convert<dialogevent>(91), player: p);
+        }
+        finally { _clicked = outer; }
+        if (button.Quits) EndGame(button.ScoreScreen);
+    }
 }

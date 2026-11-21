@@ -8,6 +8,7 @@ public partial class unit
     internal unit? AttackTarget;          // the unit it is fighting, by order or by acquiring it
     internal double NextAttack, SwingEnds; // when it may start another attack, and when the one under way lets it move again
     internal long SwingDue;               // the step its next swing is looked at, when one is waited for
+    internal int SwingNumber;             // counts the swings begun and dropped, so that a dropped swing lands nothing
     internal int Weapon;                  // the weapon (0 or 1) the target is attacked with
     internal float PatrolX, PatrolY;      // where a patrol turns back to
     internal float OrderX, OrderY;        // the place of the current order
@@ -225,7 +226,8 @@ public sealed partial class GameNatives
         var from = Seconds - ready < 2 * HalfStep ? ready : Seconds;
         (u.NextAttack, u.SwingEnds) = (from + cooldown, Seconds + point);
         FireUnit(new(t, Other: u), UnitAttacked, PlayerUnitAttacked);
-        _game.At(_game.Step + Math.Max(1, Game.Steps(point)), () => Launch(u, t, weapon));
+        var swing = ++u.SwingNumber;
+        _game.At(_game.Step + Math.Max(1, Game.Steps(point)), () => { if (u.SwingNumber == swing) Launch(u, t, weapon); });
     }
 
     const double HalfStep = 0.5 / Game.StepsPerSecond;

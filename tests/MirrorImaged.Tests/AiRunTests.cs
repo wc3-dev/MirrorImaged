@@ -172,6 +172,37 @@ public sealed class AiRunTests(Xunit.Abstractions.ITestOutputHelper output) : ID
     }
 
     [InstallFact]
+    public void A_paused_ai_script_waits_until_it_is_started_again()
+    {
+        const string Counts = """
+            function main takes nothing returns nothing
+                loop
+                    call SetPlayerState(Player(0), PLAYER_STATE_RESOURCE_GOLD, GetPlayerState(Player(0), PLAYER_STATE_RESOURCE_GOLD) + 1)
+                    call Sleep(1)
+                endloop
+            endfunction
+            """;
+        var data = StandardData.Installed(GameInstall.Require(), null);
+        using var simulation = Simulation.Load(_maps.Build("""
+            function config() end
+            function main()
+                StartMeleeAI(Player(0), "counts.ai")
+                local function gold(label) print(label, GetPlayerState(Player(0), PLAYER_STATE_RESOURCE_GOLD)) end
+                TimerStart(CreateTimer(), 3.5, false, function() PauseCompAI(Player(0), true) end)
+                TimerStart(CreateTimer(), 4, false, function() gold("one") end)
+                TimerStart(CreateTimer(), 8, false, function() gold("two") PauseCompAI(Player(0), false) end)
+                TimerStart(CreateTimer(), 12, false, function() gold("three") end)
+            end
+            """, files: new Dictionary<string, string> { ["counts.ai"] = Counts }), "", data: data);
+        simulation.Advance(TimeSpan.FromSeconds(13));
+
+        Assert.Null(simulation.Stopped);
+        var gold = simulation.Log.Select(line => line.Split('	')).Where(f => f.Length == 2).ToDictionary(f => f[0].Split(' ')[^1], f => int.Parse(f[1]));
+        Assert.Equal(gold["one"], gold["two"]);
+        Assert.True(gold["three"] >= gold["one"] + 3, string.Join("|", simulation.Log));
+    }
+
+    [InstallFact]
     public void An_obsidian_statue_of_the_game_becomes_a_destroyer()
     {
         var data = StandardData.Installed(GameInstall.Require(), null);

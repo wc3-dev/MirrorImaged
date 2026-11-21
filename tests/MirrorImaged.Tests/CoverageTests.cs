@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Reflection;
 using MirrorImaged.Natives;
 
 namespace MirrorImaged.Tests;
@@ -31,6 +32,55 @@ public sealed class CoverageTests
     public void A_level_with_no_natives_counts_zero()
     {
         Assert.Equal(0, Coverage.Of(typeof(object)).Counts[Level.Exact]);
+    }
+
+    // A Close native whose body only returns, or returns a constant, names why that is the game's answer (decisions D791):
+    // otherwise it is a model still to write, or a Recorded native.
+    [Fact]
+    public void A_Close_native_that_answers_a_constant_gives_the_reason()
+    {
+        var unexplained = typeof(GameNatives).GetMethods()
+            .Where(method => method.GetCustomAttribute<NativeAttribute>() is { Level: Level.Close, Reason: null } && AnswersAConstant(method))
+            .Select(method => method.Name)
+            .Order(StringComparer.Ordinal)
+            .ToList();
+
+        Assert.Empty(unexplained);
+    }
+
+    [Fact]
+    public void A_body_that_only_returns_or_returns_a_constant_answers_a_constant()
+    {
+        Assert.True(AnswersAConstant(typeof(SomeNatives).GetMethod(nameof(SomeNatives.Delta))!));
+        Assert.True(AnswersAConstant(typeof(Bodies).GetMethod(nameof(Bodies.Zero))!));
+        Assert.True(AnswersAConstant(typeof(Bodies).GetMethod(nameof(Bodies.Text))!));
+        Assert.False(AnswersAConstant(typeof(Bodies).GetMethod(nameof(Bodies.Same))!));
+    }
+
+    sealed class Bodies
+    {
+        public int Zero() => 0;
+        public string Text() => "a";
+        public int Same(int x) => x;
+    }
+
+    // IL of nops around one load of a constant (or none) and a return
+    static bool AnswersAConstant(MethodInfo method)
+    {
+        var il = method.GetMethodBody()?.GetILAsByteArray() ?? [];
+        var i = 0;
+        while (i < il.Length && il[i] == 0x00) i++;
+        if (i < il.Length && il[i] != 0x2A)
+            i += il[i] switch
+            {
+                0x14 or (>= 0x15 and <= 0x1E) => 1, // ldnull, ldc.i4.m1 to ldc.i4.8
+                0x1F => 2, // ldc.i4.s
+                0x20 or 0x22 or 0x72 => 5, // ldc.i4, ldc.r4, ldstr
+                0x23 => 9, // ldc.r8
+                _ => il.Length,
+            };
+        while (i < il.Length && il[i] == 0x00) i++;
+        return i == il.Length - 1 && il[i] == 0x2A;
     }
 
     [Fact]

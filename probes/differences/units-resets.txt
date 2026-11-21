@@ -1,0 +1,27 @@
+# Where MirrorImaged differs from the game's lines in expected/units-resets.txt, in order, with why (decisions D796): a line starting - is the game's, + MirrorImaged's.
+
+# An aura's giver has its own aura at once in the game (the Tauren reads 275 the moment the ability is added); here every unit with the aura, the giver too, gets the buff with the
+# next pulse of the aura, a second apart (Close).
+- aura now: speed of the footman/the Tauren 270.0/275.0
++ aura now: speed of the footman/the Tauren 270.0/250.0
+
+# Divine Shield's cooldown 0.7 s after it was ordered: 34.30 in the game, 34.81 here: the run starts it 0.51 s later; the cast point of this spell was not measured against the game's (Close).
+- cooldown 1.0 s: left 0.00/34.30, Divine Shield ordered; in the buff 1
++ cooldown 1.0 s: left 0.00/34.81, Divine Shield ordered; in the buff 1
+
+# UnitResetCooldown leaves 0.01 s on a running cooldown in the game, and takes an order meanwhile; here none is left (Close).
+- cooldown after UnitResetCooldown: left 0.00/0.01
++ cooldown after UnitResetCooldown: left 0.00/0.00
+
+# Holy Light's cooldown 0.6 s after the second cast: 4.90 in the game, 4.89 here, a hundredth from the 1/1024 s steps.
+- cooldown 0.6 s after the second cast: left 4.90/0.00, life of the foot 300
++ cooldown 0.6 s after the second cast: left 4.89/0.00, life of the foot 300
+
+# BlzUnitEnableAuras(false, true) at 3 s: the game's buff on the footman was still there 1 s after (it lasts between 1 and 3 s after the last pulse); here it was given at 2 s for 1.6 s and
+# the call came before the pulse of 3 s, so it was gone by then (Close).
+- aura 1 s after off: 297.0/275.0
++ aura 1 s after off: 270.0/250.0
+
+# BlzUnitEnableAuras(true, false) at 6 s: the game gave the Tauren its own at once and the footman's within a second (270 at 0.1 s); here the pulse of 6 s, after the call, gave both at once.
+- aura 0.1 s after on: 270.0/275.0
++ aura 0.1 s after on: 297.0/275.0

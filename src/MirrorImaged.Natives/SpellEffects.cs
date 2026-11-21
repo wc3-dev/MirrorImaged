@@ -6,6 +6,7 @@ namespace MirrorImaged.Natives;
 public partial class unit
 {
     internal bool Illusion;               // an image of Mirror Image
+    internal bool AurasOff;               // BlzUnitEnableAuras(false): it gives no aura
     internal float Deals = 1, Takes = 1;  // what its hits take and what a hit takes from it, times these (an illusion's)
     internal Action<bool>? Channel;       // ends the spell it channels: true when its time is over, false when an order broke it
 }
@@ -362,7 +363,7 @@ public sealed partial class GameNatives
     {
         _aurasScheduled = false;
         var any = false;
-        foreach (var giver in _units.Values.Where(u => !u.Dead && !u.Removed && !u.Constructing && u.Abilities.Count > 0).ToArray())
+        foreach (var giver in _units.Values.Where(u => !u.Dead && !u.Removed && !u.Constructing && !u.AurasOff && u.Abilities.Count > 0).ToArray())
             foreach (var a in giver.Abilities.Where(a => !a.Disabled && a.Level > 0 && AuraBases.Contains(a.Type.BaseId)).ToArray())
             {
                 any = true;

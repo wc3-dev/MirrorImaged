@@ -140,6 +140,9 @@ public sealed partial class Simulation
             case "leave":
                 _natives.Leave(player);
                 break;
+            case "click":
+                _natives.Click(player, input.Ints![0]);
+                break;
             case "act":
                 Act(input, false);
                 break;
@@ -169,6 +172,9 @@ public sealed partial class Simulation
 
     /// <summary>The player presses (<paramref name="kind"/> 305), releases (306) or moves (307) the mouse with the button (1 left, 2 middle, 3 right) at the place.</summary>
     public void Mouse(int player, int kind, int button, float x, float y) => Apply(new(_game.Step, "mouse", player, [kind, button], [x, y]), true);
+
+    /// <summary>The player clicks the button (counting from 0) of the dialog it is shown.</summary>
+    public void Click(int player, int button) => Apply(new(_game.Step, "click", player, [button]), true);
 
     /// <summary>The player leaves the game.</summary>
     public void Leave(int player) => Apply(new(_game.Step, "leave", player), true);

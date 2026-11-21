@@ -22,8 +22,13 @@ public sealed partial class GameNatives
     [Native(Level.Close, Fact = TestRunProbe, Reason = NoAbsorbing)] public item? BlzGetAbsorbingItem() => null;
     [Native(Level.Close, Fact = TestRunProbe, Reason = NoAbsorbing)] public bool BlzGetManipulatedItemWasAbsorbed() => false;
 
-    [Native(Level.Recorded, Reason = "Auras are drawn and counted by abilities, which come with wave 4; nothing reads the switch back")]
-    public void BlzUnitEnableAuras(unit? whichUnit, bool enable, bool affectsUI) { }
+    // Close: a unit whose auras are off gives none; the buffs it gave end with their own time (probe units-resets). The flag that sets what the
+    // aura's buff shows to the player is drawn only.
+    [Native(Level.Close, Fact = "probes/expected/units-resets.txt: aura switch")]
+    public void BlzUnitEnableAuras(unit? whichUnit, bool enable, bool affectsUI)
+    {
+        if (whichUnit is not null) whichUnit.AurasOff = !enable;
+    }
 
     [Native(Level.Close, Fact = TestRunProbe, Reason = "EVENT_GAME_VICTORY never fired in the game (probe events: RemovePlayer's victory, defeat and tie of a computer and of the user), so every read is outside one: nil")]
     public player? GetWinningPlayer() => null;
@@ -36,7 +41,8 @@ public sealed partial class GameNatives
     [Native(Level.Close)]
     public @event? TriggerRegisterTrackableTrackEvent(trigger? whichTrigger, trackable? t) => whichTrigger is null || t is null ? null : Register(whichTrigger);
 
-    [Native(Level.Close)] public trackable? GetTriggeringTrackable() => null;
+    [Native(Level.Close, Reason = "Nil, as outside an event: no trackable event fires (see CreateTrackable, D795)")]
+    public trackable? GetTriggeringTrackable() => null;
 
     // ---- Sync: data sent by the local player reaches the registrations for that prefix a step later (EVENT_PLAYER_SYNC_DATA)
 

@@ -220,15 +220,15 @@ public sealed partial class GameNatives
         foreach (var crater in _craters.Where(c => c.Stopped is null)) (crater.Stopped, crater.StoppedAt, crater.Fade) = (_game.Step, Seconds, 0);
     }
 
-    [Native(Level.Recorded, Reason = "Ripples the ground for a while, which GetLocationZ would show; only the crater is measured and modelled")]
+    [Native(Level.Recorded, Reason = "GetLocationZ read no change at any corner within the radius, 0.25 s to 5 s after a ripple was made and after it was stopped, in a probe run on classic and on Reforged graphics; but it read none for the lasting crater used as the control either, which the 11-09 lines have moving the ground, so that run is no measurement of it; nothing is modelled (D796)")]
     public terraindeformation? TerrainDeformRipple(float x, float y, float radius, float depth, int duration, int count, float spaceWaves, float timeWaves, float radiusStartPct, bool limitNeg) =>
         Make(new terraindeformation());
 
-    [Native(Level.Recorded, Reason = "Shakes the ground at random, which GetLocationZ would show; only the crater is measured and modelled")]
+    [Native(Level.Recorded, Reason = "GetLocationZ read no change at any corner within the radius, 0.25 s to 5 s after a random shake was made and after it was stopped, in a probe run on classic and on Reforged graphics; but it read none for the lasting crater used as the control either, which the 11-09 lines have moving the ground, so that run is no measurement of it; nothing is modelled (D796)")]
     public terraindeformation? TerrainDeformRandom(float x, float y, float radius, float minDelta, float maxDelta, int duration, int updateInterval) =>
         Make(new terraindeformation());
 
-    [Native(Level.Recorded, Reason = "Sends a wave over the ground, which GetLocationZ would show; only the crater is measured and modelled")]
+    [Native(Level.Recorded, Reason = "GetLocationZ read no change at any corner within the radius, 0.25 s to 5 s after a wave was made and after it was stopped, in a probe run on classic and on Reforged graphics; but it read none for the lasting crater used as the control either, which the 11-09 lines have moving the ground, so that run is no measurement of it; nothing is modelled (D796)")]
     public terraindeformation? TerrainDeformWave(float x, float y, float dirX, float dirY, float distance, float speed, float radius, float depth, int trailTime, int count) =>
         Make(new terraindeformation());
 

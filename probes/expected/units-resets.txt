@@ -1,0 +1,22 @@
+# 3.0.1.24371, 11-21 (L-mirror-trust-levels-recorded), classic graphics (War3Preferences hd=0) and Reforged (hd=2), the game giving the same lines in both: the game's lines in four runs, the same but where a ~ line says. Attack times vary with the frame the order lands on, so the attack lines are moving lines (CombatTests checks their shapes).
+aura now: speed of the footman/the Tauren 270.0/275.0
+cooldown: order true, 0.3 s after: Holy Light/Divine Shield left 0.00/0.00, life of the foot 100
+cooldown 1.0 s: left 0.00/34.30, Divine Shield ordered; in the buff 1
+cooldown after UnitResetCooldown: left 0.00/0.01
+cast again: true
+cooldown 0.6 s after the second cast: left 4.90/0.00, life of the foot 300
+aura 3 s: 297.0/275.0
+aura 0.1 s after off: 297.0/275.0
+aura 1 s after off: 297.0/275.0
+aura 3 s after off: 270.0/250.0
+aura 0.1 s after on: 270.0/275.0
+aura 1 s after on: 297.0/275.0
+~ attack plain: ordered true; attacked {t} {t} {t} {t} {t}; hit {t} {t} {t} {t} {t}; order attack/attack
+~ attack interrupt {t} after the attacked event: ordered true; attacked {t} {t} {t} {t} {t}; hit {t} {t} {t} {t} {t}; order /
+~ attack interrupt {t} after the attacked event: ordered true; attacked {t} {t} {t} {t} {t}; hit {t} {t} {t} {t} {t}; order /
+~ attack interrupt {t} after the first hit: ordered true; attacked {t} {t} {t} {t} {t}; hit {t} {t} {t} {t} {t}; order /
+~ attack interrupt {t} after the first hit: ordered true; attacked {t} {t} {t} {t} {t}; hit {t} {t} {t} {t} {t}; order /
+~ attack reset {t} after the attacked event: ordered true; attacked {t} {t} {t} {t} {t}; hit {t} {t} {t} {t} {t}; order attack/attack
+~ attack reset {t} after the first hit: ordered true; attacked {t} {t} {t} {t} {t}; hit {t} {t} {t} {t} {t}; order attack/attack
+~ attack reset {t} after the first hit: ordered true; attacked {t} {t} {t} {t} {t}; hit {t} {t} {t} {t} {t}; order attack/attack
+~ attack interrupt at once: ordered true; attacked {t} {t} {t} {t} {t}; hit {t} {t} {t} {t} {t}; order /

@@ -155,11 +155,32 @@ public sealed partial class GameNatives
     public void BlzSetUnitAttackCooldown(unit? whichUnit, float cooldown, int weaponIndex) =>
         BlzSetUnitWeaponRealField(whichUnit, Convert<unitweaponrealfield>(Code("ua1c")), weaponIndex, cooldown);
 
-    [Native(Level.Recorded, Reason = "Resets an attack in progress, which needs combat (wave 3)")]
-    public void BlzResetUnitAttack(unit? whichUnit, int weaponIndex) { }
+    // A swing under way is dropped (its hit never lands) and its cooldown with it; one after its hit keeps its cooldown (probe units-resets, D796)
+    void DropSwing(unit u, bool clearCooldown)
+    {
+        var swinging = Seconds < u.SwingEnds - HalfStep;
+        if (swinging) u.SwingNumber++;
+        if (swinging || clearCooldown) (u.NextAttack, u.SwingEnds) = (Seconds, Seconds);
+    }
 
-    [Native(Level.Recorded, Reason = "Interrupts an attack in progress, which needs combat (wave 3)")]
-    public void BlzUnitInterruptAttack(unit? whichUnit) { }
+    // Close: the second weapon isn't told apart, and the next swing starts a step after, not in the same instant
+    [Native(Level.Close, Fact = "probes/expected/units-resets.txt: attack reset")]
+    public void BlzResetUnitAttack(unit? whichUnit, int weaponIndex)
+    {
+        if (whichUnit is null) return;
+        DropSwing(whichUnit, true);
+        Wake();
+    }
+
+    // The order ends, and an idle unit goes on to acquire the foe again
+    [Native(Level.Close, Fact = "probes/expected/units-resets.txt: attack interrupt")]
+    public void BlzUnitInterruptAttack(unit? whichUnit)
+    {
+        if (whichUnit is null) return;
+        DropSwing(whichUnit, false);
+        (whichUnit.Order, whichUnit.AttackTarget) = (0, null);
+        Wake();
+    }
 
     /// <summary>
     /// Heals the amount (a negative one takes life: -30 takes 30) and answers it; a nil source heals nothing and answers 0
@@ -203,6 +224,10 @@ public sealed partial class GameNatives
     [Native(Level.Recorded, Reason = "A doodad's colour is drawn; no native reads it back")]
     public void BlzSetSingleDoodadColor(int index, playercolor? whichColor) { }
 
-    [Native(Level.Recorded, Reason = "Cooldowns come with abilities and buffs (wave 4); nothing here reads one back")]
-    public void UnitResetCooldown(unit? whichUnit) { }
+    // Close: the game leaves 0.01 s on a cooldown that was running, and the order is taken meanwhile; here none is left
+    [Native(Level.Close, Fact = "probes/expected/units-resets.txt: cooldown reset")]
+    public void UnitResetCooldown(unit? whichUnit)
+    {
+        if (whichUnit is not null) foreach (var a in whichUnit.Abilities) a.CooldownEnd = 0;
+    }
 }
