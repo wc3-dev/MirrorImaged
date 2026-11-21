@@ -7,7 +7,9 @@ $version = & $zig version
 if ($version -ne '0.17.0') { throw "zig 0.17.0 is needed, found $version" }
 
 $targets = @(
-    @{ Rid = 'win-x64'; Target = 'x86_64-windows-gnu'; File = 'mirrorlua.dll'; Flags = @('-DLUA_BUILD_AS_DLL') }
+    # mirrorlua.rc and the image version: the DLL names what it is, like ordinary software (D830)
+    @{ Rid = 'win-x64'; Target = 'x86_64-windows-gnu'; File = 'mirrorlua.dll'
+       Flags = @('-DLUA_BUILD_AS_DLL', '-Wl,--major-image-version,1', 'mirrorlua.rc') }
     # LUA_USE_POSIX only makes the time functions thread-safe (localtime_r); Windows's are already
     @{ Rid = 'linux-x64'; Target = 'x86_64-linux-gnu.2.17'; File = 'libmirrorlua.so'; Flags = @('-DLUA_USE_POSIX', '-lm') }
     @{ Rid = 'osx-arm64'; Target = 'aarch64-macos'; File = 'libmirrorlua.dylib'
