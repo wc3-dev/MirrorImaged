@@ -186,8 +186,12 @@ public sealed partial class GameNatives
     public unit? CreateUnitAtLocByName(player? id, string? unitname, location? whichLocation, float face) =>
         whichLocation is null || unitname is null || Data.Id(ObjectKind.Unit, unitname) is not { } unitId ? null : CreateUnit(id, unitId, whichLocation.X, whichLocation.Y, face);
 
-    /// <summary>Close: movement comes with wave 3; kept as the unit's flag.</summary>
-    [Native(Level.Recorded, Reason = "Whether a unit collides on its walk; movement comes with wave 3")] public void SetUnitPathing(unit? whichUnit, bool flag) { }
+    /// <summary>Off, the unit walks through other units and they through it. Close: the game's unit also walks through buildings and ground.</summary>
+    [Native(Level.Close)]
+    public void SetUnitPathing(unit? whichUnit, bool flag)
+    {
+        if (whichUnit is not null) whichUnit.NoPathing = !flag;
+    }
 
     [Native(Level.Recorded, Reason = "Construction and upgrade progress are drawn; they come with buildings (wave 3)")] public void UnitSetConstructionProgress(unit? whichUnit, int constructionPercentage) { }
     [Native(Level.Recorded, Reason = "Construction and upgrade progress are drawn; they come with buildings (wave 3)")] public void UnitSetUpgradeProgress(unit? whichUnit, int upgradePercentage) { }

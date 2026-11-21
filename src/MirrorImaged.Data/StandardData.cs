@@ -204,6 +204,9 @@ public sealed partial class StandardData
     /// </summary>
     internal Dictionary<string, string> EditorStrings { get; } = new(StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>Each unit's pathing texture as a footprint, by its path as the tables write it, any case.</summary>
+    internal Dictionary<string, Footprint> Footprints { get; } = new(StringComparer.OrdinalIgnoreCase);
+
     /// <summary>Each destructable's pathing texture's size in cells, across and up, by its path as the tables write it, any case.</summary>
     internal Dictionary<string, (int Across, int Up)> PathingSizes { get; } = new(StringComparer.OrdinalIgnoreCase);
 
@@ -302,6 +305,11 @@ public sealed partial class StandardData
             if (kind == ObjectKind.Destructable && pathing is not null && standard.Cell(pathing, 0) is { } texture && !data.PathingSizes.ContainsKey(texture)
                 && PathingSize(File(texture.Replace('\\', '/'))) is { } size)
                 data.PathingSizes[texture] = size;
+        var unitPathing = data.Fields[ObjectKind.Unit].GetValueOrDefault(Ids.Of("upat"));
+        foreach (var ((kind, _), standard) in data.Objects)
+            if (kind == ObjectKind.Unit && unitPathing is not null && standard.Cell(unitPathing, 0) is { Length: > 4 } texture && !data.Footprints.ContainsKey(texture)
+                && Footprint.Read(File(texture.Replace('\\', '/'))) is { } footprint)
+                data.Footprints[texture] = footprint;
 
         // A hotkey is key='C', and in another language key:deDE='W' (or key:esES,itIT=...); the installed language's first.
         foreach (var (name, keys) in Profile("ui/miscui.txt"))

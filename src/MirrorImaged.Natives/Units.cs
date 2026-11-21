@@ -69,10 +69,11 @@ public sealed partial class GameNatives
         var hero = IsHero(id);
         var u = Make(new unit
         {
-            Type = type, Owner = owner, X = x, Y = y, Skin = skin, HeroLevel = hero ? 1 : 0, Color = owner.Color, Scale = type.Real(ModelScale),
+            Type = type, Owner = owner, X = OnBuildGrid(type, x, true), Y = OnBuildGrid(type, y, false), Skin = skin, HeroLevel = hero ? 1 : 0, Color = owner.Color, Scale = type.Real(ModelScale),
             Facing = new(Angle(face)), FlyHeight = type.Real(Code("umvh")),
         });
         (u.Regenerate, u.Regrown, u.ManaTick) = (Regenerate, RegrownMana, _game.Step / Game.Steps(TickSeconds));
+        if (!corpse) (u.X, u.Y) = Clear(u, u.X, u.Y);
         Arrived(u);
         // A hero's most life and mana count its strength and intelligence (facts, Units: StrHitPointBonus, IntManaBonus)
         u.MaxLife = type.Integer(HitPoints) + (hero ? Data.Constant("StrHitPointBonus", 25) * type.Integer(Strength) : 0);
@@ -102,9 +103,10 @@ public sealed partial class GameNatives
     /// A unit of the type for the player, taking one id, alive, at full life, at the place and facing given, held in the
     /// world (from its west and south edges to 32 short of its east and north ones, probe units-bounds), entering the
     /// regions there; nil for an id that is no unit's (an item's, a destructable's, an ability's, 0) and for no player
-    /// (probe units). Close: the game moves a ground unit made where others stand off them, and one near the map's edge
-    /// off it, by its pathing (wave 3), and keeps a facing outside 0 to 360 a little otherwise (decisions D223, D224,
-    /// D273).
+    /// (probe units). A ground unit made on a footprint or near another unit stands at the nearest place clear of them, as
+    /// SetUnitPosition puts it, and a building stands on the build grid (probes units-path-stamp, units-path-room). Close:
+    /// where the game's goes is not that place, it moves one near the map's edge off it, and keeps a facing outside 0 to 360 a
+    /// little otherwise (decisions D223, D224, D273).
     /// </summary>
     [Native(Level.Close)]
     public unit? CreateUnit(player? id, int unitid, float x, float y, float face) => Create(id, unitid, x, y, face, unitid);

@@ -39,6 +39,9 @@ public sealed partial class GameNatives
         return _cells;
     }
 
+    static bool Inside((float MinX, float MinY, float MaxX, float MaxY) bounds, float x, float y) =>
+        x >= bounds.MinX && x <= bounds.MaxX && y >= bounds.MinY && y <= bounds.MaxY;
+
     // The cell the point falls in, or -1 outside the grid
     int CellAt(float x, float y)
     {
@@ -69,7 +72,7 @@ public sealed partial class GameNatives
     {
         if (t is null) return false;
         var cell = CellAt(x, y);
-        if (cell < 0) return Data.Terrain is not null;
+        if (cell < 0) return Data.Terrain is { } terrain && (PathSize(terrain) is not null || !Inside(terrain.Bounds, x, y));
         return Cells() is { } cells && (cells[cell] & Mask(t)) != 0;
     }
 

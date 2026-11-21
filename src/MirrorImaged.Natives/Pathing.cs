@@ -1,3 +1,5 @@
+using MirrorImaged.Data;
+
 namespace MirrorImaged.Natives;
 
 public partial class unit
@@ -6,6 +8,8 @@ public partial class unit
     internal (float X, float Y)? NoWayTo;                   // a place a search found no way toward, and until when
     internal double NoWayUntil, ReplanAt;
     internal (float X, float Y)? PathGoal;                  // where that path leads
+    internal bool NoPathing;                                // SetUnitPathing off: it walks through units and others through it
+    internal double WaitingSince = -1;                      // when another unit stopped its walk, -1 while it walks
 }
 
 // Finding a way round what blocks a walker: the unwalkable cells of the map and the buildings standing in the way, on the 32 grid of the
@@ -15,6 +19,7 @@ public partial class unit
 public sealed partial class GameNatives
 {
     const float SearchCell = 32;
+    static readonly int UnitPathTexture = Code("upat");
     const int PathNodes = 40000;
     // The search leans toward the goal, finding a way sooner at the cost of a way a little longer than the shortest
     const float HeuristicWeight = 2f;
@@ -22,7 +27,7 @@ public sealed partial class GameNatives
 
     // Whether a building (not one the unit is working on or standing inside) is in the way at the place. The buildings are listed again once in a
     // tick, in a grid of squares of 256, as the search for a path asks about thousands of places
-    readonly Dictionary<(int, int), List<(unit Building, float X, float Y, float Reach)>> _buildingGrid = [];
+    readonly Dictionary<(int, int), List<(unit Building, float X, float Y, float Reach, Footprint? Footprint)>> _buildingGrid = [];
     long _buildingGridAt = -1;
     int _buildingGridOf;
 
@@ -34,27 +39,66 @@ public sealed partial class GameNatives
             _buildingGrid.Clear();
             foreach (var b in _units.Values.Where(b => !b.Dead && !b.Removed && IsBuildingNow(b)))
             {
-                var reach = b.Type.Real(Collision) + 8;
+                var footprint = b.Type.Text(UnitPathTexture) is { Length: > 4 } texture ? Data.Footprint(texture) : null;
+                var reach = footprint is null ? b.Type.Real(Collision) + 8 : 16 * MathF.Max(footprint.Across, footprint.Up) + 64;
                 for (var cx = (int)MathF.Floor((b.X - reach) / 256); cx <= (int)MathF.Floor((b.X + reach) / 256); cx++)
                     for (var cy = (int)MathF.Floor((b.Y - reach) / 256); cy <= (int)MathF.Floor((b.Y + reach) / 256); cy++)
                     {
                         if (!_buildingGrid.TryGetValue((cx, cy), out var list)) _buildingGrid[(cx, cy)] = list = [];
-                        list.Add((b, b.X, b.Y, reach));
+                        list.Add((b, b.X, b.Y, reach, footprint));
                     }
             }
         }
         if (!_buildingGrid.TryGetValue(((int)MathF.Floor(x / 256), (int)MathF.Floor(y / 256)), out var near)) return false;
-        foreach (var (b, bx, by, reach) in near)
+        var (below, above) = Extent(u);
+        foreach (var (b, bx, by, reach, footprint) in near)
         {
             if (b == u || b.Dead || b.Removed) continue;
             if (b == u.OrderTarget || b == u.AttackTarget || b == u.Building || b == u.HarvestTarget) continue;
             // A worker bringing its load walks up to its own town hall
             if (u.Order == OrderReturn && b.Owner == u.Owner && IsTownHall(b)) continue;
+            if (footprint is not null)
+            {
+                if (!OnFootprint(footprint, bx, by, below, above, x, y) || OnFootprint(footprint, bx, by, below, above, u.X, u.Y)) continue;
+                return true;
+            }
             if (Distance2(bx - x, by - y) > reach * reach) continue;
             // A unit already inside may walk out
             if (Distance2(bx - u.X, by - u.Y) <= reach * reach) continue;
             return true;
         }
+        return false;
+    }
+
+    // A building made stands on the build grid: its footprint's corner on the grid of 64, the place moved toward 0 (probe units-path-stamp: a
+    // barracks made at 40, 40 stands at 0, 0, at -50, 70 at 0, 64; an altar, 10 cells across, at 0, 0 at 32, 32)
+    float OnBuildGrid(GameObject type, float at, bool x)
+    {
+        if (type.Integer(IsBuilding) == 0 || type.Text(UnitPathTexture) is not { Length: > 4 } texture || Data.Footprint(texture) is not { } footprint) return at;
+        var odd = (x ? footprint.Across : footprint.Up) / 2 % 2 == 1 ? 32 : 0;
+        return MathF.Truncate((at - odd) / 64) * 64 + odd;
+    }
+
+    // A ground unit's square against footprints, below and above its place on each axis: 32 a cell, a cell for each 16 of its collision (at
+    // least one), and an even number of cells set 16 up and right (probe units-path-stamp-2: a peasant and a footman 16 each way, a knight 16
+    // below and 48 above, an abomination 48 and 48)
+    static (float Below, float Above) Extent(unit u)
+    {
+        var cells = Cells(u);
+        var shift = cells % 2 == 0 ? 16 : 0;
+        return (16 * cells - shift, 16 * cells + shift);
+    }
+
+    // Whether a unit at the place stands on the building's footprint: its square meets an unwalkable cell of the pathing texture, a square of
+    // 32 a cell set 16 up and to the right of the building's place (probe units-path-stamp)
+    static bool OnFootprint(Footprint footprint, float bx, float by, float below, float above, float x, float y)
+    {
+        var (left, bottom) = (bx - footprint.Across * 16 + 16, by - footprint.Up * 16 + 16);
+        int c0 = (int)MathF.Floor((x - below - left) / 32), c1 = (int)MathF.Floor((x + above - left) / 32);
+        int r0 = (int)MathF.Floor((y - below - bottom) / 32), r1 = (int)MathF.Floor((y + above - bottom) / 32);
+        for (var c = c0; c <= c1; c++)
+            for (var r = r0; r <= r1; r++)
+                if (footprint.Unwalkable(c, r)) return true;
         return false;
     }
 
@@ -86,13 +130,15 @@ public sealed partial class GameNatives
         var (nx, ny) = left <= step ? (tx, ty) : (u.X + dx / left * step, u.Y + dy / left * step);
         if (!Blocked(u, nx, ny))
         {
+            if (UnitInTheWay(u, nx, ny) is { } other) return GoRound(u, other, dx / left, dy / left, step, x, y);
+            u.WaitingSince = -1;
             if (left > 0) u.Facing.Go(MathF.Atan2(dy, dx), Seconds, 0);
             Move(u, nx, ny);
             return true;
         }
-        // On a found way, a step that clips what the way goes round slides along it: the part of the step along one axis
+        // On a found way, a step that clips what the way goes round slides along it: a step along one axis, as far as the waypoint
         if (u.Path.Count > 0)
-            foreach (var (sx, sy) in new[] { (nx, u.Y), (u.X, ny) })
+            foreach (var (sx, sy) in new[] { (u.X + Math.Clamp(tx - u.X, -step, step), u.Y), (u.X, u.Y + Math.Clamp(ty - u.Y, -step, step)) })
                 if ((sx != u.X || sy != u.Y) && !Blocked(u, sx, sy))
                 {
                     Move(u, sx, sy);
@@ -114,6 +160,103 @@ public sealed partial class GameNatives
         u.Path.AddRange(way);
         return true;
     }
+
+    // Units keep room from each other (probes units-path-gap, units-path-room): a ground unit standing in the world, not a building,
+    // and not a worker on its gathering round, which the game's pass through each other at the mine
+    bool Collides(unit u) => !u.Dead && !u.Removed && !u.Hidden && !u.NoPathing && u.Transport is null && !u.Locust && u.Order is not (OrderHarvest or OrderReturn);
+
+    const float UnitSquare = 256;
+    readonly Dictionary<(int, int), List<unit>> _unitGrid = [];
+    long _unitGridAt = -1;
+
+    // The unit whose room the step would enter, stepping toward it (a unit may always step aside or away from one it overlaps); null for none.
+    // The grid is listed once a tick and the places read as they are, as no two units keep more room than a square
+    unit? UnitInTheWay(unit u, float x, float y)
+    {
+        if (!Collides(u) || Flies(u)) return null;
+        if (_unitGridAt != _ticks)
+        {
+            _unitGridAt = _ticks;
+            _unitGrid.Clear();
+            foreach (var o in _units.Values)
+                if (Collides(o) && !Flies(o) && !IsBuildingNow(o))
+                {
+                    var square = ((int)MathF.Floor(o.X / UnitSquare), (int)MathF.Floor(o.Y / UnitSquare));
+                    if (!_unitGrid.TryGetValue(square, out var list)) _unitGrid[square] = list = [];
+                    list.Add(o);
+                }
+        }
+        // A walker held up a second passes units that walk, two seconds all of them: the game's group goes through a gap one by one
+        var waited = u.WaitingSince < 0 ? 0 : Seconds - u.WaitingSince;
+        if (waited > 2) return null;
+        var (sx, sy) = ((int)MathF.Floor(x / UnitSquare), (int)MathF.Floor(y / UnitSquare));
+        for (var cx = sx - 1; cx <= sx + 1; cx++)
+            for (var cy = sy - 1; cy <= sy + 1; cy++)
+                if (_unitGrid.TryGetValue((cx, cy), out var near))
+                    foreach (var o in near)
+                    {
+                        if (o == u || o == u.OrderTarget || o == u.AttackTarget || !Collides(o) || waited > 1 && o.Order != 0) continue;
+                        if (Apart(o, x, y) < Room(u, o) && (o.X - u.X) * (x - u.X) + (o.Y - u.Y) * (y - u.Y) > 0.01f) return o;
+                    }
+        return null;
+    }
+
+    // A unit in the way: the walker steps aside, turning as little as it can to the side away from it, and waits when it can't
+    bool GoRound(unit u, unit other, float ux, float uy, float step, float x, float y)
+    {
+        // A unit standing on the place: the walker makes for the nearest place clear of it, and ends there
+        if (other.Order == 0 && Apart(other, x, y) < Room(u, other))
+        {
+            var (fx, fy) = Clear(u, x, y);
+            if (Distance2(fx - u.X, fy - u.Y) <= step * step || u.Path.Count == 1 && u.Path[0] == (fx, fy)) return Finish(u);
+            u.Path.Clear();
+            u.Path.Add((fx, fy));
+            return true;
+        }
+        var away = (other.X - u.X) * uy - (other.Y - u.Y) * ux > 0 ? 1 : -1;
+        foreach (var turn in SideTurns)
+            foreach (var side in new[] { away, -away })
+            {
+                var (c, s) = (MathF.Cos(turn * side), MathF.Sin(turn * side));
+                var (nx, ny) = (u.X + (ux * c - uy * s) * step, u.Y + (ux * s + uy * c) * step);
+                if (Blocked(u, nx, ny) || UnitInTheWay(u, nx, ny) is not null) continue;
+                u.Facing.Go(MathF.Atan2(ny - u.Y, nx - u.X), Seconds, 0);
+                Move(u, nx, ny);
+                u.WaitingSince = -1;
+                return true;
+            }
+        if (u.WaitingSince < 0) u.WaitingSince = Seconds;
+        return true;
+    }
+
+    // The room two ground units keep, across or up: 16 for each of their cells and 32 more (probe units-path-room: two footmen 64, two knights
+    // 96, two abominations 128); a walker passes an idle unit as wide, give or take 12 (probe units-path-spacing)
+    static float Room(unit u, unit o) => 16 * (Cells(u) + Cells(o)) + 32;
+
+    static int Cells(unit u) => Math.Max(1, (int)(u.Type.Real(Collision) / 16));
+
+    static float Apart(unit o, float x, float y) => MathF.Max(MathF.Abs(o.X - x), MathF.Abs(o.Y - y));
+
+    // Where SetUnitPosition puts a ground unit: the place, or the nearest one round it, every 16 ring by ring, off footprints and unwalkable
+    // ground and out of the room other units keep from it
+    (float X, float Y) Clear(unit u, float x, float y)
+    {
+        if (!Collides(u) || Flies(u) || IsBuildingNow(u)) return (x, y);
+        var others = _units.Values.Where(o => o != u && Collides(o) && !Flies(o) && !IsBuildingNow(o)).ToList();
+        bool Free(float px, float py) => !Blocked(u, px, py) && !others.Any(o => Apart(o, px, py) < Room(u, o));
+        for (var ring = 0; ring <= 32; ring++)
+        {
+            var round = new List<(int, int)>();
+            for (var dx = -ring; dx <= ring; dx++)
+                for (var dy = -ring; dy <= ring; dy++)
+                    if (Math.Max(Math.Abs(dx), Math.Abs(dy)) == ring) round.Add((dx, dy));
+            foreach (var (dx, dy) in round.OrderBy(d => d.Item1 * d.Item1 + d.Item2 * d.Item2).ThenBy(d => d.Item2).ThenBy(d => d.Item1))
+                if (Free(x + dx * 16, y + dy * 16)) return (x + dx * 16, y + dy * 16);
+        }
+        return (x, y);
+    }
+
+    static readonly float[] SideTurns = [MathF.PI / 6, MathF.PI / 3, MathF.PI / 2];
 
     // Whether something stops the unit on the straight line between two places, looked at every 8
     bool LineBlocked(unit u, float x0, float y0, float x1, float y1)
