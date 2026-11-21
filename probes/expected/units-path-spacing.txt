@@ -1,0 +1,17 @@
+# probes/units-path-spacing.lua on 3.0.1.24371, single player, Reforged graphics (hd=2), 11-21: the game's lines, one run. The pathing textures and unit data are the same files in both modes.
+hfoo past hfoo: nearest 66, left its line by 72, idle one moved 0, arrived
+hfoo put on hfoo: stands 58 from it
+hpea past hpea: nearest 52, left its line by 56, idle one moved 0, arrived
+hpea put on hpea: stands 74 from it
+hkni past hkni: nearest 104, left its line by 104, idle one moved 0, arrived
+hkni put on hkni: stands 100 from it
+uabo past uabo: nearest 120, left its line by 120, idle one moved 0, arrived
+uabo put on uabo: stands 158 from it
+hfoo past uabo: nearest 104, left its line by 104, idle one moved 0, arrived
+hfoo put on uabo: stands 100 from it
+hpea past hfoo: nearest 52, left its line by 56, idle one moved 0, arrived
+hpea put on hfoo: stands 74 from it
+ewsp past ewsp: nearest 64, left its line by 72, idle one moved 0, arrived
+ewsp put on ewsp: stands 58 from it
+hpea past uabo: nearest 88, left its line by 88, idle one moved 0, arrived
+hpea put on uabo: stands 114 from it

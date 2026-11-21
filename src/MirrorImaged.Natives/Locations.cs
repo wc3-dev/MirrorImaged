@@ -160,14 +160,16 @@ public sealed partial class GameNatives
         whichLocation is null ? null : CreateUnit(id, unitid, whichLocation.X, whichLocation.Y, face);
 
     /// <summary>
-    /// Moves the unit, held in the world as CreateUnit holds a unit made off it, firing the regions' events. Close: the
-    /// game also moves a ground unit off the map's edge and off other units and buildings, by its pathing (wave 3), and
-    /// stops its order.
+    /// Moves the unit, held in the world as CreateUnit holds a unit made off it, firing the regions' events; a ground unit
+    /// put on a building's footprint, unwalkable ground or near another unit goes to the nearest place clear of them (probes
+    /// units-path-stamp, units-path-room). Close: where the game's goes is not that place, and the game stops its order.
     /// </summary>
     [Native(Level.Close)]
     public void SetUnitPosition(unit? whichUnit, float newX, float newY)
     {
-        if (whichUnit is not null) Move(whichUnit, Held(newX, true), Held(newY, false));
+        if (whichUnit is null) return;
+        var (x, y) = Clear(whichUnit, Held(newX, true), Held(newY, false));
+        Move(whichUnit, x, y);
     }
 
     /// <summary>As SetUnitPosition; nil moves nothing.</summary>

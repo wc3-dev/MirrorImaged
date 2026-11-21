@@ -14,9 +14,17 @@ public sealed class PathingTests : IDisposable
     static Dictionary<string, string> Values(string pairs) =>
         pairs.Split(';', StringSplitOptions.TrimEntries).Select(pair => pair.Split('=', 2)).ToDictionary(pair => pair[0], pair => pair[1]);
 
-    static StandardData Standard() => new StandardData()
-        .Add(ObjectKind.Unit, "hfoo", Values("unam=Footman;uhpm=100;umvs=320;umvt=foot;uaen=0;ucol=31"))
-        .Add(ObjectKind.Unit, "hbar", Values("unam=Barracks;uhpm=1500;ubdg=1;ucol=100;umvs=0"));
+    static StandardData Standard()
+    {
+        var data = new StandardData()
+            .Add(ObjectKind.Unit, "hfoo", Values("unam=Footman;uhpm=100;umvs=320;umvt=foot;uaen=0;ucol=31"))
+            .Add(ObjectKind.Unit, "hbar", Values("unam=Barracks;uhpm=1500;ubdg=1;ucol=100;umvs=0"))
+            .Add(ObjectKind.Unit, "hhou", Values(@"unam=Farm;uhpm=500;ubdg=1;ucol=72;umvs=0;upat=PathTexturesx4SimpleSolid.tga"))
+            .Add(ObjectKind.Unit, "halt", Values(@"unam=Altar;uhpm=900;ubdg=1;ucol=144;umvs=0;upat=PathTexturesx10Simple.tga"));
+        data.Footprints[@"PathTexturesx4SimpleSolid.tga"] = new Footprint(4, 4, [.. Enumerable.Repeat(true, 16)]);
+        data.Footprints[@"PathTexturesx10Simple.tga"] = new Footprint(10, 10, [.. Enumerable.Range(0, 100).Select(i => i % 10 is >= 2 and < 8 && i / 10 is >= 2 and < 8)]);
+        return data;
+    }
 
     // a wall of unwalkable cells at x 300 to 364, from y -400 to 400, in the pathing file (cells of 32 from the world's edge, -2048)
     static void Wall(Map map)
@@ -100,5 +108,77 @@ public sealed class PathingTests : IDisposable
             """, 9);
 
         Assert.Equal(["end	true	0"], lines);
+    }
+
+    [Fact]
+    public void A_building_made_stands_with_its_footprints_corner_on_the_grid_of_64()
+    {
+        var lines = Run("""
+            for _, at in ipairs({ { "hhou", 40, 40 }, { "hhou", -50, 70 }, { "halt", 0, 0 }, { "hfoo", 40, 40 } }) do
+              local b = CreateUnit(Player(0), FourCC(at[1]), at[2], at[3], 270)
+              print(at[1], f0(GetUnitX(b)), f0(GetUnitY(b)))
+            end
+            """, 0.1);
+
+        Assert.Equal(["hhou	0	0", "hhou	0	64", "halt	32	32", "hfoo	40	40"], lines);
+    }
+
+    [Fact]
+    public void A_footman_keeps_16_off_a_footprint_and_passes_one_its_line_misses()
+    {
+        // The farm's footprint, 16 up and right of its place, is -48 to 80 each way: the line at y 100 clears it by 20, more than a footman's 16
+        var lines = Run("""
+            CreateUnit(Player(0), FourCC("hhou"), 0, 0, 270)
+            local a = CreateUnit(Player(0), FourCC("hfoo"), -600, 100, 0)
+            local b = CreateUnit(Player(0), FourCC("hfoo"), -600, -600, 0)
+            IssuePointOrder(a, "move", 600, 100)
+            IssuePointOrder(b, "move", 600, 600)
+            local far, near = 0, 9999
+            TimerStart(CreateTimer(), 0.05, true, function()
+              far = math.max(far, math.abs(GetUnitY(a) - 100))
+              near = math.min(near, math.max(math.abs(GetUnitX(b) - 16), math.abs(GetUnitY(b) - 16)))
+            end)
+            TimerStart(CreateTimer(), 6, false, function() print(f0(GetUnitX(a)), f0(GetUnitY(a)), far, f0(GetUnitX(b)), f0(GetUnitY(b)), near >= 64 + 16) end)
+            """, 7);
+
+        Assert.Equal(["600	100	0	600	600	true"], lines);
+    }
+
+    [Fact]
+    public void A_walker_goes_round_a_unit_standing_in_its_way_and_one_with_pathing_off_walks_through()
+    {
+        var lines = Run("""
+            local still = CreateUnit(Player(0), FourCC("hfoo"), 0, 0, 0)
+            local a = CreateUnit(Player(0), FourCC("hfoo"), -600, 0, 0)
+            local ghost = CreateUnit(Player(0), FourCC("hfoo"), -600, 300, 0)
+            CreateUnit(Player(0), FourCC("hfoo"), 0, 300, 0)
+            SetUnitPathing(ghost, false)
+            IssuePointOrder(a, "move", 600, 0)
+            IssuePointOrder(ghost, "move", 600, 300)
+            local near, far = 9999, 0
+            TimerStart(CreateTimer(), 0.05, true, function()
+              near = math.min(near, SquareRoot((GetUnitX(a) - GetUnitX(still)) ^ 2 + (GetUnitY(a) - GetUnitY(still)) ^ 2))
+              far = math.max(far, math.abs(GetUnitY(ghost) - 300))
+            end)
+            TimerStart(CreateTimer(), 6, false, function() print(f0(GetUnitX(a)), f0(GetUnitY(a)), near >= 62, f0(GetUnitX(still)), f0(GetUnitY(still)), f0(GetUnitX(ghost)), far) end)
+            """, 7);
+
+        Assert.Equal(["600	0	true	0	0	600	0"], lines);
+    }
+
+    [Fact]
+    public void A_walker_sent_where_a_unit_stands_stops_next_to_it()
+    {
+        var lines = Run("""
+            local still = CreateUnit(Player(0), FourCC("hfoo"), 0, 0, 0)
+            local a = CreateUnit(Player(0), FourCC("hfoo"), -600, 0, 0)
+            IssuePointOrder(a, "move", 0, 0)
+            TimerStart(CreateTimer(), 4, false, function()
+              local d = SquareRoot((GetUnitX(a) - GetUnitX(still)) ^ 2 + (GetUnitY(a) - GetUnitY(still)) ^ 2)
+              print(GetUnitCurrentOrder(a), d >= 62 and d < 80)
+            end)
+            """, 5);
+
+        Assert.Equal(["0	true"], lines);
     }
 }

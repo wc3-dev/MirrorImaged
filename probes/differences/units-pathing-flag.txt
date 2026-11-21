@@ -2,7 +2,8 @@
 
 # Units do not collide with each other in the run (no unit collision yet: the unit collision lane's work), so a footman with its pathing on walks straight through the wall too, as
 # it does with SetUnitPathing(u, false), whose flag is kept on the unit and read by nothing yet.
+# Units made in a row stand apart by their room (D786), so the held row is 256 across; the footman waits 2 s at it and passes (D784), straying 75 where the game's goes round by 140.
 - pathing on: got through true, strayed -140 to 0
-+ pathing on: got through true, strayed 0 to 0
++ pathing on: got through true, strayed -75 to 0
 - pathing off then on at 0.5 s: got through true, strayed -155 to 0
-+ pathing off then on at 0.5 s: got through true, strayed 0 to 0
++ pathing off then on at 0.5 s: got through true, strayed -75 to 0

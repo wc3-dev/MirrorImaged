@@ -172,13 +172,56 @@ public sealed partial class GameNatives
     public int GetEnemyPower() =>
         _units.Values.Count(u => !u.Dead && !u.Removed && !IsBuildingNow(u) && u.Owner != Ai && GetPlayerId(u.Owner) < 24 && IsPlayerEnemy(Ai, u.Owner) && u.Type.Integer(WeaponsOn) != 0);
 
-    // The gold mine nearest the AI player's first town that is nobody's and that no town hall stands within reach of, or none
+    // The gold mine nearest the AI player's first town that is nobody's and that no town hall stands within reach of, one its land reaches
+    // first (D789), or none
     unit? FreeMine()
     {
         var home = Towns() is [var town, ..] ? town : WarOf(Ai).Home;
         var halls = _units.Values.Where(h => !h.Dead && !h.Removed && IsTownHall(h)).ToList();
+        var land = LandOf(home.Item1, home.Item2);
         return _units.Values.Where(m => !m.Dead && !m.Removed && GetResourceAmount(m) > 0 && GetPlayerId(m.Owner) >= 24 && !halls.Any(h => Distance2(h.X - m.X, h.Y - m.Y) <= TownReach * TownReach))
-            .OrderBy(m => Distance2(m.X - home.Item1, m.Y - home.Item2)).FirstOrDefault();
+            .OrderBy(m => land is null || OnLand(land, m.X, m.Y) ? 0 : 1).ThenBy(m => Distance2(m.X - home.Item1, m.Y - home.Item2)).FirstOrDefault();
+    }
+
+    // The walkable cells of the pathing grid joined to a place, by eight neighbours as a walker's search goes; found once a place, as the
+    // ground seldom changes. Null on a map with no ground
+    readonly Dictionary<(float, float), (float Left, float Bottom, int Columns, bool[] Reached)?> _lands = [];
+
+    (float Left, float Bottom, int Columns, bool[] Reached)? LandOf(float x, float y)
+    {
+        if (_lands.TryGetValue((x, y), out var known)) return known;
+        if (Data.Terrain is not { } terrain) return _lands[(x, y)] = null;
+        var (minX, minY, maxX, maxY) = terrain.Bounds;
+        int columns = (int)((maxX - minX) / SearchCell) + 1, rows = (int)((maxY - minY) / SearchCell) + 1;
+        var walk = Convert<pathingtype>(1);
+        bool Open(int c, int r) => c >= 0 && r >= 0 && c < columns && r < rows && !IsTerrainPathable(minX + (c + 0.5f) * SearchCell, minY + (r + 0.5f) * SearchCell, walk);
+        var reached = new bool[columns * rows];
+        var start = (Math.Clamp((int)((x - minX) / SearchCell), 0, columns - 1), Math.Clamp((int)((y - minY) / SearchCell), 0, rows - 1));
+        var queue = new Queue<(int C, int R)>();
+        queue.Enqueue(start);
+        reached[start.Item2 * columns + start.Item1] = true;
+        while (queue.TryDequeue(out var here))
+            for (var dr = -1; dr <= 1; dr++)
+                for (var dc = -1; dc <= 1; dc++)
+                {
+                    var (c, r) = (here.C + dc, here.R + dr);
+                    if (c < 0 || r < 0 || c >= columns || r >= rows || reached[r * columns + c] || !Open(c, r)) continue;
+                    if (dc != 0 && dr != 0 && (!Open(here.C + dc, here.R) || !Open(here.C, here.R + dr))) continue;
+                    reached[r * columns + c] = true;
+                    queue.Enqueue((c, r));
+                }
+        return _lands[(x, y)] = (minX, minY, columns, reached);
+    }
+
+    // Whether the land reaches within 192 of the place (a gold mine's own cells are not walkable)
+    static bool OnLand((float Left, float Bottom, int Columns, bool[] Reached)? land, float x, float y)
+    {
+        var (left, bottom, columns, reached) = land!.Value;
+        int c0 = (int)((x - left) / SearchCell), r0 = (int)((y - bottom) / SearchCell);
+        for (var dc = -6; dc <= 6; dc++)
+            for (var dr = -6; dr <= 6; dr++)
+                if (c0 + dc >= 0 && r0 + dr >= 0 && c0 + dc < columns && (r0 + dr) * columns + c0 + dc < reached.Length && reached[(r0 + dr) * columns + c0 + dc]) return true;
+        return false;
     }
 
     // The creeps stand near the place: living units of the neutral aggressive player, a building not counted

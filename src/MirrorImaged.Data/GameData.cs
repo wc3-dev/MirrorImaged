@@ -160,6 +160,16 @@ public sealed class GameData
         return size;
     }
 
+    /// <summary>A unit's pathing texture as a footprint: the map's own file of that path (a TGA) first, then the game's; null for none.</summary>
+    public Footprint? Footprint(string path)
+    {
+        if (!_footprints.TryGetValue(path, out var footprint))
+            _footprints[path] = footprint = Data.Footprint.Read(Map?.File(path)) ?? Standard.Footprints.GetValueOrDefault(path);
+        return footprint;
+    }
+
+    readonly Dictionary<string, Footprint?> _footprints = new(StringComparer.OrdinalIgnoreCase);
+
     /// <summary>The first file of a sound label of the game's sound tables (<c>QuestNew</c>, any case) as written; null for a label they don't have.</summary>
     public string? SoundLabelFile(string label) => Standard.Sounds.TryGetValue(label, out var files) ? Tables.Entries(files)[0] : null;
 

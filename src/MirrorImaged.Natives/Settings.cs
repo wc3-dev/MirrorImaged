@@ -205,8 +205,8 @@ public sealed partial class GameNatives
     public unit? CreateUnitAtLocByName(player? id, string? unitname, location? whichLocation, float face) =>
         whichLocation is null || unitname is null || Data.Id(ObjectKind.Unit, unitname) is not { } unitId ? null : CreateUnit(id, unitId, whichLocation.X, whichLocation.Y, face);
 
-    // Kept on the unit for the collision code to read (D799); nothing reads it yet
-    [Native(Level.Recorded, Reason = "Whether a unit collides on its walk; the flag is kept on the unit (PathingOff), and the walking code that would read it is the unit collision work's (D799)")]
+    /// <summary>Off, the unit walks through other units and they through it. Close: the game's unit also walks through buildings and ground.</summary>
+    [Native(Level.Close)]
     public void SetUnitPathing(unit? whichUnit, bool flag)
     {
         if (whichUnit is not null) whichUnit.PathingOff = !flag;

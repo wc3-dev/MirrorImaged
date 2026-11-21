@@ -153,7 +153,7 @@ public sealed class AiTownTests : IDisposable
             local hostile = Player(PLAYER_NEUTRAL_AGGRESSIVE)
             local moved = CreateUnit(hostile, id("ngno"), 0, 3000, 0)
             local freed = CreateUnit(hostile, id("ngno"), 0, 4000, 0)
-            local posted = CreateUnit(hostile, id("ngno"), 0, 5000, 0)
+            local posted = CreateUnit(hostile, id("ngno"), 0, -1500, 0)
             local chaser = CreateUnit(hostile, id("ngno"), 0, 0, 0)
             local runner = CreateUnit(p, id("hfoo"), 300, 0, 0)
             local far = 0
@@ -161,7 +161,7 @@ public sealed class AiTownTests : IDisposable
                 SetUnitPosition(moved, 600, 3000)
                 SetUnitPosition(freed, 600, 4000)
                 RemoveGuardPosition(freed)
-                SetUnitPosition(posted, 600, 5000)
+                SetUnitPosition(posted, 600, -1500)
                 RecycleGuardPosition(posted)
                 IssuePointOrder(runner, "move", 1900, 0)
             end)
@@ -264,6 +264,26 @@ public sealed class AiTownTests : IDisposable
             "true",                        // so a hall is built there again, as the scripts ask (MeleeTownHall)
             "true\tfalse\t1\t4000\t1",
         ], lines);
+    }
+
+    [Fact]
+    public void The_next_expansion_is_the_nearest_free_mine_the_towns_land_reaches()
+    {
+        // A ring of unwalkable cells round the near mine (1500, 0): the far one (-1800, 0) is the one to walk to
+        var lines = Run("""
+            for i = -12, 12 do
+                for _, j in ipairs({ -12, 12 }) do
+                    SetTerrainPathable(1500 + i * 32, j * 32, PATHING_TYPE_WALKABILITY, false)
+                    SetTerrainPathable(1500 + j * 32, i * 32, PATHING_TYPE_WALKABILITY, false)
+                end
+            end
+            CreateUnit(p, id("htow"), 0, 0, 0)
+            SetResourceAmount(CreateUnit(Player(PLAYER_NEUTRAL_PASSIVE), id("ngol"), 1500, 0, 0), 5000)
+            SetResourceAmount(CreateUnit(Player(PLAYER_NEUTRAL_PASSIVE), id("ngol"), -1800, 0, 0), 5000)
+            print(GetNextExpansion(), GetExpansionX(), GetExpansionY())
+            """, 1);
+
+        Assert.Equal(["0	-1800	0"], lines);
     }
 
     [Fact]
