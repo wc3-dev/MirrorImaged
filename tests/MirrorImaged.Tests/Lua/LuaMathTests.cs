@@ -162,6 +162,16 @@ public sealed class LuaMathTests : IDisposable
     [InlineData("0.25^0.5", "0x3f000002")]
     [InlineData("10000^0.5", "0x42c7fff1")]
     [InlineData("40000^0.5", "0x4347fff0")]
+    [InlineData("math.log(2)", "0.693147182")]
+    [InlineData("math.log(1000, 10)", "2.99999189")]
+    [InlineData("math.log(100, 10)", "0x3ffffffd")]
+    [InlineData("2^0.5", "0x3fb504f3")]
+    [InlineData("25^0.5", "4.99999523")]
+    [InlineData("100^0.5", "9.99998856")]
+    [InlineData("16777216^0.5", "4095.99512")]
+    [InlineData("3^0.5", "1.73205006")]
+    [InlineData("1000000^0.5", "999.991516")]
+    [InlineData("0.0001^0.5", "0.00999999791")]
     public void Functions(string expression, string game) => Assert.Equal(Expected(game), _lua.Bits(expression));
 
     [Fact]
@@ -182,15 +192,6 @@ public sealed class LuaMathTests : IDisposable
     [Theory]
     [InlineData("math.atan(1, 1) * 4", "3.14159298", "3.1415925")]
     [InlineData("math.atan(1)", "0.785398245", "0.785398126")]
-    [InlineData("math.log(2)", "0.693147182", "0.693147123")]
-    [InlineData("math.log(1000, 10)", "2.99999189", "3")]
-    [InlineData("2^0.5", "0x3fb504f3", "0x3fb504f1")]
-    [InlineData("25^0.5", "4.99999523", "0x409ffffc")]
-    [InlineData("100^0.5", "9.99998856", "0x411ffff9")]
-    [InlineData("16777216^0.5", "4095.99512", "0x457fffdd")]
-    [InlineData("3^0.5", "1.73205006", "0x3fddb3d4")]
-    [InlineData("1000000^0.5", "999.991516", "0x4479ffea")]
-    [InlineData("0.0001^0.5", "0.00999999791", "0x3c23d717")]
     public void CloseToTheGame(string expression, string game, string model)
     {
         Assert.NotEqual(Expected(game), Expected(model));
@@ -216,8 +217,8 @@ public sealed class LuaMathTests : IDisposable
     [Theory]
     [InlineData("math.sqrt(x)", 0x3f800000, -0.0773249492, 1.92854142, -0.11549491821181203, 2.0398912033154426)]
     [InlineData("math.sqrt(x)", 0x40000000, -0.087634936, 1.92324328, -0.1240212441026552, 2.034505208333333)]
-    [InlineData("x ^ 0.5", 0x3f800000, -1.3516643, 0.067014955, -0.022615023093990327, 0.000690062948214858)]
-    [InlineData("x ^ 0.5", 0x40000000, -1.3516643, 0.067014955, -0.027368041560674072, 0.000142563677578588)]
+    [InlineData("x ^ 0.5", 0x3f800000, -1.3516643, 0.067014955, -1.2057919212374748, 0.002763629259128776)]
+    [InlineData("x ^ 0.5", 0x40000000, -1.3516643, 0.067014955, -1.215936390264879, 0.001001349611874687)]
     [InlineData("(s + x / s) / 2", 0x3f800000, -0.0115596894, 0.00990830455, -0.014159728811543813, 0.016552161505973145)]
     [InlineData("(s + x / s) / 2", 0x40000000, -0.0115596894, 0.00990830455, -0.011459323429449726, 0.011142766349221933)]
     public void RootErrorsByOctave(string root, int start, double gameLow, double gameHigh, double low, double high)

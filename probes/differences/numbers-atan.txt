@@ -1,8 +1,8 @@
 # Where MirrorImaged differs from the game's lines in expected/numbers-atan.txt, in order, with why (decisions D121): a line
 # starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
-
-# atan is the double model's, a float step or two off (D32, D152, Close; D484, not fitted): the game's is smooth,
-# x (1 - 2^-20) near 0, within 2.3e-7 of the true one below 2.
+# atan is the double model's, a float step or two off (D32, D152, Close; D762, not fitted): the game's is x (1 - 2^-20) near 0, then a
+# smooth function with a few float steps of noise, from 0.4143 up pi/4 plus a polynomial of (x - 1) / (x + 1) (a fit reaches 60% of the
+# 76,768 values measured from 0.4143 to 1, not exact).
 - atan 0 0 00000000 973078512 8388605 4194302 4194290 2097156 2097135 2097130 2097122 1048606 1048552 1048548 1048542 1048537 1048529 1048522 1048516 524431 524248 524246 524240 524234 524230 524224 524219 524212 524207 524202 524191 524186 524179
 + atan 0 0 00000000 973078526 8388604 4194301 4194291 2097153 2097137 2097130 2097124 1048601 1048553 1048549 1048543 1048536 1048531 1048523 1048516 524425 524250 524245 524240 524236 524230 524225 524219 524213 524206 524200 524194 524186 524180
 - atan 0 31 3c77fb18 524166 262766 262074 262069 262065 262061 262057 262049 262048 262041 262036 262032 262024 262020 262015 262010 262002 261998 261989 261985 261978 261973 261966 261957 261951 261946 261937 261931 261921 261916 261907 261901 261891
@@ -341,6 +341,7 @@
 + atan 3*2^k -6 3d3fdc0c 3dbf70c1 3e3dcbda 3eb7b0ca 3f24bc7d 3f7b985e 3f9fe0bb 3fb3ec43 3fbe6b7b 3fc3bb4f 3fc66549 3fc7ba88 3fc86530 3fc8ba85 3fc8e52f 3fc8fa85 3fc9052f 3fc90a85 3fc90d2f 3fc90e85 3fc90f2f 3fc90f85 3fc90faf 3fc90fc5
 - atan 3*2^k 18 3fc90fd0 3fc90fd5 3fc90fd8 3fc90fdb 3fc90fdb 3fc90fdb 3fc90fdb 3fc90fdb 3fc90fdb 3fc90fdb 3fc90fdb 3fc90fdb 3fc90fdb 3fc90fdb 3fc90fdb 3fc90fdb 3fc90fdb 3fc90fdb 3fc90fdb 3fc90fdb 3fc90fdb 3fc90fdb 3fc90fdb
 + atan 3*2^k 18 3fc90fcf 3fc90fd5 3fc90fd7 3fc90fd9 3fc90fd9 3fc90fda 3fc90fda 3fc90fda 3fc90fda 3fc90fda 3fc90fda 3fc90fda 3fc90fda 3fc90fda 3fc90fda 3fc90fda 3fc90fda 3fc90fda 3fc90fda 3fc90fda 3fc90fda 3fc90fda 3fc90fda
+# atan(y, x) off the axes is the double model's (D32, D152, Close; D762, atan not fitted).
 - atan2 c0437424:4033e2e7:bf53ac6a 400afc90:3f86ca5c:3f8f4526 c06d457a:3f00a6fb:bfb7d0ef bfa7cad4:c0d1c06a:c03c6de5 c0c544c4:3f66f42a:bfb6763b 3f9d907b:c0438632:40308c53 c0b56970:bf71895d:bfde2bda 3f9581f0:3ed08645:3f9e1e15
 + atan2 c0437424:4033e2e7:bf53ac6c 400afc90:3f86ca5c:3f8f4526 c06d457a:3f00a6fb:bfb7d0ee bfa7cad4:c0d1c06a:c03c6de4 c0c544c4:3f66f42a:bfb6763b 3f9d907b:c0438632:40308c52 c0b56970:bf71895d:bfde2bd8 3f9581f0:3ed08645:3f9e1e14
 - atan2 401ae6a9:c0b3f14e:402f0c91 bed7fce3:c03b6f86:c03fe800 c0b53a03:bf58f3d9:bfdc1334 3ed51c48:c0d35de6:404508c5 c013f2b1:bff27c73:c01077d4 3ff42aed:3e97e799:3fb54fda 40f5ac4b:406d40d5:3f8f7b54 bf0194ee:3f184720:bf347e19
