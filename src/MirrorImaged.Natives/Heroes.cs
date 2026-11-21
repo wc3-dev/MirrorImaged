@@ -257,8 +257,7 @@ public sealed partial class GameNatives
         whichHero.SkillPoints = Math.Max(0, whichHero.SkillPoints - 1);
     }
 
-    /// <summary>Talents come with the game's 2.0 heroes' data, which the probe heroes' Paladin hasn't: nothing happens (probe heroes).</summary>
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = "No unit of the game's data has talents: ATal and ATua can't be given (UnitAddAbility false), and the game changed nothing on a level 10 Paladin with 10 skill points, with or without the call (probe heroes-talents, D793)")]
     public void BlzResetUnitTalents(unit? whichUnit)
     {
     }

@@ -114,19 +114,19 @@ public sealed partial class GameNatives
         return most ? corners.Max() : corners.Min();
     }
 
-    float TargetX => Math.Clamp(
+    float TargetX => _cinematic is not null ? Cinematic(false).X : Math.Clamp(
         _orbit is { } o ? (float)(o.X + o.Radius * Math.Cos(o.Start + o.Swept.At(_game.Step - 1)))
         : _follow is { } f && _game.Step > f.Start ? f.Unit.X + f.X
         : _cameraX.At(_game.Step - 1),
         Bound(0, false), Bound(0, true));
 
-    float TargetY => Math.Clamp(
+    float TargetY => _cinematic is not null ? Cinematic(false).Y : Math.Clamp(
         _orbit is { } o ? (float)(o.Y + o.Radius * Math.Sin(o.Start + o.Swept.At(_game.Step - 1)))
         : _follow is { } f && _game.Step > f.Start ? f.Unit.Y + f.Y
         : _cameraY.At(_game.Step - 1),
         Bound(1, false), Bound(1, true));
 
-    float TargetZ => Height(TargetX, TargetY) + (_orbit is null ? ZOffset : 0);
+    float TargetZ => _cinematic is not null ? Cinematic(false).Z : Height(TargetX, TargetY) + (_orbit is null ? ZOffset : 0);
 
     float ZOffset => _panZ is { } z && _game.Step - 1 < _panZUntil ? z.At(_game.Step - 1) : _camera[6].At(_game.Step - 1);
 
@@ -192,6 +192,7 @@ public sealed partial class GameNatives
     // them, in floats as the game's: 5 of the 6 eyes the probes read match to the last digit, the sixth by its cos(300).
     (float X, float Y, float Z) Eye()
     {
+        if (_cinematic is not null) return Cinematic(true);
         var step = _game.Step - 1;
         var distance = _camera[0].At(step);
         var (attack, rotation) = ((float)Radians(Field(2, step)), (float)(Radians(Field(5, step)) + (_orbit is { } o ? o.Swept.At(step) : 0)));
@@ -265,6 +266,7 @@ public sealed partial class GameNatives
     [Native(Level.Close)]
     public void ResetToGameCamera(float duration)
     {
+        _cinematic = null;
         Settle();
         _panZUntil = Math.Min(_panZUntil, _game.Step);
         for (var field = 0; field < CameraFields - 1; field++) SetCameraField(field, GameCamera[field], duration);
@@ -428,8 +430,7 @@ public sealed partial class GameNatives
     [Native(Level.Exact, Fact = Cameras)]
     public string? BlzCameraSetupGetLabel(camerasetup? whichSetup) => whichSetup?.Label;
 
-    /// <summary>0. Close: the game gives a number of its own each run, whatever was set (cameras).</summary>
-    [Native(Level.Close)]
+    [Native(Level.Close, Fact = Cameras, Reason = "The game gives a number of its own each run (1367777792, -1842721280, ...), the same before and after BlzCameraSetupSetCameraType and no number a script can use; 0 here")]
     public int BlzCameraSetupGetCameraType(camerasetup? whichSetup) => 0;
 
     [Native(Level.Recorded, Reason = "The game's getter doesn't read it back (cameras); what it changes in the view isn't simulated")]
@@ -484,23 +485,19 @@ public sealed partial class GameNatives
     [Native(Level.Recorded, Reason = "Where the space key takes the camera; no native reads it back")]
     public void SetCameraQuickPosition(float x, float y) { }
 
-    /// <summary>
-    /// Shakes the view. Close: the game's target and eye read shaken, here as they would be still: at a magnitude of 50,
-    /// in three runs, the target read 0.1 to 2.8 off and the eye 0.3 to 5.6 (cameras-4).
-    /// </summary>
-    [Native(Level.Close)]
+    const string NoiseFacts = "probes cameras-noise and cameras-noise-2 (11-21, D794)";
+    const string NoiseReason = "The game shakes what the camera reads by a random amount on each axis every read, mostly up to about the magnitude (a quarter of it on average, the height mostly below), faster for a bigger velocity, nothing for a velocity or magnitude of 0 or once set to 0 again; not reproduced, so the target and the eye read as still";
+
+    [Native(Level.Close, Fact = NoiseFacts, Reason = NoiseReason + ": the eye alone for a source noise")]
     public void CameraSetSourceNoise(float mag, float velocity) { }
 
-    /// <summary>As CameraSetSourceNoise (not measured apart).</summary>
-    [Native(Level.Close)]
+    [Native(Level.Close, Fact = NoiseFacts, Reason = NoiseReason + ": the eye alone for a source noise, the height alone for vertOnly")]
     public void CameraSetSourceNoiseEx(float mag, float velocity, bool vertOnly) { }
 
-    /// <summary>As CameraSetSourceNoise.</summary>
-    [Native(Level.Close)]
+    [Native(Level.Close, Fact = NoiseFacts, Reason = NoiseReason + ": the target and the eye with it for a target noise")]
     public void CameraSetTargetNoise(float mag, float velocity) { }
 
-    /// <summary>As CameraSetSourceNoise (not measured apart).</summary>
-    [Native(Level.Close)]
+    [Native(Level.Close, Fact = NoiseFacts, Reason = NoiseReason + ": the target and the eye with it for a target noise, the height alone for vertOnly")]
     public void CameraSetTargetNoiseEx(float mag, float velocity, bool vertOnly) { }
 
     [Native(Level.Recorded, Reason = "Smooths the view's moves: at a factor of 1 a pan's target read as without it (units-camera-2)")]
@@ -513,14 +510,6 @@ public sealed partial class GameNatives
     /// <summary>Sets CAMERA_FIELD_DEPTH_OF_FIELD_SCALE at once; below 0 it is held at 0 as the field is (inferred).</summary>
     [Native(Level.Exact, Fact = Cameras5)]
     public void CameraSetDepthOfFieldScale(float scale) => SetCameraField(12, scale, 0);
-
-    /// <summary>
-    /// Close: while a cinematic camera plays, the game's target and eye read the model's camera (CameraZoomOut: the
-    /// target about 110 to 120 up, the eye 200 to 250 from it), here the game camera's; the fields read as they were and
-    /// ResetToGameCamera ends it, in both (units-camera-2). Reading the models' cameras is left for later.
-    /// </summary>
-    [Native(Level.Close)]
-    public void SetCinematicCamera(string? cameraModelFile) { }
 
     /// <summary>
     /// The rect keeps the target out: a pan stops where its path enters it, a position set inside it lands past it along

@@ -183,11 +183,9 @@ public sealed partial class GameNatives
     public string? GetAbilitySoundById(int abilityId, soundtype? t) =>
         SoundOf(ObjectKind.Ability, abilityId, t) ?? SoundOf(ObjectKind.Buff, abilityId, t) ?? "";
 
-    /// <summary>
-    /// "" for every string measured: an ability's id ("Arsp"), its name, a buff's id and "" (probe abilities-types).
-    /// Close: what it reads wasn't found.
-    /// </summary>
-    [Native(Level.Close)]
+    // "" for every string tried: each of the 1,072 abilities' and buffs' ids, names and sound labels, as each kind of sound (probes abilities-types
+    // and abilities-sound-names, D792); what the by-string native reads, if anything, wasn't found
+    [Native(Level.Exact, Fact = "probes abilities-types and abilities-sound-names (11-21, D792)")]
     public string? GetAbilitySound(string? abilityString, soundtype? t) => "";
 
     string? SoundOf(ObjectKind kind, int id, soundtype? t) =>

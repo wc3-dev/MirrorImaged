@@ -48,8 +48,7 @@ public sealed partial class GameNatives
     [Native(Level.Exact, Fact = "facts, Files and game cache: PreloadGenClear empties what Preload kept, nothing else does")]
     public void PreloadGenClear() => _preloaded.Clear();
 
-    /// <summary>Does nothing here: the game starts the count it writes as <c>PreloadEnd</c>'s number, which isn't known.</summary>
-    [Native(Level.Close)]
+    [Native(Level.Recorded, Reason = "Starts the count the file's PreloadEnd number holds, which a map can't read (a script that runs the file meets a PreloadEnd that does nothing) and the game gave as 0.0 for a file written in one call (facts, Files and game cache, D793)")]
     public void PreloadGenStart() { }
 
     /// <summary>

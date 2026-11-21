@@ -174,13 +174,14 @@ public sealed partial class GameNatives
 
     Happening? ItemResponse() => Response(UnitDropItem, UnitPickupItem, UnitUseItem_, PlayerDropItem, PlayerPickupItem, PlayerUseItem);
 
-    /// <summary>Items don't stack here, so no stack event fires and these read nil and 0 (probe items: two potions stayed two).</summary>
-    [Native(Level.Close)]
+    const string NoStacking = "Items don't stack here, as they didn't in the game (probe items: two potions stayed two; facts, Items: stacking was never seen), so no stack event fires and every read is outside one: nil and 0 (probe natives-test-run)";
+
+    [Native(Level.Close, Fact = TestRunProbe, Reason = NoStacking)]
     public item? BlzGetStackingItemSource() => null;
 
-    [Native(Level.Close)]
+    [Native(Level.Close, Fact = TestRunProbe, Reason = NoStacking)]
     public item? BlzGetStackingItemTarget() => null;
 
-    [Native(Level.Close)]
+    [Native(Level.Close, Fact = TestRunProbe, Reason = NoStacking)]
     public int BlzGetStackingItemTargetPreviousCharges() => 0;
 }

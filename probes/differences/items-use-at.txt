@@ -1,0 +1,41 @@
+# Where MirrorImaged differs from the game's lines in expected/items-use-at.txt, in order, with why (decisions D121): a line starting - is the game's,
+# + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
+
+# UnitUseItemPoint and UnitUseItemTarget are refused here (D794, Close): the game gave the item slot's order, cast the item's ability and spent a charge, and
+# answered true for a target the ability takes. Every other line is the game's.
+- point wneg answer false inside 76:852008:nil order 852008 charges 3 mana 360
++ point wneg answer false inside  order 0 charges 3 mana 360
+- point wneg later events 76:852008:nil 289:0:AIdi 290:0:AIdi 291:0:AIdi 292:0:AIdi 293:0:AIdi 87:0:nil order 0 charges 2 carried true mana 360 mate life {t} at {t}
++ point wneg later events  order 0 charges 3 carried true mana 360 mate life 200 at -150
+- target wlsd answer true inside 77:852008:nil 289:0:AIls 290:0:AIls 291:0:AIls 292:0:AIls 293:0:AIls 87:0:nil order 0 charges 2 mana 360
++ target wlsd answer false inside  order 0 charges 3 mana 360
+- target wlsd later events 77:852008:nil 289:0:AIls 290:0:AIls 291:0:AIls 292:0:AIls 293:0:AIls 87:0:nil order 0 charges 2 carried true mana 360 mate life {t} at {t}
++ target wlsd later events  order 0 charges 3 carried true mana 360 mate life 200 at -150
+- point ssil answer false inside 76:852008:nil order 852008 charges 0 mana 360
++ point ssil answer false inside  order 0 charges 0 mana 360
+- point ssil later events 76:852008:nil 289:0:AIse 290:0:AIse 291:0:AIse 292:0:AIse 293:0:AIse 87:0:nil order 0 charges 0 carried true mana 360 mate life {t} at {t}
++ point ssil later events  order 0 charges 0 carried true mana 360 mate life 200 at -150
+- point near wneg answer false inside 76:852008:nil 289:0:AIdi 290:0:AIdi 291:0:AIdi 292:0:AIdi 293:0:AIdi 87:0:nil order 0 charges 2 mana 360
++ point near wneg answer false inside  order 0 charges 3 mana 360
+- point near wneg later events 76:852008:nil 289:0:AIdi 290:0:AIdi 291:0:AIdi 292:0:AIdi 293:0:AIdi 87:0:nil order 0 charges 2 carried true mana 360 mate life {t} at {t}
++ point near wneg later events  order 0 charges 3 carried true mana 360 mate life 200 at -150
+- point on itself wneg answer false inside 76:852008:nil 289:0:AIdi 290:0:AIdi 291:0:AIdi 292:0:AIdi 293:0:AIdi 87:0:nil order 0 charges 2 mana 360
++ point on itself wneg answer false inside  order 0 charges 3 mana 360
+- point on itself wneg later events 76:852008:nil 289:0:AIdi 290:0:AIdi 291:0:AIdi 292:0:AIdi 293:0:AIdi 87:0:nil order 0 charges 2 carried true mana 360 mate life {t} at {t}
++ point on itself wneg later events  order 0 charges 3 carried true mana 360 mate life 200 at -150
+- point near ssil answer false inside 76:852008:nil 289:0:AIse 290:0:AIse 291:0:AIse 292:0:AIse 293:0:AIse 87:0:nil order 0 charges 0 mana 360
++ point near ssil answer false inside  order 0 charges 0 mana 360
+- point near ssil later events 76:852008:nil 289:0:AIse 290:0:AIse 291:0:AIse 292:0:AIse 293:0:AIse 87:0:nil order 0 charges 0 carried true mana 360 mate life {t} at {t}
++ point near ssil later events  order 0 charges 0 carried true mana 360 mate life 200 at -150
+- target far wlsd answer true inside 77:852008:nil order 852008 charges 3 mana 360
++ target far wlsd answer false inside  order 0 charges 3 mana 360
+- target far wlsd later events 77:852008:nil 289:0:AIls 290:0:AIls 291:0:AIls 292:0:AIls 293:0:AIls 87:0:nil order 0 charges 2 carried true mana 360 mate life {t} at {t}
++ target far wlsd later events  order 0 charges 3 carried true mana 360 mate life 200 at -150
+- target an enemy wlsd answer true inside 77:852008:nil order 852008 charges 3 mana 360
++ target an enemy wlsd answer false inside  order 0 charges 3 mana 360
+- target an enemy wlsd later events 77:852008:nil 289:0:AIls 290:0:AIls 291:0:AIls 292:0:AIls 293:0:AIls 87:0:nil order 0 charges 2 carried true mana 360 mate life {t} at {t}
++ target an enemy wlsd later events  order 0 charges 3 carried true mana 360 mate life 188 at -139
+- target a building stwp answer true inside 77:852008:nil order 852008 charges 1 mana 360
++ target a building stwp answer false inside  order 0 charges 1 mana 360
+- target a building stwp later events 77:852008:nil 289:0:AItp order 852008 charges 1 carried true mana 360 mate life {t} at {t}
++ target a building stwp later events  order 0 charges 1 carried true mana 360 mate life 200 at -150

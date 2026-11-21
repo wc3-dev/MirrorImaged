@@ -1,0 +1,85 @@
+# probes/units-rescue.lua on 3.0.1.24371, single player, 11-21 (L-mirror-trust-levels, D794): the game's lines, one run, on Reforged graphics
+# (hd=2); the footman, hero and barracks have the same sizes and flags in both modes' data, and a classic run wasn't made, so one file serves both.
+# A unit made rescuable is checked every 0.5 s from then (made at 1.0, 1.2, ... 2.0: rescued 0.5 s after each; set rescuable at 16.0 with the rescuer
+# 900 away and moved next to it at 17.5: rescued at 17.5; rescuable at 16.0 + 1.5 s: at 18.0). Rescued in range at 400 and not at 500 (the default
+# range is between), at a set range of 300 within it and not at 350, none at 50 for 100 away, and none at 0 or -1; a hero, a building, a hero
+# or a building as rescuer all rescue; a dead rescuer, a hidden one, another player's, a switch-off and a paused unit don't, and a unit owned
+# by another player is rescued, on that player's registration. The owner stays after the events, which fire once; the player's before the unit's.
+t0 made 1.00
+t1 made 1.20
+t2 made 1.40
+player rescued 1.50 trigger player 27 unit hfoo rescuer hfoo owner 27
+t0 unit rescued 1.50 rescuer true hfoo trigger unit true trigger player 27 owner 27 response true
+t3 made 1.60
+player rescued 1.70 trigger player 27 unit hfoo rescuer hfoo owner 27
+t1 unit rescued 1.70 rescuer true hfoo trigger unit true trigger player 27 owner 27 response true
+t4 made 1.80
+player rescued 1.90 trigger player 27 unit hfoo rescuer hfoo owner 27
+t2 unit rescued 1.90 rescuer true hfoo trigger unit true trigger player 27 owner 27 response true
+t5 made 2.00
+player rescued 2.10 trigger player 27 unit hfoo rescuer hfoo owner 27
+t3 unit rescued 2.10 rescuer true hfoo trigger unit true trigger player 27 owner 27 response true
+player rescued 2.30 trigger player 27 unit hfoo rescuer hfoo owner 27
+t4 unit rescued 2.30 rescuer true hfoo trigger unit true trigger player 27 owner 27 response true
+player rescued 2.50 trigger player 27 unit hfoo rescuer hfoo owner 27
+t5 unit rescued 2.50 rescuer true hfoo trigger unit true trigger player 27 owner 27 response true
+d25 made 4.00
+d50 made 4.00
+d150 made 4.00
+d200 made 4.00
+d300 made 4.00
+d400 made 4.00
+player rescued 4.50 trigger player 27 unit hfoo rescuer hfoo owner 27
+d25 unit rescued 4.50 rescuer true hfoo trigger unit true trigger player 27 owner 27 response true
+player rescued 4.50 trigger player 27 unit hfoo rescuer hfoo owner 27
+d50 unit rescued 4.50 rescuer true hfoo trigger unit true trigger player 27 owner 27 response true
+player rescued 4.50 trigger player 27 unit hfoo rescuer hfoo owner 27
+d150 unit rescued 4.50 rescuer true hfoo trigger unit true trigger player 27 owner 27 response true
+player rescued 4.50 trigger player 27 unit hfoo rescuer hfoo owner 27
+d200 unit rescued 4.50 rescuer true hfoo trigger unit true trigger player 27 owner 27 response true
+player rescued 4.50 trigger player 27 unit hfoo rescuer hfoo owner 27
+d300 unit rescued 4.50 rescuer true hfoo trigger unit true trigger player 27 owner 27 response true
+player rescued 4.50 trigger player 27 unit hfoo rescuer hfoo owner 27
+d400 unit rescued 4.50 rescuer true hfoo trigger unit true trigger player 27 owner 27 response true
+d500 made 7.00
+d650 made 7.00
+d800 made 7.00
+range 300 at 250 made 7.00
+range 300 at 350 made 7.00
+range 50 at 100 made 7.00
+player rescued 7.50 trigger player 27 unit hfoo rescuer hfoo owner 27
+range 300 at 250 unit rescued 7.50 rescuer true hfoo trigger unit true trigger player 27 owner 27 response true
+range 1000 at 900 made 10.00
+range 0 at 10 made 10.00
+range -1 at 10 made 10.00
+hero made 10.00
+building made 10.00
+hero rescuer made 10.00
+player rescued 10.50 trigger player 27 unit hfoo rescuer hfoo owner 27
+range 1000 at 900 unit rescued 10.50 rescuer false hfoo trigger unit true trigger player 27 owner 27 response true
+player rescued 10.50 trigger player 27 unit Hpal rescuer hfoo owner 27
+hero unit rescued 10.50 rescuer true hfoo trigger unit true trigger player 27 owner 27 response true
+player rescued 10.50 trigger player 27 unit hbar rescuer hfoo owner 27
+building unit rescued 10.50 rescuer true hfoo trigger unit true trigger player 27 owner 27 response true
+player rescued 10.50 trigger player 27 unit hfoo rescuer Hpal owner 27
+hero rescuer unit rescued 10.50 rescuer true Hpal trigger unit true trigger player 27 owner 27 response true
+building rescuer made 13.00
+for player 1 made 13.00
+switched off made 13.00
+dead rescuer made 13.00
+owned by player 0 made 13.00
+owned by player 1 made 13.00
+player rescued 13.50 trigger player 27 unit hfoo rescuer hbar owner 27
+building rescuer unit rescued 13.50 rescuer true hbar trigger unit true trigger player 27 owner 27 response true
+player rescued 13.50 trigger player 0 unit hfoo rescuer hfoo owner 0
+owned by player 0 unit rescued 13.50 rescuer true hfoo trigger unit true trigger player 0 owner 0 response true
+player rescued 13.50 trigger player 1 unit hfoo rescuer hfoo owner 1
+owned by player 1 unit rescued 13.50 rescuer true hfoo trigger unit true trigger player 1 owner 1 response true
+paused made 16.00
+hidden rescuer made 16.00
+late made rescuable 17.50
+arrives set position 17.50
+player rescued 17.50 trigger player 27 unit hfoo rescuer hfoo owner 27
+arrives unit rescued 17.50 rescuer true hfoo trigger unit true trigger player 27 owner 27 response true
+player rescued 18.00 trigger player 27 unit hfoo rescuer hfoo owner 27
+late unit rescued 18.00 rescuer true hfoo trigger unit true trigger player 27 owner 27 response true

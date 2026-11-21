@@ -1,0 +1,16 @@
+# probes/players-start-priorities.lua on 3.0.1.24371, single player, 11-21 (L-mirror-trust-levels, D792): the game's lines, one run, on Reforged graphics
+# (hd=2); no mode reads data, so one file serves both. Each slot of a start location as its other location and its priority (L low, H high, N not), read
+# 5 slots at a time: with no count every slot reads 0 and a set is ignored; a count of 3 makes slots 0 to 2 read -1; a set inside it is kept, one past it
+# or at -1 isn't; a smaller count drops the slots past it, a bigger starts new ones at -1; a count of 0 or -1 clears the location; the locations are apart.
+priorities 0 1 2 LHN
+before 0L 0L 0L 0L 0L | 0L 0L 0L 0L 0L | 0L 0L 0L 0L 0L | 0L 0L 0L 0L 0L
+set with no count 0L 0L 0L 0L 0L
+count 3 -1L -1L -1L 0L 0L
+sets inside and past 1H 2L 3N 0L 0L
+count 2 1H 2L 0L 0L 0L
+count 3 again 1H 2L -1L 0L 0L
+count 5 1H 2L -1L -1L -1L
+count 0 0L 0L 0L 0L 0L
+count -1 0L 0L 0L 0L 0L
+other location 0L 0L 0L 0L 0L | -1L 7N 0L 0L 0L | 0L 0L 0L 0L 0L
+count 2 again -1L 7N 0L 0L 0L

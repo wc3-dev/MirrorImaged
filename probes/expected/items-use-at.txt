@@ -1,0 +1,116 @@
+# probes/items-use-at.lua on 3.0.1.24371, single player, 11-21 (L-mirror-trust-levels, D794, Close): the game's lines, one run, on Reforged graphics (hd=2);
+# the items' abilities and the footman and hero aren't different between the modes' data, and a classic run wasn't made, so one file serves both. Each case
+# is a Paladin (level 5) at full mana with a footman of its own 150 away, the item in its first slot: UnitUseItemPoint answered false every time, also when
+# it gave the slot's order (852008) as a point order and cast (a Wand of Negation, a Staff of Silence: AIdi and AIse's events, then the use event and a
+# charge less, at once for a place within reach, after the walk for 316 away); UnitUseItemTarget answered true, with the slot's order as a target order,
+# for a Wand of Lightning Shield on a footman near, far or an enemy (the cast at once or after the walk; the use event, a charge less) and a Scroll of Town
+# Portal on a building (its channel only, the order kept); false, no order, for the hero itself, a footman for Town Portal, a wand that takes a place and an item
+# with no ability to aim; false for a nil item, unit or target, another's item, a dead unit and an item on the ground. Where a footman stood is {t}.
+use point
+point phea answer false inside  order 0 charges 1 mana 360
+later
+point phea later events  order 0 charges 1 carried true mana 360 mate life {t} at {t}
+use target
+target phea answer false inside  order 0 charges 1 mana 360
+later
+target phea later events  order 0 charges 1 carried true mana 360 mate life {t} at {t}
+use point
+point wneg answer false inside 76:852008:nil order 852008 charges 3 mana 360
+later
+point wneg later events 76:852008:nil 289:0:AIdi 290:0:AIdi 291:0:AIdi 292:0:AIdi 293:0:AIdi 87:0:nil order 0 charges 2 carried true mana 360 mate life {t} at {t}
+use target
+target wneg answer false inside  order 0 charges 3 mana 360
+later
+target wneg later events  order 0 charges 3 carried true mana 360 mate life {t} at {t}
+use point
+point stwp answer false inside  order 0 charges 1 mana 360
+later
+point stwp later events  order 0 charges 1 carried true mana 360 mate life {t} at {t}
+use target
+target stwp answer false inside  order 0 charges 1 mana 360
+later
+target stwp later events  order 0 charges 1 carried true mana 360 mate life {t} at {t}
+use point
+point wlsd answer false inside  order 0 charges 3 mana 360
+later
+point wlsd later events  order 0 charges 3 carried true mana 360 mate life {t} at {t}
+use target
+target wlsd answer true inside 77:852008:nil 289:0:AIls 290:0:AIls 291:0:AIls 292:0:AIls 293:0:AIls 87:0:nil order 0 charges 2 mana 360
+later
+target wlsd later events 77:852008:nil 289:0:AIls 290:0:AIls 291:0:AIls 292:0:AIls 293:0:AIls 87:0:nil order 0 charges 2 carried true mana 360 mate life {t} at {t}
+use point
+point ssil answer false inside 76:852008:nil order 852008 charges 0 mana 360
+later
+point ssil later events 76:852008:nil 289:0:AIse 290:0:AIse 291:0:AIse 292:0:AIse 293:0:AIse 87:0:nil order 0 charges 0 carried true mana 360 mate life {t} at {t}
+use target
+target ssil answer false inside  order 0 charges 0 mana 360
+later
+target ssil later events  order 0 charges 0 carried true mana 360 mate life {t} at {t}
+use point
+point ankh answer false inside  order 0 charges 1 mana 360
+later
+point ankh later events  order 0 charges 1 carried true mana 360 mate life {t} at {t}
+use target
+target ankh answer false inside  order 0 charges 1 mana 360
+later
+target ankh later events  order 0 charges 1 carried true mana 360 mate life {t} at {t}
+use point
+point ratc answer false inside  order 0 charges 0 mana 360
+later
+point ratc later events  order 0 charges 0 carried true mana 360 mate life {t} at {t}
+use target
+target ratc answer false inside  order 0 charges 0 mana 360
+later
+target ratc later events  order 0 charges 0 carried true mana 360 mate life {t} at {t}
+use point near
+point near wneg answer false inside 76:852008:nil 289:0:AIdi 290:0:AIdi 291:0:AIdi 292:0:AIdi 293:0:AIdi 87:0:nil order 0 charges 2 mana 360
+later
+point near wneg later events 76:852008:nil 289:0:AIdi 290:0:AIdi 291:0:AIdi 292:0:AIdi 293:0:AIdi 87:0:nil order 0 charges 2 carried true mana 360 mate life {t} at {t}
+use point on itself
+point on itself wneg answer false inside 76:852008:nil 289:0:AIdi 290:0:AIdi 291:0:AIdi 292:0:AIdi 293:0:AIdi 87:0:nil order 0 charges 2 mana 360
+later
+point on itself wneg later events 76:852008:nil 289:0:AIdi 290:0:AIdi 291:0:AIdi 292:0:AIdi 293:0:AIdi 87:0:nil order 0 charges 2 carried true mana 360 mate life {t} at {t}
+use point near
+point near ssil answer false inside 76:852008:nil 289:0:AIse 290:0:AIse 291:0:AIse 292:0:AIse 293:0:AIse 87:0:nil order 0 charges 0 mana 360
+later
+point near ssil later events 76:852008:nil 289:0:AIse 290:0:AIse 291:0:AIse 292:0:AIse 293:0:AIse 87:0:nil order 0 charges 0 carried true mana 360 mate life {t} at {t}
+use target far
+target far wlsd answer true inside 77:852008:nil order 852008 charges 3 mana 360
+later
+target far wlsd later events 77:852008:nil 289:0:AIls 290:0:AIls 291:0:AIls 292:0:AIls 293:0:AIls 87:0:nil order 0 charges 2 carried true mana 360 mate life {t} at {t}
+use target an enemy
+target an enemy wlsd answer true inside 77:852008:nil order 852008 charges 3 mana 360
+later
+target an enemy wlsd later events 77:852008:nil 289:0:AIls 290:0:AIls 291:0:AIls 292:0:AIls 293:0:AIls 87:0:nil order 0 charges 2 carried true mana 360 mate life {t} at {t}
+use target itself
+target itself wlsd answer false inside  order 0 charges 3 mana 360
+later
+target itself wlsd later events  order 0 charges 3 carried true mana 360 mate life {t} at {t}
+use target a building
+target a building stwp answer true inside 77:852008:nil order 852008 charges 1 mana 360
+later
+target a building stwp later events 77:852008:nil 289:0:AItp order 852008 charges 1 carried true mana 360 mate life {t} at {t}
+use point of another's item
+point of another's item phea answer false inside  order 0 charges 1 mana 360
+later
+point of another's item phea later events  order 0 charges 1 carried true mana 360 mate life {t} at {t}
+use point no item
+point no item wneg answer false inside  order 0 charges 3 mana 360
+later
+point no item wneg later events  order 0 charges 3 carried true mana 360 mate life {t} at {t}
+use target nil
+target nil wneg answer false inside  order 0 charges 3 mana 360
+later
+target nil wneg later events  order 0 charges 3 carried true mana 360 mate life {t} at {t}
+use point nil unit
+point nil unit wneg answer false inside  order 0 charges 3 mana 360
+later
+point nil unit wneg later events  order 0 charges 3 carried true mana 360 mate life {t} at {t}
+use point dead
+point dead wneg answer false inside  order 0 charges 3 mana 360
+later
+point dead wneg later events  order 0 charges 3 carried true mana 360 mate life {t} at {t}
+use point item on ground
+point item on ground wneg answer false inside  order 0 charges 3 mana 360
+later
+point item on ground wneg later events  order 0 charges 3 carried false mana 360 mate life {t} at {t}

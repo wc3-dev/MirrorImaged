@@ -47,13 +47,21 @@ public sealed partial class GameNatives
     public int ChooseRandomItemExWithFilterAndIncludes(itemtype? whichType, int level, equipmentType? whichEquipmentType, itemTag? whichTag, bool includeInvalidMorphs, bool includeNonPickRandom) =>
         Pick(RandomItems(whichType?.Id ?? 9, level, includeNonPickRandom));
 
-    /// <summary>A random creep unit type of the level: not brought (needs the creep data's levels and the camps); 0.</summary>
-    [Native(Level.Close)]
-    public int ChooseRandomCreep(int level) => 0;
+    static readonly int UnitTilesets = Code("util"), UnitSpecial = Code("uspe"), NeutralBuildingRandom = Code("unbr");
 
-    /// <summary>A random neutral building type: not brought; 0.</summary>
-    [Native(Level.Close)]
-    public int ChooseRandomNPBuilding() => 0;
+    // A unit type the data lists that a random pick may choose, as the game's lists were (probe units-random-creeps): for the map's tileset or all of them
+    bool OnTileset(GameObject o) =>
+        (o.Text(UnitTilesets) ?? "").Split(',', StringSplitOptions.TrimEntries).Any(tileset => tileset == "*" || tileset.Length == 1 && tileset[0] == (char)(Data.Map?.Files.Info?.Tileset ?? 0));
+
+    // The creeps that aren't buildings, special or heroes (33 of the 864 units on the probe map's tileset), of the level asked (-1 any; none has no level: 0)
+    [Native(Level.Close, Fact = "probe units-random-creeps (11-21, D794)", Reason = "The game's lists for every level were read on the Lordaeron Summer map of the probe and matched by the data's rule above, whose draw is the map's random numbers, not the game's")]
+    public int ChooseRandomCreep(int level) =>
+        Pick([.. Data.Objects(ObjectKind.Unit).Where(o => o.Text(Race) == "creeps" && !IsHero(o.Id) && o.Integer(IsBuilding) == 0 && o.Integer(UnitSpecial) == 0 && OnTileset(o)
+            && (level == -1 || o.Integer(UnitLevel) == level)).Select(o => o.Id)]);
+
+    [Native(Level.Close, Fact = "probe units-random-creeps (11-21, D794)", Reason = "The game's list was read on the Lordaeron Summer map of the probe (9 buildings) and matched by the data's rule, whose draw is the map's random numbers, not the game's")]
+    public int ChooseRandomNPBuilding() =>
+        Pick([.. Data.Objects(ObjectKind.Unit).Where(o => o.Integer(NeutralBuildingRandom) != 0 && OnTileset(o)).Select(o => o.Id)]);
 
     [Native(Level.Close)]
     public itempool? CreateItemPool() => Make(new itempool());

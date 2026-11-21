@@ -212,25 +212,27 @@ public sealed partial class GameNatives
     public bool BlzSetAbilityStringLevelField(ability? whichAbility, abilitystringlevelfield? whichField, int level, string? value) =>
         value is not null && Write(whichAbility, whichField, level, value);
 
-    // No ability field read as a level array held anything: buffs, effects, targets, arts, requirements and data, read as
-    // each of the four kinds at indexes -1 to 2, and every set, add and remove answered false (probes abilities-fields
-    // and abilities-columns). Close: not every field was tried.
-    [Native(Level.Close)] public int BlzGetAbilityIntegerLevelArrayField(ability? whichAbility, abilityintegerlevelarrayfield? whichField, int level, int index) => 0;
-    [Native(Level.Close)] public float BlzGetAbilityRealLevelArrayField(ability? whichAbility, abilityreallevelarrayfield? whichField, int level, int index) => 0;
-    [Native(Level.Close)] public bool BlzGetAbilityBooleanLevelArrayField(ability? whichAbility, abilitybooleanlevelarrayfield? whichField, int level, int index) => false;
-    [Native(Level.Close)] public string? BlzGetAbilityStringLevelArrayField(ability? whichAbility, abilitystringlevelarrayfield? whichField, int level, int index) => "";
-    [Native(Level.Close)] public bool BlzSetAbilityIntegerLevelArrayField(ability? whichAbility, abilityintegerlevelarrayfield? whichField, int level, int index, int value) => false;
-    [Native(Level.Close)] public bool BlzSetAbilityRealLevelArrayField(ability? whichAbility, abilityreallevelarrayfield? whichField, int level, int index, float value) => false;
-    [Native(Level.Close)] public bool BlzSetAbilityBooleanLevelArrayField(ability? whichAbility, abilitybooleanlevelarrayfield? whichField, int level, int index, bool value) => false;
-    [Native(Level.Close)] public bool BlzSetAbilityStringLevelArrayField(ability? whichAbility, abilitystringlevelarrayfield? whichField, int level, int index, string? value) => false;
-    [Native(Level.Close)] public bool BlzAddAbilityIntegerLevelArrayField(ability? whichAbility, abilityintegerlevelarrayfield? whichField, int level, int value) => false;
-    [Native(Level.Close)] public bool BlzAddAbilityRealLevelArrayField(ability? whichAbility, abilityreallevelarrayfield? whichField, int level, float value) => false;
-    [Native(Level.Close)] public bool BlzAddAbilityBooleanLevelArrayField(ability? whichAbility, abilitybooleanlevelarrayfield? whichField, int level, bool value) => false;
-    [Native(Level.Close)] public bool BlzAddAbilityStringLevelArrayField(ability? whichAbility, abilitystringlevelarrayfield? whichField, int level, string? value) => false;
-    [Native(Level.Close)] public bool BlzRemoveAbilityIntegerLevelArrayField(ability? whichAbility, abilityintegerlevelarrayfield? whichField, int level, int value) => false;
-    [Native(Level.Close)] public bool BlzRemoveAbilityRealLevelArrayField(ability? whichAbility, abilityreallevelarrayfield? whichField, int level, float value) => false;
-    [Native(Level.Close)] public bool BlzRemoveAbilityBooleanLevelArrayField(ability? whichAbility, abilitybooleanlevelarrayfield? whichField, int level, bool value) => false;
-    [Native(Level.Close)] public bool BlzRemoveAbilityStringLevelArrayField(ability? whichAbility, abilitystringlevelarrayfield? whichField, int level, string? value) => false;
+    const string ArrayFieldsProbe = "probe abilities-array-fields (11-21, D792); probes abilities-fields and abilities-columns";
+
+    // No ability field held anything as a level array: each of the 860 ids common.j names and ten the object data keeps lists in (buffs, effects,
+    // targets, arts, requirements), read as each of the four kinds at levels 0 and 1 and indexes -1 to 3 on four abilities, read the empty default, and every
+    // set, add and remove answered false (probe abilities-array-fields, D792).
+    [Native(Level.Exact, Fact = ArrayFieldsProbe)] public int BlzGetAbilityIntegerLevelArrayField(ability? whichAbility, abilityintegerlevelarrayfield? whichField, int level, int index) => 0;
+    [Native(Level.Exact, Fact = ArrayFieldsProbe)] public float BlzGetAbilityRealLevelArrayField(ability? whichAbility, abilityreallevelarrayfield? whichField, int level, int index) => 0;
+    [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzGetAbilityBooleanLevelArrayField(ability? whichAbility, abilitybooleanlevelarrayfield? whichField, int level, int index) => false;
+    [Native(Level.Exact, Fact = ArrayFieldsProbe)] public string? BlzGetAbilityStringLevelArrayField(ability? whichAbility, abilitystringlevelarrayfield? whichField, int level, int index) => "";
+    [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzSetAbilityIntegerLevelArrayField(ability? whichAbility, abilityintegerlevelarrayfield? whichField, int level, int index, int value) => false;
+    [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzSetAbilityRealLevelArrayField(ability? whichAbility, abilityreallevelarrayfield? whichField, int level, int index, float value) => false;
+    [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzSetAbilityBooleanLevelArrayField(ability? whichAbility, abilitybooleanlevelarrayfield? whichField, int level, int index, bool value) => false;
+    [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzSetAbilityStringLevelArrayField(ability? whichAbility, abilitystringlevelarrayfield? whichField, int level, int index, string? value) => false;
+    [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzAddAbilityIntegerLevelArrayField(ability? whichAbility, abilityintegerlevelarrayfield? whichField, int level, int value) => false;
+    [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzAddAbilityRealLevelArrayField(ability? whichAbility, abilityreallevelarrayfield? whichField, int level, float value) => false;
+    [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzAddAbilityBooleanLevelArrayField(ability? whichAbility, abilitybooleanlevelarrayfield? whichField, int level, bool value) => false;
+    [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzAddAbilityStringLevelArrayField(ability? whichAbility, abilitystringlevelarrayfield? whichField, int level, string? value) => false;
+    [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzRemoveAbilityIntegerLevelArrayField(ability? whichAbility, abilityintegerlevelarrayfield? whichField, int level, int value) => false;
+    [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzRemoveAbilityRealLevelArrayField(ability? whichAbility, abilityreallevelarrayfield? whichField, int level, float value) => false;
+    [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzRemoveAbilityBooleanLevelArrayField(ability? whichAbility, abilitybooleanlevelarrayfield? whichField, int level, bool value) => false;
+    [Native(Level.Exact, Fact = ArrayFieldsProbe)] public bool BlzRemoveAbilityStringLevelArrayField(ability? whichAbility, abilitystringlevelarrayfield? whichField, int level, string? value) => false;
 
     /// <summary>The unit's ability's cooldown at the level (from 0), as ABILITY_RLF_COOLDOWN reads it; 0 past its levels and for one the unit lacks.</summary>
     [Native(Level.Exact, Fact = FieldsProbe + "; game-facts.md, Spells and abilities: count levels from 0 (10-14)")]
