@@ -1,0 +1,11 @@
+# 3.0.1.24371, 11-21 (L-mirror-trust-levels-recorded), Reforged graphics (War3Preferences hd=2 when it ran; the brief said classic): the game's lines, one run (the map with a computer, player 1). Nothing a map reads about visibility changes whatever CripplePlayer is given.
+start: p0's footman for p1 --m, p1's for p0 --m; point of p0's for p1 false, a point of p1's far corner false
+p0 crippled to p1, now: p0's footman for p1 --m, p1's for p0 --m; point of p0's for p1 false, a point of p1's far corner false
+p0 crippled to p1, 0.5 s: p0's footman for p1 --m, p1's for p0 --m; point of p0's for p1 false, a point of p1's far corner false
+p0 crippled to p1 then off, 0.5 s: p0's footman for p1 --m, p1's for p0 --m; point of p0's for p1 false, a point of p1's far corner false
+p0 crippled to p0, 0.5 s: p0's footman for p1 --m, p1's for p0 --m; point of p0's for p1 false, a point of p1's far corner false
+p1 crippled to p0, 0.5 s: p0's footman for p1 --m, p1's for p0 --m; point of p0's for p1 false, a point of p1's far corner false
+p0 crippled to p0 and p1, 0.5 s: p0's footman for p1 --m, p1's for p0 --m; point of p0's for p1 false, a point of p1's far corner false
+p0 crippled to an empty force, 0.5 s: p0's footman for p1 --m, p1's for p0 --m; point of p0's for p1 false, a point of p1's far corner false
+fog off: p0's footman for p1 --m, p1's for p0 --m; point of p0's for p1 false, a point of p1's far corner false
+crippled, mask off: p0's footman for p1 -f-, p1's for p0 -f-; point of p0's for p1 false, a point of p1's far corner false

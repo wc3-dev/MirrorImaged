@@ -1,0 +1,17 @@
+# 3.0.1.24371, 11-21 (L-mirror-trust-levels-recorded), Reforged graphics (War3Preferences hd=2 when it ran; the brief said classic): the game's lines, one run. Build times, the keep's 140 s and the life read at a moment vary with the frame, so every line with a time is a moving line.
+~ a finished farm, construction progress {t}: life {t} -> {t}
+~ farm plain: done {t}; life at the end {t}
+~ farm set {t} at {t} s: done {t}; life {t} -> {t}; life at the end {t}
+~ farm set {t} at {t} s: done not; life {t} -> {t}; life at the end {t}
+~ farm set {t} at {t} s: done {t}; life {t} -> {t}; life at the end {t}
+~ farm set {t} at {t} s: done {t}; life {t} -> {t}; life at the end {t}
+~ farm set {t} at {t} s then {t} at {t} s: done {t}; life {t} -> {t}, then {t} -> {t}; life at the end {t}
+~ farm set {t} at {t} s: done {t}; life {t} -> {t}; life at the end {t}
+~ farm set {t} at {t} s: done {t}; life {t} -> {t}; life at the end {t}
+~ farm set {t} at {t} s: done {t}; life {t} -> {t}; life at the end {t}
+~ keep set {t} at {t} s: order true, finished {t}, type Keep
+~ keep set {t} at {t} s: order true, finished {t}, type Keep
+~ keep set {t} at {t} s: order true, finished {t}, type Keep
+~ footman plain: order true, footman {t}
+~ footman, upgrade progress {t} at {t} s: order true, footman {t}
+~ footman, construction progress {t} at {t} s: order true, footman {t}

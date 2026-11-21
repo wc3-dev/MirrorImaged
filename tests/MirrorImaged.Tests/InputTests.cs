@@ -79,6 +79,54 @@ public sealed class InputTests : IDisposable
     }
 
     [Fact]
+    public void A_click_on_a_displayed_dialog_fires_the_button_then_the_dialog_events_and_closes_it()
+    {
+        using var simulation = Simulation.Load(Map("""
+            local d = DialogCreate()
+            local one, two = DialogAddButton(d, "One", 49), DialogAddButton(d, "Two", 50)
+            local tb, td = CreateTrigger(), CreateTrigger()
+            TriggerRegisterDialogButtonEvent(tb, two)
+            TriggerRegisterDialogEvent(td, d)
+            TriggerAddAction(tb, function() print("button", GetPlayerId(GetTriggerPlayer()), GetClickedButton() == two, GetClickedDialog() == d) end)
+            TriggerAddAction(td, function() print("dialog", GetPlayerId(GetTriggerPlayer()), GetClickedButton() == two, GetClickedDialog() == d) end)
+            TimerStart(CreateTimer(), 1, false, function() DialogDisplay(Player(0), d, true) end)
+            TimerStart(CreateTimer(), 4, false, function() print("after", GetClickedButton(), GetClickedDialog()) end)
+            """), "", data: Standard());
+
+        simulation.Click(0, 1);
+        simulation.Advance(TimeSpan.FromSeconds(2));
+        simulation.Click(1, 1);
+        simulation.Click(0, 5);
+        simulation.Click(0, 1);
+        simulation.Click(0, 1);
+        simulation.Advance(TimeSpan.FromSeconds(3));
+
+        Assert.Equal(["button\t0\ttrue\ttrue", "dialog\t0\ttrue\ttrue", "after\tnil\tnil"], simulation.Log.Select(line => line[(line.IndexOf(": ", StringComparison.Ordinal) + 2)..]));
+    }
+
+    [Fact]
+    public void A_hidden_dialog_takes_no_click_and_a_quit_button_ends_the_run()
+    {
+        using var simulation = Simulation.Load(Map("""
+            local d = DialogCreate()
+            local stay, quit = DialogAddButton(d, "Stay", 49), DialogAddQuitButton(d, false, "Quit", 81)
+            local t = CreateTrigger()
+            TriggerRegisterDialogButtonEvent(t, stay)
+            TriggerAddAction(t, function() print("stay") end)
+            DialogDisplay(Player(0), d, true)
+            DialogDisplay(Player(0), d, false)
+            TimerStart(CreateTimer(), 1, false, function() DialogDisplay(Player(0), d, true) end)
+            """), "", data: Standard());
+
+        simulation.Click(0, 0);
+        simulation.Advance(TimeSpan.FromSeconds(2));
+        simulation.Click(0, 1);
+
+        Assert.Empty(simulation.Log);
+        Assert.True(simulation.Ended);
+    }
+
+    [Fact]
     public void Leaving_marks_the_slot_left_and_fires_the_leave_event()
     {
         using var simulation = Simulation.Load(Map("""

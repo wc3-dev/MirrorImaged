@@ -117,7 +117,7 @@ public sealed partial class GameNatives
     // Neutral orders go to a unit the neutral player doesn't own, as the shops take them
     [Native(Level.Close, Fact = OrderFacts)]
     public bool IssueNeutralImmediateOrderById(player? forWhichPlayer, unit? neutralStructure, int unitId) =>
-        forWhichPlayer is not null && (neutralStructure is not null && Sells(neutralStructure, unitId) ? Buy(forWhichPlayer, neutralStructure, unitId) : Give(neutralStructure, unitId, 0, 0, null, 0));
+        forWhichPlayer is not null && (neutralStructure is not null && Sells(neutralStructure, unitId) ? Buy(forWhichPlayer, neutralStructure, unitId) : Data.Object(ObjectKind.Item, unitId) is null && Data.Object(ObjectKind.Unit, unitId) is null && Give(neutralStructure, unitId, 0, 0, null, 0));
 
     [Native(Level.Close, Fact = OrderFacts)]
     public bool IssueNeutralImmediateOrder(player? forWhichPlayer, unit? neutralStructure, string? unitToBuild) => unitToBuild is { Length: 4 } code && IssueNeutralImmediateOrderById(forWhichPlayer, neutralStructure, Code(code));

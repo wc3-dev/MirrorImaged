@@ -220,15 +220,15 @@ public sealed partial class GameNatives
         foreach (var crater in _craters.Where(c => c.Stopped is null)) (crater.Stopped, crater.StoppedAt, crater.Fade) = (_game.Step, Seconds, 0);
     }
 
-    [Native(Level.Recorded, Reason = "Ripples the ground for a while, which GetLocationZ would show; only the crater is measured and modelled")]
+    [Native(Level.Recorded, Reason = "On Reforged graphics GetLocationZ read 0.000 at every corner within the radius, 0.25 s to 5 s after a ripple was made and after it was stopped, and also for the lasting crater read as the control (probe terrain-deform, D796); nothing is modelled, and the classic reading was not made")]
     public terraindeformation? TerrainDeformRipple(float x, float y, float radius, float depth, int duration, int count, float spaceWaves, float timeWaves, float radiusStartPct, bool limitNeg) =>
         Make(new terraindeformation());
 
-    [Native(Level.Recorded, Reason = "Shakes the ground at random, which GetLocationZ would show; only the crater is measured and modelled")]
+    [Native(Level.Recorded, Reason = "On Reforged graphics GetLocationZ read 0.000 at every corner within the radius, 0.25 s to 5 s after a random shake was made and after it was stopped, and also for the lasting crater read as the control (probe terrain-deform, D796); nothing is modelled, and the classic reading was not made")]
     public terraindeformation? TerrainDeformRandom(float x, float y, float radius, float minDelta, float maxDelta, int duration, int updateInterval) =>
         Make(new terraindeformation());
 
-    [Native(Level.Recorded, Reason = "Sends a wave over the ground, which GetLocationZ would show; only the crater is measured and modelled")]
+    [Native(Level.Recorded, Reason = "On Reforged graphics GetLocationZ read 0.000 at every corner within the radius, 0.25 s to 5 s after a wave was made and after it was stopped, and also for the lasting crater read as the control (probe terrain-deform, D796); nothing is modelled, and the classic reading was not made")]
     public terraindeformation? TerrainDeformWave(float x, float y, float dirX, float dirY, float distance, float speed, float radius, float depth, int trailTime, int count) =>
         Make(new terraindeformation());
 

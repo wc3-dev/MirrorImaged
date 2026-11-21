@@ -75,10 +75,14 @@ public sealed partial class GameNatives
     }
 
     [Native(Level.Close)] public void ResetCaptainLocs() => WarOf(Ai).Goal = null;
-    [Native(Level.Close)] public void SetCaptainChanges(bool allow) { }
+    [Native(Level.Recorded, Reason = "Whether the engine lets the attack captain change its goal while it fights; the simulation's captain keeps the goal the script gave it (D798)")]
+    public void SetCaptainChanges(bool allow) { }
     [Native(Level.Close)] public void ClearCaptainTargets() => WarOf(Ai).Goal = null;
-    [Native(Level.Close)] public void CaptainVsPlayer(player? id) { }
-    [Native(Level.Close)] public void CaptainVsUnits(player? id) { }
+    [Native(Level.Recorded, Reason = "Points the attack captain at a player, so it picks that player's units and buildings as targets; the simulation's captain goes to the place the script names (D798)")]
+    public void CaptainVsPlayer(player? id) { }
+
+    [Native(Level.Recorded, Reason = "Points the attack captain at a player's units, not its buildings; the simulation's captain goes to the place the script names (D798)")]
+    public void CaptainVsUnits(player? id) { }
 
     /// <summary>The captain fights its way to the place.</summary>
     [Native(Level.Close)]
@@ -157,8 +161,11 @@ public sealed partial class GameNatives
             .ThenBy(b => Distance2(b.X - from.Item1, b.Y - from.Item2)).FirstOrDefault();
     }
 
-    [Native(Level.Close)] public void StartGetEnemyBase() { }
-    [Native(Level.Close)] public bool WaitGetEnemyBase() => false;
+    [Native(Level.Close, Reason = "The game searches for the base over time; here GetEnemyBase answers at once, so the search is always done (D431)")]
+    public void StartGetEnemyBase() { }
+
+    [Native(Level.Close, Reason = "False: the search StartGetEnemyBase starts is already done (D431)")]
+    public bool WaitGetEnemyBase() => false;
 
     /// <summary>How strong the enemies are: their fighting units that stand.</summary>
     [Native(Level.Close)]

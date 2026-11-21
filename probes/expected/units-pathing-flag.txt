@@ -1,0 +1,4 @@
+# 3.0.1.24371, 11-21 (L-mirror-trust-levels-recorded), Reforged graphics (War3Preferences hd=2 when it ran; the brief said classic): the game's lines, one run.
+pathing on: got through true, strayed -140 to 0
+pathing off: got through true, strayed 0 to 0
+pathing off then on at 0.5 s: got through true, strayed -155 to 0

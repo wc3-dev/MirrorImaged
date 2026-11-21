@@ -21,7 +21,10 @@ public sealed class ShopTests : IDisposable
 
     static StandardData Standard() => new StandardData()
         .Add(ObjectKind.Unit, "hfoo", Values("unam=Footman;uhpm=420;umpm=0;umpi=0;umvs=270;umvt=foot;ugol=135;ufoo=2;uaen=0;ucol=31"))
-        .Add(ObjectKind.Unit, "nmrk", Values("unam=Marketplace;uhpm=1500;umpm=0;umpi=0;ubdg=1;umvs=0;usei=phea;uabi=Apit;ucol=80"))
+        .Add(ObjectKind.Unit, "nmrk", Values("unam=Marketplace;uhpm=1500;umpm=0;umpi=0;ubdg=1;umvs=0;usei=phea;uabi=Apit,Asid;ucol=80"))
+        .Add(ObjectKind.Unit, "ngme", Values("unam=Goblin Merchant;uhpm=1500;umpm=0;umpi=0;ubdg=1;umvs=0;usei=phea;ucol=80"))
+        .Add(ObjectKind.Ability, "Asid", Values("anam=Sell Items;alev=1"))
+        .Add(ObjectKind.Item, "ratc", Item("unam=Claws of Attack;igol=50;ilum=0;iabi=AIat"))
         .Add(ObjectKind.Unit, "Hpal", Values("unam=Paladin;upro=Granis;uhpm=100;umpm=0;umpi=100;ustr=22;uagi=13;uint=17;ustp=2.7;uagp=1.5;uinp=1.8;umvs=320;uaen=0;ucol=31;udef=2"))
         .Add(ObjectKind.Ability, "Apit", Values("anam=Pawn Item;alev=1"))
         .Add(ObjectKind.Unit, "ntav", Values("unam=Tavern;uhpm=1500;umpm=0;umpi=0;ubdg=1;umvs=0;useu=hfoo;ucol=80"))
@@ -63,6 +66,60 @@ public sealed class ShopTests : IDisposable
         Assert.Equal(["no one near\tfalse\t300", "item\tPotion of Healing\tMarketplace\tFootman", "bought\ttrue\t200\tfalse", "unit\tFootman\tTavern\tFootman", "recruited\ttrue\t65", "poor\tfalse\t65"], lines);
     }
 
+    // probe items-stock: a good added to a shop with Sell Items comes on sale once the game is 2 s old, as many times as its stock says, and the data's goods stay
+    [Fact]
+    public void A_good_added_to_a_shops_stock_is_sold_from_two_seconds_into_the_game_as_many_times_as_its_stock_says()
+    {
+        var lines = Run("""
+            local shop = CreateUnit(Player(PLAYER_NEUTRAL_AGGRESSIVE), FourCC("nmrk"), 0, 0, 0)
+            local claws, potion = FourCC("ratc"), FourCC("phea")
+            SetPlayerState(Player(0), PLAYER_STATE_RESOURCE_GOLD, 1000)
+            CreateUnit(Player(0), FourCC("hfoo"), 100, 0, 0)
+            local function buy(item) return IssueNeutralImmediateOrderById(Player(0), shop, item) end
+            AddItemToStock(shop, claws, 5, 3)
+            print("early", buy(claws))
+            TimerStart(CreateTimer(), 3, false, function()
+                print("3,3", buy(claws), buy(claws), buy(claws), buy(claws))
+                AddItemToStock(shop, claws, 0, 2)
+                print("0,2", buy(claws))
+                AddItemToStock(shop, claws, 2, 2)
+                print("2,2", buy(claws), buy(claws), buy(claws))
+                AddItemToStock(shop, claws, 1, 2)
+                RemoveItemFromStock(shop, claws)
+                AddItemToStock(shop, potion, 0, 2)
+                RemoveItemFromStock(shop, potion)
+                print("removed", buy(claws), "listed", buy(potion))
+            end)
+            """, 4);
+
+        Assert.Equal(["early\tfalse", "3,3\ttrue\ttrue\ttrue\tfalse", "0,2\tfalse", "2,2\ttrue\ttrue\tfalse", "removed\tfalse\tlisted\ttrue"], lines);
+    }
+
+    // probe items-stock: a shop without Sell Items sells no added good; the "all" natives reach the shops there are, not the ones made after
+    [Fact]
+    public void A_shop_without_sell_items_sells_no_added_good_and_the_all_natives_reach_the_shops_that_stand()
+    {
+        var lines = Run("""
+            local sells = CreateUnit(Player(PLAYER_NEUTRAL_AGGRESSIVE), FourCC("nmrk"), 0, 0, 0)
+            local merchant = CreateUnit(Player(PLAYER_NEUTRAL_AGGRESSIVE), FourCC("ngme"), 2000, 0, 0)
+            CreateUnit(Player(0), FourCC("hfoo"), 100, 0, 0)
+            CreateUnit(Player(0), FourCC("hfoo"), 2100, 0, 0)
+            local claws = FourCC("ratc")
+            AddItemToAllStock(claws, 3, 3)
+            local later
+            TimerStart(CreateTimer(), 1, false, function()
+                later = CreateUnit(Player(PLAYER_NEUTRAL_AGGRESSIVE), FourCC("nmrk"), 4000, 0, 0)
+                CreateUnit(Player(0), FourCC("hfoo"), 4100, 0, 0)
+            end)
+            local function buy(shop) return IssueNeutralImmediateOrderById(Player(0), shop, claws) end
+            TimerStart(CreateTimer(), 3, false, function() print(buy(sells), buy(merchant), buy(later)) end)
+            TimerStart(CreateTimer(), 3.5, false, function() RemoveItemFromAllStock(claws) end)
+            TimerStart(CreateTimer(), 4, false, function() print(buy(sells)) end)
+            """, 5);
+
+        Assert.Equal(["true\tfalse\tfalse", "false"], lines);
+    }
+
     [Fact]
     public void A_hero_pawns_an_item_to_a_shop_for_half_its_price_and_the_pawn_event_fires()
     {
@@ -78,6 +135,6 @@ public sealed class ShopTests : IDisposable
             print("pawn", UnitDropItemTarget(hero, item, shop), GetPlayerState(Player(0), PLAYER_STATE_RESOURCE_GOLD), UnitItemInSlot(hero, 0) == nil)
             """, 2);
 
-        Assert.Equal(["bought	true	200", "has	true", "pawned	Potion of Healing	Marketplace	Paladin", "pawn	true	250	true"], lines);
+        Assert.Equal(["bought\ttrue\t200", "has\ttrue", "pawned\tPotion of Healing\tMarketplace\tPaladin", "pawn\ttrue\t250\ttrue"], lines);
     }
 }

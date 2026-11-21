@@ -21,19 +21,20 @@ public sealed partial class GameNatives
     /// <summary>The unit that bought, in a sell event.</summary>
     [Native(Level.Close)] public unit? GetBuyingUnit() => Response(UnitSell, UnitSellItem, PlayerUnitSell, PlayerUnitSellItem, UnitPawnItem, PlayerUnitPawnItem)?.Target as unit;
 
-    bool Sells(unit shop, int id) => Listed(shop, ItemsSold, id) || Listed(shop, UnitsSold, id);
+    bool Sells(unit shop, int id) => Listed(shop, ItemsSold, id) || Listed(shop, UnitsSold, id) || OnSale(shop, id);
 
     // The player buys: its unit nearest the shop pays and takes the item, or the shop makes the unit for it
     bool Buy(player p, unit shop, int id)
     {
         var buyer = Mine(p).Where(u => u != shop && !u.Constructing && Distance2(u.X - shop.X, u.Y - shop.Y) <= ShopReach * ShopReach).OrderBy(u => Distance2(u.X - shop.X, u.Y - shop.Y)).FirstOrDefault();
         if (buyer is null) return false;
-        if (Listed(shop, ItemsSold, id) && Data.Object(ObjectKind.Item, id) is { } item)
+        if ((Listed(shop, ItemsSold, id) || OnSale(shop, id)) && Data.Object(ObjectKind.Item, id) is { } item)
         {
             var (gold, lumber) = (item.Integer(ItemGold), item.Integer(ItemLumber));
             if (!CanPay(p, gold, lumber)) return false;
             Pay(p, gold, lumber);
             if (CreateItem(id, buyer.X, buyer.Y) is not { } made) return false;
+            if (shop.Stocked.TryGetValue(id, out var added)) shop.Stocked[id] = added with { Stock = added.Stock - 1 };
             UnitAddItem(buyer, made);
             FireUnit(new(shop, Item: made, Target: buyer), UnitSellItem, PlayerUnitSellItem, p);
             return true;

@@ -51,6 +51,25 @@ public sealed class AiTownTests : IDisposable
     }
 
     [Fact]
+    public void A_player_has_a_queue_of_commands_the_map_sent_it_that_its_script_reads_and_pops()
+    {
+        var lines = Run("""
+            print(CommandsWaiting(), GetLastCommand(), GetLastData())
+            CommandAI(p, 5, 50)
+            CommandAI(p, 6, 60)
+            CommandAI(e, 7, 70)
+            print(CommandsWaiting(), GetLastCommand(), GetLastData())
+            PopLastCommand()
+            print(CommandsWaiting(), GetLastCommand(), GetLastData())
+            PopLastCommand()
+            PopLastCommand()
+            print(CommandsWaiting(), GetLastCommand(), GetLastData())
+            """);
+
+        Assert.Equal(["0\t0\t0", "2\t5\t50", "1\t6\t60", "0\t0\t0"], lines);
+    }
+
+    [Fact]
     public void A_town_is_threatened_while_an_armed_enemy_stands_near_one_of_its_halls()
     {
         var lines = Run("""

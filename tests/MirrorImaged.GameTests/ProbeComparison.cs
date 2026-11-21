@@ -127,7 +127,7 @@ public static class ProbeComparison
     public static string Source(string name) => IsJass(name) ? ProbeMap.JassSource(name) : ProbeMap.Source(name);
 
     /// <summary>Whether a probe runs on the map with a computer and named slots (decisions D140).</summary>
-    public static bool WithComputer(string name) => name is "events" or "lobby" or "data-names";
+    public static bool WithComputer(string name) => name is "events" or "lobby" or "data-names" or "units-cripple";
 
     /// <summary>
     /// Whether a probe reads the game's data: W2-1's, W2-2's, W2-3's and W2-4's probes, W2-7's abilities probes, W5-2's

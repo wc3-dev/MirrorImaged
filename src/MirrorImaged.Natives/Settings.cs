@@ -1,9 +1,15 @@
 using MirrorImaged.Data;
+using MirrorImaged.World;
 
 namespace MirrorImaged.Natives;
 
 // The game's settings, menu and bookkeeping natives: what a getter reads back is kept; the screens, saves and campaign menus
 // aren't simulated and are Recorded. Defaults not measured are noted (decisions D600).
+public partial class unit
+{
+    internal bool PathingOff;
+}
+
 public sealed partial class GameNatives
 {
     const string SettingsNote = "A setting of the game's screens or menus; no native reads it back";
@@ -186,13 +192,37 @@ public sealed partial class GameNatives
     public unit? CreateUnitAtLocByName(player? id, string? unitname, location? whichLocation, float face) =>
         whichLocation is null || unitname is null || Data.Id(ObjectKind.Unit, unitname) is not { } unitId ? null : CreateUnit(id, unitId, whichLocation.X, whichLocation.Y, face);
 
-    /// <summary>Close: movement comes with wave 3; kept as the unit's flag.</summary>
-    [Native(Level.Recorded, Reason = "Whether a unit collides on its walk; movement comes with wave 3")] public void SetUnitPathing(unit? whichUnit, bool flag) { }
+    // Kept on the unit for the collision code to read (D799); nothing reads it yet
+    [Native(Level.Recorded, Reason = "Whether a unit collides on its walk; the flag is kept on the unit (PathingOff), and the walking code that would read it is the unit collision work's (D799)")]
+    public void SetUnitPathing(unit? whichUnit, bool flag)
+    {
+        if (whichUnit is not null) whichUnit.PathingOff = !flag;
+    }
 
-    [Native(Level.Recorded, Reason = "Construction and upgrade progress are drawn; they come with buildings (wave 3)")] public void UnitSetConstructionProgress(unit? whichUnit, int constructionPercentage) { }
-    [Native(Level.Recorded, Reason = "Construction and upgrade progress are drawn; they come with buildings (wave 3)")] public void UnitSetUpgradeProgress(unit? whichUnit, int upgradePercentage) { }
+    // The rest of the build time is what the percentage leaves of it, counted from now, and the life jumps to the building's tenth and that share of it more
+    // (probe units-construction, D796). Close: a negative percentage finishes it as 100 does, as measured, and 0 was not seen to finish; life while it grows is flat here
+    [Native(Level.Close, Fact = "probes/expected/units-construction.txt")]
+    public void UnitSetConstructionProgress(unit? whichUnit, int constructionPercentage)
+    {
+        if (whichUnit is not { Constructing: true } building) return;
+        var percent = constructionPercentage < 0 ? 100 : Math.Min(constructionPercentage, 100);
+        var left = Math.Max(building.Type.Real(BuildTime), 0.1) * (1 - percent / 100.0);
+        building.Life = Math.Min(building.MaxLife, building.MaxLife * (StartLifeShare + percent / 100f));
+        building.ConstructDone = _game.Step + (percent == 100 ? 0 : Math.Max(1, Game.Steps(left)));
+        if (percent == 100) FinishBuilding(building);
+        else _game.At(building.ConstructDone, () => FinishBuilding(building));
+    }
 
-    [Native(Level.Recorded, Reason = "Crippling hides an opponent's view of the player; visibility comes with wave 6")] public void CripplePlayer(player? whichPlayer, force? toWhichPlayers, bool flag) { }
+    // The upgrade of a building to another type finishes the rest of its time after now; training and research are not changed (probe units-construction)
+    [Native(Level.Close, Fact = "probes/expected/units-construction.txt")]
+    public void UnitSetUpgradeProgress(unit? whichUnit, int upgradePercentage)
+    {
+        if (whichUnit is not { Train: [{ Started: true, Upgrade: true } item, ..] } building) return;
+        item.Done = _game.Step + Math.Max(1, Game.Steps(item.Seconds * (1 - Math.Clamp(upgradePercentage, 0, 100) / 100.0)));
+        _game.At(item.Done, () => FinishTraining(building, item));
+    }
+
+    [Native(Level.Recorded, Reason = "Crippling a player to a force (melee's exposing of a defeated player's units to its enemies) changed none of the visibility reads in the game: the player's units and the ground under them read the same for the force, crippled or not, with fog and mask on or off (probe units-cripple, D796)")] public void CripplePlayer(player? whichPlayer, force? toWhichPlayers, bool flag) { }
 
     /// <summary>The cliff level of the corner nearest the point, as the ground's tiles give it; 0 off the map.</summary>
     [Native(Level.Close)]
