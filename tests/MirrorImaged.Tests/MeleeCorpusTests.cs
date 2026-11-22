@@ -105,7 +105,9 @@ public sealed class MeleeCorpusTests(ITestOutputHelper output) : IDisposable
         var maps = Corpus.Part(storage.Names
             .Where(name => name.StartsWith("War3.w3mod:Maps/", StringComparison.OrdinalIgnoreCase) && Path.GetExtension(name).ToLowerInvariant() is ".w3x" or ".w3m")
             .Where(name => only is null || name.Contains(only, StringComparison.OrdinalIgnoreCase))
-            .Order(StringComparer.Ordinal), part, Corpus.MeleeShards);
+            // the most players first, so each part is dealt about as many of the long 8- and 6-player games as any other (D872)
+            .OrderByDescending(name => System.Text.RegularExpressions.Regex.Match(name, @"\((\d+)\)") is { Success: true } players ? int.Parse(players.Groups[1].Value) : 0)
+            .ThenBy(name => name, StringComparer.Ordinal), part, Corpus.MeleeShards);
         var lines = new string?[maps.Count];
         var (found, short_) = (new List<string>[maps.Count], new List<string>[maps.Count]);
         Corpus.Each(maps, (at, name) =>
