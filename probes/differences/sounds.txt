@@ -6,7 +6,7 @@
 - file Sound\Music\mp3Music\Human1.mp3 272848
 + file Sound\Music\mp3Music\Human1.mp3 273057
 
-# A unit's label names its files without their folder; the game found them and took one at random (D523, Close).
+# A unit's label names its files without their folder; the game found them and took one at random, where `CreateSoundFromLabel` finds none here (D523, Close).
 - label HeroPaladinWhat duration 1184 playing false loading false
 + label HeroPaladinWhat duration 0 playing false loading false
 

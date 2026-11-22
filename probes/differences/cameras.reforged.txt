@@ -8,6 +8,6 @@
 
 # A position outside bounds of 200 each way, set after pans with a z made inside bounds of 0, with the rotation at 120:
 # the game held the target 200 along the view past the corner, which cameras-2 and cameras-3 didn't repeat at any
-# rotation; here the bounds' box holds it (D502, Close).
+# rotation; here the bounds' box holds the target `SetCameraPosition` gives (D502, Close).
 - clamped 100.0000 373.2051 10.0000
 + clamped 200.0000 200.0000 10.0000

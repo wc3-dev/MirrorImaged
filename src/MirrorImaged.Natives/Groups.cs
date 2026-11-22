@@ -37,8 +37,8 @@ public sealed partial class GameNatives
     }
 
     /// <summary>True when the unit wasn't in the group; false for one already in it, nil and no group.</summary>
-    /// <remarks>Exact: matches the game wherever measured (facts, Groups: probes units-groups and units-order (11-08)).</remarks>
-    [Native(Level.Exact, Fact = GroupsProbe)]
+    /// <remarks>Close: matches the game wherever measured but for where a unit goes in the group, which is the order made here and the order of the units' memory in the game (D271, D840; facts, Groups: probes units-groups and units-order (11-08)).</remarks>
+    [Native(Level.Close, Fact = GroupsProbe)]
     public bool GroupAddUnit(group? whichGroup, unit? whichUnit)
     {
         if (whichGroup is null || whichUnit is null) return false;
@@ -136,8 +136,8 @@ public sealed partial class GameNatives
     public unit? GetFilterUnit() => _filterUnit;
 
     /// <summary>Adds the first group's units to the second; answers how many weren't there.</summary>
-    /// <remarks>Exact: matches the game wherever measured (facts, Groups: probes units-groups and units-order (11-08)).</remarks>
-    [Native(Level.Exact, Fact = GroupsProbe)]
+    /// <remarks>Close: matches the game wherever measured but for where a unit goes in the group, which is the order made here and the order of the units' memory in the game (D271, D840; facts, Groups: probes units-groups and units-order (11-08)).</remarks>
+    [Native(Level.Close, Fact = GroupsProbe)]
     public int BlzGroupAddGroupFast(group? whichGroup, group? addGroup) =>
         whichGroup is null || addGroup is null ? 0 : whichGroup.Units.ToArray().Count(u => GroupAddUnit(addGroup, u));
 
@@ -153,28 +153,28 @@ public sealed partial class GameNatives
     /// (squares of 256, rows from the south, west to east, the last to enter a square first). The group is emptied
     /// first.
     /// </summary>
-    /// <remarks>Exact: matches the game wherever measured (facts, Groups: probes units-groups and units-order (11-08); game-facts.md, Groups and performance: tests unit origins and clears its group).</remarks>
-    [Native(Level.Exact, Fact = GroupsProbe + "; game-facts.md, Groups and performance: tests unit origins and clears its group")]
+    /// <remarks>Close: matches the game wherever measured but for where a unit goes in the group, which is the order made here and the order of the units' memory in the game (D271, D840; facts, Groups: probes units-groups and units-order (11-08); game-facts.md, Groups and performance: tests unit origins and clears its group).</remarks>
+    [Native(Level.Close, Fact = GroupsProbe + "; game-facts.md, Groups and performance: tests unit origins and clears its group")]
     public void GroupEnumUnitsInRange(group? whichGroup, float x, float y, float radius, boolexpr? filter) =>
         Enumerate(whichGroup, ByPlace(u => radius >= 0 && Distance2(u.X - x, u.Y - y) <= radius * radius), filter);
 
     /// <summary>As GroupEnumUnitsInRange: the count is passed over, as in the game.</summary>
-    /// <remarks>Exact: matches the game wherever measured (facts, Groups: probes units-groups and units-order (11-08)).</remarks>
-    [Native(Level.Exact, Fact = GroupsProbe)]
+    /// <remarks>Close: matches the game wherever measured but for where a unit goes in the group, which is the order made here and the order of the units' memory in the game (D271, D840; facts, Groups: probes units-groups and units-order (11-08)).</remarks>
+    [Native(Level.Close, Fact = GroupsProbe)]
     public void GroupEnumUnitsInRangeCounted(group? whichGroup, float x, float y, float radius, boolexpr? filter, int countLimit) =>
         GroupEnumUnitsInRange(whichGroup, x, y, radius, filter);
 
     /// <summary>As <c>GroupEnumUnitsInRange</c>, at a location's place; a null location leaves the group as it is.</summary>
-    /// <remarks>Exact: matches the game wherever measured (facts, Groups: probes units-groups and units-order (11-08)).</remarks>
-    [Native(Level.Exact, Fact = GroupsProbe)]
+    /// <remarks>Close: matches the game wherever measured but for where a unit goes in the group, which is the order made here and the order of the units' memory in the game (D271, D840; facts, Groups: probes units-groups and units-order (11-08)).</remarks>
+    [Native(Level.Close, Fact = GroupsProbe)]
     public void GroupEnumUnitsInRangeOfLoc(group? whichGroup, location? whichLocation, float radius, boolexpr? filter)
     {
         if (whichLocation is not null) GroupEnumUnitsInRange(whichGroup, whichLocation.X, whichLocation.Y, radius, filter);
     }
 
     /// <summary>As GroupEnumUnitsInRangeOfLoc: the count is passed over, as in the game.</summary>
-    /// <remarks>Exact: matches the game wherever measured (facts, Groups: probes units-groups and units-order (11-08)).</remarks>
-    [Native(Level.Exact, Fact = GroupsProbe)]
+    /// <remarks>Close: matches the game wherever measured but for where a unit goes in the group, which is the order made here and the order of the units' memory in the game (D271, D840; facts, Groups: probes units-groups and units-order (11-08)).</remarks>
+    [Native(Level.Close, Fact = GroupsProbe)]
     public void GroupEnumUnitsInRangeOfLocCounted(group? whichGroup, location? whichLocation, float radius, boolexpr? filter, int countLimit) =>
         GroupEnumUnitsInRangeOfLoc(whichGroup, whichLocation, radius, filter);
 
@@ -182,23 +182,23 @@ public sealed partial class GameNatives
     /// The units whose 32 cell lies in the rect, its west and south edges past the rect's (as EnumDestructablesInRect
     /// finds destructables), as GroupEnumUnitsInRange takes and orders them. A nil rect leaves the group as it is.
     /// </summary>
-    /// <remarks>Exact: matches the game wherever measured (facts, Groups: probes units-groups and units-order (11-08)).</remarks>
-    [Native(Level.Exact, Fact = GroupsProbe)]
+    /// <remarks>Close: matches the game wherever measured but for where a unit goes in the group, which is the order made here and the order of the units' memory in the game (D271, D840; facts, Groups: probes units-groups and units-order (11-08)).</remarks>
+    [Native(Level.Close, Fact = GroupsProbe)]
     public void GroupEnumUnitsInRect(group? whichGroup, rect? r, boolexpr? filter)
     {
         if (r is not null) Enumerate(whichGroup, ByPlace(u => Inside(r, u.X, u.Y)), filter);
     }
 
     /// <summary>As GroupEnumUnitsInRect: the count is passed over, as in the game.</summary>
-    /// <remarks>Exact: matches the game wherever measured (facts, Groups: probes units-groups and units-order (11-08)).</remarks>
-    [Native(Level.Exact, Fact = GroupsProbe)]
+    /// <remarks>Close: matches the game wherever measured but for where a unit goes in the group, which is the order made here and the order of the units' memory in the game (D271, D840; facts, Groups: probes units-groups and units-order (11-08)).</remarks>
+    [Native(Level.Close, Fact = GroupsProbe)]
     public void GroupEnumUnitsInRectCounted(group? whichGroup, rect? r, boolexpr? filter, int countLimit) => GroupEnumUnitsInRect(whichGroup, r, filter);
 
     /// <summary>
     /// The player's units, hidden, dead and removed in this step too, offered to the filter newest first.
     /// </summary>
-    /// <remarks>Exact: matches the game wherever measured (facts, Groups: probes units-groups and units-order (11-08); game-facts.md, Units: finds a unit hidden in a rect (10-26)).</remarks>
-    [Native(Level.Exact, Fact = GroupsProbe + "; game-facts.md, Units: finds a unit hidden in a rect (10-26)")]
+    /// <remarks>Close: matches the game wherever measured but for where a unit goes in the group, which is the order made here and the order of the units' memory in the game (D271, D840; facts, Groups: probes units-groups and units-order (11-08); game-facts.md, Units: finds a unit hidden in a rect (10-26)).</remarks>
+    [Native(Level.Close, Fact = GroupsProbe + "; game-facts.md, Units: finds a unit hidden in a rect (10-26)")]
     public void GroupEnumUnitsOfPlayer(group? whichGroup, player? whichPlayer, boolexpr? filter)
     {
         if (whichPlayer is not null) Enumerate(whichGroup, Newest(u => u.Owner == whichPlayer), filter);
@@ -208,8 +208,8 @@ public sealed partial class GameNatives
     /// Every player's units of the type named as UnitId names it, in any case ("footman"), or by its id ("hfoo"), taken and
     /// ordered as GroupEnumUnitsOfPlayer takes them.
     /// </summary>
-    /// <remarks>Exact: matches the game wherever measured (facts, Groups: probes units-groups and units-order (11-08)).</remarks>
-    [Native(Level.Exact, Fact = GroupsProbe)]
+    /// <remarks>Close: matches the game wherever measured but for where a unit goes in the group, which is the order made here and the order of the units' memory in the game (D271, D840; facts, Groups: probes units-groups and units-order (11-08)).</remarks>
+    [Native(Level.Close, Fact = GroupsProbe)]
     public void GroupEnumUnitsOfType(group? whichGroup, string? unitname, boolexpr? filter)
     {
         var type = UnitId(unitname);
@@ -218,8 +218,8 @@ public sealed partial class GameNatives
     }
 
     /// <summary>As GroupEnumUnitsOfType: the count is passed over, as in the game.</summary>
-    /// <remarks>Exact: matches the game wherever measured (facts, Groups: probes units-groups and units-order (11-08)).</remarks>
-    [Native(Level.Exact, Fact = GroupsProbe)]
+    /// <remarks>Close: matches the game wherever measured but for where a unit goes in the group, which is the order made here and the order of the units' memory in the game (D271, D840; facts, Groups: probes units-groups and units-order (11-08)).</remarks>
+    [Native(Level.Close, Fact = GroupsProbe)]
     public void GroupEnumUnitsOfTypeCounted(group? whichGroup, string? unitname, boolexpr? filter, int countLimit) =>
         GroupEnumUnitsOfType(whichGroup, unitname, filter);
 
