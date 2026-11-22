@@ -88,6 +88,7 @@ public sealed partial class GameNatives
         var mask = Mask(t);
         if (mask == 0) return;
         cells[cell] = flag ? (byte)(cells[cell] & ~mask) : (byte)(cells[cell] | mask);
+        _landLabels = null;
     }
 
     // The bit of a pathing kind: PATHING_TYPE_ANY (0) any of them, one beyond the list none

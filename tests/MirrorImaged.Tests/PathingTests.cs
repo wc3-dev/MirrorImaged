@@ -19,6 +19,7 @@ public sealed class PathingTests : IDisposable
         var data = new StandardData()
             .Add(ObjectKind.Unit, "hfoo", Values("unam=Footman;uhpm=100;umvs=320;umvt=foot;uaen=0;ucol=31"))
             .Add(ObjectKind.Unit, "hbar", Values("unam=Barracks;uhpm=1500;ubdg=1;ucol=100;umvs=0"))
+            .Add(ObjectKind.Unit, "nwgt", Values("unam=Way Gate;uhpm=500;ubdg=1;ucol=64;umvs=0"))
             .Add(ObjectKind.Unit, "hhou", Values(@"unam=Farm;uhpm=500;ubdg=1;ucol=72;umvs=0;upat=PathTexturesx4SimpleSolid.tga"))
             .Add(ObjectKind.Unit, "halt", Values(@"unam=Altar;uhpm=900;ubdg=1;ucol=144;umvs=0;upat=PathTexturesx10Simple.tga"));
         data.Footprints[@"PathTexturesx4SimpleSolid.tga"] = new Footprint(4, 4, [.. Enumerable.Repeat(true, 16)]);
@@ -34,6 +35,14 @@ public sealed class PathingTests : IDisposable
         for (var row = 51; row <= 76; row++)
             foreach (var column in new[] { 73, 74 }) pathing.Cells[row * 128 + column] = PathingType.Walk;
         map.PathingMap = pathing;
+    }
+
+    // the wall from the world's bottom edge to its top, so the ground is two pieces
+    static void WholeWall(Map map)
+    {
+        Wall(map);
+        for (var row = 0; row < 128; row++)
+            foreach (var column in new[] { 73, 74 }) map.PathingMap!.Cells[row * 128 + column] = PathingType.Walk;
     }
 
     List<string> Run(string main, double seconds, Action<Map>? change = null)
@@ -61,6 +70,23 @@ public sealed class PathingTests : IDisposable
             """, 16, Wall);
 
         Assert.Equal(["end\t600\t0\t0\ttrue"], lines);
+    }
+
+    [Fact]
+    public void A_walker_sent_to_ground_it_cant_walk_to_goes_through_an_active_way_gate_and_stops_at_its_ground_without_one()
+    {
+        var lines = Run("""
+            local gate = CreateUnit(Player(PLAYER_NEUTRAL_PASSIVE), FourCC("nwgt"), -400, 0, 0)
+            WaygateSetDestination(gate, 700, 500)
+            WaygateActivate(gate, true)
+            local u = CreateUnit(Player(0), FourCC("hfoo"), 0, 0, 0)
+            IssuePointOrder(u, "move", 600, 0)
+            local stuck = CreateUnit(Player(0), FourCC("hfoo"), 0, -600, 0)
+            TimerStart(CreateTimer(), 4, false, function() WaygateActivate(gate, false) IssuePointOrder(stuck, "move", 600, -600) end)
+            TimerStart(CreateTimer(), 15, false, function() print("end", f0(GetUnitX(u)), f0(GetUnitY(u)), GetUnitX(stuck) < 300) end)
+            """, 16, WholeWall);
+
+        Assert.Equal(["end	600	0	true"], lines);
     }
 
     [Fact]

@@ -363,8 +363,8 @@ public sealed partial class GameNatives
     [Native(Level.Close, Fact = OrderFacts)]
     public destructable? GetUnitRallyDestructable(unit? whichUnit) => whichUnit?.RallyTarget as destructable;
 
-    /// <summary>Switches the waygate on or off; nothing for a null unit.</summary>
-    /// <remarks>Close: the value is kept on the unit and read back; the game's own waygate use is not modelled or measured.</remarks>
+    /// <summary>Switches the waygate on or off; nothing for a null unit. A walker whose way leads through an active gate walks into it (D873).</summary>
+    /// <remarks>Close: the value is kept on the unit and read back; walkers go through active gates on their way to ground they can't walk to (D873), which the game's computers do on Plaguelands (measured 11-22), but the game's own choice of gate is not measured.</remarks>
     [Native(Level.Close)]
     public void WaygateActivate(unit? waygate, bool activate)
     {
@@ -376,8 +376,8 @@ public sealed partial class GameNatives
     [Native(Level.Close)]
     public bool WaygateIsActive(unit? waygate) => waygate?.GateActive ?? false;
 
-    /// <summary>Keeps the destination for the getters; nothing moves through it.</summary>
-    /// <remarks>Close: the value is kept on the unit and read back; the game's own waygate use is not modelled or measured.</remarks>
+    /// <summary>Keeps the destination: a walker that walks into the active gate comes out at the nearest clear place to it (D873).</summary>
+    /// <remarks>Close: the value is kept on the unit and read back; where the game puts a walker that comes through is not measured.</remarks>
     [Native(Level.Close)]
     public void WaygateSetDestination(unit? waygate, float x, float y)
     {

@@ -11,7 +11,8 @@ namespace MirrorImaged.Tests;
 /// minutes. One test is the regression check (no script error, and the computers' units grow); another asserts the rest of A4's line (each
 /// computer trains units, a computer takes a second town hall and a unit is killed) and fails on the maps where it doesn't hold. Both read one
 /// play of the maps. A 4-player map goes through 30 game minutes in under 60 seconds. Set MIRROR_MELEE to a part of a map's name to run only the
-/// maps with it. The whole set runs in parts (<see cref="Corpus"/>).
+/// maps with it, and MIRROR_GRAPHICS to classic to play them in classic graphics (Reforged unless set). The whole set runs in parts
+/// (<see cref="Corpus.MeleeShards"/>).
 /// </summary>
 [Trait("Needs", "Game")]
 [Collection(Corpus.Name)]
@@ -57,15 +58,16 @@ public sealed class MeleeCorpusTests(ITestOutputHelper output) : IDisposable
     // mines, as the Undead's script expands with one and no necropolis (D824)
     static readonly HashSet<string> Halls = ["htow", "hkee", "hcas", "ogre", "ostr", "ofrt", "etol", "etoa", "etoe", "unpl", "unp1", "unp2"];
 
-    // The maps where no computer can walk off its start's ground to a second gold mine, so none can expand, and may find no creep or enemy to
-    // kill (D825). The melee scripts use no Way Gate or shipyard; they buy a zeppelin at 60 food, which the simulation doesn't (D431, D798). One
-    // that expands after all is reported, so the list stays true
+    // The maps where the game's own computers took no second hall in a 30-minute computer-only melee (classic, 11-22, D874), so none is asked
+    // for here, nor a kill: each start's ground has its own mine only. One that expands after all is reported, so the list stays true
     static readonly Dictionary<string, string> NoWayOffTheStart = new()
     {
-        ["(8)Plaguelands.w3m"] = "each start's ground has its own mine only; the way out is by Way Gates",
-        ["(4)Islands.w3x"] = "each island has its own mine only; the map sells ships (Goblin Shipyards), no zeppelins",
-        ["(4)DesertStrife.w3x"] = "each start's plateau has its own mine only, no ramp off it (seen in the game for start 0)",
+        ["(4)Islands.w3x"] = "each island has its own mine only, and the map sells no zeppelin; the game's 3 computers took no second hall in 30 minutes",
+        ["(4)DesertStrife.w3x"] = "each start's plateau has its own mine only; the game's 3 computers took no second hall in 30 minutes, one that bought 3 zeppelins too",
     };
+
+    // The graphics mode the corpus is played in: MIRROR_GRAPHICS, Reforged unless it says classic
+    static GraphicsMode Graphics => Enum.Parse<GraphicsMode>(Environment.GetEnvironmentVariable("MIRROR_GRAPHICS") is { Length: > 0 } mode ? mode : nameof(GraphicsMode.Reforged), ignoreCase: true);
 
     sealed record Played(List<string> Lines, List<string> Errors, List<string> Unmet);
 
@@ -80,7 +82,7 @@ public sealed class MeleeCorpusTests(ITestOutputHelper output) : IDisposable
     }
 
     [InstallTheory]
-    [MemberData(nameof(Corpus.Parts), MemberType = typeof(Corpus))]
+    [MemberData(nameof(Corpus.MeleeParts), MemberType = typeof(Corpus))]
     public void Every_melee_map_runs_30_minutes_with_computers_without_a_script_error(int part)
     {
         var errors = Result(part).Errors;
@@ -89,7 +91,7 @@ public sealed class MeleeCorpusTests(ITestOutputHelper output) : IDisposable
 
     /// <summary>The rest of A4's line, a map at a time; it fails on the maps where the line doesn't hold, and names which part of it, but for the expansion and the kill on the maps <see cref="NoWayOffTheStart"/> names.</summary>
     [InstallTheory]
-    [MemberData(nameof(Corpus.Parts), MemberType = typeof(Corpus))]
+    [MemberData(nameof(Corpus.MeleeParts), MemberType = typeof(Corpus))]
     public void On_every_melee_map_each_computer_trains_and_one_expands_and_a_unit_is_killed(int part)
     {
         var unmet = Result(part).Unmet;
@@ -103,7 +105,7 @@ public sealed class MeleeCorpusTests(ITestOutputHelper output) : IDisposable
         var maps = Corpus.Part(storage.Names
             .Where(name => name.StartsWith("War3.w3mod:Maps/", StringComparison.OrdinalIgnoreCase) && Path.GetExtension(name).ToLowerInvariant() is ".w3x" or ".w3m")
             .Where(name => only is null || name.Contains(only, StringComparison.OrdinalIgnoreCase))
-            .Order(StringComparer.Ordinal), part);
+            .Order(StringComparer.Ordinal), part, Corpus.MeleeShards);
         var lines = new string?[maps.Count];
         var (found, short_) = (new List<string>[maps.Count], new List<string>[maps.Count]);
         Corpus.Each(maps, (at, name) =>
@@ -114,7 +116,7 @@ public sealed class MeleeCorpusTests(ITestOutputHelper output) : IDisposable
             {
                 File.WriteAllBytes(path, Corpus.Read(storage, name));
                 if (Seats(path) is not { } seats) return;
-                using var simulation = Simulation.Load(path, new SimulationOptions { Users = [seats.User], Computers = seats.Computers });
+                using var simulation = Simulation.Load(path, new SimulationOptions { Users = [seats.User], Computers = seats.Computers, Graphics = Graphics });
                 // Looked at each game minute: a player's units, a computer's town halls, and the units that lie dead, which a fight killed (one
                 // that is gone without a body was taken away: a defeated player's, a worker that became its building)
                 int[] sides = [24, seats.User, .. seats.Computers];

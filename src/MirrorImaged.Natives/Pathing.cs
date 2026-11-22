@@ -11,6 +11,7 @@ public partial class unit
     internal double WaitingSince = -1;                      // when another unit stopped its walk, -1 while it walks
     internal int Side;                                      // the side it steps aside to while held up, 0 while it walks
     internal (float X, float Y)? SpotFor;                   // the place another unit stood on, for which it makes for the nearest clear one
+    internal unit? Gate;                                    // the Way Gate its path goes through, to ground the place is on
 }
 
 // Finding a way round what blocks a walker: the unwalkable cells of the map and the buildings standing in the way, on the 32 grid of the
@@ -113,11 +114,17 @@ public sealed partial class GameNatives
     // One step toward the place: straight, or along the path round what blocks the way; true while the unit goes on
     bool Go(unit u, float x, float y, float step)
     {
+        if (u.Gate is { } gate && AtGate(u, gate))
+        {
+            ThroughGate(u, gate);
+            return true;
+        }
         if (u.PathGoal != (x, y))
         {
             u.Path.Clear();
             u.PathGoal = (x, y);
             u.SpotFor = null;
+            u.Gate = null;
             // The game's unit sets out round what stands between it and the place, not when it reaches it (probe units-path-footprint)
             // (not toward a place that is itself blocked, as one past the world's edge: the walk goes straight on until it is stopped)
                         if (Seconds >= u.ReplanAt && !Blocked(u, x, y) && LineBlocked(u, u.X, u.Y, x, y))
@@ -316,6 +323,22 @@ public sealed partial class GameNatives
         }
         var start = (c: Math.Clamp(Column(u.X), 0, columns - 1), r: Math.Clamp(Row(u.Y), 0, rows - 1));
         var goal = (c: Math.Clamp(Column(goalX), 0, columns - 1), r: Math.Clamp(Row(goalY), 0, rows - 1));
+        // A walker sent to a place its own ground doesn't reach goes as near it as that ground gets: the search aims for that ground's
+        // nearest cell, not the place, which would read every cell the search allows before it gave up (D870)
+        // A Way Gate that leads, gate by gate, to the place's ground is the way there: the walker makes for the gate (D873)
+        var asked = true;
+        if (moveType is 1 or 4) u.Gate = null;
+        if (moveType is 1 or 4 && LandLabels(out var landColumns) is { } lands && landColumns == columns
+            && WalkerLand(u.X, u.Y) is not 0 and var land && lands[goal.r * columns + goal.c] != land)
+        {
+            if (GateToward(land, WalkerLand(goalX, goalY)) is { } gate)
+            {
+                u.Gate = gate;
+                (goal, goalX, goalY, asked) = ((Math.Clamp(Column(gate.X), 0, columns - 1), Math.Clamp(Row(gate.Y), 0, rows - 1)), gate.X, gate.Y, false);
+            }
+            else if (NearestOn(lands, columns, land, goal.c, goal.r) is { } nearest)
+                (goal, goalX, goalY, asked) = (nearest, CenterX(nearest.c), CenterY(nearest.r), false);
+        }
         float H((int c, int r) cell) => MathF.Sqrt(Distance2(cell.c - goal.c, cell.r - goal.r));
         var open = new PriorityQueue<(int c, int r), float>();
         int At((int c, int r) cell) => cell.r * columns + cell.c;
@@ -342,7 +365,7 @@ public sealed partial class GameNatives
                     open.Enqueue(next, through + H(next) * HeuristicWeight);
                 }
         }
-        _lastReached = best == goal;
+        _lastReached = best == goal && asked;
         if (best == start) return null;
         var cells = new List<(int, int)> { best };
         for (var before = _pathFrom[At(cells[^1])]; before >= 0 && before != At(start); before = _pathFrom[before]) cells.Add((before % columns, before / columns));
@@ -372,45 +395,132 @@ public sealed partial class GameNatives
     // found once, as the ground seldom changes
     int[]? _landLabels;
 
-    // Whether walkable ground joins the place to within 192 of the other (a goal may stand on a building's or a gold mine's own cells)
-    bool SameLand(float x0, float y0, float x1, float y1)
+    // The first Way Gate on the ground of the first number on a way of active gates to the ground of the second, the fewest gates first and the
+    // gates in the order they were made; null for none (D873)
+    unit? GateToward(int from, int to)
     {
-        if (Data.Terrain is not { } terrain) return false;
+        if (to == 0 || to == from) return null;
+        var gates = _units.Values.Where(g => g.GateActive && !g.Dead && !g.Removed && (g.GateX != 0 || g.GateY != 0)).OrderBy(g => g.Id)
+            .Select(g => (Gate: g, From: WalkerLand(g.X, g.Y), To: WalkerLand(g.GateX, g.GateY))).Where(e => e.From != 0 && e.To != 0 && e.From != e.To).ToList();
+        var first = new Dictionary<int, unit?> { [from] = null };
+        var queue = new Queue<int>();
+        queue.Enqueue(from);
+        while (queue.TryDequeue(out var here))
+            foreach (var (gate, on, leads) in gates)
+            {
+                if (on != here || first.ContainsKey(leads)) continue;
+                first[leads] = first[here] ?? gate;
+                if (leads == to) return first[leads];
+                queue.Enqueue(leads);
+            }
+        return null;
+    }
+
+    // A walker at its Way Gate: within reach of the gate's edge, as it would be when it walks into the gate
+    static bool AtGate(unit u, unit gate) =>
+        !gate.Dead && !gate.Removed && gate.GateActive && Distance2(u.X - gate.X, u.Y - gate.Y) is var near
+        && near <= (gate.Type.Real(Collision) + u.Type.Real(Collision) + 64) * (gate.Type.Real(Collision) + u.Type.Real(Collision) + 64);
+
+    // The walker goes through the gate to its destination, the nearest clear place there, and finds its way on from there
+    void ThroughGate(unit u, unit gate)
+    {
+        var (x, y) = Clear(u, gate.GateX, gate.GateY);
+        Move(u, x, y);
+        u.Gate = null;
+        u.Path.Clear();
+        (u.PathGoal, u.ReplanAt, u.NoWayTo) = (null, 0, null);
+    }
+
+    // The pieces of ground, labelled once, with the grid's columns (null on a map with no ground)
+    int[]? LandLabels(out int columns)
+    {
+        columns = 0;
+        if (Data.Terrain is not { } terrain) return null;
         var (minX, minY, maxX, maxY) = terrain.Bounds;
-        int columns = (int)((maxX - minX) / SearchCell) + 1, rows = (int)((maxY - minY) / SearchCell) + 1;
-        if (_landLabels is null)
+        int cols = (int)((maxX - minX) / SearchCell) + 1, rows = (int)((maxY - minY) / SearchCell) + 1;
+        columns = cols;
+        if (_landLabels is not null) return _landLabels;
+        var walk = Convert<pathingtype>(1);
+        bool Open(int c, int r) => c >= 0 && r >= 0 && c < cols && r < rows && !IsTerrainPathable(minX + (c + 0.5f) * SearchCell, minY + (r + 0.5f) * SearchCell, walk);
+        var labels = new int[cols * rows];
+        var next = 0;
+        var queue = new Queue<(int C, int R)>();
+        for (var r0 = 0; r0 < rows; r0++)
+            for (var c0 = 0; c0 < cols; c0++)
+            {
+                if (labels[r0 * cols + c0] != 0 || !Open(c0, r0)) continue;
+                labels[r0 * cols + c0] = ++next;
+                queue.Enqueue((c0, r0));
+                while (queue.TryDequeue(out var here))
+                    for (var dr = -1; dr <= 1; dr++)
+                        for (var dc = -1; dc <= 1; dc++)
+                        {
+                            var (c, r) = (here.C + dc, here.R + dr);
+                            if (!Open(c, r) || labels[r * cols + c] != 0) continue;
+                            if (dc != 0 && dr != 0 && (!Open(here.C + dc, here.R) || !Open(here.C, here.R + dr))) continue;
+                            labels[r * cols + c] = next;
+                            queue.Enqueue((c, r));
+                        }
+            }
+        return _landLabels = labels;
+    }
+
+    // The piece of ground the place is on, 0 for unwalkable ground or none
+    int LandAt(float x, float y)
+    {
+        if (LandLabels(out var columns) is not { } labels) return 0;
+        var (minX, minY, _, _) = Data.Terrain!.Bounds;
+        int c = (int)((x - minX) / SearchCell), r = (int)((y - minY) / SearchCell);
+        return c >= 0 && r >= 0 && c < columns && r * columns + c < labels.Length ? labels[r * columns + c] : 0;
+    }
+
+    // The piece of ground a walker at the place stands on: its cell's, or, on an unwalkable cell (a walker pushed against a cliff), that of the
+    // nearest walkable cell within 6; 0 for none
+    int WalkerLand(float x, float y)
+    {
+        var land = LandAt(x, y);
+        if (land != 0 || LandLabels(out var columns) is not { } labels) return land;
+        var (minX, minY, _, _) = Data.Terrain!.Bounds;
+        int c0 = (int)((x - minX) / SearchCell), r0 = (int)((y - minY) / SearchCell), rows = labels.Length / columns;
+        var (found, foundAt) = (0, int.MaxValue);
+        for (var dr = -6; dr <= 6; dr++)
+            for (var dc = -6; dc <= 6; dc++)
+                if (c0 + dc >= 0 && r0 + dr >= 0 && c0 + dc < columns && r0 + dr < rows && labels[(r0 + dr) * columns + c0 + dc] is not 0 and var near
+                    && dc * dc + dr * dr < foundAt)
+                    (found, foundAt) = (near, dc * dc + dr * dr);
+        return found;
+    }
+
+    // Whether walkable ground joins the walker's place to the other's own cell (D870)
+    bool SameLand(float x0, float y0, float x1, float y1) => WalkerLand(x0, y0) is not 0 and var land && LandAt(x1, y1) == land;
+
+    // The cell of the piece of ground nearest the cell, by the squares of the distances, the first found in ring order on a tie; null when
+    // the ground has no cell (D870)
+    static (int c, int r)? NearestOn(int[] labels, int columns, int land, int gc, int gr)
+    {
+        var rows = labels.Length / columns;
+        (int c, int r)? best = null;
+        var bestAt = long.MaxValue;
+        bool Look(int c, int r)
         {
-            var walk = Convert<pathingtype>(1);
-            bool Open(int c, int r) => c >= 0 && r >= 0 && c < columns && r < rows && !IsTerrainPathable(minX + (c + 0.5f) * SearchCell, minY + (r + 0.5f) * SearchCell, walk);
-            var labels = new int[columns * rows];
-            var next = 0;
-            var queue = new Queue<(int C, int R)>();
-            for (var r0 = 0; r0 < rows; r0++)
-                for (var c0 = 0; c0 < columns; c0++)
-                {
-                    if (labels[r0 * columns + c0] != 0 || !Open(c0, r0)) continue;
-                    labels[r0 * columns + c0] = ++next;
-                    queue.Enqueue((c0, r0));
-                    while (queue.TryDequeue(out var here))
-                        for (var dr = -1; dr <= 1; dr++)
-                            for (var dc = -1; dc <= 1; dc++)
-                            {
-                                var (c, r) = (here.C + dc, here.R + dr);
-                                if (!Open(c, r) || labels[r * columns + c] != 0) continue;
-                                if (dc != 0 && dr != 0 && (!Open(here.C + dc, here.R) || !Open(here.C, here.R + dr))) continue;
-                                labels[r * columns + c] = next;
-                                queue.Enqueue((c, r));
-                            }
-                }
-            _landLabels = labels;
+            if (c < 0 || r < 0 || c >= columns || r >= rows || labels[r * columns + c] != land) return false;
+            var at = (long)(c - gc) * (c - gc) + (long)(r - gr) * (r - gr);
+            if (at < bestAt) (best, bestAt) = ((c, r), at);
+            return true;
         }
-        int Label(int c, int r) => c >= 0 && r >= 0 && c < columns && r < rows ? _landLabels[r * columns + c] : 0;
-        var land = Label((int)((x0 - minX) / SearchCell), (int)((y0 - minY) / SearchCell));
-        if (land == 0) return false;
-        int c1 = (int)((x1 - minX) / SearchCell), r1 = (int)((y1 - minY) / SearchCell);
-        for (var dc = -6; dc <= 6; dc++)
-            for (var dr = -6; dr <= 6; dr++)
-                if (Label(c1 + dc, r1 + dr) == land) return true;
-        return false;
+        for (var ring = 0; ring <= Math.Max(columns, rows) && (long)ring * ring <= bestAt; ring++)
+        {
+            for (var c = gc - ring; c <= gc + ring; c++)
+            {
+                Look(c, gr - ring);
+                if (ring > 0) Look(c, gr + ring);
+            }
+            for (var r = gr - ring + 1; r <= gr + ring - 1; r++)
+            {
+                Look(gc - ring, r);
+                Look(gc + ring, r);
+            }
+        }
+        return best;
     }
 }
