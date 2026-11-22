@@ -60,12 +60,12 @@ public sealed partial class GameNatives
     public float Pow(float x, float power) => Native.mi_powf(x, power);
 
     /// <summary>Times the float nearest pi/180, in the game's arithmetic: Deg2Rad(180) is 3.1415925.</summary>
-    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-6)).</remarks>
+    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-7)).</remarks>
     [Native(Level.Exact, Fact = StringsFact)]
     public float Deg2Rad(float degrees) => Native.mi_mul(degrees, (float)(Math.PI / 180));
 
     /// <summary>Times the float nearest 180/pi, in the game's arithmetic: Rad2Deg(1) is 57.2957802.</summary>
-    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-6)).</remarks>
+    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-7)).</remarks>
     [Native(Level.Exact, Fact = StringsFact)]
     public float Rad2Deg(float radians) => Native.mi_mul(radians, (float)(180 / Math.PI));
 }

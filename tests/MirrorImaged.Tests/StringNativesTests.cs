@@ -107,21 +107,25 @@ public sealed class StringNativesTests : IDisposable
     public void StringHash_folds_case_and_slashes_and_hashes_with_lookup2(string s, int game) =>
         Assert.Equal(game, _natives.StringHash(s));
 
-    // Bytes that aren't UTF-8, given in Lua: the game decodes them without checks; here they reach C# as U+FFFD
-    // (decisions D38), so the hash is the model's.
+    // Bytes that aren't UTF-8, given in Lua, which reach C# as they are (decisions D861) and are decoded as the game
+    // decodes them (D862; probes strings-2 and strings-7).
     [Theory]
-    [InlineData("\\255", 1843378377, -1471725602)]
-    [InlineData("\\128", -366431040, -1471725602)]
-    [InlineData("\\195", 1843378377, -1471725602)]
-    [InlineData("\\195a", -578007203, 570027334)]
-    [InlineData("a\\255b", -2135237383, -1479969268)]
-    [InlineData("\\255\\255", 1843378377, -1767453894)]
-    [InlineData("\\237\\160\\128", 73716403, 2020679358)]
-    public void StringHash_of_bytes_that_arent_UTF8_is_the_models(string lua, int game, int model)
-    {
-        Assert.NotEqual(game, model);
-        Assert.Equal([model.ToString(System.Globalization.CultureInfo.InvariantCulture)], Run($"print(StringHash('{lua}'))"));
-    }
+    [InlineData("\\255", 1843378377)]
+    [InlineData("\\128", -366431040)]
+    [InlineData("\\195", 1843378377)]
+    [InlineData("\\195a", -578007203)]
+    [InlineData("a\\255b", -2135237383)]
+    [InlineData("\\255\\255", 1843378377)]
+    [InlineData("\\237\\160\\128", 73716403)]
+    [InlineData("\\194a", 703514648)]
+    [InlineData("\\192a", -1471725602)]
+    [InlineData("\\226ab", 54926377)]
+    [InlineData("\\195\\195\\169", 630053872)]
+    [InlineData("\\244\\143\\191\\191", -1471725602)]
+    [InlineData("\\128A", 801663781)]
+    [InlineData("ab\\195", 512535029)]
+    public void StringHash_of_bytes_that_arent_UTF8_is_the_games(string lua, int game) =>
+        Assert.Equal([game.ToString(System.Globalization.CultureInfo.InvariantCulture)], Run($"print(StringHash('{lua}'))"));
 
     // probe strings-3: each pair hashed alike where the game folds the letter, apart where it doesn't
     [Theory]
@@ -169,12 +173,13 @@ public sealed class StringNativesTests : IDisposable
     public void SubString_takes_bytes_from_start_to_end_and_the_rest_for_an_end_before_the_start(string s, int start, int end, string game) =>
         Assert.Equal(game, _natives.SubString(s, start, end));
 
-    // A cut inside a letter: the game gives the byte (c3, and a4 then b); C# holds no lone byte (decisions D38).
+    // A cut inside a letter gives the bytes (c3, and a4 then b), as in the game, which reach Lua as they are (D861).
     [Fact]
-    public void SubString_inside_a_letter_gives_U_FFFD_where_the_game_gives_the_byte()
+    public void SubString_inside_a_letter_gives_its_bytes()
     {
-        Assert.Equal("\uFFFD", _natives.SubString("aäb", 1, 2));
-        Assert.Equal("\uFFFDb", _natives.SubString("aäb", 2, 4));
+        Assert.Equal(["c3"], Run(@"print(string.format('%02x', SubString('a\195\164b', 1, 2):byte(1, -1)))"));
+        Assert.Equal(["a4 62"], Run(@"print(string.format('%02x %02x', SubString('a\195\164b', 2, 4):byte(1, -1)))"));
+        Assert.Equal(["3"], Run(@"print(StringLength('a\255b'))"));
     }
 
     [Theory]
@@ -300,26 +305,28 @@ public sealed class StringNativesTests : IDisposable
         Assert.Equal(game, Bits(_natives.S2R(s)));
 
     [Theory]
-    [InlineData("12345678901234567890", 0x5f2b54a8u, 0x5f2b54a5u)]
-    [InlineData("0.1000000000", 0x3dcccccdu, 0x3dccccceu)]
-    [InlineData("9.999999999", 0x41200000u, 0x411fffffu)]
-    [InlineData("2.500000000000", 0x40200000u, 0x401fffffu)]
-    // Past the float range (strings-4), where the model is extrapolated
-    [InlineData("1234567890123456789012345678901234567890", 0x80683245u, 0x80683237u)]
-    [InlineData("0.1234567890123456789012345678901234567890", 0x3dfcd6eau, 0x00000000u)]
-    [InlineData("100000000000000000000000000000000000000", 0x7e967697u, 0x7e96768eu)]
-    [InlineData("300000000000000000000000000000000000000", 0x7f61b1e2u, 0x7f61b1d7u)]
-    [InlineData("400000000000000000000000000000000000000", 0x7f967697u, 0x7f96768eu)]
-    [InlineData("1000000000000000000000000000000000000000", 0x803c143du, 0x803c1431u)]
-    [InlineData("9999999999999999999999999999999999999999", 0x00000000u, 0x42c60000u)]
-    [InlineData("-400000000000000000000000000000000000000", 0xff967697u, 0xff96768eu)]
-    [InlineData("340282346638528859811704183484516925440", 0x7f7ffffau, 0x7f7fffecu)]
-    [InlineData("340282356779733661637539395458142568448", 0x7f7ffffau, 0x7f7fffecu)]
-    public void S2R_is_off_the_game_on_these(string s, uint game, uint model)
-    {
-        Assert.NotEqual(game, model);
-        Assert.Equal(model, Bits(_natives.S2R(s)));
-    }
+    [InlineData("12345678901234567890", 0x5f2b54a8u)]
+    [InlineData("0.1000000000", 0x3dcccccdu)]
+    [InlineData("9.999999999", 0x41200000u)]
+    [InlineData("2.500000000000", 0x40200000u)]
+    [InlineData("9999999999", 0x501502f8u)]
+    [InlineData("1234567890.5", 0x4e932c05u)]
+    [InlineData("99.9999999", 0x42c80001u)]
+    [InlineData("0.0000000012345678912", 0x30a9ad81u)]
+    [InlineData("123456789012345678901234567890", 0x6fc77485u)]
+    // Past the float range (strings-4), the product packed
+    [InlineData("1234567890123456789012345678901234567890", 0x80683245u)]
+    [InlineData("0.1234567890123456789012345678901234567890", 0x3dfcd6eau)]
+    [InlineData("100000000000000000000000000000000000000", 0x7e967697u)]
+    [InlineData("300000000000000000000000000000000000000", 0x7f61b1e2u)]
+    [InlineData("400000000000000000000000000000000000000", 0x7f967697u)]
+    [InlineData("1000000000000000000000000000000000000000", 0x803c143du)]
+    [InlineData("9999999999999999999999999999999999999999", 0x00000000u)]
+    [InlineData("-400000000000000000000000000000000000000", 0xff967697u)]
+    [InlineData("340282346638528859811704183484516925440", 0x7f7ffffau)]
+    [InlineData("340282356779733661637539395458142568448", 0x7f7ffffau)]
+    public void S2R_keeps_nine_digits_and_scales_by_a_power_of_ten(string s, uint game) =>
+        Assert.Equal(game, Bits(_natives.S2R(s)));
 
     [Theory]
     [InlineData(0, 0x00000000u)]
@@ -499,30 +506,32 @@ public sealed class StringNativesTests : IDisposable
         Assert.Equal(game, _natives.R2SW(F(r), width, precision));
 
     [Theory]
-    [InlineData(0x60ad78ecu, "100000057600000000000.000", "100000002004087734272.000")]
-    [InlineData(0xe0ad78ecu, "-100000057600000000000.000", "-100000002004087734272.000")]
-    [InlineData(0x7f7fc99eu, "340000512000000000000000000000000000000.000", "339999995214436424907732413799364296704.000")]
-    [InlineData(0x4f000000u, "2147483840.000", "2147483648.000")]
-    [InlineData(0x4f800000u, "4294967680.000", "4294967296.000")]
-    [InlineData(0x501502f9u, "10000000640.000", "10000000000.000")]
-    [InlineData(0x5368d4a5u, "1000000128000.000", "999999995904.000")]
-    [InlineData(0x58635fa9u, "1000000256000000.000", "999999986991104.000")]
-    [InlineData(0x7f7fffffu, "inf", "340282346638528859811704183484516925440.000")]
-    public void R2S_from_2_to_the_31_writes_the_floats_digits_where_the_game_writes_its_own(uint r, string game, string model)
-    {
-        Assert.NotEqual(game, model);
-        Assert.Equal(model, _natives.R2S(F(r)));
-    }
+    [InlineData(0x60ad78ecu, "100000057600000000000.000")]
+    [InlineData(0xe0ad78ecu, "-100000057600000000000.000")]
+    [InlineData(0x7f7fc99eu, "340000512000000000000000000000000000000.000")]
+    [InlineData(0x4f000000u, "2147483840.000")]
+    [InlineData(0x4f800000u, "4294967680.000")]
+    [InlineData(0x501502f9u, "10000000640.000")]
+    [InlineData(0x5368d4a5u, "1000000128000.000")]
+    [InlineData(0x58635fa9u, "1000000256000000.000")]
+    [InlineData(0x4f000001u, "2147484000.000")]
+    [InlineData(0x675a5a5au, "1031143488000000000000000.000")]
+    [InlineData(0x7f7ffffeu, "340282880000000000000000000000000000000.000")]
+    [InlineData(0xff7ffffeu, "-340282880000000000000000000000000000000.000")]
+    [InlineData(0x7f7fffffu, "inf")]
+    [InlineData(0xff7fffffu, "-inf")]
+    public void R2S_from_2_to_the_31_divides_by_ten_until_below_it_and_writes_zeros(uint r, string game) =>
+        Assert.Equal(game, _natives.R2S(F(r)));
 
     [Theory]
-    [InlineData(0x60ad78ecu, 0, 2, "100000057600000000000.00", "100000002004087734272.00")]
-    [InlineData(0x60ad78ecu, 30, 2, "100000057600000000000.00", "100000002004087734272.00")]
-    [InlineData(0x60ad78ecu, 100, 2, "100000057600000000000.00", "100000002004087734272.00")]
-    public void R2SW_from_2_to_the_31_writes_the_floats_digits_unpadded(uint r, int width, int precision, string game, string model)
-    {
-        Assert.NotEqual(game, model);
-        Assert.Equal(model, _natives.R2SW(F(r), width, precision));
-    }
+    [InlineData(0x60ad78ecu, 0, 2, "100000057600000000000.00")]
+    [InlineData(0x60ad78ecu, 30, 2, "100000057600000000000.00")]
+    [InlineData(0x60ad78ecu, 100, 2, "100000057600000000000.00")]
+    [InlineData(0x4f000000u, 20, 1, "2147483840.0")]
+    [InlineData(0x5368d4a5u, 0, -1, "1000000128000.0")]
+    [InlineData(0xd368d4a5u, 30, 5, "-1000000128000.00000")]
+    public void R2SW_from_2_to_the_31_writes_the_same_digits_unpadded(uint r, int width, int precision, string game) =>
+        Assert.Equal(game, _natives.R2SW(F(r), width, precision));
 
     // probes strings-4, strings-5 and strings-6, and widths 2147483640 and 2147483644 alone: the length and the last bytes
     [Theory]

@@ -336,7 +336,7 @@ public sealed unsafe class LuaState : IDisposable
     {
         nuint length;
         var p = lua_tolstring(l, index, &length);
-        return Encoding.UTF8.GetString(p, (int)length);
+        return LuaText.Decode(new ReadOnlySpan<byte>(p, (int)length));
     }
 
     /// <summary>The state, and the buffer that values cross to C in, freed together.</summary>
@@ -355,7 +355,7 @@ public sealed unsafe class LuaState : IDisposable
             foreach (var value in values)
                 size += value switch
                 {
-                    string s => Encoding.UTF8.GetByteCount(s),
+                    string s => LuaText.ByteCount(s),
                     LuaHandle h => Encoding.UTF8.GetByteCount(h.Type),
                     _ => 0,
                 };
@@ -376,7 +376,7 @@ public sealed unsafe class LuaState : IDisposable
                     case float f: result[i] = new() { Type = Value.Float, FloatValue = f }; break;
                     case double d: result[i] = new() { Type = Value.Float, FloatValue = (float)d }; break;
                     case string s:
-                        int length = Encoding.UTF8.GetBytes(s, new Span<byte>(text, _capacity - (int)(text - _buffer)));
+                        int length = LuaText.Write(s, new Span<byte>(text, _capacity - (int)(text - _buffer)));
                         result[i] = new() { Type = Value.String, StringValue = text, Length = (nuint)length };
                         text += length;
                         break;
