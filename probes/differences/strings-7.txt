@@ -1,0 +1,7 @@
+# Where MirrorImaged differs from the game's lines in expected/strings-7.txt, in order, with why (decisions D121): a line
+# starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
+
+# SubString of the two bytes e2 82 from 0 to 1 gives both bytes in the game, where every other cut measured gives the
+# bytes asked for (aäb 1 2 the lone c3, e2 82 1 3 the lone 82); why isn't known, so here it gives the byte (D864, Close).
+- SubString <e2><82> 0 1 = s 2 "<e2><82>"
++ SubString <e2><82> 0 1 = s 1 "<e2>"
