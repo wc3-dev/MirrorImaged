@@ -11,6 +11,11 @@ public sealed partial class Simulation
     // An argument the call left out, which Lua's messages call "no value"
     static readonly object None = new();
 
+    // For the tests: each native the script calls, by name, and the Lua state, to see which natives a probe's line reads
+    internal Action<string>? NativeCalled { get; set; }
+
+    internal LuaState Lua => _lua;
+
     Func<object?[], object?[]> Bind(MethodInfo native)
     {
         if (native.GetCustomAttribute<NativeAttribute>()!.Level == Level.Missing || _treatAsMissing.Contains(native.Name))
@@ -23,6 +28,7 @@ public sealed partial class Simulation
             for (int i = 0; i < values.Length; i++)
                 values[i] = ToCSharp(i < args.Length ? args[i] : None, parameters[i].ParameterType, i + 1, native.Name);
             if (recorded) _recordedCalls.Add(new(_game.Step, native.Name, values));
+            NativeCalled?.Invoke(native.Name);
             var result = native.Invoke(_natives, BindingFlags.DoNotWrapExceptions, null, values, null);
             return native.ReturnType == typeof(void) ? [] : [result is handle h ? ToLua(h, native.ReturnType) : result];
         };

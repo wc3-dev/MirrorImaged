@@ -1,8 +1,8 @@
 # Where MirrorImaged differs from the game's lines in expected/strings-2.txt, in order, with why (decisions D121): a line
 # starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
 
-# CreateTextTag is Missing until its wave: the probe saves a text tag in a hashtable, which stops it here (Location,
-# which stopped it before, came with W2-4).
+# `StringHash` of bytes that aren't UTF-8: the game hashes them byte by byte, where they reach C# as U+FFFD here (D82,
+# D38, Close).
 - StringHash <80> = i -366431040
 + StringHash <80> = i -1471725602
 - StringHash <c3> = i 1843378377
@@ -15,6 +15,9 @@
 + StringHash <ff><ff> = i -1767453894
 - StringHash <ed><a0><80> = i 73716403
 + StringHash <ed><a0><80> = i 2020679358
+
+# `R2S` and `R2SW` from 2^31: the game writes about ten digits of its own, then zeros, and the largest float as inf;
+# here the float's exact digits (D84, Close).
 - R2S 4f000000 = s 14 "2147483840.000"
 + R2S 4f000000 = s 14 "2147483648.000"
 - R2S 4f800000 = s 14 "4294967680.000"
@@ -29,6 +32,8 @@
 + R2S 7f7fffff = s 43 "340282346638528859811704183484516925440.000"
 - R2SW 60ad78ec 30 2 = s 24 "100000057600000000000.00"
 + R2SW 60ad78ec 30 2 = s 24 "100000002004087734272.00"
+
+# `S2R` lands a float step off the game's for a long integer and for strings with many decimals (D83, Close).
 - S2R 12345678901234567890 = f 5f2b54a8 1.23456772e+19
 + S2R 12345678901234567890 = f 5f2b54a5 1.23456739e+19
 - S2R 2.500000000000 = f 40200000 2.5

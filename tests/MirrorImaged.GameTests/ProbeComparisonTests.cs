@@ -35,6 +35,34 @@ public sealed class ProbeComparisonTests : IDisposable
     public void A_data_probe_gives_the_games_lines_in_MirrorImaged_with_the_installs_data_but_for_its_recorded_differences(string name, GraphicsMode mode) =>
         ProbeComparison.AssertMirror(name, mode);
 
+    // The probes with recorded differences that an Exact native's fact cites (A2; decisions D841)
+    static Func<string, bool> Cited(Func<string, bool> which) => name => which(name) && ProbeComparison.ExactCiting(name).Count > 0
+        && Enum.GetValues<GraphicsMode>().Any(mode => File.Exists(ProbeComparison.Differences(name, mode)));
+
+    public static TheoryData<string, GraphicsMode> CitedProbes => InModes(Cited(name => !ProbeComparison.ReadsData(name)));
+
+    public static TheoryData<string, GraphicsMode> CitedDataProbes => InModes(Cited(ProbeComparison.ReadsData));
+
+    static void AssertNoExactTouched(string name, GraphicsMode mode)
+    {
+        var touched = ProbeComparison.ExactTouched(name, mode);
+        Assert.True(touched.Count == 0,
+            "These Exact natives' facts cite the probe, and its recorded differences touch them: make the native match, name a Close native that explains the line in its note, or make the native Close:\n" +
+            string.Join('\n', touched));
+    }
+
+    // An Exact native has no recorded difference in a probe its fact cites (A2; decisions D841).
+    [Theory]
+    [MemberData(nameof(CitedProbes))]
+    public void An_exact_native_has_no_recorded_difference_in_the_probes_its_fact_cites(string name, GraphicsMode mode) =>
+        AssertNoExactTouched(name, mode);
+
+    [Trait("Needs", "Game")]
+    [InstallTheory]
+    [MemberData(nameof(CitedDataProbes))]
+    public void An_exact_native_has_no_recorded_difference_in_the_data_probes_its_fact_cites(string name, GraphicsMode mode) =>
+        AssertNoExactTouched(name, mode);
+
     // Every probe has the game's lines for both graphics modes, in one file or one a mode (decisions D683).
     [Fact]
     public void Every_probe_has_lines_for_both_graphics_modes() =>

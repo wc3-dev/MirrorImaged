@@ -1,8 +1,11 @@
 # Where MirrorImaged differs from the game's lines in expected/units-groups.txt, in order, with why (decisions D121): a line
 # starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
 
-# A group's order is the order of the units' memory once units have been removed and others made, and a hero's memory
-# is apart from the others' (the Paladin, 33, comes first; inferred); MirrorImaged keeps the order made (D271, not modelled).
+# A group's order is the order of the units' memory, which the game's allocator decides: a hero's and a peasant's apart
+# from the footmen's even while memory is fresh (the Paladin, 33, first and the peasant, 34, last), and scrambled once
+# units have been removed and others made (inferred). MirrorImaged keeps the order made: `GroupAddUnit`, the
+# enumerations (`GroupEnumUnitsInRect`, `GroupEnumUnitsInRange`, `GroupEnumUnitsOfPlayer` and their kin) and
+# `BlzGroupAddGroupFast` put a unit there, and `BlzGroupUnitAt`, `FirstOfGroup` and `ForGroup` read it (D271, D840, Close).
 
 - rect 33,21,22,23,24,25,26,27,28,29,30,31,32,35
 + rect 21,22,23,24,25,26,27,28,29,30,31,32,33,35

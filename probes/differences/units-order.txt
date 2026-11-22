@@ -1,6 +1,6 @@
 # Where MirrorImaged differs from the game's lines in expected/units-order.txt, in order, with why (decisions D121): a line
 # starting - is the game's, + MirrorImaged's, and ! says MirrorImaged's run stopped without lines. A note starts "# ".
 
-# The game moved the last footman, made 60 from another, off it by pathing (wave 3).
+# The game moved the last footman, made 60 from another, off it by pathing (wave 3); `CreateUnit` puts it where it is given here (D273, Close).
 - sizes D336,C280,B270,A400
 + sizes D290,C280,B270,A400
