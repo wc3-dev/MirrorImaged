@@ -621,6 +621,47 @@ static int jassdividereal (lua_State *L) {
   return 1;
 }
 
+/* JASS's + on reals (probes jass-reals, jass-reals-2, jass-literals; decisions D866): as Lua's, a number 23 or more
+   octaves smaller, or a zero or subnormal one, is dropped, and the sum's size is cut toward zero; but the mantissas are
+   signed and the smaller is shifted into one guard bit, so what it loses rounds it toward minus infinity: -1 + 0.001 is
+   -0.99900001, -1 - 0.001 -1.00100005, each a step larger than Lua's. */
+static float jassadd (float x, float y) {
+  unsigned int a, b, t, sign;
+  int ea, eb, shift;
+  long long ma, mb, m;
+  memcpy(&a, &x, sizeof a);
+  memcpy(&b, &y, sizeof b);
+  if ((a & 0x7fffffffu) <= (b & 0x7fffffffu)) { t = a; a = b; b = t; }
+  ea = (int)((a >> 23) & 0xff);
+  eb = (int)((b >> 23) & 0xff);
+  if (eb == 0 || ea - eb >= 23) { memcpy(&x, &a, sizeof x); return x; }
+  shift = ea - eb;
+  ma = (long long)((a & 0x7fffffu) | 0x800000u) << 1;
+  mb = (long long)((b & 0x7fffffu) | 0x800000u) << 1;
+  if (a >> 31) ma = -ma;
+  mb = (b >> 31) ? -((mb + (1ll << shift) - 1) >> shift) : mb >> shift;  /* floored */
+  m = ma + mb;
+  if (m == 0) return 0.0f;
+  sign = m < 0;
+  if (sign) m = -m;
+  while (m >= (1ll << 25)) { m >>= 1; ea++; }
+  while (m < (1ll << 24)) { m <<= 1; ea--; }
+  t = (sign << 31) | ((unsigned int)ea << 23) | ((unsigned int)(m >> 1) & 0x7fffffu);
+  memcpy(&x, &t, sizeof x);
+  return x;
+}
+
+/* MirrorImaged_AddReal(a, b) and MirrorImaged_SubtractReal(a, b): JASS's + and - on reals */
+static int jassaddreal (lua_State *L) {
+  lua_pushnumber(L, jassadd((float)luaL_checknumber(L, 1), (float)luaL_checknumber(L, 2)));
+  return 1;
+}
+
+static int jasssubtractreal (lua_State *L) {
+  lua_pushnumber(L, jassadd((float)luaL_checknumber(L, 1), -(float)luaL_checknumber(L, 2)));
+  return 1;
+}
+
 /* MirrorImaged_Join(a, b): a string's +, null taken as "", and null + null null */
 static int jassjoin (lua_State *L) {
   lua_settop(L, 2);
@@ -681,7 +722,8 @@ static int jassbits (lua_State *L) {
 
 static int dojass (lua_State *L) {
   static const luaL_Reg plain[] = {
-    {"MirrorImaged_DivideReal", jassdividereal}, {"MirrorImaged_Join", jassjoin}, {"MirrorImaged_Equal", jassequal},
+    {"MirrorImaged_DivideReal", jassdividereal}, {"MirrorImaged_AddReal", jassaddreal},
+    {"MirrorImaged_SubtractReal", jasssubtractreal}, {"MirrorImaged_Join", jassjoin}, {"MirrorImaged_Equal", jassequal},
     {"MirrorImaged_Real", jassreal}, {"MirrorImaged_Bits", jassbits}, {NULL, NULL}
   };
   const luaL_Reg *f;

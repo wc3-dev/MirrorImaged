@@ -81,7 +81,8 @@ public sealed unsafe class LuaState : IDisposable
 
     /// <summary>
     /// Adds the functions transpiled JASS calls to keep JASS's rules (<c>MirrorImaged_Read</c>, <c>_Divide</c>,
-    /// <c>_DivideReal</c>, <c>_Join</c>, <c>_Equal</c>, <c>_Real</c>, <c>_Bits</c> and the mark <c>MirrorImaged_Unset</c>),
+    /// <c>_DivideReal</c>, <c>_AddReal</c>, <c>_SubtractReal</c>, <c>_Join</c>, <c>_Equal</c>, <c>_Real</c>, <c>_Bits</c> and the mark
+    /// <c>MirrorImaged_Unset</c>),
     /// written in C so <see cref="OperationLimit"/> counts only their calls. <c>MirrorImaged_Divide</c> calls the global
     /// <c>MirrorImaged_Closes</c> given now, to close the game, which is then taken away.
     /// </summary>

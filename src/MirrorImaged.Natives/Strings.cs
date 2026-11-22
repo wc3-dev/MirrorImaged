@@ -19,10 +19,11 @@ public sealed partial class GameNatives
     /// <summary>
     /// The bytes from <paramref name="start"/> up to <paramref name="end"/>; "" for a start below 0 or past the
     /// end, and the rest of the string for an end before the start; null for null, which JASS gives (probe
-    /// jass-threads). A cut inside a letter gives its bytes, as the game does.
+    /// jass-threads). A cut inside a letter gives its bytes, as the game does, but for the game's e2 82 from 0 to 1,
+    /// which gives both bytes for a reason not found (decisions D864).
     /// </summary>
-    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-7)).</remarks>
-    [Native(Level.Exact, Fact = StringsFact)]
+    /// <remarks>Close: The game gives both bytes of e2 82 cut from 0 to 1, for a reason not found (D864).</remarks>
+    [Native(Level.Close)]
     public string? SubString(string? source, int start, int end)
     {
         if (source is null) return null;

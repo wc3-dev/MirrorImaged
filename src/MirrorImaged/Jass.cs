@@ -27,6 +27,8 @@ static class Jass
         endglobals
         native MirrorImaged_Divide takes integer dividend, integer divisor returns integer
         native MirrorImaged_DivideReal takes real dividend, real divisor returns real
+        native MirrorImaged_AddReal takes real a, real b returns real
+        native MirrorImaged_SubtractReal takes real a, real b returns real
         native MirrorImaged_Join takes string a, string b returns string
         native MirrorImaged_Equal takes real a, real b returns boolean
         native MirrorImaged_Real takes integer i returns real
@@ -82,9 +84,6 @@ static class Jass
         }
 
         static readonly HashSet<string> LuaKeywords = ["break", "do", "end", "for", "goto", "in", "nil", "repeat", "until", "while"];
-
-        // S2R, by which JASS's real literals are read; it reads no game state
-        static readonly GameNatives Numbers = new(new Game(0));
 
         readonly bool _rules;
         readonly Dictionary<string, string> _globals = [];
@@ -190,7 +189,7 @@ static class Jass
 
         static bool NonZero(JassExpressionSyntax expression) =>
             Whole(expression) is not (null or 0)
-            || expression is JassLiteralExpressionSyntax { SyntaxKind: JassSyntaxKind.RealLiteralExpression } real && JassLiteral.ParseReal(real.Token.Text) != 0;
+            || expression is JassLiteralExpressionSyntax { SyntaxKind: JassSyntaxKind.RealLiteralExpression } real && Real(real.Token.Text) != 0;
 
         // A number as a JASS literal, a negative one in parentheses, since the Lua of -(-1.0) would otherwise read --1.0,
         // a comment; -2147483648 in hexadecimal, which Lua wraps, where its decimal digits read as a float
@@ -266,11 +265,18 @@ static class Jass
             return true;
         }
 
-        // A real literal as the game's JASS reads it: its whole part and its decimals each as S2R reads them, added in the
-        // game's arithmetic (probe jass-literals: 0.1 is S2R's, a float step above the nearest, and 1.001 a step below
-        // S2R's)
-        static float Real(string text) =>
-            text.Split('.') is [var whole, var decimals] ? Native.mi_add(Numbers.S2R(whole), Numbers.S2R("." + decimals)) : Numbers.S2R(text);
+        // A real literal as the game's JASS reads it (probes jass-literals and jass-reals-2, decisions D865): its whole
+        // digits and its decimals each read as an integer literal is, wrapped to 32 bits, and cut toward zero to floats;
+        // the decimals divided by ten to their number, wrapped too, and added, in the game's arithmetic. So 0.1 is
+        // 1 / 10, a float step above the nearest, 9999999999.0 is 1410065407 and 1 and 37 zeros .0 is 0.
+        static float Real(string text)
+        {
+            var point = text.IndexOf('.');
+            var (whole, decimals) = point < 0 ? (text, "") : (text[..point], text[(point + 1)..]);
+            var real = TowardZero(Decimal(whole is "" ? "0" : whole));
+            return decimals is "" ? real
+                : Native.mi_add(real, Native.mi_div(TowardZero(Decimal(decimals)), TowardZero(Decimal("1" + new string('0', decimals.Length)))));
+        }
 
         // The float's double written so Lua reads it back exactly, with a point or exponent so it reads as a float
         static string Numeral(float real) =>
@@ -428,10 +434,13 @@ static class Jass
         }
 
         // With JASS's rules: an integer meeting a real is cut toward zero to one first, where Lua rounds it (probe
-        // jass-numbers); an integer's / cuts toward zero, where Lua's // floors, and by zero ends the thread; a real's /
+        // jass-numbers); a real's + and - shift the smaller number toward minus infinity, where Lua's cuts its size (probe
+        // jass-reals-2); an integer's / cuts toward zero, where Lua's // floors, and by zero ends the thread; a real's /
         // by zero ends it too (probes jass-divide-integer and jass-divide-real); a string's + takes null as "" (null +
         // null is null; probe jass-threads); and == on reals holds within a margin (probes jass-reals and jass-equal),
         // where != compares exactly.
+        static bool Reals(string left, string right) => left is "real" or "integer" && right is "real" or "integer" && (left == "real" || right == "real");
+
         protected override bool RewriteBinaryExpression(JassBinaryExpressionSyntax binary, out JassExpressionSyntax result)
         {
             var rewritten = base.RewriteBinaryExpression(binary, out result);
@@ -448,10 +457,12 @@ static class Jass
             {
                 JassSyntaxKind.DivideExpression when left == "integer" && right == "integer" => "MirrorImaged_Divide",
                 JassSyntaxKind.DivideExpression when !NonZero(binary.Right) => "MirrorImaged_DivideReal",
+                JassSyntaxKind.AddExpression when Reals(left, right) => "MirrorImaged_AddReal",
+                JassSyntaxKind.SubtractExpression when Reals(left, right) => "MirrorImaged_SubtractReal",
                 JassSyntaxKind.AddExpression when left is "string" or "null" && right is "string" or "null"
                     && !(binary.Left is JassLiteralExpressionSyntax { SyntaxKind: JassSyntaxKind.StringLiteralExpression }
                         && binary.Right is JassLiteralExpressionSyntax { SyntaxKind: JassSyntaxKind.StringLiteralExpression }) => "MirrorImaged_Join",
-                JassSyntaxKind.EqualsExpression when left is "real" or "integer" && right is "real" or "integer" && (left == "real" || right == "real") => "MirrorImaged_Equal",
+                JassSyntaxKind.EqualsExpression when Reals(left, right) => "MirrorImaged_Equal",
                 _ => null,
             };
             if (helper is not null) result = Call(helper, first, second);

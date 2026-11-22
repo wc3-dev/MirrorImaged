@@ -10,10 +10,10 @@ public sealed partial class Simulation
 {
     /// <summary>
     /// JASS's operation limit as Lua instructions: the game ends a JASS thread after 3,000,000 of its own operations
-    /// (probe jass-threads); 2,100,100 is the fewest at which none of the probe's eleven loops stops before the game's,
-    /// which then run 1.00 to 2.10 times as often (decisions D135).
+    /// (probe jass-threads); 2,357,150 is about the fewest (to 11) at which none of the probe's eleven loops stops before the game's,
+    /// which then run 1.00 to 2.36 times as often (decisions D135, D866: a real's + and - are calls).
     /// </summary>
-    internal const int OperationLimit = 2_100_100;
+    internal const int OperationLimit = 2_357_150;
 
     // The script made into Lua against common.j's natives and globals and blizzard.j, when given. A script that doesn't
     // parse or names what isn't declared is one the game wouldn't load; any other failure is MirrorImaged's.
