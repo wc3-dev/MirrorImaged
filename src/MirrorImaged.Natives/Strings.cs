@@ -4,42 +4,39 @@ using MirrorImaged.Lua;
 
 namespace MirrorImaged.Natives;
 
-// The string and number natives as the probes strings to strings-6 measured them (facts, "Strings,
-// numbers and hashtables"). A string is the game's bytes as UTF-8: one that isn't UTF-8 reaches C# changed (decisions
-// D38), which is where SubString and StringHash can differ from the game.
+// The string and number natives as the probes strings to strings-7 measured them (facts, "Strings, numbers and
+// hashtables"). A string reaches C# with each byte that isn't UTF-8 as U+DC80 + the byte (decisions D861), so the
+// natives that read bytes read the game's.
 public sealed partial class GameNatives
 {
-    const string StringsFact = "facts, Strings, numbers and hashtables (probes strings to strings-6)";
+    const string StringsFact = "facts, Strings, numbers and hashtables (probes strings to strings-7)";
 
-    /// <summary>
-    /// The string's length in bytes. A string that isn't UTF-8 reaches C# with U+FFFD, three bytes, in place of each
-    /// bad byte (decisions D38), so its length can differ from the game's.
-    /// </summary>
-    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-6)).</remarks>
+    /// <summary>The string's length in bytes.</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-7)).</remarks>
     [Native(Level.Exact, Fact = StringsFact)]
-    public int StringLength(string? s) => Encoding.UTF8.GetByteCount(s ?? "");
+    public int StringLength(string? s) => LuaText.ByteCount(s ?? "");
 
     /// <summary>
     /// The bytes from <paramref name="start"/> up to <paramref name="end"/>; "" for a start below 0 or past the
     /// end, and the rest of the string for an end before the start; null for null, which JASS gives (probe
-    /// jass-threads). A cut inside a letter gives U+FFFD (decisions D38), where the game gives the byte.
+    /// jass-threads). A cut inside a letter gives its bytes, as the game does, but for the game's e2 82 from 0 to 1,
+    /// which gives both bytes for a reason not found (decisions D864).
     /// </summary>
-    /// <remarks>Close: A cut inside a letter gives U+FFFD, not the game's byte, and a string that isn't UTF-8 reaches C# changed (D38).</remarks>
+    /// <remarks>Close: The game gives both bytes of e2 82 cut from 0 to 1, for a reason not found (D864).</remarks>
     [Native(Level.Close)]
     public string? SubString(string? source, int start, int end)
     {
         if (source is null) return null;
-        var bytes = Encoding.UTF8.GetBytes(source);
+        var bytes = LuaText.Encode(source);
         if (start < 0 || start >= bytes.Length) return "";
-        return Encoding.UTF8.GetString(bytes, start, (end < start ? bytes.Length : Math.Min(end, bytes.Length)) - start);
+        return LuaText.Decode(bytes.AsSpan(start, (end < start ? bytes.Length : Math.Min(end, bytes.Length)) - start));
     }
 
     /// <summary>
-    /// The string with its ASCII letters in upper or lower case; other letters stay as they are; null for null, which
-    /// JASS gives (probe jass-threads). A string that isn't UTF-8 reaches C# with U+FFFD in place of each bad byte
-    /// (decisions D38), and comes back so.
+    /// The string with its ASCII letters in upper or lower case; other letters and bytes stay as they are; null for
+    /// null, which JASS gives (probe jass-threads).
     /// </summary>
-    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-6)).</remarks>
+    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-7)).</remarks>
     [Native(Level.Exact, Fact = StringsFact)]
     public string? StringCase(string? source, bool upper) => source is null ? null :
         string.Concat(source.Select(c =>
@@ -48,31 +45,40 @@ public sealed partial class GameNatives
     /// <summary>
     /// Bob Jenkins's lookup2 hash, with 0 as its seed, of the string's letters: each folded to upper case where the
     /// game folds it, '/' made '\', then written as one byte below 256 and two bytes, low first, from there; a letter
-    /// past U+FFFF is U+FFFD. "" is 0. A string that isn't UTF-8 reaches C# changed (decisions D38), so its hash
-    /// differs from the game's.
+    /// past U+FFFF or below 0 is U+FFFD. "" is 0. The letters are read from the bytes as the game reads them (decisions
+    /// D862): a byte up to bf is a letter of its own; one from c0, e0 or f0 takes one, two or three more, each less 80,
+    /// with no check that they are 80 to bf; and one from f8, or one whose letter runs past the end, is a 0, the last
+    /// letter.
     /// </summary>
-    /// <remarks>Close: The folding of letters not measured is inferred by range, and a string that isn't UTF-8 hashes differently (D38).</remarks>
+    /// <remarks>Close: The folding of letters not measured is inferred by range (D862).</remarks>
     [Native(Level.Close)]
     public int StringHash(string? s)
     {
         if (string.IsNullOrEmpty(s)) return 0;
+        var text = LuaText.Encode(s);
         var bytes = new List<byte>();
-        foreach (var rune in s.EnumerateRunes())
+        for (var i = 0; i < text.Length;)
         {
-            var c = rune.IsBmp ? Upper((char)rune.Value) : (char)0xFFFD;
+            int lead = text[i++], more = lead < 0xc0 ? 0 : lead < 0xe0 ? 1 : lead < 0xf0 ? 2 : lead < 0xf8 ? 3 : -1;
+            var (letter, single) = (0, more == 0);
+            if (more >= 0 && i + more <= text.Length)
+                for (letter = single ? lead : lead & (0x3f >> more); more > 0; more--) letter = (letter << 6) + text[i++] - 0x80;
+            var c = letter is < 0 or > 0xffff ? (char)0xfffd : Upper((char)letter, single);
             if (c == '/') c = '\\';
             bytes.Add((byte)c);
-            if (c > 0xFF) bytes.Add((byte)(c >> 8));
+            if (c > 0xff) bytes.Add((byte)(c >> 8));
+            if (letter == 0) break;
         }
         return (int)Lookup2(bytes);
     }
 
     // Measured folded (strings, strings-2, strings-3): a, b, c, h, w, ä, é, ö, þ, ÷, œ, а, ё and я; measured left: ÿ, ß,
     // ł, ą, ž, š, ő, ı, α, β, ա, ａ, ǆ and µ. The ranges a-z, à-þ, а-я and ѐ-џ are inferred from those; every other
-    // letter is left as it is, measured or not.
-    static char Upper(char c) => c switch
+    // letter is left as it is, measured or not. a-z are folded only from a byte of their own (<c2>a, strings-7, is a).
+    static char Upper(char c, bool single) => c switch
     {
-        >= 'a' and <= 'z' or >= 'à' and <= 'þ' or >= 'а' and <= 'я' => (char)(c - 32),
+        >= 'a' and <= 'z' when single => (char)(c - 32),
+        >= 'à' and <= 'þ' or >= 'а' and <= 'я' => (char)(c - 32),
         >= 'ѐ' and <= 'џ' => (char)(c - 80),
         'œ' => 'Œ',
         _ => c,
@@ -113,7 +119,7 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The integer's digits, with a minus sign for a negative one.</summary>
-    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-6)).</remarks>
+    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-7)).</remarks>
     [Native(Level.Exact, Fact = StringsFact)]
     public string? I2S(int i) => i.ToString(CultureInfo.InvariantCulture);
 
@@ -121,7 +127,7 @@ public sealed partial class GameNatives
     /// The number in the string's leading digits, after spaces and a sign, held at the integer's ends: S2I("12abc") is
     /// 12, S2I("2147483648") 2147483647, S2I("abc") 0.
     /// </summary>
-    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-6)).</remarks>
+    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-7)).</remarks>
     [Native(Level.Exact, Fact = StringsFact)]
     public int S2I(string? s)
     {
@@ -137,23 +143,21 @@ public sealed partial class GameNatives
 
     /// <summary>
     /// A sign, digits and one point, read up to anything else, with no spaces before and no exponent: S2R(" 2.5") and
-    /// S2R("abc") are 0, S2R("1e3") 1. The digits make an integer, then a float in the game's arithmetic once past an
-    /// integer's range, divided by 10 to the number of digits after the point: so S2R("1.5") is 1.50000012, as in the
-    /// game. Close: 10 of the 77 measured strings, most with five or more digits after the point, come out a float step
-    /// from the game's; past the float range the sum wraps as the game's products do and the result is extrapolated
-    /// (decisions D83: 40 decimals give -1.814 where the game gives 0.123456791).
+    /// S2R("abc") are 0, S2R("1e3") 1. The first nine digits from the first that isn't 0 make an integer, cut toward zero
+    /// to a float; the digits after them are dropped, and the float is multiplied by ten to the number dropped less the
+    /// decimals, or divided by ten to the decimals less the number dropped, in the game's arithmetic: so S2R("1.5") is
+    /// 1.50000012 and S2R("2.500000000000") 2.5, as in the game. Past the float range the product is packed as the
+    /// game's products are (S2R of 4 and 38 zeros is a nan, of 40 nines 0; decisions D860).
     /// </summary>
-    /// <remarks>Close: 10 of the 77 measured strings come out a float step from the game's, and past the float range the result is extrapolated (D83).</remarks>
-    [Native(Level.Close)]
+    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-7)).</remarks>
+    [Native(Level.Exact, Fact = StringsFact)]
     public float S2R(string? s)
     {
         s ??= "";
-        int i = 0, decimals = 0;
+        int i = 0, head = 0, dropped = 0, decimals = 0;
         var negative = i < s.Length && s[i] == '-';
         if (i < s.Length && s[i] is '-' or '+') i++;
-        long whole = 0;
-        float big = 0;
-        bool point = false, past = false;
+        bool point = false;
         for (; i < s.Length && (char.IsAsciiDigit(s[i]) || s[i] == '.' && !point); i++)
         {
             if (s[i] == '.')
@@ -162,45 +166,46 @@ public sealed partial class GameNatives
                 continue;
             }
             if (point) decimals++;
-            if (!past && whole * 10 + (s[i] - '0') <= int.MaxValue) whole = whole * 10 + (s[i] - '0');
-            else
-            {
-                if (!past) big = TowardZero(whole);
-                past = true;
-                big = Native.mi_add(Native.mi_mul(big, 10), s[i] - '0');
-            }
+            if (dropped == 0 && head * 10L + (s[i] - '0') <= 999_999_999) head = head * 10 + (s[i] - '0');
+            else dropped++;
         }
-        var v = past ? big : TowardZero(whole);
-        if (decimals > 0) v = Native.mi_div(v, Power(10, decimals));
+        var v = TowardZero(head);
+        var e = dropped - decimals;
+        if (e > 0) v = Native.mi_mul(v, Power(10, e));
+        else if (e < 0) v = Native.mi_div(v, Power(10, -e));
         return negative ? Native.mi_mul(v, -1) : v;
     }
 
-    // Whole powers in the game's arithmetic: exact up to 10^10.
+    // A whole power in the game's arithmetic, squaring as it goes: exact up to 10^10.
     static float Power(float x, int n)
     {
         float p = 1;
-        for (int i = 0; i < n; i++) p = Native.mi_mul(p, x);
+        for (; n > 0; n >>= 1)
+        {
+            if ((n & 1) != 0) p = Native.mi_mul(p, x);
+            x = Native.mi_mul(x, x);
+        }
         return p;
     }
 
     /// <summary>The integer cut toward zero to a float, as the game cuts: I2R(16777219) is 16777218.</summary>
-    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-6)).</remarks>
+    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-7)).</remarks>
     [Native(Level.Exact, Fact = StringsFact)]
     public float I2R(int i) => TowardZero(i);
 
     /// <summary>Cut toward zero, held at the integer's ends: R2I(1e10) is 2147483647.</summary>
-    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-6)).</remarks>
+    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-7)).</remarks>
     [Native(Level.Exact, Fact = StringsFact)]
     public int R2I(float r) => (int)r;
 
     /// <summary>Rounded half away from zero, through a 64-bit integer cut to 32 bits: MathRound(1e10) is 1410065408.</summary>
-    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-6)).</remarks>
+    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-7)).</remarks>
     [Native(Level.Exact, Fact = StringsFact)]
     public int MathRound(float r) => unchecked((int)(long)MathF.Round(r, MidpointRounding.AwayFromZero));
 
     /// <summary>As <see cref="R2SW"/> with no width and 3 decimals: R2S(0.0625) is "0.063".</summary>
-    /// <remarks>Close: Differs from the game as <c>R2SW</c> does: from 2^31 up and for the largest floats.</remarks>
-    [Native(Level.Close)]
+    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-7)).</remarks>
+    [Native(Level.Exact, Fact = StringsFact)]
     public string? R2S(float r) => R2SW(r, 0, 3);
 
     /// <summary>
@@ -209,23 +214,25 @@ public sealed partial class GameNatives
     /// <paramref name="width"/>; precision 0 writes ".0". At most 255 bytes, the rest cut; "" when the length the width
     /// asks for is past a 32-bit integer. The game's own formatting: R2SW(1.5, 8, 2) is "     1.50", R2SW(-1.5, 4, 2)
     /// "- 1.50", R2SW(1.25, 0, -1) "1.25". A number below 0 whose text passes 255 bytes closes the game; one whose length
-    /// wraps past a 32-bit integer gives "", as above 0 (not measured below 0). Close from 2^31 up, where the game writes
-    /// about ten digits of its own and then zeros (R2S(1e20) is "100000057600000000000.000") and this writes the float's
-    /// digits, and for the largest floats, which the game writes "inf".
+    /// wraps past a 32-bit integer gives "", as above 0 (not measured below 0). From 2^31 up the number is divided by 10
+    /// in the game's arithmetic until it is below 2^31, and its whole part written with a 0 for each division and no pad
+    /// (R2S(1e20) is "100000057600000000000.000"); the largest float, and inf, are "inf" (decisions D863).
     /// </summary>
     /// <exception cref="GameClosedException">The number is below 0 and its text passes 255 bytes, its length not wrapped.</exception>
-    /// <remarks>Close: From 2^31 up the game writes about ten digits and then zeros, and for the largest floats it writes inf; a negative number whose length wraps is not measured.</remarks>
+    /// <remarks>Close: A negative number whose length wraps past a 32-bit integer is not measured.</remarks>
     [Native(Level.Close)]
     public string? R2SW(float r, int width, int precision)
     {
-        if (float.IsInfinity(r)) return r > 0 ? "inf" : "-inf";
+        if (Math.Abs(r) >= float.MaxValue) return r > 0 ? "inf" : "-inf";
         var sign = r < 0 ? "-" : "";
         r = Math.Abs(r);
         var decimals = precision < 0 ? 6 : Math.Min(precision, 9);
         string digits, fraction;
         if (r >= 2147483648f)
         {
-            digits = ((double)r).ToString("F0", CultureInfo.InvariantCulture);
+            var (head, zeros) = (r, 0);
+            for (; head >= 2147483648f; zeros++) head = Native.mi_div(head, 10);
+            digits = ((int)head).ToString(CultureInfo.InvariantCulture) + new string('0', zeros);
             fraction = new string('0', Math.Max(decimals, 1));
         }
         else
@@ -252,17 +259,17 @@ public sealed partial class GameNatives
     }
 
     /// <summary>The bits set in both numbers.</summary>
-    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-6)).</remarks>
+    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-7)).</remarks>
     [Native(Level.Exact, Fact = StringsFact)]
     public int BlzBitAnd(int x, int y) => x & y;
 
     /// <summary>The bits set in either number.</summary>
-    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-6)).</remarks>
+    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-7)).</remarks>
     [Native(Level.Exact, Fact = StringsFact)]
     public int BlzBitOr(int x, int y) => x | y;
 
     /// <summary>The bits set in one number and not the other.</summary>
-    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-6)).</remarks>
+    /// <remarks>Exact: matches the game wherever measured (facts, Strings, numbers and hashtables (probes strings to strings-7)).</remarks>
     [Native(Level.Exact, Fact = StringsFact)]
     public int BlzBitXor(int x, int y) => x ^ y;
 }
