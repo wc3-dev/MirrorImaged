@@ -553,6 +553,7 @@ static float acos_near_1 (float x) {
    pi less the acos (not measured). */
 float mi_asinf (float x) {
   float a = x < 0 ? -x : x;
+  if (x != x) return 0.0f;  /* as before D850, never into acos_near_1 (its index would be off the table) */
   if (x >= 1 || x <= -1) return flt(x < 0 ? 0xbfc90fdb : 0x3fc90fdb);
   if (a <= 1018.0f / 1024) {
     int64_t g = asin_units(a, 0);
@@ -569,6 +570,7 @@ float mi_asinf (float x) {
 
 float mi_acosf (float x) {
   float a = x < 0 ? -x : x;
+  if (x != x) return 0.0f;
   if (x >= 1 || x <= -1) return x < 0 ? flt(0x40490fdb) : 0.0f;
   if (a <= 1018.0f / 1024) {
     int64_t g = x < 0 ? asin_units(a, 0) : asin_units(a, 1);
