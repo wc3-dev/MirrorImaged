@@ -6,7 +6,7 @@
 - handles false 1048736 1048736 1048737 1048738
 + handles false 1048660 1048660 1048661 1048662
 
-# Times: here the clock reads the 1/1024 s step, where the game reads the hundredth or a hair past it (D45, D127;
+# Times: here the clock `TimerGetElapsed` reads is in 1/1024 s steps, where the game reads the hundredth or a hair past it (D45, D127;
 # W1-10).
 - condition evaluated false 0.5001
 + condition evaluated false 0.5000
@@ -17,11 +17,11 @@
 - w after execute 0.6000
 + w after execute 0.5996
 
-# A wait in a coroutine the script made inside an action yields that coroutine here, and ends the action in the game
+# `TriggerSleepAction` in a coroutine the script made inside an action yields that coroutine here, and ends the action in the game
 # (D70).
 + in a coroutine 0.7002 true nil
 
-# Times, as above (D45, D127; W1-10).
+# Times, as above: `TimerGetElapsed` reads the clock's steps (D45, D127; W1-10).
 - waiter start 0.8000
 + waiter start 0.7998
 - waiter after 0.8000

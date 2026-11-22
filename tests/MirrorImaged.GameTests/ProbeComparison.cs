@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using MirrorImaged.Data;
@@ -194,7 +195,7 @@ public static class ProbeComparison
     /// <see cref="Longest"/>; returns its lines, <see cref="Closes"/> alone if the run closed the game, or why it gave
     /// none.
     /// </summary>
-    public static (IReadOnlyList<string>? Lines, string? Stop) Mirror(string name, GraphicsMode mode)
+    public static (IReadOnlyList<string>? Lines, string? Stop) Mirror(string name, GraphicsMode mode, Action<Simulation>? watch = null)
     {
         var folder = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())).FullName;
         try
@@ -204,6 +205,7 @@ public static class ProbeComparison
             else ProbeMap.Build(name, ProbeMap.Source(name), map, WithComputer(name), Change(name));
             var data = ReadsData(name) ? StandardData.Installed(GameInstall.Require(), MapArchive.Read(map).Files.Info, mode) : null;
             using var simulation = Simulation.Load(map, Frame, new SimulationOptions { Graphics = mode }, data);
+            watch?.Invoke(simulation);
             var file = $@"{ProbeMap.Folder}\{name}.pld";
             for (var time = TimeSpan.Zero; time < Longest && simulation is { Stopped: null, Ended: false } && !simulation.Documents.CustomMapData.ContainsKey(file); time += TimeSpan.FromSeconds(1))
             {
@@ -307,6 +309,85 @@ public static class ProbeComparison
             ? new Regex("^" + Regex.Escape(text).Replace(@"\{t}", @"-?[0-9]+(\.[0-9]+)?").Replace(@"\{w}", "[A-Za-z0-9_]+") + "$")
             : null);
     }
+
+    /// <summary>
+    /// The Exact natives that a recorded difference of a probe in a graphics mode touches though their fact cites the probe
+    /// (A2: "An Exact native has no recorded difference"; decisions D841). The probe runs with each native call traced, and
+    /// a line MirrorImaged gives touches the natives called since the line before it. A differing line is laid on the
+    /// natives its note names: it is explained when the note names a native that isn't Exact and was called by then, or
+    /// lays it on the comparison's run (<see cref="Setup"/>), and every Exact native citing the probe that it touches is
+    /// listed otherwise; an Exact native citing the probe that the note names is listed either way. A line only the game
+    /// gives touches nothing here.
+    /// </summary>
+    public static IReadOnlyList<string> ExactTouched(string name, GraphicsMode mode)
+    {
+        var file = Differences(name, mode);
+        var citing = ExactCiting(name);
+        if (!File.Exists(file) || citing.Count == 0) return [];
+
+        var touched = new List<HashSet<string>> { new() };
+        var (lines, stop) = Mirror(name, mode, simulation =>
+        {
+            simulation.NativeCalled = native => touched[^1].Add(native);
+            simulation.Lua.Register("__mirror_line", _ => { touched.Add([]); return []; });
+            simulation.Lua.Run("if out then local o = out function out(...) __mirror_line() return o(...) end end", "trace");
+        });
+        if (lines is null) return [$"{name}, {mode}: stopped without lines: {stop}"];
+
+        // The notes above each recorded line, and the differences in the same order (AssertRecorded holds them equal)
+        var notes = new List<string>();
+        var note = new StringBuilder();
+        var inNote = false;
+        foreach (var line in File.ReadAllLines(file).SkipWhile(line => line.Length > 0))
+        {
+            if (line.StartsWith("# ", StringComparison.Ordinal))
+            {
+                if (!inNote) note.Clear();
+                note.Append(' ').Append(line[2..]);
+                inNote = true;
+            }
+            else if (line.Length > 0)
+            {
+                notes.Add(note.ToString());
+                inNote = false;
+            }
+        }
+
+        var found = new List<string>();
+        var (recorded, from) = (0, 0);
+        foreach (var difference in Compare(Expected(name, mode), lines))
+        {
+            var why = recorded < notes.Count ? notes[recorded] : "";
+            recorded += difference.Recorded.Count();
+            if (difference.Mirror is null) continue;
+            // shortcut: the first line from here with the text, which is the differing one unless an equal common line comes between
+            var at = lines.Skip(from).ToList().IndexOf(difference.Mirror);
+            if (at < 0) continue;
+            (at, from) = (at + from, at + from + 1);
+            var calls = at < touched.Count ? touched[at] : [];
+            var before = touched.Take(at + 1).SelectMany(set => set).ToHashSet();
+            var named = Regex.Matches(why, "[A-Za-z_][A-Za-z0-9_]*").Select(m => m.Value).Where(before.Contains).ToHashSet();
+            var blamed = named.Where(citing.Contains);
+            var explained = named.Any(native => !Exact.Contains(native)) || Setup.IsMatch(why);
+            var suspects = explained ? blamed : calls.Where(citing.Contains).Union(blamed);
+            var others = string.Join(", ", calls.Where(native => !Exact.Contains(native)).Order(StringComparer.Ordinal));
+            found.AddRange(suspects.Order(StringComparer.Ordinal).Select(native => $"{native}: {name}, {mode}, \"{difference.Mirror}\" (touching too: {others})"));
+        }
+        return found;
+    }
+
+    // A note that lays its lines on the comparison's run, not on a native: it runs without blizzard.j (D150) and, but for the data probes, without the game's data
+    static readonly Regex Setup = new(@"blizzard\.j|the game's data");
+
+    static readonly IReadOnlyList<(string Name, NativeAttribute Native)> Natives = typeof(GameNatives).GetMethods()
+        .Select(method => (method.Name, Native: method.GetCustomAttribute<NativeAttribute>()!)).Where(n => n.Native is not null).ToList();
+
+    static readonly HashSet<string> Exact = Natives.Where(n => n.Native.Level == Level.Exact).Select(n => n.Name).ToHashSet();
+
+    /// <summary>The Exact natives whose fact names the probe (a whole name: units-groups isn't units).</summary>
+    public static HashSet<string> ExactCiting(string name) => Natives
+        .Where(n => n.Native.Level == Level.Exact && n.Native.Fact is { } fact && Regex.IsMatch(fact, $@"(?<![\w-]){Regex.Escape(name)}(?![\w-])"))
+        .Select(n => n.Name).ToHashSet();
 
     /// <summary>Runs a probe in MirrorImaged in a graphics mode and fails unless it differs from the game's lines in that mode as recorded.</summary>
     public static void AssertMirror(string name, GraphicsMode mode)
