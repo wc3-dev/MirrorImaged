@@ -74,19 +74,42 @@ public sealed partial class GameNatives
 
     float Distance(unit a, unit b) => MathF.Sqrt(Distance2(a.X - b.X, a.Y - b.Y));
 
-    // The nearest enemy within the range the unit may attack, or null
+    // The nearest enemy within the range the unit may attack, the first listed on a tie, or null. The units are looked up in squares of 512
+    // listed once a tick (again when a unit is made or taken away), a margin of 64 covering those that walked since (D871)
     unit? Nearest(unit u, float range)
     {
-        unit? best = null;
-        var bestAt = float.MaxValue;
-        foreach (var t in _units.Values)
+        if (_nearGridOf != (_ticks, _units.Count, _game.Counters.NextId))
         {
-            var near = Distance2(u.X - t.X, u.Y - t.Y);
-            if (near > range * range || near >= bestAt * bestAt || !Hostile(u, t) || !Armed(u, t)) continue;
-            (best, bestAt) = (t, MathF.Sqrt(near));
+            _nearGridOf = (_ticks, _units.Count, _game.Counters.NextId);
+            foreach (var list in _nearGrid.Values) list.Clear();
+            var listed = 0;
+            foreach (var o in _units.Values)
+            {
+                var square = ((int)MathF.Floor(o.X / NearSquare), (int)MathF.Floor(o.Y / NearSquare));
+                if (!_nearGrid.TryGetValue(square, out var list)) _nearGrid[square] = list = [];
+                list.Add((o, listed++));
+            }
         }
+        unit? best = null;
+        var (bestNear, bestListed) = (float.MaxValue, int.MaxValue);
+        var reach = range + 64;
+        for (var cx = (int)MathF.Floor((u.X - reach) / NearSquare); cx <= (int)MathF.Floor((u.X + reach) / NearSquare); cx++)
+            for (var cy = (int)MathF.Floor((u.Y - reach) / NearSquare); cy <= (int)MathF.Floor((u.Y + reach) / NearSquare); cy++)
+            {
+                if (!_nearGrid.TryGetValue((cx, cy), out var list)) continue;
+                foreach (var (t, listed) in list)
+                {
+                    var near = Distance2(u.X - t.X, u.Y - t.Y);
+                    if (near > range * range || near > bestNear || near == bestNear && listed > bestListed || !Hostile(u, t) || !Armed(u, t)) continue;
+                    (best, bestNear, bestListed) = (t, near, listed);
+                }
+            }
         return best;
     }
+
+    const float NearSquare = 512;
+    readonly Dictionary<(int, int), List<(unit Unit, int Listed)>> _nearGrid = [];
+    (long, int, int) _nearGridOf = (-1, 0, 0);
 
     // One step of a unit; true while it could still do something next step
     bool Act(unit u)

@@ -30,8 +30,20 @@ public sealed partial class GameNatives
 
     IEnumerable<unit> Mine(player p) => _units.Values.Where(u => u.Owner == p && !u.Dead && !u.Removed);
 
-    int CountOf(player p, int id, bool done) => Mine(p).Count(u => u.Type.Id == id && (!done || !u.Constructing))
-        + (done ? 0 : Mine(p).Sum(b => b.Train.Count(t => !t.Research && t.Id == id)));
+    // One pass over the units, as the AI scripts count every few seconds for each type they build
+    int CountOf(player p, int id, bool done)
+    {
+        var count = 0;
+        foreach (var u in _units.Values)
+        {
+            if (u.Owner != p || u.Dead || u.Removed) continue;
+            if (u.Type.Id == id && (!done || !u.Constructing)) count++;
+            if (!done)
+                foreach (var t in u.Train)
+                    if (!t.Research && t.Id == id) count++;
+        }
+        return count;
+    }
 
     /// <summary>The AI player's units of the type, those under construction and queued in training too.</summary>
     /// <remarks>Close: buildings under construction and units queued count, as the model's own count does; the game's is not measured.</remarks>
