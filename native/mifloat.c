@@ -513,9 +513,10 @@ static int64_t asin_units (double x, int from_top) {
 
 /* Near 1 (x above 1018/1024) acos is a straight line between the floats nearest acos(1 - w) at 8 points an octave of w,
    w = 2^e (1 + i/8) for e from -22 (decision D850). The game's w is 1 - x and a step of x more (2^-24), so x = 1 - 4 2^-24
-   and above give 0 (w at most 2^-22); between two points lo and hi it is lo + (hi - lo) f in the game's arithmetic, f the
-   low 20 bits of w's mantissa over 2^20. All 1,019 values of asin and 978 of acos at every 2^-24 below 1 are that (the
-   other 41 of acos a step low). */
+   and above give 0 (w at most 2^-22); between two points lo and hi it is lo + (hi - lo) f + c worked out exactly and cut
+   toward zero to a float, f the low 20 bits of w's mantissa over 2^20 and c a constant from 3 2^-36 to 4 2^-36 (D880, the
+   middle taken): the game's line carries more bits than a float and sits that much above the floats' line, by the same
+   amount in every octave. All 2,378 values of asin and acos above 1018/1024 in the scans are that. */
 static const uint32_t ACOS_NEAR_1[121] = {
   0x3a3504f3, 0x3a400000, 0x3a4a62c2, 0x3a544395, 0x3a5db3d8, 0x3a66c15b, 0x3a6f7751, 0x3a77def6,
   0x3a800000, 0x3a87c3b7, 0x3a8f1bbd, 0x3a9617e3, 0x3a9cc471, 0x3aa32b2c, 0x3aa953fe, 0x3aaf456f,
@@ -543,7 +544,12 @@ static float acos_near_1 (float x) {
   i = ((b >> 23) - (127 - 22)) * 8 + ((b >> 20) & 7);
   lo = flt(ACOS_NEAR_1[i]);
   hi = flt(ACOS_NEAR_1[i + 1]);
-  return mi_add(lo, mi_mul(mi_sub(hi, lo), (float)(b & 0xfffff) * 0x1p-20f));
+  {
+    /* exact in a double: lo and hi have 24 bits, f 20, and the sum spans at most 52 */
+    double d = (double)lo + ((double)hi - (double)lo) * ((double)(b & 0xfffff) * 0x1p-20) + 0x7p-37;
+    float r = (float)d;
+    return (double)r > d ? flt(bits(r) - 1) : r;
+  }
 }
 
 /* From 1 and past it asin is the float nearest pi/2 (asin(2) too) and acos 0; from -1 down, -pi/2 and pi. A number below 0

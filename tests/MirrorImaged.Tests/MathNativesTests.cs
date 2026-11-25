@@ -60,6 +60,8 @@ public sealed class MathNativesTests : IDisposable
     [InlineData("Asin", 0x3f7ffffcu, 0u, 0x3fc8f68eu)]
     [InlineData("Acos", 0x3f7ffff9u, 0u, 0x3a800000u)]
     [InlineData("Acos", 0x3f7ffffdu, 0u, 0x00000000u)]
+    [InlineData("Acos", 0x3f7fffa4u, 0u, 0x3b5a29c5u)]
+    [InlineData("Acos", 0x3f7fe000u, 0u, 0x3d000346u)]
     [InlineData("Asin", 0x40000000u, 0u, 0x00000000u)]
     [InlineData("Acos", 0x40000000u, 0u, 0x00000000u)]
     [InlineData("Atan", 0x00000000u, 0u, 0x00000000u)]
