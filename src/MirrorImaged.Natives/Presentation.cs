@@ -7,7 +7,7 @@ public sealed partial class GameNatives
 
     bool _fog = true, _fogMask = true;
 
-    /// <summary>Kept for IsFogEnabled; what it does to what a player sees is wave 6's.</summary>
+    /// <summary>Kept for IsFogEnabled; with the fog off, a place a player has seen reads as visible to them (IsVisibleToPlayer and the like).</summary>
     /// <remarks>Close: Only the flag is kept; what it does to the view isn't modelled or measured.</remarks>
     [Native(Level.Close)]
     public void FogEnable(bool enable) => _fog = enable;
@@ -17,7 +17,7 @@ public sealed partial class GameNatives
     [Native(Level.Exact, Fact = Cameras4)]
     public bool IsFogEnabled() => _fog;
 
-    /// <summary>Kept for IsFogMaskEnabled; what it does to what a player sees is wave 6's.</summary>
+    /// <summary>Kept for IsFogMaskEnabled; with the mask off, a place a player has never seen reads as fogged to them, or visible with the fog off too.</summary>
     /// <remarks>Close: Only the flag is kept; what it does to the view isn't modelled or measured.</remarks>
     [Native(Level.Close)]
     public void FogMaskEnable(bool enable) => _fogMask = enable;

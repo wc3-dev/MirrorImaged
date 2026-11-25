@@ -11,10 +11,10 @@ the output is plain text with no colour, for scripts and CI to read.
 | `mirror check <map>` | The natives a map's script calls, with their trust levels; exits 1 when one is Missing |
 | `mirror run <map> [--seconds n] [--seed n] [--hash n] [--record file] [--input file]` | Runs a Lua or JASS map for n simulated seconds (60) with a seed (0), then prints its log. `--hash n` prints the world's hash every n seconds. `--input` gives the inputs of a recording (or a JSON list of them) at their steps. `--record` saves the run as a recording |
 | `mirror replay <recording or .w3g> [--map map] [--hash n]` | Runs a recording again, exactly, and prints the hash at its end (or every n seconds); a game replay (`.w3g`) needs the map it was played on with `--map` |
-| `mirror snapshot <map or recording> [--at n] [--back n] [--seed n] [--out file]` | Saves the world after n simulated seconds with what runs it again. `--back n` runs to `--at`, steps back n seconds and saves the world there: the same world as a run forward to that step |
+| `mirror snapshot <map or recording> [--at n] [--back n] [--seed n] [--out file]` | Saves the world after n simulated seconds (`--at`, the `--seconds` value, 60, when not given) with what runs it again, to `snapshot.json` unless `--out` names a file. `--back n` runs to `--at`, steps back n seconds and saves the world there: the same world as a run forward to that step |
 | `mirror compare <snapshot> [--map map]` | Runs the snapshot's run again to its step and lists the parts of the world that differ |
 | `mirror desync <map> [--seconds n] [--seed n]` | Runs the map once for each person's slot as that player's own game, and reports where the runs first differ |
-| `mirror bench <map> [--seconds n] [--seed n]` | Times a run: how many times faster than real time it goes |
+| `mirror bench <map> [--seconds n] [--seed n]` | Times a run of n simulated seconds (600): how many times faster than real time it goes |
 | `mirror fuzz <map> [--seconds n] [--seed n] [--orders n]` | Gives every player's units random legal orders each second and reports script errors |
 | `mirror test <file or folder> [--junit file]` | Runs the Lua tests (`*.test.lua`), prints each result, and writes JUnit XML |
 | `mirror view <map or recording> [--seconds n] [--every n] [--out file]` | Runs it and saves a page that scrubs through the run in a browser |

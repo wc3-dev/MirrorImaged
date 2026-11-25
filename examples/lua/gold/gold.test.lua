@@ -1,4 +1,4 @@
--- Run with: mirror test examples/lua/gold   (the map, gold.w3x, is built from war3map.lua by your usual tools)
+-- Run with: mirror test examples/lua/gold   (the map, gold.w3x, is a folder map: a folder holding its war3map.lua)
 test("the player is paid every 2 seconds", function()
   local sim = mirror.load("gold.w3x")
   sim:advance(7)

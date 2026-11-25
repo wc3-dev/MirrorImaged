@@ -12,7 +12,10 @@ test("two footmen fight", function()
   sim:advance(2)
   local mine = sim:units(0)[1]
   sim:order(0, mine.id, "attack", 300, 0)
-  assert_true(sim:wait_until(function() return sim:unit(mine.id).life < mine.max_life end, 20))
+  assert_true(sim:wait_until(function()
+    local u = sim:unit(mine.id) -- nil once the unit is dead
+    return u == nil or u.life < mine.max_life
+  end, 20))
 end)
 ```
 
@@ -47,6 +50,7 @@ These are a player's own input. Only a player's own units obey its orders and se
 | `sim:select(player, unit, ...)` | Selects exactly these units; fires the selected and deselected events |
 | `sim:key(player, key, down, meta)` | Presses or releases an OS key (65 is A) with the meta keys held (1 shift, 2 control, 4 alt, 8 meta) |
 | `sim:mouse(player, kind, button, x, y)` | Presses (305), releases (306) or moves (307) the mouse over the map; the button is 1 left, 2 middle, 3 right |
+| `sim:click(player, button)` | Clicks a button, counting from 0, of the dialog the player is shown |
 | `sim:say(player, text)` | Types a chat message |
 | `sim:leave(player)` | The player leaves the game |
 

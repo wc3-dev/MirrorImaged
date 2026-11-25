@@ -11,10 +11,10 @@ public sealed partial class GameNatives
     public bool IsUnitPaused(unit? whichHero) => whichHero?.Paused ?? false;
 
     /// <summary>
-    /// A count of its own, up for true and down for false, which IsUnitPaused doesn't read (probe units). Close: what
-    /// such a pause holds back comes with orders and movement (wave 3).
+    /// A count of its own, up for true and down for false, which IsUnitPaused doesn't read (probe units). Close: the
+    /// count holds nothing back here, so the unit still moves, fights and takes orders.
     /// </summary>
-    /// <remarks>Close: Counts pauses of its own; what such a pause holds back is not modelled (wave 3).</remarks>
+    /// <remarks>Close: Counts pauses of its own; what such a pause holds back is not modelled.</remarks>
     [Native(Level.Close)]
     public void BlzPauseUnitEx(unit? whichUnit, bool flag)
     {

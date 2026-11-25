@@ -10,12 +10,12 @@ public sealed partial class GameNatives
 
 
     /// <summary>Registers the trigger and gives an event that never fires; null for a null trigger.</summary>
-    /// <remarks>Close: Its event source comes with a later wave (spells and orders, wave 4), so it never fires; not measured in the game.</remarks>
+    /// <remarks>Close: Nothing here makes its event, so it never fires; not measured in the game.</remarks>
     [Native(Level.Close)]
     public @event? TriggerRegisterCommandEvent(trigger? whichTrigger, int whichAbility, string? order) => whichTrigger is null ? null : Register(whichTrigger);
 
     /// <summary>Registers the trigger and gives an event that never fires; null for a null trigger.</summary>
-    /// <remarks>Close: Its event source comes with a later wave (spells and orders, wave 4), so it never fires; not measured in the game.</remarks>
+    /// <remarks>Close: Nothing here makes its event, so it never fires; not measured in the game.</remarks>
     [Native(Level.Close)]
     public @event? TriggerRegisterUpgradeCommandEvent(trigger? whichTrigger, int whichUpgrade) => whichTrigger is null ? null : Register(whichTrigger);
 

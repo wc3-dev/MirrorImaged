@@ -17,7 +17,7 @@ namespace MirrorImaged.Data;
 /// (<c>war3map.w3i</c>), strings (<c>war3map.wts</c>), object data and its skin files, terrain (<c>w3e</c>), pathing
 /// (<c>wpm</c>), doodads and destructables (<c>war3map.doo</c>), placed units (<c>war3mapUnits.doo</c>), regions
 /// (<c>w3r</c>), cameras (<c>w3c</c>), sounds (<c>w3s</c>) and the import list (<c>imp</c>); a file the map lacks is null.
-/// The placed-unit file, which no wave reads yet, is null too when War3Net can't read it, and <see cref="Unread"/> names
+/// The placed-unit file, which the run doesn't read (the script makes the placed units), is null too when War3Net can't read it, and <see cref="Unread"/> names
 /// it (decisions D209); a terrain file whose tile or cliff types War3Net refuses, and a doodad file whose doodad states
 /// it refuses, are read here (decisions D270, D258), and are left out only when they can't be read either. Two kinds of info and sound file War3Net
 /// refuses are mended before it reads them (D300, D301). <c>war3mapMisc.txt</c> is kept as it is, and any other file,

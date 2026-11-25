@@ -5,6 +5,6 @@ obj/
 *.user
 TestResults/
 node_modules/
-examples/typescript/*/war3map.lua
+examples/typescript/*/gold.w3x/
 examples/csharp/*/build/
 examples/csharp/*/map.w3x/

@@ -24,7 +24,7 @@ public class GoldTests
 
 ## Loading
 
-`Simulation.Load(path, options)` reads a `.w3x` or `.w3m` whose script is `war3map.lua` or `war3map.j` (JASS is turned into Lua first) and runs its
+`Simulation.Load(path, options)` reads a `.w3x` or `.w3m`, a file or a folder map, whose script is `war3map.lua` or `war3map.j` (JASS is turned into Lua first) and runs its
 `config` and `main`. `SimulationOptions` takes the `Seed`, the `Users` (the slots people play, the first being the local player) and `Computers`
 (the slots computers play), the `Difficulty` the computers play at (Normal unless given), the `Graphics` mode the player has chosen in the
 game's options (`GraphicsMode.Reforged` unless given, or `Classic`; the game's data answers follow it, so a unit's scale and animation speeds, the game
@@ -38,18 +38,18 @@ camera, a bridge's height and which sound files exist can differ) and the `Docum
 | `AdvanceSteps(long)` | Moves it by whole steps, exactly |
 | `Until(check, within, every)` | Advances until the check holds; returns whether it did |
 | `Step`, `Paused`, `Ended` | Where the clock is, and whether the map paused or ended the game |
-| `Stopped` | The `LuaException` that stopped the run (a script error, or a Missing native) |
+| `Stopped` | The `LuaException` that stopped the run (a Missing native, or a call the game closes on), or null |
 
-A script error goes in the log and the run goes on; a native that is [Missing](trust-levels.md) stops the run and `Advance` throws.
+A script error goes in the log and the run goes on; a native that is [Missing](trust-levels.md), or a call the game would close on, stops the run and `Advance` throws.
 
 ## Reading
 
-`Log` is every line the run showed. `RecordedCalls` is every call of a [Recorded](trust-levels.md) native, with its step and its arguments, a handle as its id and a function as `"function"`; they are not in `Log`. `Units(player)` and `Unit(id)` return `UnitView` records (id, type, name, player, place, life, mana, order, dead): `Order` is the order's id and `OrderName` its string (`"attack"`), `""` for none.
+`Log` is every line the run showed. `RecordedCalls` is every call of a [Recorded](trust-levels.md) native, with its step and its arguments, a handle as its id and a function as `"function"`; they are not in `Log`. `Units(player)` and `Unit(id)` return `UnitView` records (`Id`, `Type`, `Name`, `Player`, `X`, `Y`, `Life`, `MaxLife`, `Mana`, `Order`, `OrderName`, `Dead`): `Order` is the order's id and `OrderName` its string (`"attack"`), `""` for none.
 `StateHash()` is a hash of the world that is equal for runs that are the same.
 
 ## What a person does
 
-`Order`, `Select`, `Key`, `Mouse`, `Say` and `Leave` are the input of a player, each recorded at the step it was given. Only a player's own units obey
+`Order`, `Select`, `Key`, `Mouse`, `Click` (a button of the dialog the player is shown), `Say` and `Leave` are the input of a player, each recorded at the step it was given. Only a player's own units obey
 its orders and selection.
 
 ```csharp
@@ -60,5 +60,5 @@ var hurt = simulation.Until(() => simulation.Unit(footman.Id)!.Life < footman.Ma
 ## Recording, snapshots and stepping back
 
 `Recording` is what the run was given; `Simulation.Replay(recording)` and `Follow(recording)` run it again to the same hash. `Snapshot()`,
-`Snapshot.Differences(simulation)`, `Simulation.Restore(snapshot)` and `StepBack(steps)` are in [recordings](recordings.md), and
+`snapshot.Differences(simulation)`, `Simulation.Restore(snapshot)` and `StepBack(steps)` are in [recordings](recordings.md), and
 `Desync.Check(map, time)` is the [desync check](recordings.md#the-desync-check).

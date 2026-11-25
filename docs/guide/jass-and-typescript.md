@@ -5,7 +5,7 @@ game's own `blizzard.j` is, and runs the same way. A TypeScript map is built wit
 
 ## JASS
 
-`examples/jass/gold/war3map.j` is the gold map in JASS:
+`examples/jass/gold` is the gold map in JASS, a folder map whose script is `gold.w3x/war3map.j`:
 
 ```jass
 function PayPlayer takes nothing returns nothing
@@ -31,12 +31,12 @@ A JASS map that calls a native or a `blizzard.j` function MirrorImaged cannot ru
 ## TypeScript
 
 `examples/typescript/gold` is the gold map in TypeScript: `src/main.ts`, the natives it calls declared in `src/natives.d.ts`, and a
-`package.json` that pins TypeScriptToLua and TypeScript. `npm ci` and then `npm run build` bundle it into `war3map.lua`:
+`package.json` that pins TypeScriptToLua and TypeScript. `npm ci` and then `npm run build` bundle it into `gold.w3x/war3map.lua`, a folder map:
 
 ```json
 {
   "compilerOptions": { "target": "ESNext", "lib": ["ESNext"], "strict": true, "types": [] },
-  "tstl": { "luaTarget": "5.3", "luaBundle": "war3map.lua", "luaBundleEntry": "src/main.ts", "noImplicitSelf": true, "noHeader": true },
+  "tstl": { "luaTarget": "5.3", "luaBundle": "gold.w3x/war3map.lua", "luaBundleEntry": "src/main.ts", "noImplicitSelf": true, "noHeader": true },
   "include": ["src"]
 }
 ```
@@ -45,5 +45,6 @@ A JASS map that calls a native or a `blizzard.j` function MirrorImaged cannot ru
 `main.ts`, so the bundle makes them globals, where the game looks for them. A larger map takes the natives' types from a package for them instead of
 declaring its own.
 
-Build the `.w3x` from `war3map.lua` as you always do (War3Net, a map builder or the World Editor); its test is the Lua test of the Lua example. The
-suite compiles the example this way and runs the test; without Node.js (`npm` on the path) that test is skipped.
+`mirror test examples/typescript/gold` then runs the Lua example's test on it. For a map the game opens, bundle into the folder of a map saved
+from the World Editor, or pack `war3map.lua` into one with your usual tools. The suite compiles the example this way and runs the test; without
+Node.js (`npm` on the path) that test is skipped.

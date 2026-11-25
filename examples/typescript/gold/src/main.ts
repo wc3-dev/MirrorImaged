@@ -1,4 +1,4 @@
-// The gold map in TypeScript. `npm run build` (TypeScriptToLua) writes war3map.lua from it.
+// The gold map in TypeScript. `npm run build` (TypeScriptToLua) writes the folder map gold.w3x/war3map.lua from it.
 function config(): void {}
 
 function main(): void {

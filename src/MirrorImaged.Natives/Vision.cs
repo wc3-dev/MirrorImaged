@@ -303,8 +303,8 @@ public sealed partial class GameNatives
     [Native(Level.Close, Fact = TestRunProbe, Reason = "A test run has no mouse over a unit: the game answered nil with the pointer nowhere on one; a unit under a scripted mouse isn't read")]
     public unit? BlzGetMouseFocusUnit() => null;
 
-    /// <summary>Registers; fires when units walk into range, which comes with movement (wave 3).</summary>
-    /// <remarks>Close: The range test is a model, not measured against the game's; range events come with movement (wave 3).</remarks>
+    /// <summary>Registers the trigger and gives an event that never fires: units coming into range aren't watched; null for a null trigger or unit.</summary>
+    /// <remarks>Close: The event never fires here, though units move; not measured in the game.</remarks>
     [Native(Level.Close)]
     public @event? TriggerRegisterUnitInRange(trigger? whichTrigger, unit? whichUnit, float range, boolexpr? filter) =>
         whichTrigger is null || whichUnit is null ? null : Register(whichTrigger);

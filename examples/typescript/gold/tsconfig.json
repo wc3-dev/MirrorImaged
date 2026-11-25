@@ -1,5 +1,5 @@
 {
   "compilerOptions": { "target": "ESNext", "lib": ["ESNext"], "strict": true, "types": [] },
-  "tstl": { "luaTarget": "5.3", "luaBundle": "war3map.lua", "luaBundleEntry": "src/main.ts", "noImplicitSelf": true, "noHeader": true },
+  "tstl": { "luaTarget": "5.3", "luaBundle": "gold.w3x/war3map.lua", "luaBundleEntry": "src/main.ts", "noImplicitSelf": true, "noHeader": true },
   "include": ["src"]
 }

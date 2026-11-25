@@ -37,7 +37,7 @@ public sealed partial class GameNatives
     /// <summary>
     /// Fires for the unit's death (inside KillUnit and a set of its life below 0.405), its decay, its owner changing and
     /// the orders SetUnitOwner, KillUnit, RemoveUnit and PauseUnit give it (stop, undefend, stunned); the other unit
-    /// events fire once their waves bring them.
+    /// events fire when the run makes them happen, and one it has no model of never fires.
     /// </summary>
     /// <remarks>Exact: matches the game wherever measured (facts, Units: probe units (11-08); facts, Units: probes units-more and units-more-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = UnitsProbe + "; " + MoreProbe)]

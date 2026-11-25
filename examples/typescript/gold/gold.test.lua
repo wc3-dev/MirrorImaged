@@ -1,4 +1,4 @@
--- Run with: mirror test examples/typescript/gold   (the map, gold.w3x, is built from the war3map.lua that `npm run build` writes)
+-- Run with: mirror test examples/typescript/gold   (after `npm ci` and `npm run build`, which write the folder map gold.w3x/war3map.lua)
 test("the player is paid every 2 seconds", function()
   local sim = mirror.load("gold.w3x")
   sim:advance(7)
