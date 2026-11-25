@@ -241,9 +241,10 @@ public sealed partial class GameNatives
 
     /// <summary>
     /// Hides the ability's button; its level, handle and place stay, and one the unit lacks is added as usual later (probe
-    /// abilities). Close: what a hidden button holds back is input's and orders' (waves 3 and 6).
+    /// abilities). While it is hidden, its order doesn't cast it. Close: what else the game's hidden button holds back is
+    /// not measured.
     /// </summary>
-    /// <remarks>Close: only the flag is kept; what a hidden button holds back in input and orders is not modelled.</remarks>
+    /// <remarks>Close: a hidden ability's order doesn't cast it; what else the game's hidden button holds back is not measured.</remarks>
     [Native(Level.Close)]
     public void BlzUnitHideAbility(unit? whichUnit, int abilId, bool flag)
     {
@@ -251,10 +252,11 @@ public sealed partial class GameNatives
     }
 
     /// <summary>
-    /// Disables the ability, its button hidden as asked; its level, handle and place stay (probe abilities). Close: what
-    /// a disabled ability holds back is the cast's (wave 4).
+    /// Disables the ability, its button hidden as asked; its level, handle and place stay (probe abilities). While it is
+    /// disabled, its order doesn't cast it, and as a passive, an aura or a cargo hold it does nothing. Close: what else
+    /// the game's disabled ability holds back is not measured.
     /// </summary>
-    /// <remarks>Close: only the flag is kept; what a disabled ability holds back in a cast is not modelled.</remarks>
+    /// <remarks>Close: a disabled ability isn't cast and does nothing as a passive, an aura or a cargo hold; what else the game holds back is not measured.</remarks>
     [Native(Level.Close)]
     public void BlzUnitDisableAbility(unit? whichUnit, int abilId, bool flag, bool hideUI)
     {
@@ -265,9 +267,11 @@ public sealed partial class GameNatives
 
     /// <summary>
     /// True for an ability the unit has, whichever way, and false for one it lacks, adding nothing (probe abilities);
-    /// UnitRemoveAbility still takes it off. Close: what it keeps through a morph is wave 4's (game-facts).
+    /// UnitRemoveAbility still takes it off. A permanent ability stays through a change of the unit's type (a building's
+    /// upgrade, Hex, Metamorphosis), which takes off the others the script gave (game-facts). Close: not measured for
+    /// every change of type.
     /// </summary>
-    /// <remarks>Close: only the flag is kept; what a permanent ability keeps through a morph is not modelled.</remarks>
+    /// <remarks>Close: a permanent ability stays through a change of type (an upgrade, Hex, Metamorphosis) and the others the script gave go; not measured for every change of type.</remarks>
     [Native(Level.Close)]
     public bool UnitMakeAbilityPermanent(unit? whichUnit, bool permanent, int abilityId)
     {
@@ -278,10 +282,10 @@ public sealed partial class GameNatives
 
     /// <summary>
     /// Kept for the player: its units' level, handle and place of the ability stay, a new unit has it, and it can still be
-    /// added and levelled (probe abilities). Close: it takes the button off the command card (game-facts), which input
-    /// and orders read (waves 3 and 6).
+    /// added and levelled (probe abilities). Close: the game takes the button off the command card (game-facts); here
+    /// only the flag is kept, and the ability's order still casts it.
     /// </summary>
-    /// <remarks>Close: only the flag is kept; taking the button off the command card is not modelled.</remarks>
+    /// <remarks>Close: only the flag is kept; the button the game takes off the command card is not modelled, and the ability's order still casts it.</remarks>
     [Native(Level.Close)]
     public void SetPlayerAbilityAvailable(player? whichPlayer, int abilid, bool avail)
     {

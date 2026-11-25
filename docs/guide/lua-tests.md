@@ -35,7 +35,7 @@ end)
 ## Units
 
 `sim:units(player)` lists the living units, of one player or all when the player is nil, as tables with `id`, `type` (the four-character code),
-`name`, `player`, `x`, `y`, `life`, `max_life`, `mana`, `order` and `dead`. `sim:unit(id)` is one of them, or nil.
+`name`, `player`, `x`, `y`, `life`, `max_life`, `mana`, `order` (the order's id), `order_name` (its string, `""` for none) and `dead`. `sim:unit(id)` is one of them, or nil.
 
 ## What a person does
 

@@ -152,14 +152,14 @@ public sealed partial class GameNatives
 
     /// <summary>
     /// Answers true for an item the unit carries and does nothing: the game walks the unit to the place and drops it
-    /// there some time after (probe items), which comes with orders and movement (wave 3). Close.
+    /// there some time after (probe items), which is not modelled. Close.
     /// </summary>
-    /// <remarks>Close: Answers without moving the unit or dropping the item: the walk and the later drop come with orders and movement (wave 3).</remarks>
+    /// <remarks>Close: Answers without moving the unit or dropping the item: the game's walk and later drop are not modelled.</remarks>
     [Native(Level.Close)]
     public bool UnitDropItemPoint(unit? whichUnit, item? whichItem, float x, float y) => UnitHasItem(whichUnit, whichItem);
 
     /// <summary>As UnitDropItemPoint, to a widget.</summary>
-    /// <remarks>Close: Only a pawn to a shop that buys the item does anything; the walk to a unit and the drop to it are not modelled (wave 3).</remarks>
+    /// <remarks>Close: Only a pawn to a shop that buys the item does anything; the walk to a unit and the drop to it are not modelled.</remarks>
     [Native(Level.Close)]
     public bool UnitDropItemTarget(unit? whichUnit, item? whichItem, widget? target) =>
         UnitHasItem(whichUnit, whichItem) && target is not null && (target is unit shop && Pawns(shop, whichItem!) ? Pawn(whichUnit!, whichItem!, shop) : true);

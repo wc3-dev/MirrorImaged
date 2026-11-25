@@ -40,9 +40,11 @@ public sealed partial class GameNatives
     /// invulnerable one reads 0 in DAMAGED, and a spell-immune one gets no DAMAGED and loses nothing for the damage and
     /// attack types facts name, and an ethereal one for all but magic (<see cref="EtherealBonus"/>). A destructable loses
     /// the amount from its life. Close: a nil source here deals nothing and answers false (the game's answer is not
-    /// measured), and the abilities that change a hit are wave 4's.
+    /// measured). Of the abilities that change a hit, Magic Immunity, invulnerability, armour buffs, an illusion's share
+    /// and Life Steal (for a melee attack) apply; Hardened Skin and Mana Shield are not modelled, and Evasion, Critical
+    /// Strike, Bash and Thorns Aura act on a unit's own attacks, not on this call.
     /// </summary>
-    /// <remarks>Close: measured in part (game-facts.md, Damage: probes of 10-16 to 10-31 and 11-06); a null source or target gives false, not measured in the game, and the abilities that change a hit are not modelled yet.</remarks>
+    /// <remarks>Close: measured in part (game-facts.md, Damage: probes of 10-16 to 10-31 and 11-06); a null source or target gives false, not measured in the game, and of the abilities that change a hit, Hardened Skin and Mana Shield are not modelled.</remarks>
     [Native(Level.Close, Fact = DamageFacts)]
     public bool UnitDamageTarget(unit? whichUnit, widget? target, float amount, bool attack, bool ranged, attacktype? attackType, damagetype? damageType, weapontype? weaponType)
     {

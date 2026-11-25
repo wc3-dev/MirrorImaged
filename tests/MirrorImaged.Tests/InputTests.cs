@@ -161,6 +161,33 @@ public sealed class InputTests : IDisposable
     }
 
     [Fact]
+    public void A_unit_view_gives_its_order_as_the_id_and_the_string()
+    {
+        using var simulation = Simulation.Load(Map("""CreateUnit(Player(0), FourCC("hfoo"), 0, 0, 0)"""), "", data: Standard());
+        var mine = simulation.Units(0)[0];
+
+        simulation.Order(0, mine.Id, "move", 300, 0);
+        var moving = simulation.Unit(mine.Id)!;
+        var done = simulation.Until(() => simulation.Unit(mine.Id)!.Order == 0, TimeSpan.FromSeconds(10));
+        var there = simulation.Unit(mine.Id)!;
+
+        Assert.Equal((0, ""), (mine.Order, mine.OrderName));
+        Assert.Equal((851986, "move"), (moving.Order, moving.OrderName));
+        Assert.True(done);
+        Assert.Equal((300, ""), (Math.Round(there.X), there.OrderName));
+    }
+
+    // Races are kept as the game's numbers, so a recording written before the Race enum reads the same
+    [Fact]
+    public void A_recording_keeps_the_races_as_numbers()
+    {
+        var recording = Recording.FromJson("""{"Map": "x.w3x", "Races": {"0": 3, "1": 1}}""");
+
+        Assert.Equal(new Dictionary<int, Race> { [0] = Race.Undead, [1] = Race.Human }, recording.Races);
+        Assert.Contains("\"0\": 3", recording.ToJson());
+    }
+
+    [Fact]
     public void A_recording_repeats_the_run_exactly()
     {
         var path = Map("""

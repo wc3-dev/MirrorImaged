@@ -10,7 +10,7 @@ public sealed record LuaTestResult(string File, string Name, bool Passed, string
 
 /// <summary>
 /// Tests written in Lua: a file calls <c>test(name, function)</c>, and inside a test <c>mirror.load(map, {seed = n, difficulty = "easy", graphics = "classic"})</c> (the difficulty of the computers: easy, normal or insane; the player's graphics mode: reforged or classic) gives a simulation
-/// with the calls of the C# API (<c>advance</c>, <c>units</c>, <c>order</c>, <c>select</c>, <c>key</c>, <c>mouse</c>, <c>leave</c>, <c>say</c>,
+/// with the calls of the C# API (<c>advance</c>, <c>units</c>, <c>order</c>, <c>select</c>, <c>key</c>, <c>mouse</c>, <c>click</c>, <c>leave</c>, <c>say</c>,
 /// <c>log</c>, <c>hash</c>, <c>wait_until</c>, <c>recording</c>, <c>recorded</c>; a map path that is not rooted is read from the test file's folder), and <c>assert_eq</c>, <c>assert_true</c>, <c>assert_close</c> and
 /// <c>assert_contains</c> check results. The test files run in a Lua state of their own, apart from the games they load.
 /// </summary>
@@ -43,7 +43,7 @@ public sealed class LuaTestHost : IDisposable
         _lua.Register("__recorded", args =>
         {
             var call = Sim(args).RecordedCalls[Int(args, 1) - 1];
-            return [(double)call.Step, call.Native, .. call.Arguments.Select(a => a switch { Natives.handle h => h.Id, Delegate => "function", _ => a })];
+            return [(double)call.Step, call.Native, .. call.Arguments];
         });
         _lua.Register("__units", args => [string.Join('\n', Sim(args).Units(args[1] is null ? null : Int(args, 1)).Select(Row))]);
         _lua.Register("__unit", args => [Sim(args).Unit(Int(args, 1)) is { } unit ? Row(unit) : null]);
@@ -53,6 +53,7 @@ public sealed class LuaTestHost : IDisposable
             simulation.Select(Int(args, 1), [.. Text(args, 2).Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)])));
         _lua.Register("__key", args => With(args, simulation => simulation.Key(Int(args, 1), Int(args, 2), (bool)args[3]!, Int(args, 4))));
         _lua.Register("__mouse", args => With(args, simulation => simulation.Mouse(Int(args, 1), Int(args, 2), Int(args, 3), (float)Number(args, 4), (float)Number(args, 5))));
+        _lua.Register("__click", args => With(args, simulation => simulation.Click(Int(args, 1), Int(args, 2))));
         _lua.Register("__leave", args => With(args, simulation => simulation.Leave(Int(args, 1))));
         _lua.Register("__say", args => With(args, simulation => simulation.Say(Int(args, 1), Text(args, 2))));
         _lua.Run(Prelude, "mirror-tests");
@@ -60,7 +61,7 @@ public sealed class LuaTestHost : IDisposable
 
     static string Row(UnitView u) => string.Join('\t', u.Id, u.Type, u.Name.Replace('\t', ' ').Replace('\n', ' '), u.Player,
         u.X.ToString("R", CultureInfo.InvariantCulture), u.Y.ToString("R", CultureInfo.InvariantCulture), u.Life.ToString("R", CultureInfo.InvariantCulture),
-        u.MaxLife.ToString("R", CultureInfo.InvariantCulture), u.Mana.ToString("R", CultureInfo.InvariantCulture), u.Order, u.Dead ? 1 : 0);
+        u.MaxLife.ToString("R", CultureInfo.InvariantCulture), u.Mana.ToString("R", CultureInfo.InvariantCulture), u.Order, u.OrderName, u.Dead ? 1 : 0);
 
     static double Number(object?[] args, int i) => Convert.ToDouble(args[i], CultureInfo.InvariantCulture);
     static int Int(object?[] args, int i) => (int)Convert.ToDouble(args[i], CultureInfo.InvariantCulture);
@@ -154,7 +155,7 @@ public sealed class LuaTestHost : IDisposable
           local f = {}
           for v in (row .. "\t"):gmatch("([^\t]*)\t") do f[#f + 1] = v end
           return {id = tonumber(f[1]), type = f[2], name = f[3], player = tonumber(f[4]), x = tonumber(f[5]), y = tonumber(f[6]),
-                  life = tonumber(f[7]), max_life = tonumber(f[8]), mana = tonumber(f[9]), order = tonumber(f[10]), dead = f[11] == "1"}
+                  life = tonumber(f[7]), max_life = tonumber(f[8]), mana = tonumber(f[9]), order = tonumber(f[10]), order_name = f[11], dead = f[12] == "1"}
         end
 
         local function lines(text)
@@ -199,6 +200,7 @@ public sealed class LuaTestHost : IDisposable
           function sim:select(player, ...) __select(h, player, table.concat({...}, ",")) end
           function sim:key(player, key, down, meta) __key(h, player, key, down and true or false, meta or 0) end
           function sim:mouse(player, kind, button, x, y) __mouse(h, player, kind, button, x, y) end
+          function sim:click(player, button) __click(h, player, button) end
           function sim:leave(player) __leave(h, player) end
           function sim:say(player, text) __say(h, player, text) end
           function sim:wait_until(check, within, every)

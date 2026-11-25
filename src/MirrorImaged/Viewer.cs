@@ -7,7 +7,7 @@ using MirrorImaged.Lua;
 namespace MirrorImaged;
 
 /// <summary>A run seen from above: the map, then what each unit was at each sampled time, each missile's flight, and what the log said when.</summary>
-public sealed class Trace
+internal sealed class Trace
 {
     /// <summary>The file name of the map.</summary>
     public string Map { get; set; } = "";
@@ -41,20 +41,20 @@ public sealed class Trace
 }
 
 /// <summary>The units at a time: each as its id, type, player, place, life, most life, order and the index of its name in <see cref="Trace.Names"/>.</summary>
-public sealed record TraceFrame(double Time, List<object[]> Units);
+internal sealed record TraceFrame(double Time, List<object[]> Units);
 
 /// <summary>A line of the log, and the time in seconds it was shown at.</summary>
 /// <param name="Time">The time in seconds.</param>
 /// <param name="Text">What was shown, with where it came from.</param>
-public sealed record TraceLine(double Time, string Text);
+internal sealed record TraceLine(double Time, string Text);
 
 /// <summary>The viewer: a page that opens a trace of a run, scrubs through it, shows the units, missiles and regions, and inspects a unit.</summary>
-public static class Viewer
+internal static class Viewer
 {
     static readonly JsonSerializerOptions Format = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     /// <summary>Runs the simulation on for the time, sampling the units every <paramref name="every"/>, and writes down what it saw.</summary>
-    public static Trace Record(Simulation simulation, TimeSpan time, TimeSpan? every = null)
+    internal static Trace Record(Simulation simulation, TimeSpan time, TimeSpan? every = null)
     {
         var slice = every ?? TimeSpan.FromSeconds(0.5);
         var trace = new Trace { Map = Path.GetFileName(simulation.Recording.Map) };
@@ -92,7 +92,7 @@ public static class Viewer
     }
 
     /// <summary>The page, a file that opens by itself in a browser, with the trace inside it.</summary>
-    public static string Page(Trace trace)
+    internal static string Page(Trace trace)
     {
         using var stream = typeof(Viewer).Assembly.GetManifestResourceStream("MirrorImaged.viewer.html")!;
         using var reader = new StreamReader(stream, Encoding.UTF8);

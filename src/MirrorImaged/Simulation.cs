@@ -18,6 +18,19 @@ public enum Difficulty
     Insane,
 }
 
+/// <summary>A race a player plays, as the lobby offers it; each is the game's <c>RACE_*</c> number.</summary>
+public enum Race
+{
+    /// <summary>Human (<c>RACE_HUMAN</c>).</summary>
+    Human = 1,
+    /// <summary>Orc (<c>RACE_ORC</c>).</summary>
+    Orc = 2,
+    /// <summary>Undead (<c>RACE_UNDEAD</c>).</summary>
+    Undead = 3,
+    /// <summary>Night elf (<c>RACE_NIGHTELF</c>).</summary>
+    NightElf = 4,
+}
+
 /// <summary>How a run is set up.</summary>
 public sealed class SimulationOptions
 {
@@ -43,8 +56,8 @@ public sealed class SimulationOptions
     /// </summary>
     public GraphicsMode Graphics { get; init; }
 
-    /// <summary>The race of a slot, as <c>RACE_*</c> (human 1, orc 2, undead 3, night elf 4), where the lobby chose it; null for the map's.</summary>
-    public IReadOnlyDictionary<int, int>? Races { get; init; }
+    /// <summary>The race of a slot, where the lobby chose it; null for the map's.</summary>
+    public IReadOnlyDictionary<int, Race>? Races { get; init; }
 
     /// <summary>The start location of a slot, where the lobby placed it; null for the one the map's <c>config</c> gives.</summary>
     public IReadOnlyDictionary<int, int>? StartLocations { get; init; }
@@ -125,8 +138,8 @@ public sealed partial class Simulation : IDisposable
             var flags = info?.MapFlags ?? 0;
             _natives.Seat(users, computers, others, flags.HasFlag(MapFlags.UseCustomForces), flags.HasFlag(MapFlags.FixedPlayerSettingsForCustomForces),
                 info?.Players.Where(p => p.Controller == PlayerController.Computer).DistinctBy(p => p.Id).ToDictionary(p => p.Id, p => data.Map.Resolve(p.Name)));
-            foreach (var (slot, race) in options.Races ?? new Dictionary<int, int>())
-                if (_natives.Player(slot) is { } player) player.Race = race;
+            foreach (var (slot, race) in options.Races ?? new Dictionary<int, Race>())
+                if (_natives.Player(slot) is { } player) player.Race = (int)race;
             foreach (var (slot, start) in options.StartLocations ?? new Dictionary<int, int>())
                 if (_natives.Player(slot) is { } player) player.StartLocation = start;
             Protect(() => _lua.Call("main"));
@@ -226,7 +239,8 @@ public sealed partial class Simulation : IDisposable
 
     /// <summary>
     /// Whether the map has paused the game (<c>PauseGame</c>): its clock doesn't move, and only the map can go on, as in
-    /// the game; until dialogs and input exist (waves 5 and 6), only what was due in the step it paused in still runs.
+    /// the game. While it is paused, an advance runs only what was due in the step it paused in, and input (a dialog's
+    /// button, chat, a key) still fires the map's events, from which it can go on.
     /// </summary>
     public bool Paused => _game.Paused;
 

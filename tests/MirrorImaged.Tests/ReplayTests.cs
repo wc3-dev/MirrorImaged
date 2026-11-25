@@ -409,7 +409,7 @@ public sealed class ReplayTests : IDisposable
         again.Follow(recording);
 
         Assert.Equal((3, 1000f), (simulation.Units(0).Count, simulation.Units(0)[0].X));
-        Assert.Equal(new Dictionary<int, int> { [0] = 3, [1] = 1 }, recording.Races);
+        Assert.Equal(new Dictionary<int, Race> { [0] = Race.Undead, [1] = Race.Human }, recording.Races);
         Assert.Equal(new Dictionary<int, int> { [0] = 1, [1] = 0 }, recording.StartLocations);
         Assert.Equal(hash, back.StateHash());
         Assert.Equal(simulation.StateHash(), again.StateHash());
