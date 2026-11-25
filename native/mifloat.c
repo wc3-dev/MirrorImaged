@@ -234,18 +234,18 @@ float mi_tanf (float x) { return mi_div(mi_sinf(x), mi_cosf(x)); }
 
 /* exp(x) for x of 0 and up, in the game's arithmetic: the float nearest e^(1/4) to the power of the whole quarters
    in x, squaring as it goes (so exp(1) is 402df853, a step under e, and exp(89) a nan, exp(100) 0, as its products
-   are packed), times a polynomial of the rest r, 1 + r + c2 r^2 + ... + c6 r^6, worked out from the last term in. The c's
-   are close to 1/2 ... 1/720 but fitted (decision D761): of 131,072 values at every 2^-19 from 0 to a quarter, 130,700
-   are the game's, the rest a step off, and every whole x and k/16 measured is the game's (Close). */
+   are packed), times a polynomial of the rest r of degree 5, 1 + r (1 + r (c2 + r (c3 + r (c4 + r c5)))). The c's are
+   not 1/2 ... 1/120 (c2 is 0.4999980, c5 0.0094192): worked out from the 131,072 values at every 2^-19 from 0 to a
+   quarter, which they all give (decision D890). */
 static float exp_up (float x) {
-  static const uint32_t coefficient[] = { 0x3effffe6, 0x3e2aac15, 0x3d2a9ba5, 0x3c08cc10, 0x3aba30d2 };  /* c2 to c6 */
-  float p = 1.0f, b = flt(0x3fa45af2), r, s = flt(coefficient[4]);
+  static const uint32_t coefficient[] = { 0x3effffbd, 0x3e2ab479, 0x3d296ecb, 0x3c1a5314 };  /* c2 to c5 */
+  float p = 1.0f, b = flt(0x3fa45af2), r, s = flt(coefficient[3]);
   uint32_t m;
   int32_t k;
   if (!(x < 1024)) return 0.0f;  /* and nan */
   m = (uint32_t)(x * 4);
   r = x - m * 0.25f;
-  for (k = 3; k >= 0; k--) s = mi_add(flt(coefficient[k]), mi_mul(s, r));
+  for (k = 2; k >= 0; k--) s = mi_add(flt(coefficient[k]), mi_mul(s, r));
   s = mi_add(1.0f, mi_mul(s, r));
   s = mi_add(1.0f, mi_mul(s, r));
   for (; m; m >>= 1) {
