@@ -92,8 +92,8 @@ public sealed class SnapshotTests : IDisposable
 
         Assert.Throws<LuaException>(() => back.Advance(TimeSpan.FromSeconds(2)));
         Assert.Contains("BlzGetUnitAnimationDurationByIndex", back.Stopped!.Message);
-        Assert.Equal(["BlzGetUnitAnimationDurationByIndex"], recording.TreatAsMissing);
-        Assert.Equal(["BlzGetUnitAnimationDurationByIndex"], recording.Options().TreatAsMissing);
+        Assert.Equal(["BlzGetUnitAnimationDurationByIndex"], recording.TreatAsMissing!);
+        Assert.Equal(["BlzGetUnitAnimationDurationByIndex"], recording.Options().TreatAsMissing!);
     }
 
     // The map reads a count from a file in CustomMapData, makes that many footmen and writes the count one higher
@@ -108,9 +108,7 @@ public sealed class SnapshotTests : IDisposable
                 for i = 1, count do CreateUnit(Player(0), FourCC("hfoo"), 0, i * 80, 0) end
                 PreloadGenClear()
                 PreloadGenStart()
-                Preload("\")
-call StoreInteger(InitGameCache(\"c\"), \"m\", \"n\", " .. count .. ")
-//")
+                Preload("\")\ncall StoreInteger(InitGameCache(\"c\"), \"m\", \"n\", " .. count .. ")\n//")
                 PreloadGenEnd("count.pld")
             end
             """);
