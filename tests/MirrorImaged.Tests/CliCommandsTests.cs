@@ -107,6 +107,59 @@ public sealed class CliCommandsTests : IDisposable
         Assert.Contains("Same world at step 7168", same.Output);
     }
 
+    // Prints the computers' difficulty, then each thing player 0 says
+    const string Chat = """
+        function config() end
+        function main()
+            print("difficulty", GetHandleId(GetAIDifficulty(Player(0))))
+            local t = CreateTrigger()
+            TriggerRegisterPlayerChatEvent(t, Player(0), "", false)
+            TriggerAddAction(t, function() print("said", GetEventPlayerChatString()) end)
+        end
+        """;
+
+    [InstallFact]
+    [Trait("Needs", "Game")]
+    public void Replay_and_view_run_a_recording_at_its_difficulty_with_every_input()
+    {
+        var recording = Out("insane.json");
+        File.WriteAllText(recording, new Recording
+        {
+            Map = _maps.Build(Chat), Difficulty = Difficulty.Insane, Steps = 2048,
+            Inputs = [new(0, "say", 0, Text: "-a"), new(1024, "say", 0, Text: "-b"), new(1024, "say", 0, Text: "-c")],
+        }.ToJson());
+        var page = Out("insane.html");
+
+        var replay = Mirror("replay", recording);
+        var view = Mirror("view", recording, "--out", page);
+
+        Assert.Equal((0, "", 0, ""), (replay.Exit, replay.Error, view.Exit, view.Error));
+        Assert.Contains("print: difficulty\t2\n", replay.Output);
+        Assert.Equal(["-a", "-b", "-c"], Regex.Matches(replay.Output, @"print: said\t(\S+)").Select(match => match.Groups[1].Value));
+        // The page keeps the log as JSON, a tab written \t
+        var html = File.ReadAllText(page);
+        Assert.Contains(@"difficulty\t2", html);
+        Assert.Equal(["-a", "-b", "-c"], Regex.Matches(html, @"said\\t(-\w)").Select(match => match.Groups[1].Value));
+    }
+
+    [InstallFact]
+    [Trait("Needs", "Game")]
+    public void Run_with_inputs_prints_the_hash_every_period_and_replay_prints_the_same()
+    {
+        var map = _maps.Build(Chat);
+        var inputs = Out("inputs.json");
+        File.WriteAllText(inputs, """[{"Step": 0, "Kind": "say", "Player": 0, "Text": "-a"}, {"Step": 1500, "Kind": "say", "Player": 0, "Text": "-b"}]""");
+
+        var run = Mirror("run", map, "--seconds", "3", "--input", inputs, "--hash", "1", "--record", Out("run.json"));
+        var replay = Mirror("replay", Out("run.json"), "--hash", "1");
+
+        static string[] Hashes(string output) => [.. Regex.Matches(output, @"^hash .*$", RegexOptions.Multiline).Select(match => match.Value)];
+        Assert.Equal((0, "", 0, ""), (run.Exit, run.Error, replay.Exit, replay.Error));
+        Assert.Equal(["hash 1", "hash 2", "hash 3"], Hashes(run.Output).Select(line => line[..6]));
+        Assert.Equal(Hashes(run.Output), Hashes(replay.Output));
+        Assert.Equal(2, Regex.Matches(run.Output, "print: said").Count);
+    }
+
     [InstallTheory]
     [Trait("Needs", "Game")]
     [InlineData("file")]

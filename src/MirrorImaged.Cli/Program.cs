@@ -112,18 +112,19 @@ static int Run(string map, Dictionary<string, string> flags, double seconds, int
     {
         Ui.Work($"Running {map}", () =>
         {
+            var hashEvery = flags.TryGetValue("--hash", out var every) && double.TryParse(every, NumberStyles.Float, CultureInfo.InvariantCulture, out var period) ? period : 0;
             if (flags.TryGetValue("--input", out var inputFile))
             {
                 // The inputs of a recording, or a list of them, at their steps; the run goes on to the time asked
                 var text = File.ReadAllText(inputFile);
                 var recording = text.TrimStart().StartsWith('[') ? new Recording { Inputs = System.Text.Json.JsonSerializer.Deserialize<List<Input>>(text)! } : Recording.FromJson(text);
                 recording.Steps = Math.Max(recording.Steps, (long)(seconds * StepsPerSecond));
-                simulation.Follow(recording);
+                Follow(simulation, recording, hashEvery);
             }
-            else if (flags.TryGetValue("--hash", out var every) && double.TryParse(every, NumberStyles.Float, CultureInfo.InvariantCulture, out var period) && period > 0)
-                for (double at = period; at <= seconds + 1e-9 && simulation.Stopped is null; at += period)
+            else if (hashEvery > 0)
+                for (double at = hashEvery; at <= seconds + 1e-9 && simulation.Stopped is null; at += hashEvery)
                 {
-                    simulation.Advance(TimeSpan.FromSeconds(period));
+                    simulation.Advance(TimeSpan.FromSeconds(hashEvery));
                     Ui.Line($"hash {at.ToString("0.###", CultureInfo.InvariantCulture)} {simulation.StateHash()}");
                 }
             else simulation.Advance(TimeSpan.FromSeconds(seconds));
@@ -138,40 +139,38 @@ static int PlayRecording(string recordingFile, Dictionary<string, string> flags,
 {
     if (recordingFile.EndsWith(".w3g", StringComparison.OrdinalIgnoreCase)) return PlayReplay(recordingFile, flags, hashEvery);
     var recording = Recording.FromJson(File.ReadAllText(recordingFile));
-    var steps = recording.Steps;
-    recording.Steps = 0;
-    using var simulation = Simulation.Load(flags.GetValueOrDefault("--map") ?? recording.Map, new SimulationOptions { Seed = recording.Seed, Users = recording.Users, Computers = recording.Computers, Graphics = recording.Graphics });
+    using var simulation = Simulation.Load(flags.GetValueOrDefault("--map") ?? recording.Map, recording.Options());
     try
     {
         Ui.Work($"Replaying {recordingFile}", () =>
         {
-            if (hashEvery > 0)
-            {
-                // Stepping through the recording, the hash after each period
-                var period = (long)(hashEvery * StepsPerSecond);
-                var inputs = recording.Inputs.OrderBy(i => i.Step).ToList();
-                var next = 0;
-                for (var at = period; at <= steps && simulation.Stopped is null; at += period)
-                {
-                    while (next < inputs.Count && inputs[next].Step <= at)
-                    {
-                        if (inputs[next].Step > simulation.Step) simulation.AdvanceSteps(inputs[next].Step - simulation.Step);
-                        simulation.Give(inputs[next++]);
-                    }
-                    simulation.AdvanceSteps(at - simulation.Step);
-                    Ui.Line($"hash {(double)at / StepsPerSecond:0.###} {simulation.StateHash()}");
-                }
-            }
-            else
-            {
-                recording.Steps = steps;
-                simulation.Follow(recording);
-                Ui.Line($"hash {(double)simulation.Step / StepsPerSecond:0.###} {simulation.StateHash()}");
-            }
+            Follow(simulation, recording, hashEvery);
+            if (hashEvery <= 0) Ui.Line($"hash {(double)simulation.Step / StepsPerSecond:0.###} {simulation.StateHash()}");
         });
     }
     catch (LuaException) when (simulation.Stopped is not null) { }
     return Finish(simulation);
+}
+
+// Gives the recording's inputs at their steps and runs to its step, printing the hash at the end of each period of the seconds given (none for 0), as
+// the inputs up to then left it
+static void Follow(Simulation simulation, Recording recording, double hashEvery)
+{
+    var period = (long)(hashEvery * StepsPerSecond);
+    var inputs = recording.Inputs.OrderBy(i => i.Step).ToList();
+    var next = 0;
+    void To(long step)
+    {
+        var count = inputs.Skip(next).TakeWhile(input => input.Step <= step).Count();
+        simulation.Follow(new Recording { Inputs = inputs.GetRange(next, count), Steps = step });
+        next += count;
+    }
+    for (var at = period; period > 0 && at <= recording.Steps && simulation.Stopped is null; at += period)
+    {
+        To(at);
+        Ui.Line($"hash {(double)at / StepsPerSecond:0.###} {simulation.StateHash()}");
+    }
+    if (simulation.Stopped is null) To(recording.Steps);
 }
 
 static int PlayReplay(string file, Dictionary<string, string> flags, double hashEvery)
@@ -370,8 +369,10 @@ static int View(string file, double seconds, int seed, double every, string? out
     if (file.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
     {
         var recording = Recording.FromJson(File.ReadAllText(file));
-        simulation = Simulation.Load(recording.Map, new SimulationOptions { Seed = recording.Seed, Users = recording.Users, Computers = recording.Computers, Graphics = recording.Graphics });
-        foreach (var input in recording.Inputs.OrderBy(i => i.Step)) if (input.Step > simulation.Step) { simulation.AdvanceSteps(input.Step - simulation.Step); simulation.Give(input); }
+        simulation = Simulation.Load(recording.Map, recording.Options());
+        // Every input given at its step, the run up to the last of them; the page shows the rest of the recording from there
+        try { simulation.Follow(new Recording { Inputs = recording.Inputs }); }
+        catch (LuaException) when (simulation.Stopped is not null) { }
         seconds = Math.Max(seconds, (double)recording.Steps / StepsPerSecond - (double)simulation.Step / StepsPerSecond);
     }
     else simulation = Seats.Open(file, seed);
