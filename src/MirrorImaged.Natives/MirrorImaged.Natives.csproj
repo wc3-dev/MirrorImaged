@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Description>C# copies of Warcraft III's natives, each with its trust level. Part of MirrorImaged, a headless Warcraft III map runtime; its API is not covered by 1.0's compatibility promise and may change in any release. Reference MirrorImaged instead.</Description>
   </PropertyGroup>
 
   <!-- The handle types keep common.j's lower-case names (decisions D19), in every file that adds to them. -->

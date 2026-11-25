@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Description>Run Warcraft III maps (Lua or JASS) headless and test them from C#: a simulated world and clock with C# copies of the game's natives, the same result for the same map, seed and input. Needs Warcraft III installed.</Description>
   </PropertyGroup>
 
   <ItemGroup>

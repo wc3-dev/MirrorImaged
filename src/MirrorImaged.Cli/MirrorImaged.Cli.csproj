@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>mirror</ToolCommandName>
+    <Description>The mirror command-line tool for MirrorImaged: runs, checks, tests, replays, compares and benchmarks Warcraft III maps headless against the game's natives. Needs Warcraft III installed.</Description>
   </PropertyGroup>
 
   <ItemGroup>

@@ -57,6 +57,15 @@ public sealed class CliCommandsTests : IDisposable
     }
 
     [Fact]
+    public void Version_prints_the_package_version()
+    {
+        var (exit, output, error) = Mirror("--version");
+
+        Assert.Equal((0, ""), (exit, error));
+        Assert.Matches(@"^mirror 1\.0\.0(\+[0-9a-f]+)?\n\z", output);
+    }
+
+    [Fact]
     public void Check_lists_the_natives_a_maps_script_calls_with_their_levels()
     {
         var (exit, output, error) = Mirror("check", _maps.Build(Script));
