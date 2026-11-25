@@ -13,7 +13,10 @@ public sealed class NodeFactAttribute : FactAttribute
     }
 }
 
-/// <summary>A14: the worked examples of the guide run: each map is built from its source by its own tools and its Lua tests pass with <c>mirror test</c>.</summary>
+/// <summary>
+/// A14: the worked examples of the guide run: the Lua and JASS maps are folder maps as they are in the repository, the TypeScript and C# ones are built
+/// from their source by their own tools, and each one's Lua tests pass with <c>mirror test</c>.
+/// </summary>
 [Trait("Needs", "Game")]
 public sealed class ExamplesTests : IDisposable
 {
@@ -32,7 +35,7 @@ public sealed class ExamplesTests : IDisposable
         (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
             .Select(folder => Path.Combine(folder, file)).FirstOrDefault(File.Exists);
 
-    static string Examples()
+    internal static string Examples()
     {
         for (var folder = new DirectoryInfo(AppContext.BaseDirectory); folder is not null; folder = folder.Parent)
             if (Directory.Exists(Path.Combine(folder.FullName, "examples"))) return Path.Combine(folder.FullName, "examples");
@@ -47,7 +50,7 @@ public sealed class ExamplesTests : IDisposable
         foreach (var file in Directory.GetFiles(from, "*", SearchOption.AllDirectories))
         {
             var name = Path.GetRelativePath(from, file);
-            if (name.Split(Path.DirectorySeparatorChar).Any(part => part is "node_modules" or "bin" or "obj" or "build" or "map.w3x")) continue;
+            if (name.Split(Path.DirectorySeparatorChar).Any(part => part is "node_modules" or "bin" or "obj" or "build" or "map.w3x" or "gold.w3x")) continue;
             Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(to, name))!);
             File.Copy(file, Path.Combine(to, name));
         }
@@ -71,23 +74,10 @@ public sealed class ExamplesTests : IDisposable
         Assert.Contains("PASS gold.test.lua", output);
     }
 
-    void Passes(string script, bool jass, string test)
-    {
-        var map = _maps.Build(File.ReadAllText(script), jass ? War3Net.Build.Info.ScriptLanguage.Jass : War3Net.Build.Info.ScriptLanguage.Lua);
-        var folder = Directory.CreateDirectory(Path.Combine(_folder, "run")).FullName;
-        File.Copy(map, Path.Combine(folder, "gold.w3x"));
-        File.Copy(test, Path.Combine(folder, "gold.test.lua"));
-        Passes(folder);
-    }
-
     [InstallTheory]
-    [InlineData("lua/gold", "war3map.lua", false)]
-    [InlineData("jass/gold", "war3map.j", true)]
-    public void An_example_map_passes_its_lua_tests(string example, string script, bool jass)
-    {
-        var source = Path.Combine(Examples(), example);
-        Passes(Path.Combine(source, script), jass, Path.Combine(source, "gold.test.lua"));
-    }
+    [InlineData("lua/gold")]
+    [InlineData("jass/gold")]
+    public void An_example_folder_map_passes_its_lua_tests(string example) => Passes(Path.Combine(Examples(), example));
 
     [NodeFact]
     public void The_typescript_example_compiles_to_a_map_that_passes_its_lua_tests()
@@ -96,7 +86,7 @@ public sealed class ExamplesTests : IDisposable
         Run(copy, OnPath(Npm)!, "ci");
         Run(copy, OnPath(Npm)!, "run", "build");
 
-        Passes(Path.Combine(copy, "war3map.lua"), false, Path.Combine(copy, "gold.test.lua"));
+        Passes(copy);
     }
 
     [InstallFact]
@@ -109,5 +99,23 @@ public sealed class ExamplesTests : IDisposable
         Run(copy, "dotnet", "moonwell", "build");
 
         Passes(copy);
+    }
+}
+
+/// <summary>The Lua and JASS examples are folder maps a reader can run as they are: each reads as a map whose script is its own file.</summary>
+public sealed class ExampleMapsTests
+{
+    [Theory]
+    [InlineData("lua/gold", "war3map.lua", false)]
+    [InlineData("jass/gold", "war3map.j", true)]
+    public void An_example_is_a_folder_map_with_its_script(string example, string script, bool jass)
+    {
+        var map = Path.Combine(ExamplesTests.Examples(), example, "gold.w3x");
+
+        var archive = MapArchive.Read(map);
+
+        Assert.Equal(jass, archive.Jass);
+        Assert.Equal(File.ReadAllBytes(Path.Combine(map, script)), archive.Script);
+        Assert.Null(archive.Files.Info);
     }
 }

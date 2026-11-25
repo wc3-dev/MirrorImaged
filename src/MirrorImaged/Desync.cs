@@ -5,7 +5,7 @@ namespace MirrorImaged;
 
 /// <summary>Where two players' runs of one map first differ.</summary>
 /// <param name="Step">The step the games first differ in.</param>
-/// <param name="Part">The part of the world that differs: the time, a player, a unit, <c>random numbers</c>, <c>handle ids</c>, a trigger, a frame or <c>sync events</c>.</param>
+/// <param name="Part">The part of the world that differs: the time, a player, a unit, <c>random numbers</c>, <c>handle ids</c>, a trigger, a frame, <c>sync events</c> or <c>group and force loops</c>.</param>
 /// <param name="What">What in that part differs, such as <c>PLAYER_STATE_RESOURCE_GOLD</c>.</param>
 /// <param name="Players">The slots whose games were compared; the lists below have a place for each, in this order.</param>
 /// <param name="Values">The value in each player's game; null where that game has no such thing (a frame destroyed there).</param>

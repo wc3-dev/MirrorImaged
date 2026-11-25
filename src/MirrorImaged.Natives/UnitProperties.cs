@@ -311,7 +311,7 @@ public sealed partial class GameNatives
     /// structure), from its enabled weapons attacks ground, attacks flying, melee (a weapon of type normal) and ranged,
     /// its classification (its type's, with UnitAddType's and timed life's changes), and sleeping (UnitIsSleeping).
     /// Ethereal is a banished unit (probe abilities-banish). Close: stunned, plagued, snared, poisoned, polymorphed,
-    /// resistant and magic immune need buffs and abilities (wave 4) and read false.
+    /// resistant and magic immune always read false, though the game reads them from the unit's buffs and abilities.
     /// </summary>
     /// <remarks>Close: stunned, plagued, snared, poisoned, polymorphed, resistant and magic immune always read false here, though the game reads them from buffs and abilities.</remarks>
     [Native(Level.Close)]

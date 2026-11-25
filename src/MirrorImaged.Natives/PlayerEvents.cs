@@ -15,7 +15,9 @@ public sealed partial class GameNatives
     /// <summary>
     /// Fires for the player's victory and defeat (RemovePlayer, for a player that isn't a user) and its alliance
     /// changes of <c>ALLIANCE_PASSIVE</c>; <c>EVENT_PLAYER_STATE_LIMIT</c> never fires here, nor <c>EVENT_PLAYER_LEAVE</c>
-    /// for RemovePlayer. The input events wait for input (wave 6).
+    /// for RemovePlayer. Of the input events, the mouse events fire for <c>Mouse</c> input and <c>EVENT_PLAYER_LEAVE</c> for
+    /// <c>Leave</c>; the arrow-key events and <c>EVENT_PLAYER_END_CINEMATIC</c> (Esc) never fire, as <c>Key</c> input fires only
+    /// <c>BlzTriggerRegisterPlayerKeyEvent</c>'s.
     /// </summary>
     /// <remarks>Exact: matches the game wherever measured (facts, Player and game events: probe events (11-08)).</remarks>
     [Native(Level.Exact, Fact = Events)]

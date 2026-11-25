@@ -1,3 +1,4 @@
+-- Run with: mirror test examples/jass/gold   (the map, gold.w3x, is a folder map: a folder holding its war3map.j)
 test("the player is paid every 2 seconds, in JASS", function()
   local sim = mirror.load("gold.w3x")
   sim:advance(7)

@@ -81,7 +81,7 @@ public sealed partial class GameNatives
 
     /// <summary>
     /// The player's living units but structures, hidden and paused ones too, and one removed until it is gone (probe
-    /// units-more). There is no construction yet (wave 3), so <paramref name="includeIncomplete"/> changes nothing.
+    /// units-more). <paramref name="includeIncomplete"/> is not read: a unit still in training isn't counted, as it isn't made yet.
     /// </summary>
     /// <remarks>Exact: matches the game wherever measured (facts, Units: probes units-more and units-more-2 (11-08)).</remarks>
     [Native(Level.Exact, Fact = MoreProbe)]

@@ -13,12 +13,18 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: actions/setup-dotnet@v4
+    - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
       with:
         dotnet-version: 10.0.x
+    # The inputs reach the shell as environment variables, not pasted into the script, so no value can run as a command
     - name: Install mirror
       shell: bash
-      run: dotnet tool install --global MirrorImaged.Cli ${{ inputs.version != '' && format('--version {0}', inputs.version) || '' }}
+      env:
+        TOOL_VERSION: ${{ inputs.version }}
+      run: dotnet tool install --global MirrorImaged.Cli ${TOOL_VERSION:+--version "$TOOL_VERSION"}
     - name: Run the tests
       shell: bash
-      run: mirror test "${{ inputs.tests }}" --junit "${{ inputs.junit }}"
+      env:
+        TESTS: ${{ inputs.tests }}
+        JUNIT: ${{ inputs.junit }}
+      run: mirror test "$TESTS" --junit "$JUNIT"

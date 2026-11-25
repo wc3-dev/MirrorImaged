@@ -252,7 +252,7 @@ static int Bench(string map, double seconds, int seed)
     return simulation.Stopped is null ? 0 : 1;
 }
 
-// Every second, each player's units each get a random legal order of the number asked, from a generator of the seed; the script errors and desyncs it finds are reported
+// Every second, each player's units each get a random legal order of the number asked, from a generator of the seed; the script errors it finds are reported
 static int Fuzz(string map, double seconds, int seed, int orders)
 {
     var random = new Random(seed);

@@ -29,8 +29,8 @@ public sealed partial class GameNatives
     /// paused gets the stunned order (851973) as a point order, then undefend (852056) for each Defend; unpaused, a
     /// frame later (0.01 s) undefend for each Defend, or the stop it missed if it changed hands while paused; paused
     /// again before that, that order comes at once, with no stunned order. A dead unit's pause does nothing (probes
-    /// units-more and units-more-2). Close: the game also gives back the order the unit had, which comes with orders
-    /// (wave 3; game-facts: the move, 0.016 s later).
+    /// units-more and units-more-2). Close: the game also gives back the order the unit had (a move, 0.016 s later);
+    /// here it is not given back.
     /// </summary>
     /// <remarks>Close: the game also gives back the order the unit had (a move, 0.016 s later); here it is not given back.</remarks>
     [Native(Level.Close)]

@@ -106,7 +106,7 @@ public sealed partial class GameNatives
     [Native(Level.Close, Fact = OrderFacts)]
     public bool IssueTargetOrder(unit? whichUnit, string? order, widget? targetWidget) => IssueTargetOrderById(whichUnit, Named(order), targetWidget);
 
-    /// <summary>An instant order: given as the plain one is (the cast's instant nature comes with abilities, wave 4).</summary>
+    /// <summary>An instant order: given as the plain point order is, and the instant target is ignored.</summary>
     /// <remarks>Close: measured in part (game-facts.md, Orders and events (10-21, 11-03, 11-05)); the instant target is ignored, and the order's instant nature is not modelled; the order stays current until another replaces it; what it makes the unit do is only partly modelled.</remarks>
     [Native(Level.Close, Fact = OrderFacts)]
     public bool IssueInstantPointOrderById(unit? whichUnit, int order, float x, float y, widget? instantTargetWidget) => IssuePointOrderById(whichUnit, order, x, y);

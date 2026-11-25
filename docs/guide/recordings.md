@@ -69,7 +69,7 @@ Desync at step 2048 (2 s): player 0 differs
 ```
 
 - **The step** is the one the games first differ in, 1024 to the second, not the second they were compared at.
-- **The part** says where: the time, a player, a unit, `random numbers`, `handle ids`, a trigger, a frame or `sync events`.
+- **The part** says where: the time, a player, a unit, `random numbers`, `handle ids`, a trigger, a frame, `sync events` or `group and force loops`.
 - **The value** is what differs in that part and what it is in each player's game. `not there` is a game that has no such thing, such as a frame it
   destroyed.
 - **The Lua stack** is of the call that made the value differ, the native first and then the lines of the map's script that led to it. A game that made
@@ -81,8 +81,8 @@ map, a clean check one.
 
 ### What it finds
 
-The patterns are those `docs/game-facts.md` ("Desyncs") and Moonwell's analyzer rules (MW0001 to MW0004, MW0006, MW0038, MW0048) name, as far as a simulator can show them. Each is a
-test in `DesyncSuiteTests`.
+The patterns are the known causes of desyncs, those Moonwell's analyzer rules (MW0001 to MW0004, MW0006, MW0038, MW0048) also warn about, as far as a
+simulator can show them. Each is a test in `DesyncSuiteTests`.
 
 | The map does this in one player's game only | The part reported |
 |---|---|
