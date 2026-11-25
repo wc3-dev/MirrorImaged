@@ -54,9 +54,12 @@ public sealed partial class GameNatives
     [Native(Level.Exact, Fact = AtanFact)]
     public float Atan2(float y, float x) => y == 0 && x == 0 ? 0 : Native.mi_atan2f(y, x);
 
-    /// <summary>As Lua's x ^ power.</summary>
-    /// <remarks>Close: the model of Lua's x ^ power (D151, D152); a power that isn't whole goes through log, and often differs from the game by a float step (probe numbers-sqrt).</remarks>
-    [Native(Level.Close)]
+    const string PowFact = "facts, The game's exp (probes numbers-exp, numbers-exp-2, numbers-sqrt, numbers-functions): all 131,072 "
+        + "values of exp at every 2^-19 from 0 to a quarter and every measured power, whole ones squared out and the others exp(y log x)";
+
+    /// <summary>As Lua's x ^ power: a whole power multiplied out squaring as it goes, any other exp(power log x) (D890).</summary>
+    /// <remarks>Exact: matches the game wherever measured (facts, The game's exp (probes numbers-exp, numbers-exp-2, numbers-sqrt, numbers-functions): all 131,072 values of exp at every 2^-19 from 0 to a quarter and every measured power, whole ones squared out and the others exp(y log x)).</remarks>
+    [Native(Level.Exact, Fact = PowFact)]
     public float Pow(float x, float power) => Native.mi_powf(x, power);
 
     /// <summary>Times the float nearest pi/180, in the game's arithmetic: Deg2Rad(180) is 3.1415925.</summary>
