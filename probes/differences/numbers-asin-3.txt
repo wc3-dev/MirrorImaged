@@ -3,8 +3,8 @@
 
 # asin and acos up to 1018/1024 are the table of D712 and D850 (Close): 1025 whole numbers in 2^-29 radians and the line lo + floor((D + 1/2) f + 1/2)
 # between two, acos from the top. The entries above k = 31 are the nearest whole numbers the asin and acos scans allow, as the game's floats hide
-# their units, and no table and line fits every value (131 of 94,208 a float step off); above 1018/1024 they are the game's line between the floats
-# nearest acos at 8 points an octave (D850), where 41 of acos's 1,024 values at every 2^-24 below 1 are a step low.
+# their units, and no table of whole units with this line fits every value (131 of 94,208 a float step off; D880); above 1018/1024 they are the
+# game's line between the floats nearest acos at 8 points an octave (D850), worked out exactly 3.5 2^-36 higher (D880), every value measured there.
 - asin f 4617 3de68508 129 128 129 129 129 129 129 128 129 129 129 129 129 128 129 129 129 129 128 129 129 129 126890 129 129 128 129 129 129 129 129 128 129 129 129 129 129 128 129 129 129 129 129 128 129 129 129 129 129 128 129 129 129 129 129 128
 + asin f 4617 3de68508 129 129 128 129 129 129 129 128 129 129 129 129 129 128 129 129 129 129 128 129 129 129 126890 129 129 128 129 129 129 129 129 128 129 129 129 129 129 128 129 129 129 129 129 128 129 129 129 129 129 128 129 129 129 129 129 128
 - asin f 4674 3de890e0 129 129 129 129 128 126904 129 129 129 129 129 128 129 129 129 129 129 129 128 129 129 129 129 129 129 128 129 129 129 129 129 129 128 129 129 129 129 129 128 129 129 129 129 129 129 126918 129 129 128 129 129 129 129 129 129 129
