@@ -1,4 +1,5 @@
 using System.Text.Json;
+using MirrorImaged.World;
 
 namespace MirrorImaged;
 
@@ -12,6 +13,8 @@ public sealed record SnapshotPart(string Name, string Hash);
 /// </summary>
 public sealed class Snapshot
 {
+    /// <summary>The format of the file, as <see cref="Recording.Format"/>; a snapshot written before formats were numbered reads as 1.</summary>
+    public int Version { get; set; } = MirrorImaged.Recording.Format;
     /// <summary>The step the snapshot was taken at.</summary>
     public long Step { get; set; }
     /// <summary>The state hash at that step.</summary>
@@ -25,8 +28,16 @@ public sealed class Snapshot
 
     /// <summary>The snapshot as JSON.</summary>
     public string ToJson() => JsonSerializer.Serialize(this, Format);
-    /// <summary>A snapshot from the JSON that <see cref="ToJson"/> makes.</summary>
-    public static Snapshot FromJson(string json) => JsonSerializer.Deserialize<Snapshot>(json) ?? throw new InvalidDataException("Not a snapshot");
+    /// <summary>A snapshot from the JSON that <see cref="ToJson"/> makes, by this or an earlier MirrorImaged.</summary>
+    /// <exception cref="InvalidDataException">The JSON isn't a snapshot, or is of a format this MirrorImaged doesn't read.</exception>
+    public static Snapshot FromJson(string json)
+    {
+        var snapshot = JsonSerializer.Deserialize<Snapshot>(json) ?? throw new InvalidDataException("Not a snapshot");
+        if (snapshot.Version != MirrorImaged.Recording.Format)
+            throw new InvalidDataException($"The snapshot is of format {snapshot.Version}, and this MirrorImaged reads format {MirrorImaged.Recording.Format}");
+        MirrorImaged.Recording.Checked(snapshot.Recording);
+        return snapshot;
+    }
 
     /// <summary>What differs between the snapshot and the simulation, which must be at the snapshot's step: nothing when it is the same world.</summary>
     public IReadOnlyList<string> Differences(Simulation simulation)
@@ -56,11 +67,12 @@ public sealed partial class Simulation
         Recording = Recording.FromJson(Recording.ToJson()),
     };
 
-    /// <summary>Runs the snapshot's map again, exactly as it was run, to the snapshot's step.</summary>
-    public static Simulation Restore(Snapshot snapshot, string? map = null) =>
-        Restore(snapshot, Load(map ?? snapshot.Recording.Map, Options(snapshot.Recording)));
-
-    static SimulationOptions Options(Recording recording) => new() { Seed = recording.Seed, Users = recording.Users, Computers = recording.Computers, Difficulty = recording.Difficulty, Graphics = recording.Graphics };
+    /// <summary>
+    /// Runs the snapshot's map again, exactly as it was run, to the snapshot's step; with the documents the run started with, when it read any, as a
+    /// snapshot doesn't keep them.
+    /// </summary>
+    public static Simulation Restore(Snapshot snapshot, string? map = null, Documents? documents = null) =>
+        Restore(snapshot, Load(map ?? snapshot.Recording.Map, snapshot.Recording.Options(documents)));
 
     static Simulation Restore(Snapshot snapshot, Simulation simulation)
     {
@@ -80,6 +92,6 @@ public sealed partial class Simulation
         ArgumentOutOfRangeException.ThrowIfNegative(steps);
         var at = Math.Max(_game.Step - steps, 0);
         var snapshot = new Snapshot { Step = at, Recording = Recording.FromJson(Recording.ToJson()) };
-        return Restore(snapshot, _reload(Options(snapshot.Recording)));
+        return Restore(snapshot, _reload(snapshot.Recording.Options(_startDocuments.Copy(), _machine)));
     }
 }

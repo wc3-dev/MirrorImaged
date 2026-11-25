@@ -86,6 +86,9 @@ public sealed partial class Simulation : IDisposable
     TimeSpan _time;
     readonly HashSet<string> _treatAsMissing;
     Func<SimulationOptions?, Simulation> _reload = _ => throw new InvalidOperationException("The simulation was not loaded from a map");
+    // The documents as the run was given them, before its script ran: what a run made again starts from (decisions D901)
+    readonly Documents _startDocuments;
+    readonly int _machine;
 
     // script: the map's Lua, for a JASS map made from its war3map.j with JASS's rules, which the run keeps (decisions D130)
     Simulation(GameData data, byte[] script, string blizzard, SimulationOptions options)
@@ -93,6 +96,7 @@ public sealed partial class Simulation : IDisposable
         var info = data.Map!.Files.Info;
         _jass = data.Map.Jass;
         _game = new Game(options.Seed);
+        (_startDocuments, _machine) = (options.Documents.Copy(), options.Machine);
         _treatAsMissing = [.. options.TreatAsMissing ?? [], .. (Environment.GetEnvironmentVariable("MIRROR_MISSING") ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
         _natives = new GameNatives(_game) { Threads = new ScriptThreads(this), Documents = options.Documents, RunPreloadFile = RunPreloadFile, AiLoader = LoadAi, Data = data, Jass = _jass, Difficulty = (int)options.Difficulty, Machine = options.Machine };
         try
@@ -182,14 +186,17 @@ public sealed partial class Simulation : IDisposable
         return Recorded(new(new GameData(data ?? new StandardData { Graphics = graphics }, map), script, blizzard, options ?? new SimulationOptions()), path, options, o => Load(path, blizzard, o, data));
     }
 
-    // The recording starts with the map, the seed and the seats the run was given
+    // The recording starts with the map and everything else the run was given that it can keep (decisions D900)
     static Simulation Recorded(Simulation simulation, string path, SimulationOptions? options, Func<SimulationOptions?, Simulation> reload)
     {
         simulation._reload = reload;
-        (simulation._recording.Map, simulation._recording.Seed) = (path, options?.Seed ?? 0);
-        (simulation._recording.Users, simulation._recording.Computers) = (options?.Users?.ToArray(), options?.Computers?.ToArray());
-        simulation._recording.Difficulty = options?.Difficulty ?? Difficulty.Normal;
-        simulation._recording.Graphics = options?.Graphics ?? default;
+        var recording = simulation._recording;
+        (recording.Map, recording.Seed) = (path, options?.Seed ?? 0);
+        (recording.Users, recording.Computers) = (options?.Users?.ToArray(), options?.Computers?.ToArray());
+        recording.Difficulty = options?.Difficulty ?? Difficulty.Normal;
+        recording.Graphics = options?.Graphics ?? default;
+        (recording.Races, recording.StartLocations) = (options?.Races?.ToDictionary(), options?.StartLocations?.ToDictionary());
+        recording.TreatAsMissing = simulation._treatAsMissing.Count > 0 ? [.. simulation._treatAsMissing.Order(StringComparer.Ordinal)] : null;
         return simulation;
     }
 

@@ -4,16 +4,35 @@ A run is a function of its map, seed, seats and input, so it can be saved and re
 
 ## Recording
 
-Everything a person does through the API (`Order`, `Select`, `Key`, `Mouse`, `Say`, `Leave`) is kept with the step it was given at. `simulation.Recording` is
-the map, seed, seats, those inputs and the step the run reached; `ToJson()` writes it and `Recording.FromJson` reads it.
+Everything a person does through the API (`Order`, `Select`, `Key`, `Mouse`, `Click`, `Say`, `Leave`) is kept with the step it was given at.
+`simulation.Recording` is the map, seed, seats, difficulty, graphics mode, the races and start locations the lobby gave, the natives run as Missing, those
+inputs and the step the run reached; `ToJson()` writes it and `Recording.FromJson` reads it. `Simulation.Replay(recording)` runs it again, and
+`recording.Options()` gives the options to load the map with yourself.
 
 ```bash
 mirror run MyMap.w3x --seconds 60 --seed 4 --input inputs.json --record run.json
 mirror replay run.json --hash 10
 ```
 
-`inputs.json` is a list such as `[{"Step": 2048, "Kind": "say", "Player": 0, "Text": "-hi"}]`. The kinds are `say`, `order`, `select`, `key`, `mouse` and
-`leave`. `replay` prints the same hashes every time, on every operating system.
+`inputs.json` is a list such as `[{"Step": 2048, "Kind": "say", "Player": 0, "Text": "-hi"}]`. `replay` prints the same hashes every time, on every
+operating system, and `run --input inputs.json --hash 10` prints the hashes as it goes. Each input has a `Kind`, and the rest of it says:
+
+| Kind | `Ints` | `Floats` | `Text` |
+|---|---|---|---|
+| `say` | | | what the player said |
+| `order` | the unit, then the target unit if any | x and y, for an order at a place | the order string (`move`, `attack`, `smart`) |
+| `select` | the units selected | | |
+| `key` | the OS key code, the meta keys held (1 shift, 2 control, 4 alt, 8 meta), 1 pressed or 0 released | | |
+| `mouse` | 305 pressed, 306 released or 307 moved, then the button (1 left, 2 middle, 3 right) | x and y | |
+| `click` | the button of the dialog the player is shown, counting from 0 | | |
+| `leave` | | | |
+| `act` | an order of a `.w3g` replay, which only a replay's run makes: the unit, the order id, how it is given, the target, 1 when queued | x and y | |
+
+A recording doesn't keep the run's documents (`CustomMapData` and the saved game caches). A run that reads them repeats exactly when it is given the same
+documents it started with: `Simulation.Replay(recording, documents: copy)`, where `copy` is `documents.Copy()` taken before the first run.
+
+A recording and a snapshot carry the `Version` of their format, now 1. A file written before the formats were numbered reads as 1; a later format is
+refused with its number.
 
 ## Snapshots
 
@@ -31,8 +50,9 @@ snapshot's step.
 
 ## Stepping back
 
-`simulation.StepBack(steps)` returns a new simulation at the step the run had that many steps ago, made by running the map again with the same inputs, so its
-state is the state the run had then. The simulation you called it on goes on as it is. Stepping back costs the run to that step.
+`simulation.StepBack(steps)` returns a new simulation at the step the run had that many steps ago, made by running the map again with the same options,
+inputs and starting documents, so its state is the state the run had then. The simulation you called it on goes on as it is. Stepping back costs the run to
+that step.
 
 ## The desync check
 

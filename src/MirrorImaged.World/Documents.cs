@@ -16,4 +16,13 @@ public sealed class Documents
     // The game caches as SaveGameCache last wrote them (the account's Campaigns.w3v), by name: a game starts with them.
     internal Dictionary<string, Dictionary<(char Type, string Mission, string Key), object>> GameCaches { get; } =
         new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>A copy of the files and saved game caches as they are now, for another run to start from; changing one leaves the other as it is.</summary>
+    public Documents Copy()
+    {
+        var copy = new Documents();
+        foreach (var (path, bytes) in CustomMapData) copy.CustomMapData[path] = [.. bytes];
+        foreach (var (name, values) in GameCaches) copy.GameCaches[name] = new(values);
+        return copy;
+    }
 }
