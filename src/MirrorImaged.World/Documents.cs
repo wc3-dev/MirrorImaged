@@ -1,4 +1,4 @@
-namespace MirrorImaged.World;
+namespace MirrorImaged;
 
 /// <summary>
 /// A simulated <c>Documents\Warcraft III</c>: the files in <c>CustomMapData</c>, which maps write with Preload and read

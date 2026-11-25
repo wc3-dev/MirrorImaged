@@ -13,7 +13,7 @@ public sealed class ViewerPage : IAsyncLifetime
     readonly Browser _browser = new();
     readonly string _folder = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())).FullName;
 
-    public Trace Trace { get; private set; } = null!;
+    internal Trace Trace { get; private set; } = null!;
     public BrowserPage? Page { get; private set; }
     /// <summary>Why the page is not open in a browser; null when it is.</summary>
     public string? Missing => _browser.Missing;
@@ -22,7 +22,7 @@ public sealed class ViewerPage : IAsyncLifetime
         pairs.Split(';', StringSplitOptions.TrimEntries).Select(pair => pair.Split('=', 2)).ToDictionary(pair => pair[0], pair => pair[1]);
 
     /// <summary>Six seconds of the fight, sampled every half second.</summary>
-    public static Trace Record(TestMaps maps)
+    internal static Trace Record(TestMaps maps)
     {
         var data = new StandardData()
             .Add(ObjectKind.Unit, "hfoo", Values("unam=Footman;uhpm=100;umvs=270;umvt=foot;uacq=500;uaen=1;ua1w=normal;ua1t=normal;ua1g=ground;ua1b=5;ua1d=2;ua1s=3;ua1c=1;ua1r=90;udp1=0.5;ucol=31;udef=0;udty=normal"))

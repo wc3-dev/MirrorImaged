@@ -6,8 +6,12 @@ using MirrorImaged.World;
 
 namespace MirrorImaged;
 
-/// <summary>A unit as a test reads it.</summary>
-public sealed record UnitView(int Id, string Type, string Name, int Player, float X, float Y, float Life, float MaxLife, float Mana, int Order, bool Dead);
+/// <summary>
+/// A unit as a test reads it. <see cref="Order"/> is the id of the order it is carrying out (0 for none) and <see cref="OrderName"/> that order's
+/// string, as <see cref="Simulation.Order"/> takes it (<c>"attack"</c>), or <c>""</c> for an order with no string (a build order, which is the
+/// id of the building) and for none, as <c>OrderId2String</c> gives it.
+/// </summary>
+public sealed record UnitView(int Id, string Type, string Name, int Player, float X, float Y, float Life, float MaxLife, float Mana, int Order, string OrderName, bool Dead);
 
 /// <summary>A missile in flight as a test reads it: the run's count of it, the player it was shot for, the unit it follows (none for a shell, which flies to a place) and where it is.</summary>
 public sealed record MissileView(int Id, int Player, int? Target, float X, float Y);
@@ -53,7 +57,7 @@ public sealed class Recording
     /// <summary>The graphics mode the run was in.</summary>
     public GraphicsMode Graphics { get; set; }
     /// <summary>The race the lobby chose for a slot, as <see cref="SimulationOptions.Races"/>; null for the map's.</summary>
-    public Dictionary<int, int>? Races { get; set; }
+    public Dictionary<int, Race>? Races { get; set; }
     /// <summary>The start location the lobby placed a slot at, as <see cref="SimulationOptions.StartLocations"/>; null for the map's.</summary>
     public Dictionary<int, int>? StartLocations { get; set; }
     /// <summary>The natives the run ran as Missing, <see cref="SimulationOptions.TreatAsMissing"/> and <c>MIRROR_MISSING</c>'s, in order; null for none.</summary>
@@ -109,7 +113,8 @@ public sealed partial class Simulation
 
     internal static string FourCC(int id) => new([(char)(id >> 24 & 255), (char)(id >> 16 & 255), (char)(id >> 8 & 255), (char)(id & 255)]);
 
-    UnitView View(unit u) => new(u.Id, FourCC(u.Type.Id), _natives.GetUnitName(u) ?? "", _natives.GetPlayerId(u.Owner), u.X, u.Y, u.Life, u.MaxLife, u.Mana, u.Order, u.Dead);
+    UnitView View(unit u) => new(u.Id, FourCC(u.Type.Id), _natives.GetUnitName(u) ?? "", _natives.GetPlayerId(u.Owner), u.X, u.Y, u.Life, u.MaxLife, u.Mana, u.Order,
+        _natives.OrderId2String(u.Order) ?? "", u.Dead);
 
     /// <summary>The units of the run, living ones, the first made first; of one player only when given.</summary>
     public IReadOnlyList<UnitView> Units(int? player = null) =>

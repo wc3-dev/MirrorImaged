@@ -1,4 +1,4 @@
-namespace MirrorImaged.Lua;
+namespace MirrorImaged;
 
 /// <summary>
 /// A Lua error: its message, then Lua's stack traceback when it was raised while running. When the state halted, the

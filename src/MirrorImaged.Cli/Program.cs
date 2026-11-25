@@ -178,7 +178,7 @@ static int PlayReplay(string file, Dictionary<string, string> flags, double hash
     var replay = Replay.Read(file);
     var map = flags.GetValueOrDefault("--map") ?? throw new ArgumentException($"A replay needs the map it was played on ({replay.Map}): --map <map>");
     Ui.Line($"Build {replay.Build}, {TimeSpan.FromMilliseconds(replay.DurationMillis):h\\:mm\\:ss}, on {replay.Map}: {string.Join(", ", replay.Players.Where(p => p.Id > 0).Select(p => $"{p.Name} (slot {p.Slot})"))}");
-    using var simulation = Simulation.Load(map, replay, graphics: Seats.Graphics);
+    using var simulation = Simulation.Load(map, replay, new ReplayOptions { Graphics = Seats.Graphics });
     var run = simulation.Play(replay);
     try
     {
@@ -216,7 +216,7 @@ static int DesyncCheck(string map, double seconds, int seed, GraphicsMode graphi
         Ui.Line($"[yellow]{map} has {slots.Count} user slot(s): there is no second player's game to compare with[/]");
         return 0;
     }
-    var report = Ui.Work($"Comparing the games of players {string.Join(", ", slots)}", () => Desync.Check(map, TimeSpan.FromSeconds(seconds), seed, graphics: graphics));
+    var report = Ui.Work($"Comparing the games of players {string.Join(", ", slots)}", () => Desync.Check(map, TimeSpan.FromSeconds(seconds), new DesyncOptions { Seed = seed, Graphics = graphics }));
     if (report is null)
     {
         Ui.Line($"[green]No desync in {seconds.ToString("0.###", CultureInfo.InvariantCulture)} s between the games of players {string.Join(", ", slots)}[/]");

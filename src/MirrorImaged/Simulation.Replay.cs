@@ -218,15 +218,25 @@ public sealed class ReplayRun
     }
 }
 
+/// <summary>How <see cref="Simulation.Load(string, Replay, ReplayOptions?)"/> sets up a replay's run, beyond what the replay says.</summary>
+public sealed class ReplayOptions
+{
+    /// <summary>The seed of the game's random numbers, which a replay does not hold.</summary>
+    public int Seed { get; init; }
+
+    /// <summary>The graphics mode every player's game is in, which a replay does not say; Reforged unless given.</summary>
+    public GraphicsMode Graphics { get; init; }
+}
+
 public sealed partial class Simulation
 {
     /// <summary>
     /// Loads the map for the replay: the people of its lobby whose slots the map has, each with the race the lobby holds for it and at the start
     /// place nearest the first place it gave an order at, since a replay does not say where the game put its players (decisions D421); in the
-    /// graphics mode given, as a replay does not say which the players had.
+    /// graphics mode the options give, as a replay does not say which the players had.
     /// </summary>
-    public static Simulation Load(string map, Replay replay, int seed = 0, GraphicsMode graphics = GraphicsMode.Reforged) =>
-        Load(map, Seats(map, replay, seed, graphics));
+    public static Simulation Load(string map, Replay replay, ReplayOptions? options = null) =>
+        Load(map, Seats(map, replay, options?.Seed ?? 0, options?.Graphics ?? default));
 
     // The seats of the replay on the map, as Load's summary says
     internal static SimulationOptions Seats(string map, Replay replay, int seed = 0, GraphicsMode graphics = GraphicsMode.Reforged)
@@ -242,11 +252,11 @@ public sealed partial class Simulation
         foreach (var player in seated.Where(player => !starts.ContainsKey(player.Slot)))
             starts[player.Slot] = players.First(p => !starts.ContainsValue(p.Id)).Id;
         // The lobby's race flags: human 1, orc 2, night elf 4, undead 8; a player who took random has none of them, and gets a random race here
-        var races = seated.Where(player => (player.Race & 15) != 0).ToDictionary(player => player.Slot, player => (player.Race & 15) switch { 1 => 1, 2 => 2, 4 => 4, _ => 3 });
+        var races = seated.Where(player => (player.Race & 15) != 0).ToDictionary(player => player.Slot, player => (player.Race & 15) switch { 1 => Race.Human, 2 => Race.Orc, 4 => Race.NightElf, _ => Race.Undead });
         return new SimulationOptions { Seed = seed, Users = [.. seated.Select(player => player.Slot)], Computers = [], Races = races, StartLocations = starts, Graphics = graphics };
     }
 
-    /// <summary>Starts playing the replay on this run, which <see cref="Load(string, Replay, int, GraphicsMode)"/> made for it; <see cref="ReplayRun.To"/> plays it on.</summary>
+    /// <summary>Starts playing the replay on this run, which <see cref="Load(string, Replay, ReplayOptions?)"/> made for it; <see cref="ReplayRun.To"/> plays it on.</summary>
     public ReplayRun Play(Replay replay) => new(this, replay);
 
     /// <summary>Plays the replay on this run to its end.</summary>

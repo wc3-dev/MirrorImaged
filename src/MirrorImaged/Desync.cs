@@ -18,6 +18,19 @@ namespace MirrorImaged;
 public sealed record DesyncReport(long Step, string Part, string What, IReadOnlyList<int> Players, IReadOnlyList<string?> Values,
     IReadOnlyList<string?> Stacks, IReadOnlyList<string> Hashes, string? LogLine);
 
+/// <summary>How <see cref="Desync.Check(string, TimeSpan, DesyncOptions?)"/> runs the players' games.</summary>
+public sealed class DesyncOptions
+{
+    /// <summary>The seed of the game's random numbers, the same in every player's game.</summary>
+    public int Seed { get; init; }
+
+    /// <summary>How often the games are compared; a second unless given.</summary>
+    public TimeSpan? Every { get; init; }
+
+    /// <summary>The graphics mode every player's game is in; Reforged unless given.</summary>
+    public GraphicsMode Graphics { get; init; }
+}
+
 /// <summary>
 /// The desync check: the map runs once for each person's slot, as that player's own game on that player's own machine, and the runs are compared
 /// through the time asked. A map that changes the game from what only one machine knows (<c>GetLocalPlayer</c>, where its camera looks, the size
@@ -30,12 +43,13 @@ public static class Desync
         [.. MapArchive.Read(path).Files.Info?.Players.Where(p => p.Controller == PlayerController.User).Select(p => p.Id) ?? []];
 
     /// <summary>
-    /// Runs the map for each person's slot and compares the runs every <paramref name="every"/> (a second, unless given); null when they stay the
-    /// same to the end. When they differ, the games are run twice more to find the step and the calls, so a report costs three runs. Every
-    /// player's game is in <paramref name="graphics"/>.
+    /// Runs the map for each person's slot through <paramref name="time"/> and compares the runs every <see cref="DesyncOptions.Every"/>; null
+    /// when they stay the same to the end. When they differ, the games are run twice more to find the step and the calls, so a report costs three
+    /// runs.
     /// </summary>
-    public static DesyncReport? Check(string path, TimeSpan time, int seed = 0, TimeSpan? every = null, GraphicsMode graphics = default)
+    public static DesyncReport? Check(string path, TimeSpan time, DesyncOptions? options = null)
     {
+        var (seed, every, graphics) = (options?.Seed ?? 0, options?.Every, options?.Graphics ?? default);
         var slots = UserSlots(path);
         if (slots.Count < 2) return null;
         List<Simulation> Load(Func<int, Action<Simulation>>? called = null) => [.. slots.Select((slot, machine) => Simulation.Load(path, new SimulationOptions
@@ -63,7 +77,7 @@ public static class Desync
     static void Run(Simulation game, Action advance)
     {
         try { advance(); }
-        catch (Lua.LuaException) when (game.Stopped is not null) { }
+        catch (LuaException) when (game.Stopped is not null) { }
     }
 
     static bool Differ(List<Simulation> games) => games.Select(game => game.StateHash()).Distinct().Count() > 1;

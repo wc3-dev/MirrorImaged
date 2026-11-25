@@ -54,7 +54,7 @@ public sealed class DesyncTests : IDisposable
             end)
             """);
 
-        var report = Desync.Check(path, TimeSpan.FromSeconds(5), every: TimeSpan.FromSeconds(every));
+        var report = Desync.Check(path, TimeSpan.FromSeconds(5), new DesyncOptions { Every = TimeSpan.FromSeconds(every) });
 
         Assert.Equal((long)Math.Round(at * 1024), report!.Step);
     }

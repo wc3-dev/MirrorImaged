@@ -27,7 +27,7 @@ public sealed partial class Simulation
             var values = new object?[parameters.Length];
             for (int i = 0; i < values.Length; i++)
                 values[i] = ToCSharp(i < args.Length ? args[i] : None, parameters[i].ParameterType, i + 1, native.Name);
-            if (recorded) _recordedCalls.Add(new(_game.Step, native.Name, values));
+            if (recorded) _recordedCalls.Add(new(_game.Step, native.Name, [.. values.Select(RecordedCall.Argument)]));
             NativeCalled?.Invoke(native.Name);
             var result = native.Invoke(_natives, BindingFlags.DoNotWrapExceptions, null, values, null);
             return native.ReturnType == typeof(void) ? [] : [result is handle h ? ToLua(h, native.ReturnType) : result];

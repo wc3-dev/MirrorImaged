@@ -339,7 +339,7 @@ public sealed partial class GameNatives
 
     readonly List<(framehandle Frame, int Type, @event Event)> _frameEvents = [];
 
-    /// <summary>A click on the frame: its FRAMEEVENT_CONTROL_CLICK registrations fire, the frame the trigger frame (the player's own click is wave 6's).</summary>
+    /// <summary>A click on the frame: its FRAMEEVENT_CONTROL_CLICK registrations fire, the frame the trigger frame; no input of a test clicks a frame, so this is the way to.</summary>
     /// <remarks>Close: measured in part (game-facts.md, UI: frames (09-29 to 11-14)); the game's click also fires the player's mouse down and up (11-05) and keeps the keyboard focus on the button (09-29), which are not modelled.</remarks>
     [Native(Level.Close, Fact = FrameFacts)]
     public void BlzFrameClick(framehandle? frame)

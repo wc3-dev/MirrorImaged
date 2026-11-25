@@ -44,7 +44,7 @@ A script error goes in the log and the run goes on; a native that is [Missing](t
 
 ## Reading
 
-`Log` is every line the run showed. `RecordedCalls` is every call of a [Recorded](trust-levels.md) native, with its step and its arguments as the native took them; they are not in `Log`. `Units(player)` and `Unit(id)` return `UnitView` records (id, type, name, player, place, life, mana, order, dead).
+`Log` is every line the run showed. `RecordedCalls` is every call of a [Recorded](trust-levels.md) native, with its step and its arguments, a handle as its id and a function as `"function"`; they are not in `Log`. `Units(player)` and `Unit(id)` return `UnitView` records (id, type, name, player, place, life, mana, order, dead): `Order` is the order's id and `OrderName` its string (`"attack"`), `""` for none.
 `StateHash()` is a hash of the world that is equal for runs that are the same.
 
 ## What a person does

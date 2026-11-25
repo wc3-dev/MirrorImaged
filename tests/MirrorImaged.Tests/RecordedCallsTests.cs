@@ -54,8 +54,20 @@ public sealed class RecordedCallsTests : IDisposable
             {
                 Assert.Equal((512L, "SetEnemyStartLocPrio"), (call.Step, call.Native));
                 Assert.Equal([1, 2, 3], call.Arguments.Take(3));
-                Assert.IsType<startlocprio>(call.Arguments[3]);
+                Assert.IsType<int>(call.Arguments[3]);
             });
         Assert.Empty(simulation.Log);
+    }
+
+    [Fact]
+    public void A_handle_argument_is_its_id_as_lua_reads_it()
+    {
+        using var simulation = Load("""
+            SetMapName(GetHandleId(MAP_LOC_PRIO_HIGH))
+            SetEnemyStartLocPrio(1, 2, 3, MAP_LOC_PRIO_HIGH)
+            """);
+
+        var id = int.Parse((string)simulation.RecordedCalls[0].Arguments[0]!, System.Globalization.CultureInfo.InvariantCulture);
+        Assert.Equal(id, simulation.RecordedCalls[1].Arguments[3]);
     }
 }

@@ -51,6 +51,14 @@ public sealed class LuaTestApiTests : IDisposable
             TriggerRegisterPlayerEvent(t, Player(0), EVENT_PLAYER_MOUSE_DOWN)
             TriggerAddAction(t, function() print("mouse", BlzGetTriggerPlayerMouseX(), BlzGetTriggerPlayerMouseY(), BlzGetTriggerPlayerMouseButton() == MOUSE_BUTTON_TYPE_RIGHT) end)
             """, ["mouse 0 305 3 120 -40", "advance 1"]),
+        new("a dialog click fires its trigger", """
+            local d = DialogCreate()
+            DialogAddButton(d, "One", 49)
+            local t = CreateTrigger()
+            TriggerRegisterDialogEvent(t, d)
+            TriggerAddAction(t, function() print("clicked", GetPlayerId(GetTriggerPlayer())) end)
+            DialogDisplay(Player(0), d, true)
+            """, ["advance 1", "click 0 0", "advance 1"]),
         new("selecting fires its trigger", """
             CreateUnit(Player(0), FourCC("hfoo"), 0, 0, 0)
             CreateUnit(Player(0), FourCC("hfoo"), 100, 0, 0)
@@ -59,7 +67,7 @@ public sealed class LuaTestApiTests : IDisposable
             TriggerAddAction(t, function() print("selected", GetUnitX(GetTriggerUnit())) end)
             """, ["advance 1", "select 0 2", "select 0 1", "advance 1"]),
         new("a unit reads the same as it walks", """CreateUnit(Player(0), FourCC("hfoo"), 0, 0, 0)""",
-            ["advance 1", "order 0 move 300 0", "advance 2", "unit 0 1 type", "unit 0 1 x", "unit 0 1 y", "unit 0 1 life", "unit 0 1 order", "unit 0 1 dead"]),
+            ["advance 1", "order 0 move 300 0", "advance 2", "unit 0 1 type", "unit 0 1 x", "unit 0 1 y", "unit 0 1 life", "unit 0 1 order", "unit 0 1 order_name", "unit 0 1 dead"]),
         new("the clock moves by steps and waits for a moment", """TimerStart(CreateTimer(), 2, false, function() print("done") end)""",
             ["steps 700", "step", "time", "until 1 5", "step", "time", "until 2 1"]),
         new("an error stops the run", """TimerStart(CreateTimer(), 1, false, function() error("broken") end)""",
@@ -96,6 +104,7 @@ public sealed class LuaTestApiTests : IDisposable
                     break;
                 case "select": simulation.Select(int.Parse(word[1]), simulation.Units(int.Parse(word[1]))[int.Parse(word[2]) - 1].Id); break;
                 case "leave": simulation.Leave(int.Parse(word[1])); break;
+                case "click": simulation.Click(int.Parse(word[1]), int.Parse(word[2])); break;
                 case "order":
                     simulation.Order(int.Parse(word[1]), simulation.Units(int.Parse(word[1]))[0].Id, word[2], float.Parse(word[3], CultureInfo.InvariantCulture), float.Parse(word[4], CultureInfo.InvariantCulture));
                     break;
@@ -120,6 +129,7 @@ public sealed class LuaTestApiTests : IDisposable
                         "y" => Number(unit.Y),
                         "life" => Number(unit.Life),
                         "order" => unit.Order.ToString(CultureInfo.InvariantCulture),
+                        "order_name" => Text(unit.OrderName),
                         "dead" => Bool(unit.Dead),
                         _ => throw new ArgumentException(step),
                     };
@@ -144,6 +154,7 @@ public sealed class LuaTestApiTests : IDisposable
             "mouse" => $"sim:mouse({word[1]}, {word[2]}, {word[3]}, {word[4]}, {word[5]})",
             "select" => $"sim:select({word[1]}, sim:units({word[1]})[{word[2]}].id)",
             "leave" => $"sim:leave({word[1]})",
+            "click" => $"sim:click({word[1]}, {word[2]})",
             "order" => $"sim:order({word[1]}, sim:units({word[1]})[1].id, \"{word[2]}\", {word[3]}, {word[4]})",
             "close" => "sim:close()",
             "step" => "sim:step()",

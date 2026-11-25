@@ -59,7 +59,7 @@ public sealed class AnimationTests : IDisposable
             end
             """), "", new SimulationOptions { TreatAsMissing = ["GetRandomInt"] });
 
-        Assert.Equal("GetRandomInt", Assert.IsType<Natives.MissingNativeException>(simulation.Stopped!.InnerException).Native);
+        Assert.Equal("GetRandomInt", Assert.IsType<MissingNativeException>(simulation.Stopped!.InnerException).Native);
         Assert.Equal(["0.000 print: before"], simulation.Log);
     }
 }

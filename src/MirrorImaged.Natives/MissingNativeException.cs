@@ -1,4 +1,4 @@
-namespace MirrorImaged.Natives;
+namespace MirrorImaged;
 
 /// <summary>Thrown by a native whose level is Missing: MirrorImaged does not simulate it yet.</summary>
 public sealed class MissingNativeException(string native)
