@@ -7,13 +7,31 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
+  <!-- What every package says about itself; each csproj adds its own Description. -->
   <PropertyGroup>
+    <Version>1.0.0</Version>
     <Authors>mdlsvensson</Authors>
+    <Copyright>Copyright (c) 2026 mdlsvensson</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/wc3-dev/MirrorImaged</PackageProjectUrl>
+    <PackageReadmeFile>package.md</PackageReadmeFile>
+    <PackageTags>warcraft3 wc3 testing lua jass</PackageTags>
     <RepositoryUrl>https://github.com/wc3-dev/MirrorImaged.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
+
+  <!-- SourceLink (in the SDK) points the symbols at the commit on GitHub; the symbols ship as a .snupkg beside each package. -->
+  <PropertyGroup>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)docs\package.md" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
 
   <!-- Every dotnet test run ends: a test that stops making progress fails the run (tests/Tests.runsettings). -->
   <PropertyGroup>

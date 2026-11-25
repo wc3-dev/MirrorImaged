@@ -34,6 +34,43 @@ jobs:
       - name: Test
         run: dotnet test MirrorImaged.slnx --no-build --filter "Needs!=Game"
 
+  # Packs every package, installs the tool from them and runs it, so the Lua library's place in the tool package is
+  # where Native.cs looks for it on each platform.
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Pack
+        run: dotnet pack MirrorImaged.slnx --output "${{ runner.temp }}/packages"
+
+      - name: Install the tool and run it
+        shell: pwsh
+        run: |
+          $packages = "${{ runner.temp }}/packages"
+          $tool = "${{ runner.temp }}/tool"
+          dotnet tool install MirrorImaged.Cli --version 1.0.0 --tool-path $tool --add-source $packages
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          & "$tool/mirror" --version
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          & "$tool/mirror" coverage
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          # A test with no map still runs Lua, so it loads the library from the installed tool.
+          $test = "${{ runner.temp }}/lua.test.lua"
+          Set-Content -LiteralPath $test -Value 'test("Lua runs", function() assert_eq(math.floor(7 / 2), 3) end)'
+          & "$tool/mirror" test $test
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+
   # The Lua library is committed for every platform; rebuilding it from native/ must give the same bytes.
   native:
     runs-on: windows-latest

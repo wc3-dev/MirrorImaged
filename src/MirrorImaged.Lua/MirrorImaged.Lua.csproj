@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Description>Lua 5.3 with the game's numbers, for win-x64, linux-x64 and osx-arm64. Part of MirrorImaged, a headless Warcraft III map runtime; its API is not covered by 1.0's compatibility promise and may change in any release. Reference MirrorImaged instead.</Description>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Description>The simulated Warcraft III game's core: a clock in fixed steps, a seeded random generator, the handles and the log. Part of MirrorImaged, a headless Warcraft III map runtime; its API is not covered by 1.0's compatibility promise and may change in any release. Reference MirrorImaged instead.</Description>
   </PropertyGroup>
 
   <ItemGroup>

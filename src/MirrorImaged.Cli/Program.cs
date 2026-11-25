@@ -10,6 +10,7 @@ const double StepsPerSecond = 1024;
 // Asked for anywhere on the line, so no command takes --help for its map
 if (args is ["help", ..] || args.Contains("--help") || args.Contains("-h"))
     return Ui.Help(args.FirstOrDefault(word => word is not ("help" or "--help" or "-h")));
+if (args is ["--version"]) { Console.Out.Write($"mirror {System.Reflection.CustomAttributeExtensions.GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>(typeof(Program).Assembly)!.InformationalVersion}\n"); return 0; }
 
 if (args is ["coverage"])
 {

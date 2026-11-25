@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Description>Reads Warcraft III maps and the game's data from your install. Part of MirrorImaged, a headless Warcraft III map runtime; its API is not covered by 1.0's compatibility promise and may change in any release. Reference MirrorImaged instead.</Description>
   </PropertyGroup>
 
   <ItemGroup>
