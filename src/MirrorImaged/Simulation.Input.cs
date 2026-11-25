@@ -12,12 +12,34 @@ public sealed record UnitView(int Id, string Type, string Name, int Player, floa
 /// <summary>A missile in flight as a test reads it: the run's count of it, the player it was shot for, the unit it follows (none for a shell, which flies to a place) and where it is.</summary>
 public sealed record MissileView(int Id, int Player, int? Target, float X, float Y);
 
-/// <summary>One thing a person did at a step of the run.</summary>
+/// <summary>
+/// One thing a person did at a step of the run. <see cref="Kind"/> says what, and what the rest hold:
+/// <list type="bullet">
+/// <item><c>say</c>: <see cref="Text"/> is what the player said.</item>
+/// <item><c>order</c>: <see cref="Text"/> is the order string; <see cref="Ints"/> the unit, then the target unit if any; <see cref="Floats"/> x and y for an order at a place.</item>
+/// <item><c>select</c>: <see cref="Ints"/> the units selected.</item>
+/// <item><c>key</c>: <see cref="Ints"/> the key (an OS key code), the meta keys held (1 shift, 2 control, 4 alt, 8 meta) and 1 pressed or 0 released.</item>
+/// <item><c>mouse</c>: <see cref="Ints"/> what the mouse did (305 pressed, 306 released, 307 moved) and the button (1 left, 2 middle, 3 right); <see cref="Floats"/> x and y.</item>
+/// <item><c>click</c>: <see cref="Ints"/> the button of the dialog the player is shown, counting from 0.</item>
+/// <item><c>leave</c>: nothing more; the player leaves the game.</item>
+/// <item><c>act</c>: an order read from a <c>.w3g</c> replay, which only a replay's run makes: <see cref="Ints"/> the unit, the order id, how it is given
+/// (0 alone, 1 at the place, 2 at the unit, 3 at the tree at the place or else the place, 4 taken out of the building's queue), the target unit
+/// (for 4, the place in the queue) and 1 when queued; <see cref="Floats"/> x and y.</item>
+/// </list>
+/// </summary>
 public sealed record Input(long Step, string Kind, int Player, int[]? Ints = null, float[]? Floats = null, string? Text = null);
 
-/// <summary>What a run was given: its map, seed and seats, each input at its step and the step it ran to. Running the map again with it repeats the run exactly.</summary>
+/// <summary>
+/// What a run was given: its map, seed, seats and settings, each input at its step and the step it ran to. Running the map again with it, and the
+/// documents the run started with, repeats the run exactly.
+/// </summary>
 public sealed class Recording
 {
+    /// <summary>The format this MirrorImaged writes and reads (decisions D903).</summary>
+    public const int Format = 1;
+
+    /// <summary>The format of the file, <see cref="Format"/>; a recording written before formats were numbered reads as 1.</summary>
+    public int Version { get; set; } = Format;
     /// <summary>The map the run was started from.</summary>
     public string Map { get; set; } = "";
     /// <summary>The seed of the random numbers.</summary>
@@ -30,17 +52,41 @@ public sealed class Recording
     public Difficulty Difficulty { get; set; } = Difficulty.Normal;
     /// <summary>The graphics mode the run was in.</summary>
     public GraphicsMode Graphics { get; set; }
+    /// <summary>The race the lobby chose for a slot, as <see cref="SimulationOptions.Races"/>; null for the map's.</summary>
+    public Dictionary<int, int>? Races { get; set; }
+    /// <summary>The start location the lobby placed a slot at, as <see cref="SimulationOptions.StartLocations"/>; null for the map's.</summary>
+    public Dictionary<int, int>? StartLocations { get; set; }
+    /// <summary>The natives the run ran as Missing, <see cref="SimulationOptions.TreatAsMissing"/> and <c>MIRROR_MISSING</c>'s, in order; null for none.</summary>
+    public string[]? TreatAsMissing { get; set; }
     /// <summary>What was given, in the order it was given.</summary>
     public List<Input> Inputs { get; set; } = [];
     /// <summary>The step the run had reached.</summary>
     public long Steps { get; set; }
 
-    static readonly JsonSerializerOptions Format = new() { WriteIndented = true };
+    static readonly JsonSerializerOptions Json = new() { WriteIndented = true };
 
     /// <summary>The recording as JSON.</summary>
-    public string ToJson() => JsonSerializer.Serialize(this, Format);
-    /// <summary>A recording from the JSON that <see cref="ToJson"/> makes.</summary>
-    public static Recording FromJson(string json) => JsonSerializer.Deserialize<Recording>(json) ?? throw new InvalidDataException("Not a recording");
+    public string ToJson() => JsonSerializer.Serialize(this, Json);
+
+    /// <summary>A recording from the JSON that <see cref="ToJson"/> makes, by this or an earlier MirrorImaged.</summary>
+    /// <exception cref="InvalidDataException">The JSON isn't a recording, or is of a format this MirrorImaged doesn't read.</exception>
+    public static Recording FromJson(string json) => Checked(JsonSerializer.Deserialize<Recording>(json) ?? throw new InvalidDataException("Not a recording"));
+
+    internal static Recording Checked(Recording recording) =>
+        recording.Version == Format ? recording : throw new InvalidDataException($"The recording is of format {recording.Version}, and this MirrorImaged reads format {Format}");
+
+    /// <summary>
+    /// The options that run the map as the recording's run was: its seed, seats, difficulty, graphics mode, races, start locations and natives run as
+    /// Missing, with the documents given (new, empty ones when null), which a recording doesn't keep.
+    /// </summary>
+    public SimulationOptions Options(Documents? documents = null) => Options(documents, 0);
+
+    // As Options, on the desync check's machine
+    internal SimulationOptions Options(Documents? documents, int machine) => new()
+    {
+        Seed = Seed, Users = Users, Computers = Computers, Difficulty = Difficulty, Graphics = Graphics, Races = Races, StartLocations = StartLocations,
+        TreatAsMissing = TreatAsMissing, Documents = documents ?? new(), Machine = machine,
+    };
 }
 
 // The tests' hands: what a person at a player can do, the units a test can read, and the recording of both.
@@ -179,10 +225,13 @@ public sealed partial class Simulation
     /// <summary>The player leaves the game.</summary>
     public void Leave(int player) => Apply(new(_game.Step, "leave", player), true);
 
-    /// <summary>Runs the map again as the recording says: its seed and seats, each input at its step, to the step it ran to.</summary>
-    public static Simulation Replay(Recording recording, string? map = null)
+    /// <summary>
+    /// Runs the map again as the recording says: its seed, seats and settings, each input at its step, to the step it ran to; with the documents the run
+    /// started with, when it read any.
+    /// </summary>
+    public static Simulation Replay(Recording recording, string? map = null, Documents? documents = null)
     {
-        var simulation = Load(map ?? recording.Map, new SimulationOptions { Seed = recording.Seed, Users = recording.Users, Computers = recording.Computers, Difficulty = recording.Difficulty, Graphics = recording.Graphics });
+        var simulation = Load(map ?? recording.Map, recording.Options(documents));
         simulation.Follow(recording);
         return simulation;
     }

@@ -376,6 +376,45 @@ public sealed class ReplayTests : IDisposable
         Assert.Contains(simulation.Recording.Inputs, input => input.Kind == "act");
     }
 
+    // The lobby gives the first person undead and the second start location, the second human and the first: each makes a footman a race's number
+    // of times at its start
+    [Fact]
+    public void A_run_seated_from_a_replay_steps_back_and_runs_again_from_its_recording_as_it_was_seated()
+    {
+        static PlayerData Slot(int id, float x) => new() { Id = id, Controller = PlayerController.User, Race = PlayerRace.Selectable, Name = $"Player {id + 1}", StartPosition = new(x, 0) };
+        var path = _maps.Build("""
+            function config()
+                DefineStartLocation(0, -1000, 0)
+                DefineStartLocation(1, 1000, 0)
+                SetPlayerStartLocation(Player(0), 0)
+                SetPlayerStartLocation(Player(1), 1)
+            end
+            function main()
+                for i = 0, 1 do
+                    local start = GetPlayerStartLocation(Player(i))
+                    for n = 1, GetHandleId(GetPlayerRace(Player(i))) do CreateUnit(Player(i), FourCC("hfoo"), GetStartLocationX(start), n * 80, 0) end
+                end
+            end
+            """, change: info => info.Players.AddRange([Slot(0, -1000), Slot(1, 1000)]));
+        var replay = Replay.Read(Make([0x08, 0x41, 0x60], [], Settings("map"), 3000, (100, 1, Point(Move, 900, 50)), (100, 2, Point(Move, -900, 50))));
+        using var simulation = Simulation.Load(path, "", Simulation.Seats(path, replay), Standard());
+        var run = simulation.Play(replay);
+        run.To(1024);
+        var hash = simulation.StateHash();
+        run.To(run.Steps);
+
+        using var back = simulation.StepBack(simulation.Step - 1024);
+        var recording = Recording.FromJson(simulation.Recording.ToJson());
+        using var again = Simulation.Load(path, "", recording.Options(), Standard());
+        again.Follow(recording);
+
+        Assert.Equal((3, 1000f), (simulation.Units(0).Count, simulation.Units(0)[0].X));
+        Assert.Equal(new Dictionary<int, int> { [0] = 3, [1] = 1 }, recording.Races);
+        Assert.Equal(new Dictionary<int, int> { [0] = 1, [1] = 0 }, recording.StartLocations);
+        Assert.Equal(hash, back.StateHash());
+        Assert.Equal(simulation.StateHash(), again.StateHash());
+    }
+
     // Action 0x1E: the third footman of the queue taken out, its price back
     [Fact]
     public void An_item_taken_out_of_a_buildings_queue_gives_its_price_back()
