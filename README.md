@@ -2,7 +2,7 @@
 
 MirrorImaged loads `.w3x` archives (aka. maps), runs its script against C# copies of the game natives on a simulated clock, and lets tests give orders, input, read the state and check results. The copied game are built from in-game probing.
 
-## Progress `███████████████████░` 97%
+## Progress `███████████████████░` 98%
 
 | #                             | Description                                                                                        | Progress                               |
 | ----------------------------- | -------------------------------------------------------------------------------------------------- | -------------------------------------- |
@@ -17,7 +17,7 @@ MirrorImaged loads `.w3x` archives (aka. maps), runs its script against C# copie
 | 8. Test tools                 | C# API, Lua API, commands, snapshots, recordings                                                   | `████████████████████` 100% (5 of 5)   |
 | 9. Viewer                     | Webapp for watching/scrubbing recordings                                                           | `████████████████████` 100%            |
 | 10. Accuracy and speed        | More probes, whole-corpus runs, benchmarks, linux/macOS                                            | `████████████████████` 100%            |
-| 11. Docs and release          | docs, guides, examples, 1.0 release                                                                | `██████████████████░░` 90%             |
+| 11. Docs and release          | docs, guides, examples, 1.0 release                                                                | `████████████████████` 100%            |
 
 ### Natives `████████████████████` 100%
 
@@ -27,3 +27,7 @@ MirrorImaged loads `.w3x` archives (aka. maps), runs its script against C# copie
 | Close    | A documented model, not fully measured                  | 1,016 | `███████████░░░░░░░░░` 55% |
 | Recorded | Changes nothing a map can read back; the call is logged | 356   | `████░░░░░░░░░░░░░░░░` 19% |
 | Missing  | Stops the run with the native's name                    | 0     | `░░░░░░░░░░░░░░░░░░░░` 0%  |
+
+## Licence
+
+MIT.
