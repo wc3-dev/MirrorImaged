@@ -5,6 +5,7 @@ namespace MirrorImaged.Natives;
 public partial class unit
 {
     internal double? TimedEnd, TimedLeft; // when its timed life ends, while it runs; what is left of it, while paused
+    internal int TimedBuff;               // the buff its timed life was given with
 }
 
 // Timed life, as the probes units-more and units-more-2 measure it (facts, "Units"): a death like KillUnit's,
@@ -15,19 +16,27 @@ public sealed partial class GameNatives
     /// Makes the living unit summoned (its classification, as UnitAddType does) and kills it the duration later, from
     /// the step it is applied; applied again, the sooner end holds (3 then 1 s and 1 then 2 s both kill 1 s later); a
     /// duration of 0 or less makes it summoned and never kills; a dead unit gets nothing. Any buff id, a hero too (probes
-    /// units-more and units-more-2; game-facts: 2.0 s). Close: with the Water Elemental's buff (BHwe) the game gave the
-    /// body no decay event and took it away at the decay's time.
+    /// units-more and units-more-2; game-facts: 2.0 s). With a buff other than BTLF (the Water Elemental's BHwe) the body
+    /// has no decay event and is taken away at the decay's time, as a removed body goes (probe units-more); with BTLF or
+    /// none it decays as any other's.
     /// </summary>
-    /// <remarks>Close: with the Water Elemental's buff (BHwe) the game gave the body no decay event and took it away at the decay's time; here the body is treated as any other's.</remarks>
-    [Native(Level.Close)]
+    /// <remarks>Close: only BHwe was measured beside BTLF and none; that every other buff's body goes as BHwe's did is the model's reading.</remarks>
+    [Native(Level.Close, Reason = "only BHwe was measured beside BTLF and none; that every other buff's body goes as BHwe's did is the model's reading")]
     public void UnitApplyTimedLife(unit? whichUnit, int buffId, float duration)
     {
         if (whichUnit is not { Dead: false } u) return;
         Classify(u, Convert<unittype>(10), true); // UNIT_TYPE_SUMMONED
         if (duration <= 0) return;
+        u.TimedBuff = buffId;
         if (u.TimedLeft is { } left) u.TimedLeft = Math.Min(left, duration);
         else if (u.TimedEnd is not { } end || Seconds + duration < end) EndTimedLife(u, Seconds + duration);
     }
+
+    static readonly int GenericTimedLife = Code("BTLF");
+
+    // Whether the body of a unit that had timed life goes at its decay time with no decay event (probe units-more: BHwe's did; BTLF's and one with
+    // no buff decayed)
+    static bool Vanishes(unit u) => u.TimedBuff != 0 && u.TimedBuff != GenericTimedLife;
 
     // A step after its time, as the game's timers due then run first (probe units-more: a timer due at 1.40 ran before
     // the deaths there), as a body goes (Rot)

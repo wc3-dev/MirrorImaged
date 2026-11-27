@@ -5,6 +5,7 @@ namespace MirrorImaged.Natives;
 public partial class unit
 {
     internal int Order;                                  // the current order's id, 0 when idle
+    internal int OrderKind;                              // its kind: 0 with no target, 1 at a point, 2 on a widget
     internal readonly List<(int Order, float X, float Y, widget? Target)> Queue = [];
     internal float RallyX, RallyY;
     internal widget? RallyTarget;
@@ -51,7 +52,7 @@ public sealed partial class GameNatives
         }
         // A worker given another order leaves the building it is making, which goes on without it
         if (whichUnit.Building is { } site) (site.Builder, whichUnit.Building) = (null, null);
-        (whichUnit.Order, whichUnit.OrderX, whichUnit.OrderY, whichUnit.OrderTarget, whichUnit.AttackTarget) = (order == Stop ? 0 : order, x, y, target, null);
+        (whichUnit.Order, whichUnit.OrderX, whichUnit.OrderY, whichUnit.OrderTarget, whichUnit.AttackTarget, whichUnit.OrderKind) = (order == Stop ? 0 : order, x, y, target, null, kind);
         if (order == 851993) (whichUnit.PatrolX, whichUnit.PatrolY) = (whichUnit.X, whichUnit.Y);
         if (order == 851990) (whichUnit.PatrolX, whichUnit.PatrolY) = (whichUnit.X, whichUnit.Y);
         Wake();
@@ -59,7 +60,7 @@ public sealed partial class GameNatives
         var (unitKind, playerKind) = kind switch { 0 => (UnitIssuedOrder, PlayerUnitIssuedOrder), 1 => (UnitIssuedPointOrder, PlayerUnitIssuedPointOrder), _ => (UnitIssuedTargetOrder, PlayerUnitIssuedTargetOrder) };
         FireUnit(new(whichUnit, Order: order, PointX: x, PointY: y, Target: target), unitKind, playerKind);
         // A cast begins inside the order's call when the unit is in range (probe abilities-cast-timing: the channel and cast events fired in it)
-        if (whichUnit.Casting == spell && spell is not null && !whichUnit.Paused) Cast(whichUnit, walk: false);
+        if (whichUnit.Casting == spell && spell is not null && !Held(whichUnit)) Cast(whichUnit, walk: false);
         return true;
     }
 
@@ -276,10 +277,10 @@ public sealed partial class GameNatives
     [Native(Level.Close, Fact = OrderFacts)]
     public bool BlzQueueNeutralTargetOrderById(player? forWhichPlayer, unit? neutralStructure, int unitId, widget? target) => forWhichPlayer is not null && target is not null && Queued(neutralStructure, unitId, GetWidgetX(target), GetWidgetY(target), target, 2);
 
-    /// <summary>The current order's id, 0 when idle ('stop' and a never-ordered unit read 0).</summary>
-    /// <remarks>Close: measured in part (game-facts.md, Orders and events (10-21, 11-03, 11-05)); an order stays current until another replaces it, so one that would have finished in the game still reads.</remarks>
+    /// <summary>The current order's id, 0 when idle ('stop' and a never-ordered unit read 0); stunned (851973) while a pause, a stun or BlzPauseUnitEx holds the unit (game-facts, 10-26: every paused unit read it).</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Orders and events (10-21, 11-03, 11-05)); an order stays current until another replaces it, so one that would have finished in the game still reads; a stunned or BlzPauseUnitEx-held unit reading stunned is the model's reading of the stun's order.</remarks>
     [Native(Level.Close, Fact = OrderFacts)]
-    public int GetUnitCurrentOrder(unit? whichUnit) => whichUnit?.Order ?? 0;
+    public int GetUnitCurrentOrder(unit? whichUnit) => whichUnit is null ? 0 : Held(whichUnit) ? Stunned : whichUnit.Order;
 
     /// <summary>The current order and those queued after it; the stunned order of a pause counts for one in its own event (facts, 11-05).</summary>
     /// <remarks>Close: measured in part (game-facts.md, Orders and events (10-21, 11-03, 11-05)); the stunned order counts for one only in its own event (11-05); the count at other moments is the model's.</remarks>

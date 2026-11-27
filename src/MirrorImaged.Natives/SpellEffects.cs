@@ -183,21 +183,34 @@ public sealed partial class GameNatives
                     FireUnit(new(caster, Other: risen, Skill: a.Type.Id), UnitSummon, PlayerUnitSummon);
                 }
                 return true;
-            case var id when (id == Code("AOhx") && target is unit hexed && !hexed.Dead) || id == Code("AEme"):
-                // Hex turns another unit into the ability's creature, Metamorphosis the caster into its form, for the ability's time, and they come back as they were
-                var changed = id == Code("AOhx") ? (unit)target! : caster;
-                if (SummonTypes(a).FirstOrDefault() is { } formId && formId != 0 && Data.Object(ObjectKind.Unit, formId) is { } form && !changed.Dead)
+            case var id when id == Code("AEme"):
+                // Metamorphosis turns the caster into its form for the ability's time, and it comes back as it was
+                if (SummonTypes(a).FirstOrDefault() is { } formId && formId != 0 && Data.Object(ObjectKind.Unit, formId) is { } form && !caster.Dead)
                 {
-                    var (original, mana) = (changed.Type, changed.Mana);
-                    var back = _game.Step + Game.Steps(Math.Max(Lasts(a, changed), 0.1));
-                    Transform(changed, form);
-                    _game.At(back, () => { if (!changed.Dead && !changed.Removed && changed.Type == form) { Transform(changed, original); SetMana(changed, Math.Min(Math.Max(mana, changed.Mana), changed.MaxMana)); } });
+                    var (original, mana) = (caster.Type, caster.Mana);
+                    var back = _game.Step + Game.Steps(Math.Max(Lasts(a, caster), 0.1));
+                    Transform(caster, form);
+                    _game.At(back, () => { if (!caster.Dead && !caster.Removed && caster.Type == form) { Transform(caster, original); SetMana(caster, Math.Min(Math.Max(mana, caster.Mana), caster.MaxMana)); } });
                 }
+                return true;
+            case var id when (id == Code("AOhx") || id == Code("Aply")) && target is unit hexed && !hexed.Dead:
+                // Hex and Polymorph turn another unit into the ability's creature for the ability's time, polymorphed while the buff is on; it comes back
+                // as it was when the buff ends or is taken off. The creature is the UnitID's, else DataB's for a unit on the ground and DataC's for a flier
+                // (the first of the list, where the game's Hex picks one: a shortcut until the pick is measured)
+                if ((SummonTypes(a).FirstOrDefault() is var listed and not 0 ? listed : Forms(a, Flies(hexed) ? 'C' : 'B').FirstOrDefault()) is not 0 and var shape
+                    && Data.Object(ObjectKind.Unit, shape) is { } creature)
+                    Morph(hexed, caster, a, creature);
+                return true;
+            case var id when (id == Code("Aens") || id == Code("Aweb")) && target is unit snared && !snared.Dead:
+                // Ensnare and Web hold a unit where it is for the ability's time, a hero's own for a hero: the first buff of the list on a flier, the
+                // second on a unit on the ground. The flier isn't brought down here (its height for ground attacks: not modelled)
+                Hit0(caster, snared);
+                if (!snared.Dead) Apply(snared, caster, BuffOf(a, Flies(snared) ? 0 : 1), Lasts(a, snared), false, b => (b.Root, b.Snare, b.Magic) = (true, true, false));
                 return true;
             case var id when id == Code("AHav"):
                 // Avatar: more armour and life for its time
                 var (gain, lifeGain) = (Datum(a, 'A'), Datum(a, 'B'));
-                Apply(caster, caster, AvatarBuff, Lasts(a, caster), true, b => b.ArmorBonus = gain);
+                Apply(caster, caster, AvatarBuff, Lasts(a, caster), true, b => (b.ArmorBonus, b.MagicImmune) = (gain, true));
                 caster.MaxLife += lifeGain;
                 SetLife(caster, caster.Life + lifeGain);
                 _game.At(_game.Step + Game.Steps(Math.Max(Lasts(a, caster), 0.1)), () => { caster.MaxLife -= lifeGain; if (caster.Life > caster.MaxLife) SetLife(caster, caster.MaxLife); });
@@ -311,6 +324,37 @@ public sealed partial class GameNatives
         return false;
     }
 
+    // A unit's form for the buff's time: polymorphed, and back as it was when the buff ends or is taken off
+    void Morph(unit changed, unit caster, ability a, GameObject form)
+    {
+        var (original, mana) = (changed.Type, changed.Mana);
+        Transform(changed, form);
+        void Back()
+        {
+            if (changed.Dead || changed.Removed || changed.Type != form) return;
+            Transform(changed, original);
+            SetMana(changed, Math.Min(Math.Max(mana, changed.Mana), changed.MaxMana));
+        }
+        Apply(changed, caster, BuffOf(a, 0), Math.Max(Lasts(a, changed), 0.1), false, b => (b.Polymorph, b.Ended, b.Dispelled) = (true, Back, Back));
+    }
+
+    // The ability's data as text at its level, and as a list of ids
+    string? DatumText(ability a, char letter) => Data.FieldAt(ObjectKind.Ability, "Data" + letter) is { } field ? a.Type.Text(Data.Own(a.Type, field), a.Level) : null;
+    IEnumerable<int> Forms(ability a, char letter) => (DatumText(a, letter) ?? "").Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Where(t => t.Length == 4).Select(Code);
+
+    // The buff the ability lists at the place given (its BuffID field), the last when it lists fewer; its own id with none, as the abilities' buffs
+    // here were named before (a buff's id is what GetUnitAbilityLevel reads)
+    int BuffOf(ability a, int place)
+    {
+        var text = Data.FieldAt(ObjectKind.Ability, "BuffID") is { } field ? a.Type.Text(Data.Own(a.Type, field), a.Level) : null;
+        var listed = (text ?? "").Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Where(t => t.Length == 4).Select(Code).ToArray();
+        return listed.Length == 0 ? a.Type.Id : listed[Math.Min(place, listed.Length - 1)];
+    }
+
+    // The hit of 0 that comes before a spell's buff, from the caster, the buff going on just after its event (game-facts, 11-03, probe buffs-probe:
+    // Slow, Storm Bolt, Thunder Clap and a dryad's Slow Poison)
+    void Hit0(unit caster, unit target) => UnitDamageTarget(caster, target, 0, false, false, Convert<attacktype>(0), Convert<damagetype>(0), Convert<weapontype>(0));
+
     // A bolt that jumps: the damage or the healing goes to the target, then to the nearest not yet hit within reach, less each time
     void Chain(unit caster, ability a, unit first, bool hostile, float amount, int count, float reduction, float reach, int damageType)
     {
@@ -333,6 +377,8 @@ public sealed partial class GameNatives
     bool AuraEffect(ability a, unit giver, unit receiver)
     {
         var id = a.Type.BaseId;
+        ActiveBuff Apply(unit receiver, unit giver, int buffId, double seconds, bool positive, Action<ActiveBuff> change) =>
+            this.Apply(receiver, giver, buffId, seconds, positive, b => { (b.Aura, b.Magic) = (true, false); change(b); });
         if (id == Code("AHad")) Apply(receiver, giver, DevotionBuff, AuraBuffSeconds, true, b => b.ArmorBonus = Datum(a, 'A'));
         else if (id == Code("AOae")) Apply(receiver, giver, EnduranceBuff, AuraBuffSeconds, true, b => (b.SpeedFactor, b.AttackSpeedBonus) = (1 + Datum(a, 'A'), Datum(a, 'B')));
         else if (id == Code("AUau"))
@@ -347,7 +393,46 @@ public sealed partial class GameNatives
         return true;
     }
 
+    // Disease Cloud (the Abomination's, the clouds' and a map's copies): the foes on the ground round its unit, living and not mechanical or buildings,
+    // are plagued for DataA seconds (120) from the last pulse that reached them, and take DataB (1) of disease each second while it lasts. Close: the
+    // cloud's pulse is the auras' second, and the plague ward an Abomination leaves at its death (DataC) is not made
+    void Plague(ability a, unit giver)
+    {
+        var area = Field(a, CastArea);
+        foreach (var foe in Foes(giver, giver.X, giver.Y, area <= 0 ? 176 : area).Where(u => !u.Dead && !Flies(u) && !IsBuildingNow(u) && !Is(u.Type, u, 15)))
+            this.Apply(foe, giver, BuffOf(a, 0), Datum(a, 'A') is > 0 and var lasts ? lasts : 120, false, b => (b.Plague, b.PerSecond, b.TickType) = (true, Datum(a, 'B'), 12));
+    }
+
+    static readonly int DiseaseCloud = Code("Aapl"), PoisonSting = Code("Apoi"), SlowPoison = Code("Aspo"), EnvenomedSpears = Code("Aven");
+
+    // Whether an ability of the type is a pulse's: the heroes' auras and Disease Cloud
+    bool IsAuraType(GameObject type) => AuraBases.Contains(type.BaseId) || type.BaseId == DiseaseCloud || type.Text(AbilityCode) is { Length: 4 } code && Code(code) == DiseaseCloud;
+
+    // An attack's poison (Poison Sting, Slow Poison, Envenomed Spears and a map's copies): a hit of 0, then the poison's buff, before the attack's own hit,
+    // which already sees it (game-facts, 11-03: a dryad's Slow Poison); DataA of poison each second (slow poison's damage type for Slow Poison), the
+    // moving slowed by DataB and the attacks by DataC, for its time (a hero's own). Not on a building or a mechanical unit (its targets say organic)
+    void Poison(unit attacker, unit target)
+    {
+        if (IsBuildingNow(target) || Is(target.Type, target, 15)) return;
+        if (attacker.Abilities.Find(x => !x.Disabled && x.Level > 0 && (Coded(x.Type) is var c && (c == PoisonSting || c == SlowPoison || c == EnvenomedSpears))) is not { } poison) return;
+        var slow = Coded(poison.Type) == SlowPoison;
+        Hit0(attacker, target);
+        if (target.Dead) return;
+        Apply(target, attacker, BuffOf(poison, 0), Lasts(poison, target), false, b => (b.Poison, b.Magic, b.PerSecond, b.TickType, b.SpeedFactor, b.AttackSpeedBonus) =
+            (true, false, Datum(poison, 'A'), slow ? 23 : 11, 1 - Datum(poison, 'B'), -Datum(poison, 'C')));
+    }
+
+    // What an ability is made from: its code column, else its base
+    int Coded(GameObject type) => type.Text(AbilityCode) is { Length: 4 } code ? Code(code) : type.BaseId;
+
     static readonly int WindWalkBuff = Code("BOwk"), SilenceBuff = Code("BNsi"), BanishBuff = Code("BHbn"), ImmolationBuff = Code("BEim"), QuakeBuff = Code("BOeq");
+
+    // An aura's giver has it at once, where the others in reach wait for the pulse (probe units-resets: the Tauren read 275 the moment its Endurance
+    // Aura was added, and when its auras were turned on again)
+    void OwnAura(unit u, ability a)
+    {
+        if (!u.Dead && !u.AurasOff && !a.Disabled && a.Level > 0 && AuraBases.Contains(a.Type.BaseId)) AuraEffect(a, u, u);
+    }
 
     bool _aurasScheduled;
 
@@ -364,13 +449,18 @@ public sealed partial class GameNatives
         _aurasScheduled = false;
         var any = false;
         foreach (var giver in _units.Values.Where(u => !u.Dead && !u.Removed && !u.Constructing && !u.AurasOff && u.Abilities.Count > 0).ToArray())
-            foreach (var a in giver.Abilities.Where(a => !a.Disabled && a.Level > 0 && AuraBases.Contains(a.Type.BaseId)).ToArray())
+            foreach (var a in giver.Abilities.Where(a => !a.Disabled && a.Level > 0 && IsAuraType(a.Type)).ToArray())
             {
                 any = true;
+                if (Coded(a.Type) == DiseaseCloud)
+                {
+                    Plague(a, giver);
+                    continue;
+                }
                 var area = Field(a, CastArea);
                 foreach (var receiver in Friends(giver, giver.X, giver.Y, area <= 0 ? 900 : area)) AuraEffect(a, giver, receiver);
             }
-        if (any || _units.Values.Any(u => !u.Removed && u.Abilities.Any(a => AuraBases.Contains(a.Type.BaseId)))) EnsureAuras();
+        if (any || _units.Values.Any(u => !u.Removed && u.Abilities.Any(a => IsAuraType(a.Type)))) EnsureAuras();
     }
 
     static readonly HashSet<int> AuraBases = [Code("AHab"), Code("AHad"), Code("AOae"), Code("AUau"), Code("AUav"), Code("AEar")];

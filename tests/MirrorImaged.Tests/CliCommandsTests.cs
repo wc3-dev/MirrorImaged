@@ -62,7 +62,7 @@ public sealed class CliCommandsTests : IDisposable
         var (exit, output, error) = Mirror("--version");
 
         Assert.Equal((0, ""), (exit, error));
-        Assert.Matches(@"^mirror 1\.0\.0(\+[0-9a-f]+)?\n\z", output);
+        Assert.Matches(@"^mirror 1\.0\.1(\+[0-9a-f]+)?\n\z", output);
     }
 
     [Fact]

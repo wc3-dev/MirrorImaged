@@ -5,8 +5,3 @@
 # still comes in another place in the same instant (D314, Close).
 - rescue 1s 27 27 27
 + rescue 1s 27 27 27
-
-# With the Water Elemental's timed life buff (BHwe) the game gave the body no decay event and took it away at its decay
-# time (its undefend); here every timed life is BTLF's (D312, Close).
-- > ? 38 852056 0 dead t 0.0 t paused f 4.44
-+ timed buff decay 4.44 killer nil life 0.0

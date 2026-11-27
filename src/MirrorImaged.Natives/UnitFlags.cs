@@ -11,14 +11,19 @@ public sealed partial class GameNatives
     public bool IsUnitPaused(unit? whichHero) => whichHero?.Paused ?? false;
 
     /// <summary>
-    /// A count of its own, up for true and down for false, which IsUnitPaused doesn't read (probe units). Close: the
-    /// count holds nothing back here, so the unit still moves, fights and takes orders.
+    /// A count of its own, up for true and down for false, which IsUnitPaused doesn't read (probe units). While it is
+    /// above 0 the unit is held as a stun holds it: it doesn't move, fight or cast, it reads stunned to IsUnitType and its
+    /// current order, and its buffs' time runs on; let go, the order it had comes back as after PauseUnit.
     /// </summary>
-    /// <remarks>Close: Counts pauses of its own; what such a pause holds back is not modelled.</remarks>
-    [Native(Level.Close)]
+    /// <remarks>Close: the count is measured (probe units); that it holds the unit as a stun does, with no order event when it begins and the pause's order back when it ends, is the model's reading of the native's purpose, not measured.</remarks>
+    [Native(Level.Close, Reason = "the count is measured (probe units); that it holds the unit as a stun does, with no order event when it begins and the pause's order back when it ends, is the model's reading of the native's purpose, not measured")]
     public void BlzPauseUnitEx(unit? whichUnit, bool flag)
     {
-        if (whichUnit is not null) whichUnit.Pauses += flag ? 1 : -1;
+        if (whichUnit is not { } u) return;
+        var held = Held(u);
+        u.Pauses += flag ? 1 : -1;
+        if (!held && Held(u)) Holding(u);
+        else if (held && !Held(u)) LetGo(u);
     }
 
     /// <summary>Hides the unit (false) or shows it again (true); nothing for nil.</summary>

@@ -7,7 +7,8 @@ sealed class ActiveBuff(int id, unit? source, bool positive, bool magic)
 {
     public readonly int Id = id;
     public readonly unit? Source = source;
-    public readonly bool Positive = positive, Magic = magic;
+    public readonly bool Positive = positive;
+    public bool Magic = magic;
     public long EndsAt;                 // the step it ends at, 0 for one that lasts or whose unit is paused
     public long Left;                   // the steps it has left, while its unit is paused
     public float SpeedFactor = 1;       // times the unit's move speed
@@ -17,9 +18,17 @@ sealed class ActiveBuff(int id, unit? source, bool positive, bool magic)
     public bool Invulnerable, Root, Silence;     // nothing hurts the unit; the unit can't move
     public bool Ethereal;               // Banish: the unit can't attack, and only magic reaches it
     public Action? Ended;               // what happens when its time is over, not when it is taken off before
+    public Action? Dispelled;           // what happens when it is taken off before its time
     public float LifeSteal, DamageBonus; // the share of an attack's damage the attacker gets back; added to the damage of ranged attacks
     public bool Sneaks, Invisible;      // Wind Walk: the unit attacks nothing by itself; its foes don't see it
     public float Backstab;              // added to its next attack, which ends the buff
+    // The unit kinds IsUnitType reads from it: Ensnare's and Web's snare, the poisons, Disease Cloud's plague, Polymorph's and Hex's form, Avatar's immunity
+    public bool Snare, Poison, Plague, Polymorph, MagicImmune;
+    public bool Aura;                   // given by an aura: not magic, timed or dispellable
+    public float? PerSecond;            // a hit of this much from its giver each second while it is on (a poison, a plague), of the damage type
+    public int TickType;
+    public bool Physical => !Magic && !Aura;
+    public bool Timed => !Aura && (EndsAt > 0 || Left > 0);
 }
 
 public partial class unit
@@ -35,27 +44,50 @@ public sealed partial class GameNatives
 {
     static readonly int StunBuff = Code("BSTN"), SlowBuff = Code("Bslo"), BloodlustBuff = Code("Bblo");
 
-    // The buff on the unit, made or refreshed, ending after the seconds (0: it stays); the first change's setter fills in what it does
+    // The buff on the unit, made or refreshed, ending after the seconds (0: it stays); the first change's setter fills in what it does. A unit
+    // holds one buff of an id: a second cast's strength applies at once, a weaker one's too, and the buff ends at the later of the two ends, so a cast
+    // never shortens it (game-facts, 10-31: Faerie Fire and Inner Fire of two levels, from one caster and two, and Soul Burn)
     ActiveBuff Apply(unit target, unit? source, int id, double seconds, bool positive, Action<ActiveBuff> change)
     {
+        var had = target.Buffs.Find(b => b.Id == id);
+        var left = had is null ? 0 : had.Left > 0 ? had.Left : had.EndsAt > 0 ? had.EndsAt - _game.Step : 0;
         target.Buffs.RemoveAll(b => b.Id == id);
+        var stunned = IsStunned(target);
         var buff = new ActiveBuff(id, source, positive, magic: true);
         change(buff);
         target.Buffs.Add(buff);
+        if (buff.Stun && !stunned) StunBegins(target);
+        // One clock of hits a buff id, which a refreshed buff keeps
+        if (buff.PerSecond is not null && had?.PerSecond is null) Tick(target, id);
         if (seconds > 0)
         {
-            buff.Left = Math.Max(1, Game.Steps(seconds));
+            buff.Left = Math.Max(Math.Max(1, Game.Steps(seconds)), left);
             if (!target.Paused) Run(target, buff);
         }
         return buff;
     }
+
+    // A buff's hit each second while a buff of the id is on, from its giver (game-facts, 11-03: a dryad's Slow Poison of 0 a second hit a footman with
+    // 0 every second while it lasted); its time stands still in a pause, its hits don't (D456)
+    void Tick(unit target, int id) => _game.At(_game.Step + Game.Steps(1), () =>
+    {
+        if (target.Dead || target.Removed || target.Buffs.Find(b => b.Id == id) is not { PerSecond: { } amount } buff) return;
+        if (buff.Source is { Removed: false } source)
+            UnitDamageTarget(source, target, amount, false, false, Convert<attacktype>(0), Convert<damagetype>(buff.TickType), Convert<weapontype>(0));
+        Tick(target, id);
+    });
 
     // The buff's time runs from now for what it has left
     void Run(unit target, ActiveBuff buff)
     {
         var ends = buff.EndsAt = _game.Step + buff.Left;
         buff.Left = 0;
-        _game.At(ends, () => { if (buff.EndsAt == ends && target.Buffs.Remove(buff)) buff.Ended?.Invoke(); });
+        _game.At(ends, () =>
+        {
+            if (buff.EndsAt != ends || !target.Buffs.Remove(buff)) return;
+            buff.Ended?.Invoke();
+            Freed(target, buff);
+        });
     }
 
     // A buff's time stands still while its unit is paused (probe abilities-cast-timing: 16 s of Silence on a Priest paused for 20 s of them
@@ -76,35 +108,55 @@ public sealed partial class GameNatives
     bool IsStunned(unit u) => u.Buffs.Any(buff => buff.Stun);
     bool IsEthereal(unit u) => u.Buffs.Any(buff => buff.Ethereal);
     bool Sneaks(unit u) => u.Buffs.Any(buff => buff.Sneaks);
+    bool Has(unit u, Func<ActiveBuff, bool> kind) => u.Buffs.Any(kind);
 
-    // The buffs the flags pick: the positive or negative ones, magic or not (no buff here is physical, timed life, an aura or auto-dispelled)
-    IEnumerable<ActiveBuff> Picked(unit? u, bool positive, bool negative, bool magic) =>
-        u is null ? [] : u.Buffs.Where(b => (b.Positive ? positive : negative) && (b.Magic ? magic : true));
+    // The buffs the flags pick: the positive or negative ones; with the magic or the physical flag, the magic ones or the physical ones (both for
+    // both, as blizzard.j's UnitRemoveBuffsExBJ gives them for "both"); and of those the ones that are timed, an aura's or dispellable, as those flags
+    // ask. A spell's buff is magic, timed and dispellable; an aura's is none of the three (game-facts, 10-31: UnitCountBuffsEx counts Devotion
+    // Aura's buff so, and Slow's and Inner Fire's as all three); an attack's poison is physical. With every flag true none is picked, as the game's
+    // counted 0 and took none off (10-31). Which flags ask and which allow is this model's reading of those lines
+    IEnumerable<ActiveBuff> Picked(unit? u, bool positive, bool negative, bool magic, bool physical, bool timedLife, bool aura, bool autoDispel) =>
+        u is null ? [] : u.Buffs.Where(b => (b.Positive ? positive : negative) && (!magic && !physical || magic && b.Magic || physical && b.Physical)
+            && (!timedLife || b.Timed) && (!aura || b.Aura) && (!autoDispel || !b.Aura));
 
     /// <summary>Takes off the unit's positive buffs, its negative ones or both.</summary>
-    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: UnitRemoveBuffs takes the buffs off (10-31)); buffs here are all magic, so which kinds the game spares is not measured.</remarks>
+    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: UnitRemoveBuffs takes the buffs off (10-31)); an aura's buff is taken as a spell's is, and comes back with the aura's next pulse.</remarks>
     [Native(Level.Close, Fact = "game-facts.md, Spells and abilities: UnitRemoveBuffs takes the buffs off (10-31)")]
-    public void UnitRemoveBuffs(unit? whichUnit, bool removePositive, bool removeNegative) => UnitRemoveBuffsEx(whichUnit, removePositive, removeNegative, true, true, false, false, false);
+    public void UnitRemoveBuffs(unit? whichUnit, bool removePositive, bool removeNegative) => UnitRemoveBuffsEx(whichUnit, removePositive, removeNegative, false, false, false, false, false);
 
-    /// <summary>Takes off the unit's buffs picked by sign and by magic; the flags for physical, timed life, aura and auto-dispel change nothing.</summary>
-    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: UnitRemoveBuffs takes the buffs off (10-31)); no buff here is of the other kinds, so those flags are not measured.</remarks>
+    /// <summary>Takes off the unit's buffs of the signs asked for: the magic ones, the physical ones or both by those flags, and of them the timed ones, an aura's or the dispellable ones when those flags ask.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: UnitRemoveBuffs takes the buffs off (10-31)); with every flag true none is picked, as measured; which flags ask and which allow is the model's reading.</remarks>
     [Native(Level.Close, Fact = "game-facts.md, Spells and abilities: UnitRemoveBuffs takes the buffs off (10-31)")]
     public void UnitRemoveBuffsEx(unit? whichUnit, bool removePositive, bool removeNegative, bool magic, bool physical, bool timedLife, bool aura, bool autoDispel)
     {
         if (whichUnit is null) return;
-        var picked = Picked(whichUnit, removePositive, removeNegative, magic).ToArray();
-        foreach (var buff in picked) whichUnit.Buffs.Remove(buff);
+        var picked = Picked(whichUnit, removePositive, removeNegative, magic, physical, timedLife, aura, autoDispel).ToArray();
+        foreach (var buff in picked) Dispel(whichUnit, buff);
     }
 
     /// <summary>True when UnitCountBuffsEx finds at least one buff.</summary>
-    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: UnitCountBuffsEx (10-31)); no buff here is of the other kinds, so those flags are not measured.</remarks>
+    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: UnitCountBuffsEx (10-31)); with every flag true none is picked, as measured; which flags ask and which allow is the model's reading.</remarks>
     [Native(Level.Close, Fact = "game-facts.md, Spells and abilities: UnitCountBuffsEx (10-31)")]
     public bool UnitHasBuffsEx(unit? whichUnit, bool removePositive, bool removeNegative, bool magic, bool physical, bool timedLife, bool aura, bool autoDispel) =>
         UnitCountBuffsEx(whichUnit, removePositive, removeNegative, magic, physical, timedLife, aura, autoDispel) > 0;
 
-    /// <summary>How many of the unit's buffs the sign and magic flags pick; 0 for a null unit.</summary>
-    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: UnitCountBuffsEx (10-31)); no buff here is of the other kinds, so the flags for them count none and are not measured.</remarks>
+    /// <summary>How many of the unit's buffs the flags pick, as UnitRemoveBuffsEx picks them; 0 for a null unit.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: UnitCountBuffsEx (10-31)); with every flag true none is picked, as measured; which flags ask and which allow is the model's reading.</remarks>
     [Native(Level.Close, Fact = "game-facts.md, Spells and abilities: UnitCountBuffsEx (10-31)")]
     public int UnitCountBuffsEx(unit? whichUnit, bool removePositive, bool removeNegative, bool magic, bool physical, bool timedLife, bool aura, bool autoDispel) =>
-        Picked(whichUnit, removePositive, removeNegative, magic).Count();
+        Picked(whichUnit, removePositive, removeNegative, magic, physical, timedLife, aura, autoDispel).Count();
+
+    // A buff taken off before its time: what it held ends with it (a polymorphed unit's form comes back)
+    void Dispel(unit u, ActiveBuff buff)
+    {
+        if (!u.Buffs.Remove(buff)) return;
+        buff.Dispelled?.Invoke();
+        Freed(u, buff);
+    }
+
+    // A buff gone from a living unit: the last stun's end lets it go (LetGo)
+    void Freed(unit u, ActiveBuff buff)
+    {
+        if (buff.Stun && !u.Dead) LetGo(u);
+    }
 }

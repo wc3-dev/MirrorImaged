@@ -76,7 +76,7 @@ public sealed partial class GameNatives
         {
             if (u.Cast != cast) return;
             if (u.Dead || u.Removed) BreakCast(u);
-            else if (u.Paused) Later(u, cast, TickSeconds, next);
+            else if (Held(u)) Later(u, cast, TickSeconds, next);
             else next();
         });
     }
@@ -145,7 +145,8 @@ public sealed partial class GameNatives
     }
 
     // How long a buff of the ability lasts on the unit: its duration, a hero's own where it has one
-    double Lasts(ability a, unit target) => IsHero(target.Type.Id) && Field(a, Code("ahdu")) is var hero and > 0 ? hero : Field(a, Code("adur"));
+    // A spell's time on the unit: a hero's and a unit with Resistant Skin's is the ability's hero duration (the skin's tooltip; not measured)
+    double Lasts(ability a, unit target) => (IsHero(target.Type.Id) || HasCode(target, ResistantSkin)) && Field(a, Code("ahdu")) is var hero and > 0 ? hero : Field(a, Code("adur"));
 
     // What the spell does: the data-driven effects of the abilities modelled here (waves 4's first set), nothing for the rest
     void Effect(unit caster, ability a, float x, float y, widget? target)
@@ -165,21 +166,34 @@ public sealed partial class GameNatives
                     if (foe.Dead || foe.Removed) return;
                     UnitDamageTarget(caster, foe, 0, false, false, Convert<attacktype>(0), Convert<damagetype>(0), Convert<weapontype>(0));
                     UnitDamageTarget(caster, foe, amount, false, false, Convert<attacktype>(0), Convert<damagetype>(15), Convert<weapontype>(0));
-                    if (!foe.Dead) Apply(foe, caster, StunBuff, Lasts(a, foe), false, b => b.Stun = true);
+                    // its stun, and a hit of 0 0.02 s after the stun's time (probe abilities-cast-timing: 5.02 s after the first two, with a stun of 5), but
+                    // none on a banished unit (probe abilities-banish: none came)
+                    if (!foe.Dead) Apply(foe, caster, StunBuff, Lasts(a, foe), false, b => (b.Stun, b.Ended) = (true, () => _game.At(_game.Step + Game.Steps(0.02), () =>
+                    {
+                        if (!foe.Dead && !foe.Removed && !caster.Removed && !IsEthereal(foe)) Hit0(caster, foe);
+                    })));
                 }
                 Fire(caster, foe, BlzGetAbilityIntegerField(a, Convert<abilityintegerfield>(Code("amsp"))), true, Land);
                 break;
             case var id when id == Code("Aslo") && target is unit slowed && !slowed.Dead:
-                Apply(slowed, caster, SlowBuff, Lasts(a, slowed), false, b => (b.SpeedFactor, b.AttackSpeedBonus) = (1 - amount, -TagValue(a.Type, "DataB" + a.Level)));
+                Hit0(caster, slowed);
+                if (!slowed.Dead) Apply(slowed, caster, SlowBuff, Lasts(a, slowed), false, b => (b.SpeedFactor, b.AttackSpeedBonus) = (1 - amount, -TagValue(a.Type, "DataB" + a.Level)));
                 break;
             case var id when id == Code("Ablo") && target is unit hasted && !hasted.Dead:
                 Apply(hasted, caster, BloodlustBuff, Lasts(a, hasted), true, b => (b.AttackSpeedBonus, b.SpeedFactor) = (amount, 1 + TagValue(a.Type, "DataB" + a.Level)));
                 break;
             case var id when id == Code("AHtc"):
+                // Thunder Clap: a hit of 0 and DataA of sonic damage to the foes on the ground in the area, then its buff slows their moving by DataC and
+                // their attacks by DataD for its time (a hero's own); the hit of 0 before the buff is the game's (game-facts, 11-03), the order of the two hits
+                // is Storm Bolt's
                 var area = Field(a, CastArea);
                 foreach (var near in _units.Values.ToArray())
                     if (Hostile(caster, near) && !Flies(near) && Distance2(near.X - caster.X, near.Y - caster.Y) <= area * area)
-                        UnitDamageTarget(caster, near, amount, false, false, Convert<attacktype>(0), Convert<damagetype>(15), Convert<weapontype>(0));
+                    {
+                        Hit0(caster, near);
+                        if (!near.Dead) UnitDamageTarget(caster, near, amount, false, false, Convert<attacktype>(0), Convert<damagetype>(15), Convert<weapontype>(0));
+                        if (!near.Dead) Apply(near, caster, BuffOf(a, 0), Lasts(a, near), false, b => (b.SpeedFactor, b.AttackSpeedBonus) = (1 - Datum(a, 'C'), -Datum(a, 'D')));
+                    }
                 break;
         }
     }

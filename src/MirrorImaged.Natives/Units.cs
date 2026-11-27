@@ -10,6 +10,8 @@ public partial class unit
     internal float X, Y, Life, MaxLife;
     internal bool Dead, Removed, Hidden, Invulnerable, Exploded, Paused, GivenWhilePaused, UsesFood = true;
     internal Action? Unpausing; // the order a frame after PauseUnit(false) gives back, until it comes
+    internal int HeldGiven = -1; // how many orders it had been given when a pause, a stun or BlzPauseUnitEx began to hold it; -1 while nothing holds it
+    internal Action? OrderBack;  // gives back the order it had, 0.016 s after it is let go, until it comes
     internal int UserData, Skin, HeroLevel, Color, Pauses;
     internal float Scale = 1, FlyHeight;
     internal int[] Tint = [255, 255, 255, 255];
@@ -171,6 +173,7 @@ public sealed partial class GameNatives
         u.Life = 0;
         u.Paused = false;
         u.Unpausing = null;
+        (u.HeldGiven, u.OrderBack) = (-1, null);
         u.TimedEnd = u.TimedLeft = null;
         if (u.Cargo.Count > 0) SinkCargo(u);
     }
@@ -222,6 +225,12 @@ public sealed partial class GameNatives
             _game.At(Game.Steps(decay), () =>
             {
                 if (!u.Dead || _game.Handle(u.Key) is null) return;
+                if (Vanishes(u))
+                {
+                    u.Removed = true;
+                    Gone(u);
+                    return;
+                }
                 FireUnit(new(u), UnitDecay, PlayerUnitDecay);
                 Rot(u, decay + Bones);
             });

@@ -67,7 +67,7 @@ the failure's message shown:
 ```xml
 <ItemGroup>
   <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
-  <PackageReference Include="MirrorImaged.TestAdapter" Version="1.0.0" />
+  <PackageReference Include="MirrorImaged.TestAdapter" Version="1.0.1" />
   <None Include="**\*.test.lua" CopyToOutputDirectory="PreserveNewest" />
 </ItemGroup>
 ```

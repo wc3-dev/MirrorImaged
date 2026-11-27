@@ -310,11 +310,13 @@ public sealed partial class GameNatives
     /// The unit's kinds (probes units, units-more): hero, dead, structure, flying and ground (neither flying nor a
     /// structure), from its enabled weapons attacks ground, attacks flying, melee (a weapon of type normal) and ranged,
     /// its classification (its type's, with UnitAddType's and timed life's changes), and sleeping (UnitIsSleeping).
-    /// Ethereal is a banished unit (probe abilities-banish). Close: stunned, plagued, snared, poisoned, polymorphed,
-    /// resistant and magic immune always read false, though the game reads them from the unit's buffs and abilities.
+    /// Ethereal is a banished unit (probe abilities-banish). The kinds a unit's buffs and abilities give it: stunned
+    /// while a stun is on it (Storm Bolt, War Stomp, Bash, Sleep) or BlzPauseUnitEx holds it, snared by Ensnare and Web,
+    /// poisoned by an attack's poison, plagued by Disease Cloud, polymorphed by Polymorph and Hex, resistant with
+    /// Resistant Skin, magic immune with Spell Immunity or Avatar.
     /// </summary>
-    /// <remarks>Close: stunned, plagued, snared, poisoned, polymorphed, resistant and magic immune always read false here, though the game reads them from buffs and abilities.</remarks>
-    [Native(Level.Close)]
+    /// <remarks>Close: which buffs and abilities give stunned, plagued, snared, poisoned, polymorphed, resistant and magic immune is the model's reading of the spells' names, not measured.</remarks>
+    [Native(Level.Close, Reason = "which buffs and abilities give stunned, plagued, snared, poisoned, polymorphed, resistant and magic immune is the model's reading of the spells' names, not measured")]
     public bool IsUnitType(unit? whichUnit, unittype? whichUnitType) =>
         whichUnit is not null && whichUnitType is not null && Is(whichUnit.Type, whichUnit, whichUnitType.Id);
 
@@ -344,8 +346,15 @@ public sealed partial class GameNatives
             6 => Weapons().Any(w => (w.Targets & TargetFlags["ground"]) != 0),
             7 => Weapons().FirstOrDefault().Kind is "normal",
             8 => Weapons().FirstOrDefault().Kind is { } weapon && weapon != "normal",
+            11 => u is not null && (IsStunned(u) || u.Pauses > 0),
+            12 => u is not null && Has(u, b => b.Plague),
+            13 => u is not null && Has(u, b => b.Snare),
+            21 => u is not null && Has(u, b => b.Poison),
+            22 => u is not null && Has(u, b => b.Polymorph),
             23 => u is not null && Asleep(u),
+            24 => u is not null && HasCode(u, ResistantSkin),
             25 => u is not null && IsEthereal(u),
+            26 => u is not null && IsMagicImmune(u),
             _ => Classes.TryGetValue(kind, out var name) && (Classification() & Categories[name]) != 0,
         };
     }

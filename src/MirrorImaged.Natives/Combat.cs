@@ -116,10 +116,10 @@ public sealed partial class GameNatives
     {
         if (u.Constructing || u.Swarming) return false;
         if (u.Channel is not null) return true;
-        if (u.Casting is not null && u.Order != 0 && !u.Paused) return Cast(u);
+        if (u.Casting is not null && u.Order != 0 && !Held(u)) return Cast(u);
         var armed = u.Type.Integer(WeaponsOn) != 0;
         var mobile = GetUnitMoveSpeed(u) > 0;
-        if (u.Paused || u.Hidden || IsStunned(u) || Asleep(u)) return armed || mobile;
+        if (Held(u) || u.Hidden || Asleep(u)) return armed || mobile;
         if (u.AttackTarget is { } stale && (stale.Dead || stale.Removed || stale.Hidden || !Armed(u, stale))) u.AttackTarget = null;
         var scan = _ticks % ScanEvery == 0;
         var order = u.Order;
@@ -398,6 +398,8 @@ public sealed partial class GameNatives
         if (Evades(t, u)) return;
         var stun = false;
         PassivesOfAttack(u, t, ranged, ref damage, ref stun);
+        Poison(u, t);
+        if (t.Dead) return;
         Strike(new Hit(u, t, damage, true, ranged, Convert<attacktype>(attackType), Convert<damagetype>(NormalDamage), Convert<weapontype>(sound)) { Real = true }, t);
         if (stun && !t.Dead) Apply(t, u, StunBuff, StunSeconds(u, t), false, b => b.Stun = true);
         if (!ranged && !u.Dead && t.Abilities.Find(x => x.Type.BaseId == Code("AEah")) is { } thorns) Strike(new Hit(t, u, damage * Datum(thorns, 'A'), false, false, Convert<attacktype>(0), Convert<damagetype>(14), Convert<weapontype>(0)) { Real = true }, u);
