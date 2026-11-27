@@ -2,7 +2,7 @@
 
 MirrorImaged loads `.w3x` archives (aka. maps), runs its script against C# copies of the game natives on a simulated clock, and lets tests give orders, input, read the state and check results. The copied game are built from in-game probing.
 
-## Progress `██████████████████░░` 92%
+## Progress `███████████████████░` 97%
 
 | #                             | Description                                                                                        | Progress                               |
 | ----------------------------- | -------------------------------------------------------------------------------------------------- | -------------------------------------- |
@@ -13,21 +13,17 @@ MirrorImaged loads `.w3x` archives (aka. maps), runs its script against C# copie
 | 4. Abilities and buffs        | Casting, ability effects, buffs and auras                                                          | `███████████████░░░░░` 75% (2 of 3)    |
 | 5. Presentation and interface | Cameras, sounds, visual effects, text, frames, dialogs, multiboards                                | `████████████████████` 100% (4 of 4)   |
 | 6. Players, input, visibility | Chat, keys, mouse, selection, sync, leaving, fow, desyncs                                          | `████████████████████` 100% (8 of 8)   |
-| 7. AI                         | `common.ai`, melee/campaign AI, creeps                                                             | `███████████████░░░░░` 75%             |
+| 7. AI                         | `common.ai`, melee/campaign AI, creeps                                                             | `████████████████████` 100%            |
 | 8. Test tools                 | C# API, Lua API, commands, snapshots, recordings                                                   | `████████████████████` 100% (5 of 5)   |
 | 9. Viewer                     | Webapp for watching/scrubbing recordings                                                           | `████████████████████` 100%            |
-| 10. Accuracy and speed        | More probes, whole-corpus runs, benchmarks, linux/macOS                                            | `███████████████░░░░░` 75%             |
-| 11. Docs and release          | docs, guides, examples, 1.0 release                                                                | `███████████████░░░░░` 75%             |
+| 10. Accuracy and speed        | More probes, whole-corpus runs, benchmarks, linux/macOS                                            | `████████████████████` 100%            |
+| 11. Docs and release          | docs, guides, examples, 1.0 release                                                                | `██████████████████░░` 90%             |
 
 ### Natives `████████████████████` 100%
 
 | Level    | Meaning                                                 | Count | Share                      |
 | -------- | ------------------------------------------------------- | ----- | -------------------------- |
-| Exact    | Matches the game on every case a probe measured         | 471   | `█████░░░░░░░░░░░░░░░` 26% |
-| Close    | A documented model, not fully measured                  | 1,008 | `███████████░░░░░░░░░` 55% |
+| Exact    | Matches the game on every case a probe measured         | 463   | `█████░░░░░░░░░░░░░░░` 25% |
+| Close    | A documented model, not fully measured                  | 1,016 | `███████████░░░░░░░░░` 55% |
 | Recorded | Changes nothing a map can read back; the call is logged | 356   | `████░░░░░░░░░░░░░░░░` 19% |
 | Missing  | Stops the run with the native's name                    | 0     | `░░░░░░░░░░░░░░░░░░░░` 0%  |
-
-## Licence
-
-MIT.
