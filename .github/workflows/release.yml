@@ -1,0 +1,71 @@
+# Publishes MirrorImaged's seven packages to nuget.org by trusted publishing: nuget.org trusts this workflow file (policy
+# owner wc3-dev, repository MirrorImaged, workflow file release.yml) and gives it a key for one hour, so no API key is
+# stored. A pushed tag v<version> publishes that tag; run the workflow by hand to publish a tag pushed before it existed.
+# The tests do not run here: CI runs them, and packs and installs the tool, on every push to main. Tag a commit whose
+# CI is green.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: The tag to publish, such as v1.0.0
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/tags/${{ env.TAG }}
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Check that the tag names the version
+        shell: pwsh
+        run: |
+          $version = dotnet msbuild src/MirrorImaged/MirrorImaged.csproj -getProperty:Version
+          if ("v$version" -ne $env:TAG) { throw "The tag $env:TAG is not v$version, the version in Directory.Build.props" }
+
+      # The symbols packages (.snupkg) land beside these and dotnet nuget push sends them along.
+      - name: Pack
+        shell: pwsh
+        run: |
+          dotnet pack MirrorImaged.slnx --output feed
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          $packages = @(Get-ChildItem feed -Filter *.nupkg)
+          if ($packages.Count -ne 7) { throw "Pack made $($packages.Count) packages, not 7" }
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: packages
+          path: |
+            feed/*.nupkg
+            feed/*.snupkg
+
+      - name: Log in to nuget.org
+        id: login
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Push
+        shell: pwsh
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+        # On Windows, dotnet nuget push expands a wildcard only after a backslash: feed/*.nupkg is "File does not exist".
+        run: dotnet nuget push "feed\*.nupkg" --api-key $env:NUGET_API_KEY --source https://api.nuget.org/v3/index.json --skip-duplicate
