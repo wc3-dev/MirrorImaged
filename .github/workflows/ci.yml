@@ -59,7 +59,7 @@ jobs:
         run: |
           $packages = "${{ runner.temp }}/packages"
           $tool = "${{ runner.temp }}/tool"
-          dotnet tool install MirrorImaged.Cli --version 1.0.0 --tool-path $tool --add-source $packages
+          dotnet tool install MirrorImaged.Cli --version 1.0.1 --tool-path $tool --add-source $packages
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           & "$tool/mirror" --version
           if ($LASTEXITCODE) { exit $LASTEXITCODE }

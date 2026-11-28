@@ -1,3 +1,4 @@
+using MirrorImaged.Data;
 using MirrorImaged.World;
 
 namespace MirrorImaged.Natives;
@@ -29,7 +30,25 @@ public sealed partial class GameNatives
     // defensive, spirit link and shadow strike), and the names of the bonus rows by attack type (facts: Damage)
     static readonly int[] StoppedBySpellImmunity = [8, 9, 10, 13, 14, 15, 17, 18, 19, 20, 21, 24, 25];
     static readonly string[] AttackRows = ["Spells", "Normal", "Pierce", "Siege", "Magic", "Chaos", "Hero"];
-    static readonly int MagicImmunity = Code("ACmi");
+    static readonly int MagicImmunity = Code("ACmi"), SpellImmunity = Code("Amim"), ResistantSkin = Code("Arsk");
+
+    // Spell immunity: an ability made from Amim (the creeps' ACmi, a Spellbreaker's or Dryad's Amim, a map's copy), or Avatar's buff
+    bool IsMagicImmune(unit u) => Find(u, MagicImmunity) is not null || HasCode(u, SpellImmunity) || Has(u, b => b.MagicImmune);
+
+    // Resistant Skin, once its owner has its research (probe units-kinds: a Misha's ACrk read resistant, a Mountain Giant's Arsk without Resistant Skin
+    // researched didn't, and Slow lasted its unit's time on it)
+    bool Resistant(unit u) => u.Abilities.Any(a => a.Level > 0 && Coded(a.Type) == ResistantSkin && Unlocked(u, a.Type));
+
+    // Whether the unit's owner has what the ability requires (its Requires and Requiresamount fields)
+    bool Unlocked(unit u, GameObject type)
+    {
+        if (Data.FieldAt(ObjectKind.Ability, "Requires") is not { } field || type.Text(field) is not { Length: > 0 } listed) return true;
+        var amounts = (Data.FieldAt(ObjectKind.Ability, "Requiresamount") is { } count ? type.Text(count) : null)?.Split(',') ?? [];
+        var techs = listed.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        for (var n = 0; n < techs.Length; n++)
+            if (techs[n].Length == 4 && GetPlayerTechCount(u.Owner, Code(techs[n]), true) < (n < amounts.Length && int.TryParse(amounts[n], out var need) ? need : 1)) return false;
+        return true;
+    }
 
     Hit? Striking => Response(UnitDamaged, UnitDamaging, PlayerUnitDamaged, PlayerUnitDamaging)?.Hit;
 
@@ -61,7 +80,7 @@ public sealed partial class GameNatives
         if (target.Dead || target.Removed) return true;
         FireUnit(new(target, Hit: hit), UnitDamaging, PlayerUnitDamaging);
         if (target.Dead) return true;
-        if (Find(target, MagicImmunity) is not null && (StoppedBySpellImmunity.Contains(hit.DamageType?.Id ?? 0) || hit.AttackType?.Id == MagicAttack))
+        if (IsMagicImmune(target) && (StoppedBySpellImmunity.Contains(hit.DamageType?.Id ?? 0) || hit.AttackType?.Id == MagicAttack))
             return true;
         if (IsEthereal(target) && EtherealBonus(hit) == 0) return true;
         // An illusion's hit takes what its spell lets it, and a hit takes more from one (probe abilities-spells: Mirror Image, 0 and twice)

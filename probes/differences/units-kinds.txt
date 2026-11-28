@@ -1,0 +1,143 @@
+# Where MirrorImaged differs from the game's lines in expected/units-kinds.txt, in order, with why (decisions D121): a line starting - is the game's, + MirrorImaged's.
+# The game's lines are from one run on classic graphics, 2026-11-28 (3.0.1.24371); the kinds, the buff flags and the holds' orders match. What differs:
+# - Walking (Close, D352): the game's footman covered 132 in its first half second from standing and 264.2 a second after, where it walks 270 a second
+#   from the first step here; so every walk line, and when Storm Bolt's missile reached the walker (1.75 against 1.76) and its stun ended (6.76, 6.77).
+# - Attacking (Close, D454): the game's footman hit first at 1.22 and then 2.13 to 2.37 s apart, where here it hits at 0.62 and 1.35 apart.
+# - Web: the game refused the Crypt Fiend's web order on the gryphon rider (why was not separated), so its lines are the model's.
+# - Storm Bolt's buff isn't BSTN in the game (it read 0); which id it is was not read, so here it stays BSTN.
+# - Envenomed Spears put two buffs on the footman (both timed, one physical, neither magic); here it puts one.
+# - The footman the dryad poisoned read the attack order (851983) after the dryad stopped; here it reads 0 (why was not separated).
+- web order f
++ web order t
++ exhit 0.62
+- walk pause 1.00 132.17 order 851973
++ walk pause 1.00 135.00 order 851973
+- walk pauseex 1.00 132.10 order 851973
++ walk pauseex 1.00 135.00 order 851973
+- walk pauseex2 1.00 132.01 order 851973
++ walk pauseex2 1.00 135.00 order 851973
+- walk stun 1.00 131.71 order 851986
++ walk stun 1.00 135.00 order 851986
+- exhit 1.22
++ walk pause 1.50 135.00 order 851973
+- walk pause 1.50 132.17 order 851973
++ walk pauseex 1.50 135.00 order 851973
+- walk pauseex 1.50 132.10 order 851973
++ walk pauseex2 1.50 135.00 order 851973
+- walk pauseex2 1.50 132.01 order 851973
++ walk stun 1.50 270.00 order 851986
+- walk stun 1.50 266.71 order 851986
++ order stun 851973 target bolter at 0.00 0.00 now 1.76
+- order stun 851973 target bolter at 0.00 0.00 now 1.75
++ exhit 1.97
+- kinds bolt ffffffff order 851973 paused f type Footman buff 0
++ kinds bolt ffffffff order 851973 paused f type Footman buff 1
+- kinds web ffffffff order 0 paused f type Gryphon Rider buff 0
++ kinds web fftfffff order 0 paused f type Gryphon Rider buff 0
+- walk pause 2.00 132.17 order 851973
++ walk pause 2.00 135.00 order 851973
+- walk pauseex 2.00 132.10 order 851973
++ walk pauseex 2.00 135.00 order 851973
+- walk pauseex2 2.00 132.01 order 851973
++ walk pauseex2 2.00 135.00 order 851973
+- walk stun 2.00 334.20 order 851973
++ walk stun 2.00 345.94 order 851973
+- walk pause 2.50 132.17 order 851973
++ walk pause 2.50 135.00 order 851973
+- walk pauseex 2.50 132.10 order 851973
++ walk pauseex 2.50 135.00 order 851973
+- walk pauseex2 2.50 132.01 order 851973
++ walk pauseex2 2.50 135.00 order 851973
+- walk stun 2.50 334.20 order 851973
++ walk stun 2.50 345.94 order 851973
+- kinds slowpoison ftftffff order 851983 paused f type Footman buff 1
++ kinds slowpoison ftftffff order 0 paused f type Footman buff 1
+- walk pause 3.00 132.17 order 851973
++ walk pause 3.00 135.00 order 851973
+- walk pauseex 3.00 132.10 order 851973
++ walk pauseex 3.00 135.00 order 851973
+- walk pauseex2 3.00 132.01 order 851973
++ walk pauseex2 3.00 135.00 order 851973
+- walk stun 3.00 334.20 order 851973
++ walk stun 3.00 345.94 order 851973
+- walk pause 3.50 259.03 order 851986
++ walk pause 3.50 270.00 order 851986
+- walk pauseex 3.50 258.93 order 851986
++ walk pauseex 3.50 270.00 order 851986
+- walk pauseex2 3.50 132.01 order 851973
++ walk pauseex2 3.50 135.00 order 851973
+- walk stun 3.50 334.20 order 851973
++ walk stun 3.50 345.94 order 851973
+- flags poisoned none 2 magic 0 physical 1 both 0 timed 2 aura 3 dispel 0 all 0
++ flags poisoned none 1 magic 0 physical 1 both 0 timed 1 aura 2 dispel 0 all 0
+- walk pause 4.00 393.98 order 851986
++ walk pause 4.00 405.00 order 851986
+- walk pauseex 4.00 393.87 order 851986
++ walk pauseex 4.00 405.00 order 851986
+- walk pauseex2 4.00 132.01 order 851973
++ walk pauseex2 4.00 135.00 order 851973
+- walk stun 4.00 334.20 order 851973
++ walk stun 4.00 345.94 order 851973
+- walk pause 4.50 528.93 order 851986
++ walk pause 4.50 540.00 order 851986
+- walk pauseex 4.50 528.80 order 851986
++ walk pauseex 4.50 540.00 order 851986
+- walk pauseex2 4.50 132.01 order 851973
++ walk pauseex2 4.50 135.00 order 851973
+- walk stun 4.50 334.20 order 851973
++ walk stun 4.50 345.94 order 851973
+- walk pause 5.00 663.88 order 851986
++ exhit 4.50
+- walk pauseex 5.00 663.72 order 851986
++ walk pause 5.00 675.00 order 851986
+- walk pauseex2 5.00 132.01 order 851973
++ walk pauseex 5.00 675.00 order 851986
+- walk stun 5.00 334.20 order 851973
++ walk pauseex2 5.00 135.00 order 851973
+- exhit 5.15
++ walk stun 5.00 345.94 order 851973
+- walk pause 5.50 798.83 order 851986
++ walk pause 5.50 810.00 order 851986
+- walk pauseex 5.50 798.65 order 851986
++ walk pauseex 5.50 810.00 order 851986
+- walk pauseex2 5.50 132.01 order 851973
++ walk pauseex2 5.50 135.00 order 851973
+- walk stun 5.50 334.20 order 851973
++ walk stun 5.50 345.94 order 851973
+- walk pause 6.00 933.78 order 851986
++ exhit 5.85
+- walk pauseex 6.00 933.58 order 851986
++ walk pause 6.00 945.00 order 851986
+- walk pauseex2 6.00 132.01 order 851973
++ walk pauseex 6.00 945.00 order 851986
+- walk stun 6.00 334.20 order 851973
++ walk pauseex2 6.00 135.00 order 851973
+- walk pause 6.50 1068.73 order 851986
++ walk stun 6.00 345.94 order 851973
+- walk pauseex 6.50 1068.51 order 851986
++ walk pause 6.50 1080.00 order 851986
+- walk pauseex2 6.50 132.01 order 851973
++ walk pauseex 6.50 1080.00 order 851986
+- walk stun 6.50 334.20 order 851973
++ walk pauseex2 6.50 135.00 order 851973
+- order stun 851986 point none at 1800.00 -1800.00 now 6.76
++ walk stun 6.50 345.94 order 851973
+- walk pause 7.00 1203.68 order 851986
++ order stun 851986 point none at 1800.00 -1800.00 now 6.77
+- walk pauseex 7.00 1203.44 order 851986
++ walk pause 7.00 1215.00 order 851986
+- walk pauseex2 7.00 132.01 order 851973
++ walk pauseex 7.00 1215.00 order 851986
+- walk stun 7.00 393.60 order 851986
++ walk pauseex2 7.00 135.00 order 851973
+- exhit 7.52
++ walk stun 7.00 405.00 order 851986
++ exhit 7.20
+- kinds web ffffffff order 0 paused f type Gryphon Rider buff 0
++ kinds web fftfffff order 0 paused f type Gryphon Rider buff 0
+- exhit 9.68
++ exhit 8.55
+- exhit 11.81
++ exhit 9.90
++ exhit 11.25
++ exhit 12.60

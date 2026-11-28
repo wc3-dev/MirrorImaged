@@ -40,6 +40,9 @@ public sealed partial class GameNatives
 
     ability? Find(unit? u, int id) => u?.Abilities.Find(a => a.Type.Id == id);
 
+    // Whether the unit has an ability made from the code (its "code" column, so the creeps' copies too: ACmi and ACm2 are Amim's, ACrk is Arsk's)
+    bool HasCode(unit u, int code) => u.Abilities.Any(a => a.Level > 0 && (a.Type.BaseId == code || a.Type.Text(AbilityCode) is { Length: 4 } own && Code(own) == code));
+
     // An ability takes its handle id when a native first gives it out, and keeps it (probe abilities)
     ability Out(ability a) => a.Id != 0 ? a : Make(a);
 
@@ -47,7 +50,11 @@ public sealed partial class GameNatives
     {
         var a = new ability { Type = type, Unit = u, Levels = type.Levels };
         u.Abilities.Insert(at, a);
-        if (AuraBases.Contains(type.BaseId)) EnsureAuras();
+        if (IsAuraType(type))
+        {
+            EnsureAuras();
+            OwnAura(u, a);
+        }
         if (type.Id == Locust || type.Text(AbilityCode) == "Aloc") u.Locust = true;
         if (Raises(u.Type).Any(raise => raise.Ability == type.Id))
         {
@@ -167,9 +174,16 @@ public sealed partial class GameNatives
     /// its Attack attacks nothing (probe abilities-banish: heroes that attacked unordered stood still without it).
     /// </summary>
     /// <remarks>Exact: matches the game wherever measured (facts, Abilities: probe abilities (11-08); game-facts.md, Spells and abilities: UnitRemoveAbility (11-02)).</remarks>
-    [Native(Level.Exact, Fact = AbilitiesProbe + "; game-facts.md, Spells and abilities: UnitRemoveAbility (11-02)")]
+    [Native(Level.Exact, Fact = AbilitiesProbe + "; game-facts.md, Spells and abilities: UnitRemoveAbility (11-02); game-facts.md, Spells and abilities: UnitRemoveAbility of a buff (11-03)")]
     public bool UnitRemoveAbility(unit? whichUnit, int abilityId)
     {
+        // A spell's buff by its id: true, and it ends with its effect at once (game-facts, 11-03, probe buffs-probe: a slowed footman's speed came back
+        // in the call, a Storm Bolt's stun lifted)
+        if (Find(whichUnit, abilityId) is null && whichUnit?.Buffs.Find(b => b.Id == abilityId) is { } buff)
+        {
+            Dispel(whichUnit, buff);
+            return true;
+        }
         if (Find(whichUnit, abilityId) is not { } a) return false;
         Take(a);
         if (abilityId == AttackAbility) whichUnit!.Disarmed = true;

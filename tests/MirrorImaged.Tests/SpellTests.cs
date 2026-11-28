@@ -92,7 +92,8 @@ public sealed class SpellTests : IDisposable
             TimerStart(CreateTimer(), 3, false, function() print(f1(GetWidgetLife(foe)), IssueTargetOrder(caster, "thunderbolt", foe)) end)
             """, 4);
 
-        Assert.Equal(["false", "true", "damaged\t0.0\t0", "damaged\t100.0\t15", "320.0\tfalse"], lines.Where(line => !line.StartsWith("hit\t")).ToList());
+        // the hit of 0 after the stun's end is the game's third (probe abilities-cast-timing)
+        Assert.Equal(["false", "true", "damaged\t0.0\t0", "damaged\t100.0\t15", "damaged\t0.0\t0", "320.0\tfalse"], lines.Where(line => !line.StartsWith("hit\t")).ToList());
     }
 
     // a slow and a stun are buffs: they end at their time, change the unit's speed, hold it still, and read through the buff natives
@@ -113,6 +114,7 @@ public sealed class SpellTests : IDisposable
             TimerStart(CreateTimer(), 4.5, false, function() print("freed", f1(GetUnitMoveSpeed(foe)), GetUnitAbilityLevel(foe, FourCC("Bslo")), GetUnitAbilityLevel(other, FourCC("BSTN")), GetUnitX(other) > 100) end)
             """, 5);
 
-        Assert.Equal(["270.0	true", "slowed	108.0	1	true	0", "stunned	100.0	1", "freed	270.0	0	0	true"], lines);
+        // magic and physical together pick none (probe units-kinds)
+        Assert.Equal(["270.0	true", "slowed	108.0	1	false	0", "stunned	100.0	1", "freed	270.0	0	0	true"], lines);
     }
 }

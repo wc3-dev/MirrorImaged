@@ -9,7 +9,7 @@
 
   <!-- What every package says about itself; each csproj adds its own Description. -->
   <PropertyGroup>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Authors>mdlsvensson</Authors>
     <Copyright>Copyright (c) 2026 mdlsvensson</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

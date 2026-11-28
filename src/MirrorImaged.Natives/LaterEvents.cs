@@ -37,7 +37,10 @@ public sealed partial class GameNatives
     [Native(Level.Close, Fact = "probes/expected/units-resets.txt: aura switch")]
     public void BlzUnitEnableAuras(unit? whichUnit, bool enable, bool affectsUI)
     {
-        if (whichUnit is not null) whichUnit.AurasOff = !enable;
+        if (whichUnit is null) return;
+        var was = whichUnit.AurasOff;
+        whichUnit.AurasOff = !enable;
+        if (was && enable) foreach (var a in whichUnit.Abilities.ToArray()) OwnAura(whichUnit, a);
     }
 
     /// <summary>Null: EVENT_GAME_VICTORY never fires here.</summary>
