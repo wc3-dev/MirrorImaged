@@ -109,7 +109,7 @@ public sealed class UnitKindTests : IDisposable
     }
 
     [Fact]
-    public void Ensnare_and_web_snare_and_hold_a_unit_with_the_first_buff_on_a_flier_and_the_second_on_the_ground()
+    public void Ensnare_and_web_snare_and_hold_a_unit_on_the_ground_and_in_the_air_with_the_second_buff_of_their_list()
     {
         var lines = Run("""
             local caster = still(make(Player(0)))
@@ -124,11 +124,11 @@ public sealed class UnitKindTests : IDisposable
             at(4.5, function() print("free", kinds(walker), GetUnitX(walker) > 300) end)
             """, 5);
 
-        Assert.Equal(["snared\tfftfffff\t300.0\t1\t0", "webbed\tfftfffff\t1\t1", "free\tffffffff\ttrue"], lines);
+        Assert.Equal(["snared\tfftfffff\t300.0\t1\t0", "webbed\tfftfffff\t0\t1", "free\tffffffff\ttrue"], lines);
     }
 
     [Fact]
-    public void Polymorph_turns_a_unit_into_its_form_until_its_time_or_a_dispel_and_it_reads_polymorphed()
+    public void Polymorph_keeps_the_units_type_and_it_reads_polymorphed_until_its_time_or_a_dispel()
     {
         var lines = Run("""
             local caster = still(make(Player(0)))
@@ -141,11 +141,11 @@ public sealed class UnitKindTests : IDisposable
             at(3.5, function() print("back", GetUnitName(a), kinds(a)) end)
             """, 4);
 
-        Assert.Equal(["sheep\tSheep\tfffftfff", "dispelled\tFootman\tffffffff", "flier\tFlying Sheep", "back\tFootman\tffffffff"], lines);
+        Assert.Equal(["sheep\tFootman\tfffftfff", "dispelled\tFootman\tffffffff", "flier\tGryphon", "back\tFootman\tffffffff"], lines);
     }
 
     [Fact]
-    public void An_attacks_poison_hits_0_before_the_attack_then_each_second_and_slow_poison_slows()
+    public void An_attacks_poison_hits_0_before_the_attack_then_each_second_and_slow_poison_slows_and_reads_plagued_too()
     {
         var lines = Run("""
             local attacker, target = make(Player(0)), still(make(Player(1), 100, 0))
@@ -158,7 +158,7 @@ public sealed class UnitKindTests : IDisposable
             at(6, function() print("over", kinds(target), f1(GetUnitMoveSpeed(target))) end)
             """, 6.5);
 
-        Assert.Equal(["hit\t0.0\t0\t0", "hit\t11.0\t4\t1", "poisoned\tffftffff\t135.0\t1\t0", "hit\t4.0\t23\t1", "hit\t4.0\t23\t1", "hit\t4.0\t23\t1", "hit\t4.0\t23\t1", "over\tffffffff\t270.0"],
+        Assert.Equal(["hit\t0.0\t0\t0", "hit\t11.0\t4\t1", "poisoned\tftftffff\t135.0\t1\t0", "hit\t4.0\t23\t1", "hit\t4.0\t23\t1", "hit\t4.0\t23\t1", "hit\t4.0\t23\t1", "over\tffffffff\t270.0"],
             lines.Where(line => !line.StartsWith("hit\t4.0") || lines.IndexOf(line) >= 0).ToList());
     }
 
@@ -228,7 +228,7 @@ public sealed class UnitKindTests : IDisposable
         Assert.Equal(["again\t135.0\t1", "still\t1", "over\t0"], lines);
     }
 
-    // game-facts, 10-31: an aura's buff is not magic, timed or dispellable; a spell's is all three; every flag true picks none
+    // probe units-kinds: an aura's buff counts only with the aura flag; the others ask for their kind; magic and physical together pick none
     [Fact]
     public void The_buff_flags_tell_a_spells_buff_from_an_auras_and_an_attacks_poison()
     {
@@ -247,7 +247,7 @@ public sealed class UnitKindTests : IDisposable
             end)
             """, 2);
 
-        Assert.Equal(["slowed and in aura\t2\t1\t0\t1\t1\t1\t1\t0", "magic off\t0\t1"], lines);
+        Assert.Equal(["slowed and in aura\t1\t1\t0\t0\t1\t2\t1\t0", "magic off\t0\t1"], lines);
     }
 
     // game-facts, 11-03: UnitRemoveAbility of a buff's id answers true and ends it at once
@@ -264,7 +264,7 @@ public sealed class UnitKindTests : IDisposable
         Assert.Equal(["135.0\ttrue\t270.0\t0\tfalse"], lines);
     }
 
-    // game-facts, 10-26 and 11-03: a paused unit reads the stunned order, and its move comes back as an order event 0.016 s after it is let go
+    // probe units-kinds: a paused unit reads the stunned order until its move comes back as an order event a frame after it is let go
     [Fact]
     public void A_paused_unit_reads_stunned_and_gets_its_order_back_after_it_is_let_go_unless_idle_or_given_another()
     {
@@ -283,14 +283,14 @@ public sealed class UnitKindTests : IDisposable
             "order\twalker\t851986\t0.000", "order\tother\t851986\t0.000",
             "order\twalker\t851973\t0.500", "order\tidle\t851973\t0.500", "order\tother\t851973\t0.500", "paused\t851973\t851973\tffffffff",
             "order\tother\t851986\t0.700",
-            "let go\t851986\t126.6",
-            "order\twalker\t851986\t1.016",
+            "let go\t851973\t126.6",
+            "order\twalker\t851986\t1.010",
             "walks\ttrue\ttrue",
         ], lines);
     }
 
     [Fact]
-    public void BlzPauseUnitEx_holds_the_unit_as_a_stun_until_its_count_is_back_to_0_and_gives_its_order_back()
+    public void BlzPauseUnitEx_holds_the_unit_with_the_stunned_order_until_its_count_is_back_to_0_and_gives_its_order_back()
     {
         var lines = Run("""
             local walker = still(make(Player(1)))
@@ -303,12 +303,13 @@ public sealed class UnitKindTests : IDisposable
             """, 3);
 
         Assert.Equal([
-            "order\twalker\t851986\t0.000", "held\t851973\ttfffffff\tfalse\t126.6", "once\t126.6\ttfffffff", "twice\t126.6\tffffffff",
-            "order\twalker\t851986\t1.516", "walks\ttrue",
+            "order\twalker\t851986\t0.000", "order\twalker\t851973\t0.500", "held\t851973\tffffffff\tfalse\t126.6", "once\t126.6\tffffffff", "twice\t126.6\tffffffff",
+            "order\twalker\t851986\t1.510", "walks\ttrue",
         ], lines);
     }
 
-    // game-facts, 11-03: Storm Bolt's stun gave the stunned order as a target order at the hit, and the move back at its end
+    // probe units-kinds: Storm Bolt's stun gave the stunned order as a target order at the hit, read stunned to the current order and not to IsUnitType,
+    // and the move came back a frame after its end
     [Fact]
     public void A_stun_gives_the_stunned_order_and_its_end_gives_the_order_back()
     {
@@ -323,8 +324,8 @@ public sealed class UnitKindTests : IDisposable
             """, 3);
 
         Assert.Equal([
-            "order\twalker\t851986\t0.000", "order\twalker\t851973\t0.500", "stunned\t851973\ttfffffff\tfalse", "held\t126.6",
-            "order\twalker\t851986\t1.516", "walks\ttrue\tffffffff",
+            "order\twalker\t851986\t0.000", "order\twalker\t851973\t0.500", "stunned\t851973\tffffffff\tfalse", "held\t126.6",
+            "order\twalker\t851986\t1.510", "walks\ttrue\tffffffff",
         ], lines);
     }
 }

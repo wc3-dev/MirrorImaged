@@ -10,10 +10,11 @@ public sealed partial class GameNatives
 {
     const int Stop = 851972, Stunned = 851973, Undefending = 852056;
     const double Frame = 0.01; // when PauseUnit(false)'s undefend comes back: 0.01 s later, twice (probes units-more, units-more-2)
-    const double OrderBackSeconds = 0.016; // when the order the unit had comes back (game-facts, 11-03: the move, 0.016 s after PauseUnit(false))
+    const double OrderBackSeconds = 0.01; // when the order the unit had comes back: a frame after it is let go, after the undefend (probe units-kinds: 3.01 after 3)
 
-    // Whether a pause, a stun or BlzPauseUnitEx holds the unit: it does nothing, and its current order reads stunned
+    // Whether a pause, a stun or BlzPauseUnitEx holds the unit: it does nothing, and its current order reads stunned until its order comes back
     bool Held(unit u) => u.Paused || u.Pauses > 0 || IsStunned(u);
+    bool ReadsStunned(unit u) => Held(u) || u.OrderBack is not null;
 
     // Something begins to hold the unit: what it had been given is kept, so the order it had can be given back when it is let go
     void Holding(unit u)
@@ -22,9 +23,9 @@ public sealed partial class GameNatives
         u.OrderBack = null;
     }
 
-    // Nothing holds the unit any more: the order it had, unless it was given another since, or is idle or casting, comes back as an order event 0.016
-    // s later and is carried out (game-facts, 10-26 and 11-03: a move, an attack and a patrol came back after PauseUnit(false); at a Storm Bolt's end,
-    // the move; an idle unit got none, 11-05). The stun's and BlzPauseUnitEx's delay is the pause's, which is this model's reading
+    // Nothing holds the unit any more: the order it had, unless it was given another since, or is idle or casting, comes back as an order event a frame
+    // later and is carried out, and until then the current order reads stunned (probe units-kinds: after PauseUnit, BlzPauseUnitEx and Storm Bolt
+    // alike; game-facts, 10-26 and 11-03: a move, an attack and a patrol; an idle unit got none, 11-05)
     void LetGo(unit u)
     {
         if (Held(u) || u.HeldGiven < 0) return;
@@ -44,13 +45,13 @@ public sealed partial class GameNatives
         _game.At(_game.Step + Game.Steps(OrderBackSeconds), back);
     }
 
-    // A stun begins on a unit nothing held: it gets the stunned order (851973) as a target order (game-facts, 11-03: Storm Bolt's, at the hit). Its
-    // target is not modelled
-    void StunBegins(unit u)
+    // A stun begins on a unit nothing held: it gets the stunned order (851973) as a target order on the stun's giver (probe units-kinds: Storm Bolt's,
+    // at the hit, on the Mountain King)
+    void StunBegins(unit u, unit? source)
     {
         var free = u.HeldGiven < 0;
         Holding(u);
-        if (free) FireUnit(new(u, Order: Stunned), UnitIssuedTargetOrder, PlayerUnitIssuedTargetOrder);
+        if (free) FireUnit(new(u, Order: Stunned, Target: source), UnitIssuedTargetOrder, PlayerUnitIssuedTargetOrder);
     }
 
     static readonly int Defend = Code("Adef");
@@ -85,7 +86,6 @@ public sealed partial class GameNatives
         u.Paused = flag;
         HoldBuffs(u);
         if (flag) Holding(u);
-        else LetGo(u);
         if (flag)
         {
             if (u.Unpausing is { } back)
@@ -113,5 +113,6 @@ public sealed partial class GameNatives
             u.Unpausing = null;
             giveBack();
         });
+        LetGo(u); // after the undefend, which comes first in the same frame (probe units-kinds)
     }
 }

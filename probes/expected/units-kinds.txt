@@ -1,0 +1,132 @@
+kinds footman ffffffff order 0 paused f type Footman
+kinds paladin ffffffff order 0 paused f type Paladin
+kinds giant ffffffff order 0 paused f type Mountain Giant
+kinds misha ffffftff order 0 paused f type Misha
+kinds dryad ffffffft order 0 paused f type Dryad
+kinds breaker ffffffft order 0 paused f type Spellbreaker
+kinds immune ffffffft order 0 paused f type Footman
+kinds golem ffffffft order 0 paused f type Rock Golem
+bolt order t
+sleep order t
+ensnare order t
+ensnareair order t
+web order f
+roots order t
+polymorph order t
+hex order t
+banish order t
+avatar order t
+order pause 851986 point none at 1800.00 -1200.00 now 0.50
+walk pause 0.50 0.00 order 851986
+order pauseex 851986 point none at 1800.00 -1400.00 now 0.50
+walk pauseex 0.50 0.00 order 851986
+order pauseex2 851986 point none at 1800.00 -1600.00 now 0.50
+walk pauseex2 0.50 0.00 order 851986
+order stun 851986 point none at 1800.00 -1800.00 now 0.50
+walk stun 0.50 0.00 order 851986
+order pause 851973 point none at 0.00 0.00 now 1.00
+order pause 852056 none none at 0.00 0.00 now 1.00
+hold pause order 851973 kinds ffffffff
+walk pause 1.00 132.17 order 851973
+order pauseex 851973 point none at 0.00 0.00 now 1.00
+hold pauseex order 851973 kinds ffffffff
+walk pauseex 1.00 132.10 order 851973
+order pauseex2 851973 point none at 0.00 0.00 now 1.00
+hold pauseex2 order 851973 kinds ffffffff
+walk pauseex2 1.00 132.01 order 851973
+hold stun order 851986 kinds ffffffff
+walk stun 1.00 131.71 order 851986
+exhit 1.22
+walk pause 1.50 132.17 order 851973
+walk pauseex 1.50 132.10 order 851973
+walk pauseex2 1.50 132.01 order 851973
+walk stun 1.50 266.71 order 851986
+order stun 851973 target bolter at 0.00 0.00 now 1.75
+kinds bolt ffffffff order 851973 paused f type Footman buff 0
+kinds sleep ffffffff order 851973 paused f type Footman buff 1
+kinds ensnare fftfffff order 0 paused f type Footman buff 1
+kinds ensnareair fftfffff order 0 paused f type Gryphon Rider buff 0
+kinds web ffffffff order 0 paused f type Gryphon Rider buff 0
+kinds roots fftfffff order 0 paused f type Footman buff 1
+kinds polymorph fffftfff order 0 paused f type Footman buff 1
+kinds hex fffftfff order 0 paused f type Footman buff 1
+kinds banish fffffftf order 0 paused f type Footman buff 1
+kinds avatar ffffffft order 0 paused f type Mountain King buff 1
+held pause order 851973 kinds ffffffff paused t
+walk pause 2.00 132.17 order 851973
+held pauseex order 851973 kinds ffffffff paused f
+walk pauseex 2.00 132.10 order 851973
+held pauseex2 order 851973 kinds ffffffff paused f
+walk pauseex2 2.00 132.01 order 851973
+held stun order 851973 kinds ffffffff paused f
+walk stun 2.00 334.20 order 851973
+exattacker held order 851973
+walk pause 2.50 132.17 order 851973
+walk pauseex 2.50 132.10 order 851973
+walk pauseex2 2.50 132.01 order 851973
+walk stun 2.50 334.20 order 851973
+kinds spears ffftffff order 0 paused f type Footman buff 1
+kinds slowpoison ftftffff order 851983 paused f type Footman buff 1
+kinds plague ftffffff order 0 paused f type Footman buff 1
+free pause order 851973 kinds ffffffff
+walk pause 3.00 132.17 order 851973
+free pauseex order 851973 kinds ffffffff
+walk pauseex 3.00 132.10 order 851973
+free pauseex2 order 851973 kinds ffffffff
+walk pauseex2 3.00 132.01 order 851973
+walk stun 3.00 334.20 order 851973
+order pause 852056 none none at 0.00 0.00 now 3.01
+order pause 851986 point none at 1800.00 -1200.00 now 3.01
+order pauseex 851986 point none at 1800.00 -1400.00 now 3.01
+walk pause 3.50 259.03 order 851986
+walk pauseex 3.50 258.93 order 851986
+walk pauseex2 3.50 132.01 order 851973
+walk stun 3.50 334.20 order 851973
+flags slowed none 1 magic 1 physical 0 both 0 timed 1 aura 2 dispel 1 all 0
+flags inaura none 0 magic 0 physical 0 both 0 timed 0 aura 1 dispel 0 all 0
+flags poisoned none 2 magic 0 physical 1 both 0 timed 2 aura 3 dispel 0 all 0
+flags snared none 1 magic 0 physical 1 both 0 timed 1 aura 1 dispel 0 all 0
+walk pause 4.00 393.98 order 851986
+walk pauseex 4.00 393.87 order 851986
+walk pauseex2 4.00 132.01 order 851973
+walk stun 4.00 334.20 order 851973
+exattacker free order 851973
+walk pause 4.50 528.93 order 851986
+walk pauseex 4.50 528.80 order 851986
+walk pauseex2 4.50 132.01 order 851973
+walk stun 4.50 334.20 order 851973
+walk pause 5.00 663.88 order 851986
+walk pauseex 5.00 663.72 order 851986
+walk pauseex2 5.00 132.01 order 851973
+walk stun 5.00 334.20 order 851973
+exhit 5.15
+walk pause 5.50 798.83 order 851986
+walk pauseex 5.50 798.65 order 851986
+walk pauseex2 5.50 132.01 order 851973
+walk stun 5.50 334.20 order 851973
+walk pause 6.00 933.78 order 851986
+walk pauseex 6.00 933.58 order 851986
+walk pauseex2 6.00 132.01 order 851973
+walk stun 6.00 334.20 order 851973
+walk pause 6.50 1068.73 order 851986
+walk pauseex 6.50 1068.51 order 851986
+walk pauseex2 6.50 132.01 order 851973
+walk stun 6.50 334.20 order 851973
+order stun 851986 point none at 1800.00 -1800.00 now 6.76
+walk pause 7.00 1203.68 order 851986
+walk pauseex 7.00 1203.44 order 851986
+walk pauseex2 7.00 132.01 order 851973
+walk stun 7.00 393.60 order 851986
+exhit 7.52
+kinds bolt ffffffff order 0 paused f type Footman buff 0
+kinds sleep ffffffff order 851973 paused f type Footman buff 1
+kinds ensnare fftfffff order 0 paused f type Footman buff 1
+kinds ensnareair fftfffff order 0 paused f type Gryphon Rider buff 0
+kinds web ffffffff order 0 paused f type Gryphon Rider buff 0
+kinds roots fftfffff order 0 paused f type Footman buff 1
+kinds polymorph fffftfff order 0 paused f type Footman buff 1
+kinds hex fffftfff order 0 paused f type Footman buff 1
+kinds banish fffffftf order 0 paused f type Footman buff 1
+exhit 9.68
+exhit 11.81
+slow time foot 1 giant 1

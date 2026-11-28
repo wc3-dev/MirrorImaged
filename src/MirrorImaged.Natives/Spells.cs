@@ -146,7 +146,7 @@ public sealed partial class GameNatives
 
     // How long a buff of the ability lasts on the unit: its duration, a hero's own where it has one
     // A spell's time on the unit: a hero's and a unit with Resistant Skin's is the ability's hero duration (the skin's tooltip; not measured)
-    double Lasts(ability a, unit target) => (IsHero(target.Type.Id) || HasCode(target, ResistantSkin)) && Field(a, Code("ahdu")) is var hero and > 0 ? hero : Field(a, Code("adur"));
+    double Lasts(ability a, unit target) => (IsHero(target.Type.Id) || Resistant(target)) && Field(a, Code("ahdu")) is var hero and > 0 ? hero : Field(a, Code("adur"));
 
     // What the spell does: the data-driven effects of the abilities modelled here (waves 4's first set), nothing for the rest
     void Effect(unit caster, ability a, float x, float y, widget? target)

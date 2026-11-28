@@ -150,7 +150,7 @@ public sealed partial class GameNatives
                 return true;
             case var id when id == Code("AEer") && target is unit rooted && !rooted.Dead:
                 // Entangling Roots: holds a unit where it stands and hurts it each second
-                Apply(rooted, caster, RootBuff, Lasts(a, rooted), false, b => b.Root = true);
+                Apply(rooted, caster, RootBuff, Lasts(a, rooted), false, b => (b.Root, b.Snare) = (true, true)); // snared (probe units-kinds)
                 var seconds = (int)Lasts(a, rooted);
                 for (var second = 1; second <= seconds; second++)
                     _game.At(_game.Step + Game.Steps(second), () => { if (!rooted.Dead && rooted.Buffs.Any(b => b.Id == RootBuff)) Spell(caster, rooted, Datum(a, 'A')); });
@@ -194,18 +194,16 @@ public sealed partial class GameNatives
                 }
                 return true;
             case var id when (id == Code("AOhx") || id == Code("Aply")) && target is unit hexed && !hexed.Dead:
-                // Hex and Polymorph turn another unit into the ability's creature for the ability's time, polymorphed while the buff is on; it comes back
-                // as it was when the buff ends or is taken off. The creature is the UnitID's, else DataB's for a unit on the ground and DataC's for a flier
-                // (the first of the list, where the game's Hex picks one: a shortcut until the pick is measured)
-                if ((SummonTypes(a).FirstOrDefault() is var listed and not 0 ? listed : Forms(a, Flies(hexed) ? 'C' : 'B').FirstOrDefault()) is not 0 and var shape
-                    && Data.Object(ObjectKind.Unit, shape) is { } creature)
-                    Morph(hexed, caster, a, creature);
+                // Hex and Polymorph: the unit is polymorphed for the ability's time, a hero's own for a hero, and keeps its own type and name (probe
+                // units-kinds: a hexed and a polymorphed footman read Footman). Close: the creature's model and what it can't do then aren't modelled
+                Apply(hexed, caster, BuffOf(a, 0), Math.Max(Lasts(a, hexed), 0.1), false, b => b.Polymorph = true);
                 return true;
             case var id when (id == Code("Aens") || id == Code("Aweb")) && target is unit snared && !snared.Dead:
-                // Ensnare and Web hold a unit where it is for the ability's time, a hero's own for a hero: the first buff of the list on a flier, the
-                // second on a unit on the ground. The flier isn't brought down here (its height for ground attacks: not modelled)
+                // Ensnare and Web hold a unit where it is for the ability's time, a hero's own for a hero, and snare it, a flier too (probe units-kinds). Its buff
+                // is the list's second (Ensnare's Beng on the ground; a gryphon rider read 0 of the first, Bena, so the second is this model's reading there).
+                // The flier isn't brought down here (its height for ground attacks: not modelled)
                 Hit0(caster, snared);
-                if (!snared.Dead) Apply(snared, caster, BuffOf(a, Flies(snared) ? 0 : 1), Lasts(a, snared), false, b => (b.Root, b.Snare, b.Magic) = (true, true, false));
+                if (!snared.Dead) Apply(snared, caster, BuffOf(a, 1), Lasts(a, snared), false, b => (b.Root, b.Snare, b.Magic) = (true, true, false));
                 return true;
             case var id when id == Code("AHav"):
                 // Avatar: more armour and life for its time
@@ -324,24 +322,6 @@ public sealed partial class GameNatives
         return false;
     }
 
-    // A unit's form for the buff's time: polymorphed, and back as it was when the buff ends or is taken off
-    void Morph(unit changed, unit caster, ability a, GameObject form)
-    {
-        var (original, mana) = (changed.Type, changed.Mana);
-        Transform(changed, form);
-        void Back()
-        {
-            if (changed.Dead || changed.Removed || changed.Type != form) return;
-            Transform(changed, original);
-            SetMana(changed, Math.Min(Math.Max(mana, changed.Mana), changed.MaxMana));
-        }
-        Apply(changed, caster, BuffOf(a, 0), Math.Max(Lasts(a, changed), 0.1), false, b => (b.Polymorph, b.Ended, b.Dispelled) = (true, Back, Back));
-    }
-
-    // The ability's data as text at its level, and as a list of ids
-    string? DatumText(ability a, char letter) => Data.FieldAt(ObjectKind.Ability, "Data" + letter) is { } field ? a.Type.Text(Data.Own(a.Type, field), a.Level) : null;
-    IEnumerable<int> Forms(ability a, char letter) => (DatumText(a, letter) ?? "").Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Where(t => t.Length == 4).Select(Code);
-
     // The buff the ability lists at the place given (its BuffID field), the last when it lists fewer; its own id with none, as the abilities' buffs
     // here were named before (a buff's id is what GetUnitAbilityLevel reads)
     int BuffOf(ability a, int place)
@@ -410,7 +390,8 @@ public sealed partial class GameNatives
 
     // An attack's poison (Poison Sting, Slow Poison, Envenomed Spears and a map's copies): a hit of 0, then the poison's buff, before the attack's own hit,
     // which already sees it (game-facts, 11-03: a dryad's Slow Poison); DataA of poison each second (slow poison's damage type for Slow Poison), the
-    // moving slowed by DataB and the attacks by DataC, for its time (a hero's own). Not on a building or a mechanical unit (its targets say organic)
+    // moving slowed by DataB and the attacks by DataC, for its time (a hero's own); Slow Poison's reads plagued too (probe units-kinds). Not on a
+    // building or a mechanical unit (its targets say organic)
     void Poison(unit attacker, unit target)
     {
         if (IsBuildingNow(target) || Is(target.Type, target, 15)) return;
@@ -418,8 +399,8 @@ public sealed partial class GameNatives
         var slow = Coded(poison.Type) == SlowPoison;
         Hit0(attacker, target);
         if (target.Dead) return;
-        Apply(target, attacker, BuffOf(poison, 0), Lasts(poison, target), false, b => (b.Poison, b.Magic, b.PerSecond, b.TickType, b.SpeedFactor, b.AttackSpeedBonus) =
-            (true, false, Datum(poison, 'A'), slow ? 23 : 11, 1 - Datum(poison, 'B'), -Datum(poison, 'C')));
+        Apply(target, attacker, BuffOf(poison, 0), Lasts(poison, target), false, b => (b.Poison, b.Plague, b.Magic, b.PerSecond, b.TickType, b.SpeedFactor, b.AttackSpeedBonus) =
+            (true, slow, false, Datum(poison, 'A'), slow ? 23 : 11, 1 - Datum(poison, 'B'), -Datum(poison, 'C')));
     }
 
     // What an ability is made from: its code column, else its base

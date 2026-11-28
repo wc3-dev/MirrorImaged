@@ -56,7 +56,7 @@ public sealed partial class GameNatives
         var buff = new ActiveBuff(id, source, positive, magic: true);
         change(buff);
         target.Buffs.Add(buff);
-        if (buff.Stun && !stunned) StunBegins(target);
+        if (buff.Stun && !stunned) StunBegins(target, source);
         // One clock of hits a buff id, which a refreshed buff keeps
         if (buff.PerSecond is not null && had?.PerSecond is null) Tick(target, id);
         if (seconds > 0)
@@ -110,22 +110,20 @@ public sealed partial class GameNatives
     bool Sneaks(unit u) => u.Buffs.Any(buff => buff.Sneaks);
     bool Has(unit u, Func<ActiveBuff, bool> kind) => u.Buffs.Any(kind);
 
-    // The buffs the flags pick: the positive or negative ones; with the magic or the physical flag, the magic ones or the physical ones (both for
-    // both, as blizzard.j's UnitRemoveBuffsExBJ gives them for "both"); and of those the ones that are timed, an aura's or dispellable, as those flags
-    // ask. A spell's buff is magic, timed and dispellable; an aura's is none of the three (game-facts, 10-31: UnitCountBuffsEx counts Devotion
-    // Aura's buff so, and Slow's and Inner Fire's as all three); an attack's poison is physical. With every flag true none is picked, as the game's
-    // counted 0 and took none off (10-31). Which flags ask and which allow is this model's reading of those lines
+    // The buffs the flags pick (probe units-kinds, on a slowed footman, one in Devotion Aura, an ensnared and a poisoned one): the positive or negative
+    // ones, an aura's only with the aura flag, and of those the ones that are each kind the other flags ask for: magic (Slow), physical (Ensnare, a
+    // poison), timed, dispellable (Slow; not Ensnare or a poison). So magic and physical together, and every flag, pick none (game-facts, 10-31 too)
     IEnumerable<ActiveBuff> Picked(unit? u, bool positive, bool negative, bool magic, bool physical, bool timedLife, bool aura, bool autoDispel) =>
-        u is null ? [] : u.Buffs.Where(b => (b.Positive ? positive : negative) && (!magic && !physical || magic && b.Magic || physical && b.Physical)
-            && (!timedLife || b.Timed) && (!aura || b.Aura) && (!autoDispel || !b.Aura));
+        u is null ? [] : u.Buffs.Where(b => (b.Positive ? positive : negative) && (aura || !b.Aura) && (!magic || b.Magic) && (!physical || b.Physical)
+            && (!timedLife || b.Timed) && (!autoDispel || b.Magic));
 
     /// <summary>Takes off the unit's positive buffs, its negative ones or both.</summary>
     /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: UnitRemoveBuffs takes the buffs off (10-31)); an aura's buff is taken as a spell's is, and comes back with the aura's next pulse.</remarks>
     [Native(Level.Close, Fact = "game-facts.md, Spells and abilities: UnitRemoveBuffs takes the buffs off (10-31)")]
-    public void UnitRemoveBuffs(unit? whichUnit, bool removePositive, bool removeNegative) => UnitRemoveBuffsEx(whichUnit, removePositive, removeNegative, false, false, false, false, false);
+    public void UnitRemoveBuffs(unit? whichUnit, bool removePositive, bool removeNegative) => UnitRemoveBuffsEx(whichUnit, removePositive, removeNegative, false, false, false, true, false);
 
-    /// <summary>Takes off the unit's buffs of the signs asked for: the magic ones, the physical ones or both by those flags, and of them the timed ones, an aura's or the dispellable ones when those flags ask.</summary>
-    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: UnitRemoveBuffs takes the buffs off (10-31)); with every flag true none is picked, as measured; which flags ask and which allow is the model's reading.</remarks>
+    /// <summary>Takes off the unit's buffs of the signs asked for, an aura's only with the aura flag, and of them the ones of each kind the other flags ask for: magic, physical, timed, dispellable.</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: UnitRemoveBuffs takes the buffs off (10-31)); the flags pick as probe units-kinds measured them on four kinds of buff; an attack's poison is one buff here where Envenomed Spears gave two.</remarks>
     [Native(Level.Close, Fact = "game-facts.md, Spells and abilities: UnitRemoveBuffs takes the buffs off (10-31)")]
     public void UnitRemoveBuffsEx(unit? whichUnit, bool removePositive, bool removeNegative, bool magic, bool physical, bool timedLife, bool aura, bool autoDispel)
     {
@@ -135,14 +133,14 @@ public sealed partial class GameNatives
     }
 
     /// <summary>True when UnitCountBuffsEx finds at least one buff.</summary>
-    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: UnitCountBuffsEx (10-31)); with every flag true none is picked, as measured; which flags ask and which allow is the model's reading.</remarks>
-    [Native(Level.Close, Fact = "game-facts.md, Spells and abilities: UnitCountBuffsEx (10-31)")]
+    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: UnitCountBuffsEx (10-31)); the flags pick as probe units-kinds measured them on four kinds of buff; an attack's poison is one buff here where Envenomed Spears gave two.</remarks>
+    [Native(Level.Close, Fact = "game-facts.md, Spells and abilities: UnitCountBuffsEx (10-31); probe units-kinds (11-28)")]
     public bool UnitHasBuffsEx(unit? whichUnit, bool removePositive, bool removeNegative, bool magic, bool physical, bool timedLife, bool aura, bool autoDispel) =>
         UnitCountBuffsEx(whichUnit, removePositive, removeNegative, magic, physical, timedLife, aura, autoDispel) > 0;
 
     /// <summary>How many of the unit's buffs the flags pick, as UnitRemoveBuffsEx picks them; 0 for a null unit.</summary>
-    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: UnitCountBuffsEx (10-31)); with every flag true none is picked, as measured; which flags ask and which allow is the model's reading.</remarks>
-    [Native(Level.Close, Fact = "game-facts.md, Spells and abilities: UnitCountBuffsEx (10-31)")]
+    /// <remarks>Close: measured in part (game-facts.md, Spells and abilities: UnitCountBuffsEx (10-31)); the flags pick as probe units-kinds measured them on four kinds of buff; an attack's poison is one buff here where Envenomed Spears gave two.</remarks>
+    [Native(Level.Close, Fact = "game-facts.md, Spells and abilities: UnitCountBuffsEx (10-31); probe units-kinds (11-28)")]
     public int UnitCountBuffsEx(unit? whichUnit, bool removePositive, bool removeNegative, bool magic, bool physical, bool timedLife, bool aura, bool autoDispel) =>
         Picked(whichUnit, removePositive, removeNegative, magic, physical, timedLife, aura, autoDispel).Count();
 

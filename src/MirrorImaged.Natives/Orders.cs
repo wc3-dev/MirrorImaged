@@ -277,10 +277,10 @@ public sealed partial class GameNatives
     [Native(Level.Close, Fact = OrderFacts)]
     public bool BlzQueueNeutralTargetOrderById(player? forWhichPlayer, unit? neutralStructure, int unitId, widget? target) => forWhichPlayer is not null && target is not null && Queued(neutralStructure, unitId, GetWidgetX(target), GetWidgetY(target), target, 2);
 
-    /// <summary>The current order's id, 0 when idle ('stop' and a never-ordered unit read 0); stunned (851973) while a pause, a stun or BlzPauseUnitEx holds the unit (game-facts, 10-26: every paused unit read it).</summary>
-    /// <remarks>Close: measured in part (game-facts.md, Orders and events (10-21, 11-03, 11-05)); an order stays current until another replaces it, so one that would have finished in the game still reads; a stunned or BlzPauseUnitEx-held unit reading stunned is the model's reading of the stun's order.</remarks>
+    /// <summary>The current order's id, 0 when idle ('stop' and a never-ordered unit read 0); stunned (851973) while a pause, a stun or BlzPauseUnitEx holds the unit, until its order comes back a frame after it is let go (probe units-kinds; game-facts, 10-26).</summary>
+    /// <remarks>Close: measured in part (game-facts.md, Orders and events (10-21, 11-03, 11-05)); an order stays current until another replaces it, so one that would have finished in the game still reads; a held unit reads stunned as probe units-kinds measured it.</remarks>
     [Native(Level.Close, Fact = OrderFacts)]
-    public int GetUnitCurrentOrder(unit? whichUnit) => whichUnit is null ? 0 : Held(whichUnit) ? Stunned : whichUnit.Order;
+    public int GetUnitCurrentOrder(unit? whichUnit) => whichUnit is null ? 0 : ReadsStunned(whichUnit) ? Stunned : whichUnit.Order;
 
     /// <summary>The current order and those queued after it; the stunned order of a pause counts for one in its own event (facts, 11-05).</summary>
     /// <remarks>Close: measured in part (game-facts.md, Orders and events (10-21, 11-03, 11-05)); the stunned order counts for one only in its own event (11-05); the count at other moments is the model's.</remarks>

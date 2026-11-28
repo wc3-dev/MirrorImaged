@@ -12,17 +12,22 @@ public sealed partial class GameNatives
 
     /// <summary>
     /// A count of its own, up for true and down for false, which IsUnitPaused doesn't read (probe units). While it is
-    /// above 0 the unit is held as a stun holds it: it doesn't move, fight or cast, it reads stunned to IsUnitType and its
-    /// current order, and its buffs' time runs on; let go, the order it had comes back as after PauseUnit.
+    /// above 0 the unit is held: it doesn't move or fight, and its current order reads stunned. Held from free, it gets the
+    /// stunned order (851973) as a point order, with no undefend; let go, the order it had comes back a frame later, as
+    /// after PauseUnit (probe units-kinds). Its buffs' time runs on.
     /// </summary>
-    /// <remarks>Close: the count is measured (probe units); that it holds the unit as a stun does, with no order event when it begins and the pause's order back when it ends, is the model's reading of the native's purpose, not measured.</remarks>
-    [Native(Level.Close, Reason = "the count is measured (probe units); that it holds the unit as a stun does, with no order event when it begins and the pause's order back when it ends, is the model's reading of the native's purpose, not measured")]
+    /// <remarks>Close: the hold, its orders and the count match probe units-kinds; that its buffs' time runs on and a cast waits is the model's reading.</remarks>
+    [Native(Level.Close, Fact = "probe units-kinds (11-28)", Reason = "the hold, its orders and the count match probe units-kinds; that its buffs' time runs on and a cast waits is the model's reading")]
     public void BlzPauseUnitEx(unit? whichUnit, bool flag)
     {
         if (whichUnit is not { } u) return;
         var held = Held(u);
         u.Pauses += flag ? 1 : -1;
-        if (!held && Held(u)) Holding(u);
+        if (!held && Held(u))
+        {
+            Holding(u);
+            FireUnit(new(u, Order: Stunned), UnitIssuedPointOrder, PlayerUnitIssuedPointOrder);
+        }
         else if (held && !Held(u)) LetGo(u);
     }
 

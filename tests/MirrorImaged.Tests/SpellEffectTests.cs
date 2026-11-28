@@ -297,7 +297,8 @@ public sealed class SpellEffectTests : IDisposable
             TimerStart(CreateTimer(), 16, false, function() print("over", UnitCountBuffsEx(caster, true, false, true, false, false, false, false) > 0, f1(GetUnitState(caster, UNIT_STATE_MAX_LIFE))) end)
             """, 17);
 
-        Assert.Equal(["hexed\tFrog\t100.0\t50.0", "back\tFootman\t270.0", "morphed\tBig\t2000.0", "normal\tFootman", "avatar\ttrue\t1500.0", "over\tfalse\t1000.0"], lines);
+        // probe units-kinds: a hexed footman keeps its own type and name
+        Assert.Equal(["hexed\tFootman\t270.0\t1000.0", "back\tFootman\t270.0", "morphed\tBig\t2000.0", "normal\tFootman", "avatar\ttrue\t1500.0", "over\tfalse\t1000.0"], lines);
     }
 
     [Fact]

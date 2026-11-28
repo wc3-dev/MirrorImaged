@@ -114,6 +114,7 @@ public sealed class SpellTests : IDisposable
             TimerStart(CreateTimer(), 4.5, false, function() print("freed", f1(GetUnitMoveSpeed(foe)), GetUnitAbilityLevel(foe, FourCC("Bslo")), GetUnitAbilityLevel(other, FourCC("BSTN")), GetUnitX(other) > 100) end)
             """, 5);
 
-        Assert.Equal(["270.0	true", "slowed	108.0	1	true	0", "stunned	100.0	1", "freed	270.0	0	0	true"], lines);
+        // magic and physical together pick none (probe units-kinds)
+        Assert.Equal(["270.0	true", "slowed	108.0	1	false	0", "stunned	100.0	1", "freed	270.0	0	0	true"], lines);
     }
 }
